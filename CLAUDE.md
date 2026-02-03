@@ -9,7 +9,7 @@
 For use in `src/` (main thesis work):
 1. `paper/` and `rough/` are the most important because they are about the published work.
 2. `references/` and `citations/` are important because they are about the references and citations used in the published work. The published work has only one great paper citing it which is the only one there. We can use the bibliography of that to use in our thesis.
-3. `taste/` and `template/` are about the style and template to based thesis on. Mostly we will distill this information here itself under the `Taste` section.
+3. `taste/` and `template/` are about the style (think: taste) and template (think: format), respectively, to base thesis on. Mostly we will distill this information here itself under the `Taste and Style` section.
 
 ```
 .
@@ -55,18 +55,19 @@ All important content lives in `src/`. Two main file types exist:
 
 ### Writing
 
+- Simple and coherent enough to understand (as simple as possible but not simpler for non-triviality or orthogonality has its place) yet rigorous enough to be able to experiment with the ideas.
 - Make sure that we have consistent formatting and notation.
 - Avoid bullet points.
 - Not a lot of subsections. Chapters and sections best.
 - Avoid small paragraphs.
 - Good citations. Not too less, not too many.
 
-### Style
+### Formatting
 
-- Avoid `---` separators.
+- Avoid `---` separators in `.md` files.
 - No non-ASCII characters in the codebase.
 - Everything should be aligned well.
 
-## Taste
+## Taste and Style
 
 [TODO]
