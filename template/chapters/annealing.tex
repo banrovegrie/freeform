@@ -1,0 +1,95 @@
+\section{Combinatorial Optimization}
+
+    Optimization problems are concerned with the minimization or maximization of some objective function subject to some constraints, or a decision that no such solution exists.
+    Combinatorics is the mathematics of discretely structured problems.
+    Combinatorial optimization is an optimization that deals with discrete variables.
+
+    \begin{definition}[Combinatorial Optimization]
+        Combinatorial optimization is the process of searching for the maxima (or the minima) of an objective function $F$, whose domain is a discrete (or can be reduced to a discrete set), and often consists of a large configuration space (as opposed to an $N$-dimensional continuous space). 
+    \end{definition}
+    
+        The space of possible solutions is typically too large to search exhaustively using pure brute force. In some cases, problems can be solved exactly using Branch and Bound techniques. Otherwise, in many such problems specialized algorithms (sometimes based on heuristics) that quickly rule out large parts of the search space or approximation algorithms must be resorted to instead. 
+        
+    Some common examples of such problems include:
+    
+    \begin{itemize}
+        \item \textbf{Travelling Salesman Problem:} Given the coordinates of $N$ different cities, find the shortest possible path that a salesman can take through all of them so as to visit each city exactly once.
+        \item \textbf{Bin Packing:} Given a set of $N$ objects each of a specified size $s_i$, fit them all into as few bins as possible (of a given fixed size $B$). 
+    \end{itemize}
+    
+    Other examples are integer linear programming and boolean satisfiability. Most of these problems (the decision versions of them) are NP-hard. 
+    Some classical algorithms used to solve them are Random restart hill-climbing, simulated annealing, genetic algorithms and Tabu search. 
+    
+    For the purpose of studying quantum adiabatic optimization, we are mostly interested in weighted max-2-SAT, the Ising minimization problem and QUBO. 
+    These three problems are equivalent, and the instances can be converted from one to another. \href{https://en.wikipedia.org/wiki/Quadratic\_unconstrained\_binary\_optimization}{Wikipedia} tells more about this. 
+
+    \subsection{Weighted MAX-SAT}
+    
+    MAX-SAT extends the SAT problem to the problem of finding an assignment that maximizes the number of satisfied clauses. 
+    Weighted MAX-SAT extends this further by adding weights to each clause and requiring a solution that maximizes the sum of weights of the satisfied clause. The MAX-SAT problem is an instance of weighted MAX-SAT where all weights are 1.
+    These problems can either be solved by incomplete local search methods or complete branch and bound methods. 
+    
+    These problems are NP-Hard and APX-Complete, with a PTAS implying P = NP.
+
+    \subsection{QUBO}
+    
+    QUBO stands for Quadratic Unconstrained Binary Optimization. It refers to the problem of minimizing the following objective function. Let $Q$ be a $n \times n$ matrix, $x \in \{ 0, 1 \}^n$. 
+    
+    \begin{equation}
+        \label{eqn:qubo}
+        \min y = x^T Q x = \sum_{i, j} Q_{i, j} x_i x_j.
+    \end{equation}
+    
+    Here $x$ is the binary decision variable. This problem is also NP-Hard.
+    
+    \subsection{Ising Minimization Problem}
+    
+    Most of this section is from the Stat Mech II course web page of \citet{StatMechIsing}.
+    
+    The Ising model is a mathematical model of an infinite lattice where each site can be in one of two states (spin up/down, or $\pm \frac{1}{2}$). The Hamiltonian of the model includes two terms.
+    $h$, the external field term, can split the energies of the spin-down and spin-up state. The magnitude of $h$ represents how strong the field is, so it tells you how much higher in energy one spin is than the other. The sign of $h$ indicates which of the two spins is preferred. 
+    $J$ is the interaction term. The sign of $J$ tells us if the neighbouring spins want to align or anti-align. The magnitude of $J$ tells us by how much do they want to align or anti align.
+    In the Ising model, only the nearest neighbour sites interact with each other. This model can be of arbitrary dimensions. In a $d$-dimentional Ising model, every spin has $2d$ nearest neighbours. 
+    Thus, Hamiltonian of the Ising model is 
+    
+    \begin{equation}
+        \label{eqn:ising_model}
+        H = - \sum_{\left<i, j\right>} J_{i, j} \sigma_i^z \sigma_j^z - \sum_j h_j \sigma_j^z .
+    \end{equation}
+    
+    
+    \begin{figure}[H]
+        \includegraphics[width=6in]{images/ising.jpg}
+        \centering
+        \caption{2D Ising Model \href{https://web.stanford.edu/~jeffjar/statmech/intro4.html}{Image Source}}
+    \label{fig:ising_model}
+    \end{figure}
+    
+    
+    
+    The Ising minimization problem refers to the following problem.
+    
+    \begin{definition}[Ising Minimization Problem]
+        \label{def:ising_problem}
+        Given the description of an Ising model as a Hamiltonian, find the spin configuration corresponding to the minimum energy of the system. 
+    \end{definition}
+    
+    This problem is NP-hard.
+    Sometimes a random instance of this is also called a spin-glass, referring to `glassy' (\emph{random}) nature of the molecules of glass. 
+    
+    An instance of this problem can easily be converted to a QUBO instance, by replacing the spins as $ s_i = 2 x_i - 1 $. 
+    
+    A lot of NP-Hard problems can be mapped on to Ising minimization problem. \citet{Lucas2014} gives an overview of this. 
+
+\section{Algorithms for Combinatorial Optimization}
+
+\subsection{Simulated Annealing}
+
+\subsection{Quantum Monte Carlo}
+
+\subsection{Quantum Annealing}
+
+\section{Quantum Supremacy for Combinatorial Optimization}
+
+\section{Experimental Quantum Annealer}
+

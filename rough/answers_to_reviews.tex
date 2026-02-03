@@ -1,0 +1,307 @@
+\documentclass{article}
+\usepackage[text={6.8in,8.5in},centering]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=red]{hyperref}
+\newtheorem{theorem}[]{Theorem}
+\newtheorem{lemma}[]{Lemma}
+
+\newcommand{\braket}[2]{\langle #1|#2 \rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\ket}[1]{|#1\rangle}
+
+
+\title{
+ Responses to reviews 
+}
+
+\begin{document}
+
+\maketitle
+
+\section{Review 1.}
+
+\subsection{Spectral Analysis}
+‘Lemma 8 fully characterizes the entire spectrum of 
+$H(s)$. Given this, why can’t the spectral gap be analyzed directly from it, instead of using the seemingly more complex techniques presented in the manuscript? Some explanation would be beneficial.’ 
+\paragraph{Response.} Lemma 8 gives the eigenvalue equation such that for any $\lambda(s)$ eigenvalue of $H(s)$:
+\[\frac{1}{1-s}=\frac{1}{N}\sum_k \frac{d_k}{sE_k-\lambda(s)}\]
+A counting argument allows us to attribute an interval for each eigenvalue, i.e. $\lambda_0(s)\in \ ]-\infty, sE_0[$, $\lambda_1(s) \in \ ]sE_0,sE_1[$, ... For the left bound, we use $\lambda_1(s) \geq sE_0$ which is tight enough and the variational principle gives a good bound on $\lambda_0(s)$. For the right bound $\lambda_0(s) \leq sE_0$ is a good bound but it's not obvious to us how can we access a good enough bound on $\lambda_1(s)$. \\
+
+More generally, Lemma 8 does not allow us to isolate the eigenvalue directly.
+
+\subsection{Hardness of estimating $A_1$}
+‘The NP-hardness of estimating $A_1$ (Theorem 6) does not appear to be a strong enough obstacle to achieving a quadratic speedup. The authors embed an $n$-variable, $m$-clause 3SAT instance into the problem of estimating $A_1$ for an $n'$-qubit Hamiltonian with $n'=2n+2m$. However, even if we assume $m=0$, solving 3SAT via brute force requires only $\mathcal{O}(2^{n'/2})$ time, which remains feasible within the AQO framework, as its time complexity is also $\mathcal{O}(2^{n'/2})$. A similar argument applies to the $\#P$-hardness result (Theorem 7).’
+
+\paragraph{Response.} The apparent weakness comes from the embedding of a 3-local Hamiltonian into a 2-local Hamiltonian. In Section \ref{sec:hardMC}, we suggest a similar hardness result directly from a 2-local Hamiltonian. As for the obstacle to achieve a quadratic speed-up over brute force, it's true that the desired complexity of estimating $A_1$ can be of order $\mathcal{O}(2^{n/2})$. The NP-hardness of estimating $A_1$ is not 
+
+\subsection{Additional comments}
+
+‘This plausibility is not obvious. The reduction proving the universality of adiabatic computing in Aharonov et al. [7] introduces a polynomial overhead relative to the gate number of the simulated quantum circuit. Consequently, an $O(2^{n/2})$-gate circuit would require $O(\text{poly}(2^{n/2}))$ time for simulation in the adiabatic setting. This polynomial overhead is also acknowledged later by the authors.’
+
+\paragraph{Response.} The plausibility comes from the fact that there is an adiabatic quantum algorithm that achieves the same speed for the Grover search problem as the circuit algorithm. Since quantum amplification is a generalization of Grover's algorithm in the circuit model, we expected that this generalization could also be proved in the adiabatic setting.
+\\ \\
+
+
+
+
+‘Ising spin glass Hamiltonians are NP-complete. Therefore solutions of any NP problems can be encoded into the ground states. I guess it is more informative to say that for some NP-complete problems, the encoding is direct and straightforward with low or no overhead on the system size n (Examples are QUBO and MAX-CUT).’
+
+\paragraph{Response.} Suggestion to modify the main text: ‘The decision problem associated with the ground-state of an Ising spin glass Hamiltonian is NP-complete. Therefore one can encode any NP problems as the ground-state of such Hamiltonian. For some NP-complete problems, the encoding is direct and straightforward with low or no overhead on the system size $n$ (e.g. QUBO and Max-Cut).’
+\\ \\
+
+‘The hyperlink to Theorem A7 seems incorrect.’
+
+\paragraph{Response.} Corrected.
+
+
+\section{Review 2.}
+
+\subsection{Reorganization of the paper}
+
+‘Given my comments on the limitations of the authors’ algorithm, I suggest some reorganization of the paper. I would move some of the technical analysis of the gap to the appendix (e.g., the proofs of lemmas 10 and 11) and perhaps also the $\#P$ hardness result. The section of the paper that may be most useful to the reader is the content of Appendix A III (in particular Theorem A7, and perhaps Lemma A4); I think some of the content there should be moved to the main text. The original trick of eigenpath traversal by phase randomization (Boixo, Knill, Somma) is already under-used in the algorithms community, let alone the recent improvement by Cunningham and Roland. An adiabatic version of this result is almost certainly useful in other settings. Presumably some applications will be the subject of [52], but I feel that this paper will be more useful to the community if these results were explained and emphasized more in the main text.’
+
+\paragraph{Response.} We suggest a more concise version in Section \ref{sec:conciseAT} to insert in the main text and we leave the extended version to the work of [52]. 
+
+
+
+\section{Simplification of the Right bound}
+
+\textbf{ Case: $s_0=s^*$.} This simple case allows you to derive a nice bound on function $f$. Let's introduce $\hat{s}=\frac{2a A_2}{1+2a A_2} $, and with some manipulations we can write:
+
+\begin{align*}
+    f(s) &= \frac{\varepsilon s^2 (1-s)+4A_2\beta^2 (1-s)}{\varepsilon s^2 (1-s)+\beta s \frac{s-s^*}{1-s^*}-2A_2\beta^2  (1-s)} \\
+    &= \frac{\varepsilon s^2 (1-s) +4A_2a^2 \left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+\beta \left(s \frac{s-s^*}{1-s^*}-2A_2a\frac{s-s^*}{1-s^*}  (1-s)\right)} \\
+    &= \frac{\varepsilon s^2 (1-s)+4A_2 a^2\left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s^*}{1-s^*}\right)^2 \left(s -2A_2a (1-s)\right)} \\
+    &= \frac{\varepsilon s^2 (1-s)+2a\frac{\hat{s}}{1-\hat{s}}\left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s^*}{1-s^*}\right)^2 \frac{s-\hat{s}}{1-\hat{s}}} 
+\end{align*}
+With that it is easy to see that:
+\begin{align*}
+    f(s) \leq 1 &\Longleftrightarrow 2\hat{s}(1-s) \leq (s-\hat{s}) \\
+    &\Longleftrightarrow s \geq \frac{3\hat{s}}{1+2\hat{s}}=\Tilde{s}=\frac{6aA_2}{1+6aA2}
+\end{align*}
+By playing with $a$, we can make $\Tilde{s} \leq s^*$ if $A_1 \geq 6a A_2$. We can fix $a= \frac{A_1}{6A_2}$. So that the function $f$ is upper-bounded by 1 in the whole interval $[s^*,1]$. So our bound on the gap becomes:
+\begin{align}
+    g(s)\geq \frac{A_1}{6A_2}\frac{s-s^*}{1-s^*}
+\end{align}
+We check that at $s=s^*+\delta_s$ the gap is of order the minimum gap:
+$$g(s^*+\delta_s)\geq\frac{1}{6}g_{min}$$ 
+Similarly, at $s=1$, $g(1) \geq \frac{\Delta}{6}$.
+
+
+\section{Concise (less general?) version of the adiabatic error}
+\label{sec:conciseAT}
+
+\subsection{Derivation of the adiabatic theorem}
+
+We have for the evolution $is'\rho'=[H,\rho]$, where $s:[0,T] \mapsto [0,1]$ is the schedule such that $H(s)=(1-s)H_0+sH_1$. We introduce $P$ as the ground-state projector with energy $\lambda_0$, $Q=I-P$ and $R$ the Hermitian inverse of $H-\lambda_0$ over the support of $Q$.
+\begin{align*}
+    1-\mathrm{Tr}(P(1)\rho(1)) &= \mathrm{Tr}(P\rho)|_1^0 = \int_1^0 \mathrm{Tr}(P\rho)' ds= \int_1^0 \mathrm{Tr}(P'\rho) ds\\
+    &= \int_1^0 \mathrm{Tr}((P+Q)P'(P+Q)\rho) ds\\
+    &= \int_1^0 \mathrm{Tr}(PP'Q\rho) + \mathrm{Tr}(QP'P\rho),\text{ using } P'P+PP'=P' \Rightarrow PP'P=QP'Q=0 \\
+    &= \int_1^0 \mathrm{Tr}(PP'R(H-\lambda_0)\rho) + \mathrm{Tr}((H-\lambda_0)RP'P\rho),\text{ using } Q=(H-\lambda_0)R=R(H-\lambda_0) \\
+    &= \int_1^0 \mathrm{Tr}(PP'R[H,\rho]) - \mathrm{Tr}(RP'P[H,\rho]) \\
+    &= i\int_1^0 s'\left(\mathrm{Tr}(P'R\rho') - \mathrm{Tr}(RP'\rho') \right), \text{ using } PR=RP=0 \\
+    &= i\int_1^0 s'\mathrm{Tr}([P',R]\rho') \\
+    &= -i s'\mathrm{Tr}([P',R]\rho)|_1 + i\int_0^1 s''\mathrm{Tr}([P',R]\rho) +s'\mathrm{Tr}([P',R]'\rho), \text{ using } \rho(0)\propto P(0)
+\end{align*}
+
+
+We use the following inequalities (see Section \ref{ssec:combound}):
+\begin{align*}
+    \|[P',R]\| &\leq \frac{\|H'\|}{g^2} \\
+    \|[P',R]'\| &\leq 4.77\frac{\|H'\|^2}{g^3} + \frac{\|H''\|}{g^2}
+\end{align*}
+
+So
+
+\begin{align*}
+    \left|1-\mathrm{Tr}(P\rho) \right|  & \leq s'(1) \frac{\|H'(1)\|}{g^2(1)} + \int_0^1 s'' \frac{\|H'\|}{g^2} + s' \left(4.77\frac{\|H'\|^2}{g^3} + \frac{\|H''\|}{g^2} \right) ds
+\end{align*}
+
+\paragraph{ Case $s'=\frac{\varepsilon}{c}g_{min}^{2-p} \ g^p$} for any $1<p<2$ :
+
+\begin{align*}
+    |1-\mathrm{Tr}(P\rho)| &\leq \frac{\varepsilon}{c} g_{\text{min}}^{2-p}\left( \frac{\|H'(1)\|}{g(1)^{2-p}} + \int_0^1  p \|H'\|\frac{g'}{g^{3-p}} + 4.77\frac{\|H'\|^2}{g^{3-p}} + \frac{\|H''\|}{g^{2-p}}  ds\right) \\
+    &\leq \frac{\varepsilon}{c} g_{\text{min}}^{2-p}\left( \frac{\|H'(1)\|}{g(1)^{2-p}} + \frac{p}{2-p} \left(\frac{\|H'\|}{g(0)^{2-p}}-\frac{\|H'\|}{g(1)^{2-p}}\right) + 4.77\frac{\|H'\|^2B_1}{g_{\text{min}}^{2-p}} + \|H''\|B_2  \right) \\
+    &\leq \frac{\varepsilon}{c} \left(\frac{p}{2-p} \|H'\| \left(\frac{g_{\text{min}}}{g(0)} \right)^{2-p} + 4.77\|H'\|^2B_1 + \|H''\|B_2 \ g_{\text{min}}^{2-p}  \right) \\
+    &\leq \varepsilon
+\end{align*}
+where we choose $c=4.77\|H'\|^2B_1 + \frac{p}{2-p} \|H'\| \left(\frac{g_{\text{min}}}{g(0)} \right)^{2-p} +  \|H''\|B_2 \ g_{\text{min}}^{2-p}$, with the first term being the only one not exponentially small. Now, the total running time is derived as
+\begin{align*}
+    T=\int_0^1 \frac{1}{s'} \leq \frac{c}{\varepsilon}B_1 g_{\text{min}}^{-1} + \mathcal{O}(g_{\min}^{1-p} )
+\end{align*}
+
+So the leading term is $4.77\sup_s(\|H'\|^2)B_1^2 g_{\text{min}}^{-1}$ where $B_1 = \mathcal{O}\left( \frac{1}{\Delta(1+A_1)}\right)$ and $B_2 = \mathcal{O}\left( \frac{1}{\Delta A_1}\right)^{2-p}$ see Section \ref{ssec:b1b2}.
+Substituting the expression of $B_1$, $g_{\text{min}}$ and observing that $1/(1+A_1) = 1-s^* \leq 1$, we end up with \[T=\mathcal{O}\left( \frac{1}{\varepsilon} \cdot \|H'\|^2 \frac{\sqrt{A_2}}{A_1\Delta^2}\sqrt{\frac{2^n}{d_0}}\right) \leq \mathcal{O}\left( \frac{1}{\varepsilon} \cdot  \frac{\|H_1\|^3}{\Delta^3}\sqrt{\frac{2^n}{d_0}}\right)\]
+where we also used that $A_1\geq \Delta A_2$, $\frac{1}{\sqrt{A_2}}\leq E_{\text{max}}-E_0\leq 2\|H_1\|$ and $\|H'\| = \|H_1 +|u\rangle \langle u|\| = \|H_1\|+1$.
+
+\paragraph{Comparison with Quantum Amplitude Amplification.} The running time of this algorithm is given by 
+\[\mathcal{O}\left( \frac{1}{\text{initial overlap} } \cdot \text{complexity of the reflection about the ground-state}\right)\]
+where $\frac{1}{\text{initial overlap}}=\sqrt{\frac{2^n}{d_0}}$ and complexity of the reflection about the ground-state $ =\text{poly}(\|H_1\|,\frac{1}{\Delta})$.
+
+\subsection{Computing $\int g^{-q}$}
+\label{ssec:b1b2}
+\begin{equation}
+g(s)\geq 
+\begin{cases}
+b\dfrac{ A_1}{A_2}\left(\dfrac{s^*-s}{1-s^*}\right),& \qquad s\in \mathcal{I}_{s^{\leftarrow}}=\Big[0,~s^*-\delta_s\Big)\\~&~\\
+b\cdot g_{\min},& \qquad s\in\mathcal{I}_{s^{*}}=\Big[s^*-\delta_s,~ s^*\Big)\\~&~\\
+b\dfrac{ A_1}{A_2}\left(\dfrac{s-s^*}{1-s^*}\right),& \qquad s\in\mathcal{I}_{s^{\rightarrow}}=\Big[s^*,~ 1\Big]
+\end{cases}
+\end{equation}
+\paragraph{Case $q>1$.} 
+
+Thus, the integration of $g(s)^{-q}$ proceeds by parts as follows:
+
+\begin{align}
+    \int_0^1 g(s)^{-q} ds&\leq\int_0^{s^*-\delta_s} g(s)^{-q} ds + \int_{s^*-\delta_s}^{s^*} g(s)^{-q} ds + \int_{s^*}^1 g^{-q} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{b\cdot A_1}(1-s^*)\right]^q\int_0^{s^*-\delta_s} \frac{1}{(s^*-s)^q} ds + \dfrac{1}{b^q}\int_{s^*-\delta_s}^{s^*} g_{\min}^{-q} ds + \left[ \frac{30}{\Delta}(1-s_0)\right]^q\int_{s^*}^1 \frac{1}{(s-s_0)^q} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{b\cdot A_1}(1-s^*)\right]^q\int_{\delta_s}^{s^*} \frac{1}{u^q} du + \delta_s~b^{-q}~g_{\min}^{-q} + \left[ \frac{30}{\Delta}(1-s_0)\right]^q\int_{s^*-s_0}^{1-s_0} \frac{1}{u^q} du \nonumber \\
+    &\leq\left[ \frac{A_2}{b\cdot A_1(1+A_1)}\right]^q \frac{1}{(q-1)~\delta_s^{q-1}}  + \delta_s~b^{-q}~g_{\min}^{-q} + \left[ \frac{30}{\Delta}(1-s_0)\right]^q \frac{1}{(q-1)(s^*-s_0)^{q-1}} \nonumber \\
+    &\leq \frac{1}{b^q}\cdot\frac{1}{q-1}\cdot\frac{A_2}{A_1(1+A_1)} \cdot g_{\min}^{1-q}  + \frac{1}{b^q}\cdot\frac{A_2}{A_1(1+A_1)}\cdot g_{\min}^{1-q} + \frac{1}{q-1} \left( \frac{30}{\Delta}\right)^q \left( \frac{a}{k}\right)^{q-1} (1-s_0)~g_{\min}^{1-q} \nonumber \\
+    &\leq \frac{q\times 10^q}{q-1}\cdot\frac{A_2}{A_1(1+A_1)} \cdot g_{\min}^{1-q}  + \frac{1}{q-1} \left( \frac{30}{\Delta}\right)^q \left( \frac{\Delta}{3}\right)^{q-1} \frac{1}{1+A_1}\cdot g_{\min}^{1-q} \nonumber \\
+    &\leq g_{\min}^{1-q}\frac{1}{(q-1)(1+A_1)}  \left( \frac{q\times 10^q\times A_2}{A_1}+\frac{3\times 10^q}{\Delta}\right) \nonumber \\
+    &\leq g_{\min}^{1-q} \frac{1}{(1+A_1)\Delta}\cdot \frac{(q+3)\times 10^q }{q-1}  = g_{\min}^{1-q} B_1
+\end{align}
+
+\paragraph{Case $0<q<1$.} 
+
+Thus, the integration of $g(s)^{-p}$ proceeds by parts as follows:
+
+\begin{align}
+    \int_0^1 g(s)^{-q} ds&\leq\int_0^{s^*-\delta_s} g(s)^{-q} ds + \int_{s^*-\delta_s}^{s^*} g(s)^{-q} ds + \int_{s^*}^1 g^{-q} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{b\cdot A_1}(1-s^*)\right]^q\int_0^{s^*-\delta_s} \frac{1}{(s^*-s)^q} ds + \dfrac{1}{b^q}\int_{s^*-\delta_s}^{s^*} g_{\min}^{-q} ds + \left[ \frac{30}{\Delta}(1-s_0)\right]^q\int_{s^*}^1 \frac{1}{(s-s_0)^q} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{b\cdot A_1}(1-s^*)\right]^q\int_{\delta_s}^{s^*} \frac{1}{u^q} du + \delta_s~b^{-q}~g_{\min}^{-q} + \left[ \frac{30}{\Delta}(1-s_0)\right]^q\int_{s^*-s_0}^{1-s_0} \frac{1}{u^q} du \nonumber \\
+    &\leq\left[ \frac{1}{b\cdot \Delta}(1-s^*)\right]^q \left(\int_{\delta_s}^{s^*} \frac{1}{u^q} du + \int_{s^*-s_0}^{1-s_0} \frac{1}{u^q} du\right)+ \delta_s~b^{-q}~g_{\min}^{-q} \nonumber \\
+    &=\left[ \frac{1}{b\cdot \Delta(1+A_1)}\right]^q \frac{1}{1-q}\left( {s^*}^{1-q} +(1-s_0)^{1-q}-~\delta_s^{1-q} - (s^*-s_0)^{1-q}\right)  + \delta_s~b^{-q}~g_{\min}^{-q}  \nonumber \\
+    &\leq \left[ \frac{1}{b\cdot \Delta(1+A_1)}\right]^q \frac{1}{1-q}\left( {s^*}^{1-q} +(1-s_0)^{1-q}\right)\nonumber \\
+    &\leq \frac{2s^*}{1-q} \left[ \frac{1}{b\cdot \Delta A_1}\right]^q = B_2
+\end{align}
+
+\subsection{Bounds on commutator operators}
+\label{ssec:combound}
+
+\begin{lemma}
+    If $M=\left( \begin{array}{cc}
+        A & 0 \\
+        B & 0
+    \end{array}\right)$, then $\|M\|\leq \sqrt{\|A\|^2+\|B\|^2}$
+\end{lemma}
+\begin{proof}
+    By definition, $\|M\|=\sqrt{\lambda_{\max}(M^\dagger M)}$ and $M^\dagger M=\left( \begin{array}{cc}
+        A^\dagger A+B^\dagger B & 0 \\
+        0 & 0
+    \end{array}\right)$
+\end{proof}
+
+\begin{lemma}
+    For hermitian $M=\left( \begin{array}{cc}
+        A & B \\
+        B^\dagger & 0
+    \end{array}\right)$, $\|M\|\leq \frac{\|A\|}{2}+\sqrt{\frac{\|A\|^2}{4}+\|B\|^2}$
+\end{lemma}
+\begin{proof}
+    For hermitian matrix, $\|M\|=\lambda_{\max}(M)$. Let $\left(\begin{array}{c}
+        X \\
+        Y
+    \end{array}\right)$ be an eigenvector of $M$ with eigenvalue $\lambda$. The eigenrelation gives:
+    \begin{align*}
+        \left \{ \begin{array}{cc}
+            AX+BY&=\lambda X  \\
+             B^\dagger X&=\lambda Y 
+        \end{array} \right. \Rightarrow (\lambda A + BB^\dagger)X=\lambda^2 X
+    \end{align*}
+    So $(\lambda^2,X)$ is an eigenpair of the matrix $\lambda A + BB^\dagger$. So $\lambda^2$ is bounded by the spectral norm of this latter matrix. Then $\lambda$ should satisfy this inequality:
+    \begin{align*}
+        \lambda^2 \leq \lambda \|A\| +\|B\|^2
+    \end{align*}
+\end{proof}
+
+If $P$ is an eigenprojector of $H$. We use that $R'=-R(H'-\lambda_0')R-P'R-RP'$. We start with the decomposition $[P',R]'=[P'',R] + [P',R']$ and we develop each term:
+\begin{align*}
+    [P',R'] &= P'R'-R'P' \\
+    &= P'PR'+PP'R'-R'P'P-R'PP' \hspace{5cm} \mathllap{(P^2=P)}\\
+    &= -P'^2R' +PP'R'-R'P'P+RP'^2  \hspace{5.1cm} \mathllap{(PR=RP=0)}\\
+    \text{ }\\
+    [P'',R]&=P''R-RP'' \\
+    &= 2P'^2R+PP''R-RP''P-2RP'^2 
+\end{align*}
+Using $P'P=QP'=-RH'P$ (from the eigenrelation), summing the above two terms give:
+\begin{align*}
+    [P',R]'&=[P'',R] + [P',R'] \\
+    &=P'^2R-RP'^2+PP''R-RP''P+\underbrace{PP'R'-R'P'P}_{=R(H'RP'-RP'PH')P-P(P'RH'-H'PP'R)R} \\
+    &= R[H'PH',R]R+ R(H'RP'-RP'PH'-P'')P + P(P''+H'PP'R-P'RH')R \\
+    &= R[H'PH',R]R- R(H'RRH'-R^2H'PH'+P'')P + P(P''-H'PH'R^2+H'RRH')R 
+\end{align*}
+This gives the block encoding of $[P',R]'=\left(\begin{array}{cc}
+    0 & B \\
+    -B^\dagger & A
+\end{array}\right)$ with the blocks being $B=P(P''-H'PH'RR+H'RRH')R$ and $A=R[H'PH',R]R$.
+Deriving a second time the eigenrelation gives:
+\begin{align*}
+    RH''P+2RH'P'P+2RRH'PH'P+QP''P&=0 \\
+    \Rightarrow RH''P- 2RH'RH'P+2RRH'PH'P+QP''P&=0 \\
+    \Rightarrow R(RH''+2R(RH'P-H'RQ)H'+P'')P&=0 \\ & \\
+    \Rightarrow - B^\dagger=R^2H''P+R(3R^2H'P-2RH'R-H'R^2&)H'P
+\end{align*}
+Finally we use the initial lemmas to derive the norm of $B$ with the fact that $\|3R^2H'P-2RH'R-QH'R^2\|^2=\|3R^2H'P\|^2+\|2RH'R+QH'R^2\|^2=2*3^2(\|H'\|\|R\|^2)^2$
+\begin{align*}
+    \|[P',R]'\| &\leq \|R\|^2\|H''\|+(\frac{1}{2}+\sqrt{\frac{1}{4}+2*3^2})\|R\|^3\|H'\|^2 \\
+    &\leq \frac{\|H''\|}{g^2} + 4.77\frac{\|H'\|^2}{g^3} 
+\end{align*}
+
+\paragraph{For $\|[P',R]\|$,} observe that $[P',R]$ is an off diagonal operator and 
+\[[P',R]=P'R-RP'=PP'R-RP'P=R^2H'P-PH'R^2\]
+
+
+\section{Hardness of $A_1$ with MaxCut}
+\label{sec:hardMC}
+
+\paragraph{Solving decision problem MaxCut. } Let $G(V,E)$ be a non-bipartite graph with $|V|=n$ nodes and $|E|$ edges. Given an integer $k$, is there a cut of size least $k$ in $G$? 
+Let $H=|E| \cdot \mathbf{1}-\sum_{(i,j)\in E}\frac{1-\sigma_z^(i)\sigma_z(j)}{2} $, so that the largest eigenvalue $E_m=|E|$ and the smallest $E_0\geq 1$. The decision problem is equivalent to distinguish between \textit{case 1}: $E_0 \geq  |E|- k +1$ and \textit{case 2}: $E_0\leq |E| -k$.
+Suppose we have an algorithm $\mathcal{C}$ that can compute in polynomial time $A_1(H)$ with precision $\varepsilon$, then we can answer the question in polynomial time. 
+
+
+We introduce $H'=H - x\frac{1-\sigma_z^{(1)}\sigma_z^{(n+1)}}{2}$. In other terms, finding the groundstate of $H'$ is equivalent to find the MaxCut of $G'$ obtained from $G$ by adding a node labeled $n+1$ and an edge between node 1 and node $n+1$ of weight $x>0$. Observe that $H'$ has $2^{n+1}$ eigenvalues of value $E_k$ and $E_k-x$, each of degeneracy $d_k$. Indeed, for any cut in $G$ of energy $E_k$, the same cut in $G'$ plus the position of the added edge (cut or uncut) affects by exactly x the energy if it's cut and by 0 if it's uncut. Now we compare $A_1(H)$ with $A_1(H')$:
+\begin{align*}
+2A_1(H') &= \frac{1}{2^n}\sum_{k\neq 0} \frac{d_k'}{E_k'-E_0'} \\
+&= \frac{1}{2^n}\left (\sum_{k\neq 0} \frac{d_k}{E_k-E_0} + \sum_{k\geq 0} \frac{d_k}{E_k-E_0+x} \right)\\
+&= A_1(H) +\underbrace{\frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-E_0+x}}_{=K} \\
+\end{align*}
+Now we study $K$ in the two different cases knowing that $E_m=|E|$ with $x=|E|-k$:
+
+\textit{Case 1. }$E_0 \geq |E|-k+1=x+1$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \geq \frac{1}{E_{k'}-1} = \frac{1}{E_{k'}} + \frac{1}{E_{k'}(E_{k'}-1)} \geq \frac{1}{E_{k'}} + \frac{1}{|E|(|E|-1)}
+\end{align}
+Therefore:
+\begin{align}
+    K \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-1} \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} + \frac{1}{|E|(|E|-1)} = 2A_1(H \otimes |1\rangle \langle 1|) + \frac{1}{|E|(|E|-1)}= K_1 
+\end{align}
+
+\textit{Case 2. }$E_0 \leq |E| -k=x$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \leq \frac{1}{E_{k'}} 
+\end{align}
+Therefore:
+\begin{align}
+    K \leq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} =2A_1(H \otimes |1\rangle \langle 1|) = K_2 
+\end{align}
+The two cases can be distinguish by 3 calls to algorithm $\mathcal{C}$ if 
+\begin{align}
+    K_1-5\varepsilon > K_2 +5\varepsilon
+\end{align}
+which means that 
+\begin{align}
+    10\varepsilon < K_1-K_2 = \frac{1}{|E|(|E|-1)}
+\end{align}
+Recall for any graph with $n$ nodes, $|E|\leq \frac{n(n-1)}{2}$, so 
+\begin{align}
+    \varepsilon<\frac{2}{5}\frac{1}{n^4}
+\end{align}
+
+\end{document}

@@ -1,0 +1,284 @@
+\section{Quantum Input Models}
+\label{sec:quantum-input-models}
+
+The complexities of quantum algorithms often depend on how the input data is accessed. For instance, in quantum algorithms for linear algebra (involving matrix operations), it is often assumed that there exists a black-box that returns the positions of the non-zero entries of the underlying matrix when queried. The algorithmic running time is expressed in terms of the number of queries made to this black-box. Such an input model, known as the \textit{Sparse Access Model}, helps design efficient quantum algorithms whenever the underlying matrices are sparse. Various other input models exist, and quantum algorithms are typically designed and optimized for specific input models.
+
+Kerenidis and Prakash \cite{kerenidis2016quantum} introduced a different input model, known as the \textit{quantum data structure model}, which is more conducive for designing quantum machine learning algorithms. In this model, the input data (e.g: entries of matrices) arrive online and are stored in a classical data structure (often referred to as the KP-tree in the literature), which can be queried in superposition by using a QRAM. This facilitates efficiently preparing quantum states corresponding to the rows of the underlying matrix, that can then be used for performing several matrix operations. 
+
+Subsequently, several quantum-inspired classical algorithms have also been developed following the breakthrough result of Tang~\cite{tang_reco_19}. Such classical algorithms have the same underlying assumptions as the quantum algorithms designed in the data structure input model and are only polynomially slower provided the underlying matrix is low rank.
+
+In this work, we will consider the framework of \textit{block-encoding}, wherein it is assumed that the input matrix $A$ (up to some sub-normalization) is stored in the left block of some unitary. The advantage of the block-encoding framework, which was introduced in a series of works \cite{LC16, LC16b, CGJ19, GSLW2019}, is that it can be applied to a wide variety of input models. For instance, it can be shown that both the sparse access input model as well as the quantum data structure input model are specific instances of block-encoded matrices \cite{CGJ19, GSLW2019}. Here we formally define the framework of block-encoding and also express the sparse access model as well as the quantum data structure model as block-encodings. We refer the reader to \cite{CGJ19, GSLW2019} for proofs.  
+
+
+
+\subsection{Unitary Block Encoding of Matrices}
+\label{ssec:block_encoding_input_model}
+
+\begin{definition}[Block Encoding, restated from \cite{GSLW2019}]
+    \label{def:block_encoding}
+Suppose that $A$ is an $s$-qubit operator, $\alpha, \varepsilon \in \mathbb{R}^+$ and $a \in \nn $, then we say that the $(s + a)$-qubit unitary $U_A$ is an $(\alpha, a, \varepsilon)$-block-encoding of $A$, if
+
+\begin{equation}
+ \norm{ A - \alpha (\bra{0}^{\otimes a} \otimes I)U_A(\ket{0}^{\otimes a} \otimes I) } \leq \varepsilon .
+\end{equation}
+
+\end{definition}
+Let $\ket{\psi}$ be an $s$-qubit quantum state. Then applying $U_A$ to $\ket{\psi}\ket{0}^{\otimes a}$ outputs a quantum state that is $\frac{\varepsilon}{\alpha}$-close to 
+$$
+\dfrac{A}{\alpha}\ket{\psi}\ket{0}^{\otimes a}+\ket{\Phi^{\perp}},
+$$
+where $\left(I_s\otimes \ket{0}^{\otimes a}\bra{0}^{\otimes a}\right)\ket{\Phi^{\perp}}=0$. Equivalently, suppose $\tilde{A} := \alpha\paren{\bra{0}^{\otimes a} \otimes I_s} U_A \paren{\ket{0}^{\otimes a} \otimes I_s}$ denotes the actual matrix that is block-encoded into $U_A$, then $\norm{A-\tilde{A}}\leq\varepsilon$. 
+
+In the subsequent sections, we provide an outline of the quantum data structure model and the sparse access model which are particular instances of the block encoding framework.
+
+Note that a unitary matrix is a (1, 0, 0)-block-encoding of itself.
+
+\begin{definition}[Optimal block-encoding of a matrix]
+    \label{def:block_encoding_optimal}
+Given a matrix $A \in \mathbb{C}^{2^s \times 2^s}$
+and a real number $\alpha \ge \norm{A}$, 
+we can construct a $(\alpha, 1, 0)$-block-encoding of $A$:
+
+\begin{equation}
+  U_A = \begin{pmatrix}
+    \frac{A}{\alpha} & \sqrt{I - \frac{AA^\dagger}{\alpha^2}} \\
+    \sqrt{I - \frac{A^\dagger A}{\alpha^2}} & \frac{A^\dagger}{\alpha}
+  \end{pmatrix}
+\end{equation}
+\end{definition}
+
+
+
+\subsection{QROM Input Model}
+\label{ssec:qrom_input_model}
+
+Kerenidis and Prakash introduced a quantum accessible classical data structure which has proven to be quite useful for designing several quantum algorithms for linear algebra \cite{kerenidis2016quantum}. The classical data structure stores entries of matrices or vectors and can be queried in superposition using a QRAM (quantum random access memory). We directly state the following theorem from therein.
+
+\begin{theorem}[Implementing quantum operators using an efficient data structure, \cite{prakash2014quantum, kerenidis2016quantum}]
+    \label{thm:qrom_data_structure}
+    Let $ A \in \rr^{N \times d} $, and $ w $ be the number of non-zero entries of $A $.
+    Then there exists a data structure of size $ \order{ w \log^2\left( dN \right)} $ that given the matrix elements $ ( i, j, a_{ij} ) $, stores them at a cost of $ \order {\logp{dN}} $ operations per element.
+    Once all the non-zero entries of $A$ have been stored in the data structure, there exist quantum algorithms that are $ \varepsilon $-approximations to the following maps:
+    \begin{equation*}
+        U : \ket{i}\ket{0} \mapsto \frac{1}{\norm{A_{i, \cdot}}} \sum_{j=1}^{d}a_{i, j} \ket{i,j} = \ket{\psi_i},
+    \end{equation*}
+    \begin{equation*}
+        V : \ket{0}\ket{j} \mapsto \frac{1}{\norm{A}_F} \sum_{i=1}^{N} \norm{A_i,.} \ket{i,j}=\ket{\phi_j}
+    \end{equation*}
+    where $\norm{A_{i, \cdot}}$ is the norm of the $i^{\mathrm{th}}$ row of $A$ and the second register of $\ket{\psi_i}$ is the quantum state corresponding to the $i^{\mathrm{th}}$ row of $A$. These operations can be applied at a cost of $ \order{ \mathrm{polylog}(Nd / \varepsilon) } $.
+\end{theorem}
+
+It was identified in Ref.~\cite{CGJ19} that if a matrix $A$ is stored in this quantum accessible data structure, there exists an efficiently implementable block-encoding of $A$. We restate their result here.
+\begin{lemma}[Implementing block encodings from quantum data structures,~\cite{CGJ19}]
+    \label{lem:qrom_be_constr}
+     Let the entries of the matrix $ A \in \mathbb{R}^{N\times d}$ be stored in a quantum accessible data structure, then there exist unitaries $  U_R, U_L $ that can be implemented at a cost of $ \order{ \mathrm{polylog}(dN / \varepsilon) } $ such that $ U_R^{\dagger} U_L $ is a $ ( \norm{A}_F, \lceil \logp{d + N} \rceil, \varepsilon ) $-block-encoding of $ A $.
+\end{lemma}
+\begin{proof}
+The unitaries $U_R$ and $U_L$ can be implemented via $U$ and $V$ in the previous lemma. Let $U_R=U$ and $U_L=V.\texttt{SWAP}$. Then for $s=\lceil\log (d + N) \rceil$ we have
+$$
+U_R:~\ket{i}\ket{0^s}\rightarrow \ket{\psi_i}, 
+$$
+and 
+$$
+U_L:~\ket{j}\ket{0^s}\rightarrow \ket{\phi_j},
+$$
+So we have that the top left block of $U^{\dag}_R U_L$ if given by 
+$$
+ \sum_{i=1}^{N}\sum_{j=1}^{d}\braket{\psi_i|\phi_j}\ket{i,0}\bra{j,0}
+$$
+Now
+\begin{align*}
+\braket{\psi_i|\phi_j}&=\sum_{k=1}^d\sum_{\ell=1}^{N} \dfrac{a_{ik}}{\norm{A_{i, \cdot}}}\cdot\dfrac{\norm{A_\ell}}{\norm{A}_F}\underbrace{\braket{i,k|l,j}}_{:=\delta_{i,l}.\delta_{k,j}}\\
+                      &=\dfrac{a_{ij}}{\norm{A}_F}.                      
+\end{align*}
+Moreover since only $\varepsilon$-approximations of $U$ and $V$ can be implemented we have that $U^{\dag}_R U_L$ is a $(\norm{A}_F,\lceil \log(n+d)\rceil,\varepsilon)$ block encoding of $A$ implementable with the same cost as $U$ and $V$.
+\end{proof}
+
+In Ref.~\cite{KP2020_iterative_quantum_gradient} argued that in certain scenarios, storing the entries of $ A^{(p)}, (A^{1-p})^{\dagger} $ might be useful as compared to storing $A$, for some $ p \in [0, 1]$. In such cases, the quantum data structure is a $(\mu_p, \lceil\log(N+d)\rceil,\varepsilon)$ block encoding of $A$, where $\mu_p(A)=\sqrt{s_{2p}(A).s_{2(1-p)}(A^T)}$ such that $s_p(A) := \max_{j} \norm{A_{j, \cdot}}_q^q$. Throughout the work, whenever our results are expressed in the quantum data structure input model, we shall state our complexity in terms of $\mu_A$. When the entries of $A$ are directly stored in the data structure, $\mu_A=\norm{A}_F$. Although, we will not state it explicitly each time, our results also hold when fractional powers of $A$ are stored in the database and simply substituting $\mu_A=\mu_p(A)$, yields the required complexity.
+
+
+\subsection{Sparse Access Input Model}
+\label{ssec:sparse_input_model}
+
+The sparse access input model considers that the input matrix $ A \in \rr^{N \times d} $ has row sparsity $ s_r $ and column sparsity $ s_c $. Furthermore, it assumes that the entries of $A$ can be queried via an oracle as
+
+\begin{equation*}
+    O_A : \ket{i} \ket{j} \ket{0}^{\otimes b} \mapsto \ket{i} \ket{j} \ket{a_{ij}} \quad \forall i \in [N], j \in [d],
+\end{equation*}
+
+and the indices of the non-zero elements of each row and column can be queried via the following oracles:
+
+\begin{align*}
+    &O_r : \ket{i} \ket{j} \mapsto \ket{i} \ket{r_{ij}} \quad \forall i \in [N], k \in [s_r],\\
+    &O_c : \ket{i} \ket{j} \mapsto \ket{c_{ij}} \ket{j} \quad \forall i \in [d], k \in [s_c]
+\end{align*}
+where $ r_{ij} $ is the $ j^{\mathrm{th}} $ non-zero entry of the $ i^{\mathrm{th}} $ row of $ A $ and $c_{ij}$ is the $i^{\mathrm{th}}$ non-zero entry of the $j^{\mathrm{th}}$ column of $A$. Gily\'{e}n et al.~\cite{GSLW2019} showed that a block encoding of a sparse $ A $ can be efficiently prepared by using these three oracles. We restate their lemma below.
+
+\begin{lemma}[Constructing a block-encoding from sparse-access to matrices, \cite{GSLW2019}]
+    \label{lem:sparse_access_be_constr}
+    Let $ A \in \rr^{N \times d} $ be an $ s_r, s_c $ row, column sparse matrix given as a sparse access input. Then for all $ \varepsilon \in (0, 1) $, we can implement a $ (\sqrt{s_c s_r}, \mathrm{polylog}(Nd / \varepsilon), \varepsilon) $-block-encoding of $ A $ with $ \order{ 1 } $ queries to $O_r, O_c, O_A$ and $ \mathrm{polylog}( Nd / \varepsilon ) $ elementary quantum gates.
+\end{lemma}
+
+Throughout the paper, we shall assume input matrices are accessible via approximate block-encodings. This also allows us to write down the complexities of our quantum algorithms in this general framework. Additionally, we state the complexities in both the sparse access input model as well as the quantum accessible data structure input model as particular cases. 
+
+
+
+
+
+
+
+
+\section{Quantum Singular Value Transformation}
+\label{sec:qsvt}
+
+In a seminal work, \citet{GSLW2019} presented a framework to apply an arbitrary polynomial function to the singular values of a matrix, known as Quantum Singular Value Transformation (QSVT) \cite{GSLW2019}. QSVT is quite general: many quantum algorithms can be recast to this framework, and for several problems, better quantum algorithms can be obtained \cite{GSLW2019, Grand_Uni_2021}. In particular, QSVT has been extremely useful in obtaining optimal quantum algorithms for linear algebra. For instance, using QSVT, given the block-encoding of a matrix $A$, one could obtain $A^{-c}$ with $c\in [0,\infty)$ with optimal complexity and by using fewer additional qubits than prior art. This section briefly describes this framework, which is a generalization of Quantum Signal Processing (QSP) \cite{LC16, LC16b, LYC16}. 
+The reader may refer to \cite{Grand_Uni_2021} for a more pedagogical overview of these techniques.
+
+
+\subsection{Qubitization}
+\label{ssec:qubitization}
+
+
+\subsection{Quantum Signal Processing}
+\label{ssec:qsp}
+
+QSP is a quantum algorithm to apply a $ d $-degree bounded polynomial transformation with parity $ d \mod 2 $ to an arbitrary quantum subsystem, using a quantum circuit $ U_{\Phi} $ consisting of only controlled single qubit rotations. This is achieved by interleaving a \textit{signal rotation operator} $W$ (which is an $x$-rotation by some fixed angle $ \theta $) and a \textit{signal processing operator} $ S_{\phi} $ (which is a $z$-rotation by a variable angle $ \phi \in [0, 2 \pi] $). In this formulation, the signal rotation operator is defined as
+
+\begin{equation}
+    \label{eqn:signal_rotation_operator}
+    W(x) := \begin{pmatrix}
+        x & i \sqrt{1 - x^2} \\
+        i \sqrt{1 - x^2} & x
+    \end{pmatrix},
+\end{equation}
+
+which is an $x$-rotation by angle $ \theta = -2 \arccos(x) $, and the signal processing operator is defined as
+
+\begin{equation}
+    \label{eqn:signal_processing_operator}
+    S_{\phi} := e^{i \phi Z},
+\end{equation}
+
+which is a $z$-rotation by an angle $ - 2 \phi $. Interestingly, sandwiching them together for some $ \Phi := ( \phi_0, \phi_1, \ldots \phi_d ) \in \rr^{d + 1}$, as shown in \autoref{eqn:qsp_matrix}, gives us a matrix whose elements are polynomial transformations of $ x $,
+
+\begin{align}
+    \label{eqn:qsp_matrix}
+    U_{\Phi} &:= e^{i \phi_0 Z} \prod_{j = 1}^{j= d} \paren{  W(x) e^{ i \phi_j Z } } \\
+             &= \begin{pmatrix}
+        P(x) & i Q(x) \sqrt{1 - x^2} \\
+        i Q^*(x) \sqrt{1 - x^2} & P^*(x)
+    \end{pmatrix},
+\end{align}
+
+such that
+
+\begin{enumerate}
+    \item $ \deg P \leq d;\ \deg Q \leq d - 1 $,
+    \item $ P(x) $ has a parity $d \mod 2 $,
+    \item $ | P(x) |^2 + (1 - x^2) | Q(x) |^2 = 1 \quad \forall x \in [-1, 1] $.
+\end{enumerate}
+
+Following the application of the quantum circuit $ U_{\Phi} $ for an appropriate $ \Phi $, one can project into the top left block of $ U_{\Phi} $ to recover the polynomial $ \bra{0} U_{\Phi} \ket{0} = P(x) $. Projecting to other basis allows the ability to perform more interesting polynomial transformations, which can be linear combinations of $ P(x), Q(x) $, and their complex conjugates. For example, projecting to $ \{ \ket{+}, \ket{-} \} $ basis gives us
+
+
+\begin{equation}
+    \label{eqn:qsp_hadamard_basis}
+    \bra{+} U_{\Phi} \ket{+} = \real (P(x)) + i \real (Q(x)) \sqrt{1 - x^2} .
+\end{equation}
+
+
+\subsection{Quantum Eigenvalue Transformation}
+\label{ssec:qevt}
+
+\subsection{Quantum Singular Value Transformation}
+\label{ssec:qsvt}
+
+This procedure can be naturally generalized to apply a similar polynomial transformation to each singular value of an arbitrary block of a unitary matrix. Suppose we have access to a matrix $ A $, which is block encoded into some unitary $ U_A $, and can be accessed by projectors $ \Pi, \widetilde{\Pi} $ as $ A := \widetilde{\Pi} U_A \Pi $. The singular value decomposition of $ A $ is given as
+
+\begin{equation}
+    \label{eqn:svd}
+    A := W \Sigma V^{\dagger} = \sum_j \sigma_j \ket{v_j} \bra{w_j},
+\end{equation}
+
+where $ W, V $ are unitary matrices, $ \Sigma $ is a diagonal matrix whose $j^{th}$ diagonal entry is $ \sigma_j $ (the singular values of $ A $), and $ \ket{v_j}, \ket{w_j} $ are the corresponding left and right singular vectors respectively.
+
+Then one can interleave $ U_A $ and $ U_A^{\dagger} $ with a \textit{projector controlled phase shift} operator, $ \Pi_{\phi} := e^{i \phi ( 2 \Pi - I )}, \widetilde{\Pi}_{\phi} := e^{i \phi ( 2 \widetilde{\Pi} - I )} $, for a parameter $ \phi $. For a given phase angle sequence $ \Phi \in \rr^{d} $, the QSVT sequence is given as
+
+
+\begin{equation}
+    \label{eqn:qsvt_sequence}
+    U_{\Phi} = \begin{cases}
+        \widetilde{\Pi}_{\phi_1} U_A \left[ \prod_{k = 1}^{(d - 1) / 2} \Pi_{\phi_{2k}} U_A^{\dagger} \widetilde{\Pi}_{\phi_{2 k + 1}} U_A \right] & d \text{ is odd } \\
+        \left[ \prod_{k = 1}^{d/ 2} \Pi_{\phi_{2k - 1}} U_A^{\dagger} \widetilde{\Pi}_{\phi_{2 k}} U_A \right] & d \text{ is even},
+    \end{cases}
+\end{equation}
+
+
+where $ \phi_i $ is the $i^{th}$ element of $ \Phi $. Now projecting to $ \Pi, \widetilde{\Pi} $ gives us the polynomial transformation of $ A $ as
+
+
+\begin{equation}
+    \label{eqn:qsvt_sequence_projected}
+    P^{SV} (A) = \begin{cases}
+        \widetilde{\Pi} U_{\Phi} \Pi & d \text{ is odd} \\
+        \Pi U_{\Phi} \Pi & d \text{ is even},
+    \end{cases}
+\end{equation}
+
+where $ P^{SV} (A) $ is the polynomial transformation of the matrix $ A $ defined as
+
+
+\begin{equation}
+    \label{eqn:poly_sv_transformation_of_matrix}
+    P^{SV} (A) := \begin{cases}
+        \sum_j P(\sigma_j) \ket{w_j} \bra{v_j} & P \text{ is odd} \\
+        \sum_j P(\sigma_j) \ket{v_j} \bra{v_j} & P \text{ is even},
+    \end{cases}
+\end{equation}
+
+This gives us an extremely powerful primitive to design novel quantum algorithms. In this work we use QSVT for matrix inversion and square root decomposition of a matrix.
+
+
+
+\section{Variable Time Amplitude Amplification}
+\label{sec:vtaa}
+
+
+Ambainis \cite{ambainis2010variable} defined the notion of a \textit{variable-stopping-time quantum algorithm} and formulated the technique of \textit{Variable Time Amplitude Amplification} (VTAA), a tool that can be used to amplify the success probability of a variable-stopping-time quantum algorithm to a constant by taking advantage of the fact that computation on some parts of an algorithm can complete earlier than on other parts. The key idea here is to look at a quantum algorithm $\mathcal{A}$ acting on a state $\ket{\psi}$ as a combination of $m$ quantum sub-algorithms $\mathcal{A} = \mathcal{A}_m \cdot \mathcal{A}_{m-1} \cdot \ldots \mathcal{A}_1$, each acting on $\ket{\psi}$ conditioned on some ancilla flag being set. Formally, a variable stopping time algorithm is defined as follows
+
+\begin{definition}[Variable-stopping-time Algorithm, \cite{ambainis2010variable}]
+    A quantum algorithm $\mathcal{A}$ acting on $\mathcal{H}$ that can be written as $m$ quantum sub-algorithms, $\mathcal{A} = \mathcal{A}_m \cdot \mathcal{A}_{m-1} \cdot \ldots \mathcal{A}_1$ is called a variable stopping time algorithm if $\mathcal{H} = \mathcal{H}_C \otimes \mathcal{H}_{\mathcal{A}}$, where $\mathcal{H}_C = \otimes_{i=1}^{m} \mathcal{H}_{C_i}$ with $\mathcal{H}_{C_i} = \mathrm{span}(\ket{0}, \ket{1})$, and each unitary $\mathcal{A}_j$ acts on $\mathcal{H}_{C_j} \otimes \mathcal{H}_{\mathcal{A}}$ controlled on the first $j-1$ qubits $\ket{0}^{\otimes j  -1} \in \otimes_{i=1}^{j-1} \mathcal{H}_{C_i}$ being in the all zero state.
+\end{definition}
+
+Here $\mathcal{H}_{C_i}$ is a single qubit clock register. In VTAA, $\mathcal{H}_\mathcal{A}$ has a flag space consisting of a single qubit to indicate success, $\mathcal{H}_\mathcal{A} = \mathcal{H}_F \otimes \mathcal{H}_W$. Here $\mathcal{H}_F = \mathrm{Span}(\ket{g}, \ket{b})$ flags the good and bad parts of the run. Furthermore, for $1\leq i\leq m$, define the stopping times $t_i$ such that $t_1 < t_2 < \cdots t_m=T_{\max}$, such that the algorithm $\mathcal{A}_j\mathcal{A}_{j-1}\cdots \mathcal{A}_1$ having (gate/query) complexity $t_i$ halts with probability
+\begin{equation*}
+\label{eq:stopping-prob}
+p_j=\norm{\Pi_{C_j}\mathcal{A}_j\mathcal{A}_{j-1}\cdots \mathcal{A}_1\ket{0}_{\mathcal{H}}}^2,
+\end{equation*}
+where $\ket{0}_{\mathcal{H}}\in\mathcal{H}$ is the all zero quantum state and $\Pi_{C_j}$ is the projector onto $\ket{1}$ in $\mathcal{H}_{C_j}$. From this one can define the average stopping time of the algorithm $\mathcal{A}$ defined as
+\begin{equation*}
+\label{eq:avg-prob}
+\norm{T}_2=\sqrt{\sum_{j=1}^{m}p_j t^2_j}.
+\end{equation*}
+For a variable stopping time algorithm if the average stopping time $\norm{T}_2$ is less than the maximum stopping time $T_{\max}$, VTAA can amplify the success probability $(p_{\mathrm{succ}})$ much faster than standard amplitude amplification. In this framework, the success probability of $\mathcal{A}$ is given by
+\begin{equation*}
+\label{successprob-vtaa}
+p_{\mathrm{succ}}=\norm{\Pi_F \mathcal{A}_m\mathcal{A}_{m-1}\cdots \mathcal{A}_1\ket{0}_{\mathcal{H}}}^2
+\end{equation*}
+While standard amplitude amplification requires time scaling as $\order{T_{\max}/\sqrt{p_{\mathrm{succ}}}}$, the complexity of VTAA is more involved. Following \cite{CGJ19}, we define the complexity of VTAA as follows.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{lemma}[Efficient variable time amplitude amplification \cite{CGJ19}]
+    \label{lem:variable_time_aa}
+    Let $U$ be a state preparation unitary such that $U \ket{0}^{\otimes k} = \sqrt{p_{\mathrm{prep}}}\ket{0}\ket{\psi_0} + \sqrt{1 - p_{\mathrm{prep}}}\ket{1}\ket{\psi_1}$ that has a query complexity $T_U$. And let $\mathcal{A}=\mathcal{A}_m\mathcal{A}_{m-1}\cdots \mathcal{A}_1$ be a variable stopping time quantum algorithm that we want to apply to the state $\ket{\psi_0}$, with the following known bounds: $p_{\mathrm{prep}} \geq p'_{\mathrm{prep}}$ and $p_{\mathrm{succ}} \geq p'_{\mathrm{succ}}$. Define $T'_{\max} := 2T_{\max}/t_1$ and $$
+    Q := \paren{T_{\max} + \frac{T_U + k}{\sqrt{p_{\mathrm{prep}}}}} \sqrt{\logp{T'_{\max}}} + \frac{\paren{\norm{T}_2 + \frac{T_U + k}{\sqrt{p_{\mathrm{prep}}}}}\logp{T'_{\max}}}{\sqrt{p_{\mathrm{succ}}}}.
+    $$
+    Then with success probability $\geq 1 - \delta$, we can create a variable-stopping time algorithm $\mathcal{A}'$ that prepares the state $a \ket{0} \mathcal{A}' \ket{\psi_0} + \sqrt{1 - a^2} \ket{1} \ket{\psi_{\textrm{garbage}}}$, such that $a = \Theta(1)$ is a constant and $\mathcal{A}'$ has the complexity $\order{Q}$. 
+\end{lemma}
+
+One cannot simply replace standard amplitude amplification with VTAA to boost the success probability of a quantum algorithm. A crucial task would be to recast the underlying algorithm in the VTAA framework. We will be applying VTAA to the quantum algorithm for matrix inversion by QSVT. So, first of all, in order to apply VTAA to the algorithm must be first recast into a variable-time stopping algorithm so that VTAA can be applied.
+
+Originally, Ambainis~\cite{ambainis2010variable} used VTAA to improve the running time of the HHL algorithm from $\order{\kappa^2\log N}$ to $\order{\kappa\log^3\kappa\log N}$. Childs et al.~\cite{CKS17} designed a quantum linear systems algorithm with a polylogarithmic dependence on the accuracy. Additionally, they recast their algorithm into a framework where VTAA could be applied to obtain a linear dependence on $\kappa$. Later Chakraborty et al.~\cite{CGJ19} modified Ambainis' VTAA algorithm to perform variable time amplitude estimation.
+
+In this work, to design quantum algorithms for $\ell_2$-regularized linear regression, we use a quantum algorithm for matrix inversion by QSVT. We recast this algorithm in the framework of VTAA to achieve nearly linear dependence in $\kappa$ (the condition number of the matrix to be inverted). QSVT instead of controlled Hamiltonian simulation improves the complexity of the overall matrix inversion algorithm (using QSVT and VTAA) by a log factor and reduces the number of additional qubits substantially. Furthermore, we replace a quantum gapped phase estimation procedure with a more efficient quantum eigenvalue discrimination algorithm using QSVT. This further reduces the number of additional qubits by $O(\log^2(\kappa/\delta))$ than in Refs.~\cite{CKS17,CGJ19}, where $\kappa$ is the condition number of the underlying matrix and $\delta$ is the desired accuracy. The details of a variable stopping time quantum algorithm for matrix inversion by QSVT is laid out in \autoref{ssec:mi_using_qsvt}.
+
+

@@ -1,0 +1,1553 @@
+\documentclass[letter,11pt,english]{article}
+\pdfoutput=1
+
+\usepackage[left=1.5cm,right=1.5cm,top=1.5cm,bottom=1.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{tcolorbox}
+\usepackage[english]{babel}
+\usepackage{verbatim}
+\usepackage{ifdraft}
+\newcommand{\argmax}[1]{\underset{#1}{\arg\!\max}}
+
+\usepackage{tikz}
+\usetikzlibrary{calc,patterns}
+\usepackage{ifthen}
+\usepackage{xfrac}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{dsfont}
+\usepackage{bbm}
+\usepackage{mleftright}\mleftright
+\usepackage{thmtools} 
+\usepackage{thm-restate}
+
+\usepackage{algorithm2e}
+\usepackage{enumitem}
+\usepackage{float}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{titling}
+
+\setlength{\droptitle}{-5mm}  
+\newcommand*{\QEDB}{\hfill\ensuremath{\square}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\bigket}[1]{\left |#1 \right \rangle}
+\newcommand{\bigbra}[1]{\left \langle#1 \right|}
+\newcommand{\ip}[2]{\langle #1 | #2 \rangle}
+\newcommand{\ketbra}[2]{|#1\rangle\! \langle #2|}
+\newcommand{\braketbra}[3]{\langle #1|#2| #3 \rangle}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\bigO}[1]{\mathcal{O}\left( #1 \right)}
+\newcommand{\bigOt}[1]{\widetilde{\mathcal{O}}\left( #1 \right)}
+\newcommand{\littleo}[1]{o\left( #1 \right)}
+\newcommand{\ctrlA}{\push{\rule{1.5mm}{1.5mm}}}
+\newcommand{\Haar}{\mathrm{Haar}}
+
+\newcommand{\cupdot}{\overset{.}{\cup}}
+\newcommand{\pvp}{\vec{p}{\kern 0.45mm}'}
+\let\oldnabla\nabla
+\renewcommand{\nabla}{\oldnabla\!}
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\bra{\langle}{\rvert}
+\DeclarePairedDelimiter\ket{\lvert}{\rangle}
+\DeclarePairedDelimiterX\braket[2]{\langle}{\rangle}{#1 \delimsize\vert #2}
+\newcommand{\underflow}[2]{\underset{\kern-60mm \overbrace{#1} \kern-60mm}{#2}}
+
+\def\Ref{\mathrm{Ref}}
+\def\Id{\mathrm{Id}}
+\def\polylog{\mathrm{polylog}}
+\def\AND{\mathrm{AND}}
+\def\Pr{\mathrm{Pr}}
+\def\Tr{\mathrm{Tr}}
+\def\im{\mathrm{im}}
+
+\providecommand{\trnorm}[1]{\left\lVert#1\right\rVert_1}
+\providecommand{\infnorm}[1]{\left\lVert#1\right\rVert_{\infty}}
+\providecommand{\spnorm}[1]{\left\lVert#1\right\rVert}
+\providecommand{\maxnorm}[1]{\left\lVert#1\right\rVert_{\max}}
+\providecommand{\tr}[1]{\Tr\left[#1\right]}
+\providecommand{\sgn}[1]{\mathrm{sgn}\left(#1\right)}
+\providecommand{\rank}[1]{\mathrm{rank}\!\left(#1\right)}
+
+\long\def\ignore#1{}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{inputmod}{Input Model}
+\newtheorem{problem}{Problem}
+\newcommand{\Se}{\ensuremath{\mathcal{S}}}
+\newcommand{\Fe}{\ensuremath{\mathcal{F}}}
+\newcommand{\De}{\ensuremath{\mathcal{D}}}
+\newcommand{\Hi}{\ensuremath{\mathcal{H}}}
+\newcommand{\G}{\ensuremath{\mathscr{G}}}
+\newcommand{\A}{\ensuremath{\mathcal{A}}}
+\newcommand{\B}{\ensuremath{\mathcal{B}}}
+\newcommand{\C}{\ensuremath{\mathbb{C}}}
+%\newcommand{\mathcal D}{\ensuremath{\mathcal{D}}}
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\newcommand{\Oo}{\ensuremath{\mathcal{O}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\I}{\ensuremath{\mathcal{I}}}
+\newcommand{\K}{\ensuremath{\mathbb{K}}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+%\newcommand{\mathcal D}{\ensuremath{\mathbb{D}}}
+\newcommand{\Z}{\ensuremath{\mathcal{Z}}}
+\newcommand{\U}{\ensuremath{\mathcal{U}}}
+\newcommand{\X}{\ensuremath{\mathcal{X}}}
+\newcommand{\Y}{\ensuremath{\mathcal{Y}}}
+\newcommand{\V}{\ensuremath{\mathcal{V}}}
+\newcommand{\E}{\mathcal{E}}
+\newcommand{\M}{\mathcal{M}}
+\usepackage{tikz}
+
+\newcommand{\leo}[1]{\textcolor{olive}{#1}}
+
+% TikZ libraries `calc` needed now to tweak bracket.
+\usetikzlibrary{backgrounds,fit,decorations.pathreplacing,calc}
+
+\usepackage{qcircuit}
+
+%\newenvironment{proof}
+%{\noindent {\bf Proof. }}
+%{{\hfill $\Box$}\\	\smallskip}
+
+\usepackage[final,colorlinks,allcolors=blue]{hyperref}%\hypersetup{pagebackref,breaklinks,}
+
+%opening
+
+\title{
+ Notes: The hardness of predicting the avoided crossing in Adiabatic Quantum Optimization
+}
+% \author{No Authors}
+
+\date{\vspace{-10mm}}
+%\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\textcolor{blue}{(tentative abstract for paper)} In the circuit model of quantum computing, it is well-known that amplitude amplification techniques can be used to find solutions of NP-hard problems defined on n-bits in time $\text{poly}(n) 2^{n/2}$. In this work, we investigate whether such general statements can be made for alternative models of quantum computing based on Hamiltonian evolution, such as the adiabatic model.  In order to obtain the aforementioned Grover-like speedup when applying the adiabatic version of Grover's algorithm to optimization problems,  it is necessary to compute beforehand the position of the avoided crossing with sufficient precision and adapt the adiabatic schedule accordingly. However, we show that the position of the avoided crossing is approximately given by a quantity that depends on the degeneracies and inverse gaps of the problem Hamiltonian which is \#P-hard to compute exactly. Our work indicates a possible limitation of analog quantum algorithms, leaving open the question of whether provable Grover-like speed ups can be obtained for any optimization problem in analog quantum computers.  \textcolor{blue}{(mention also that only lower bounds were known in such settings? We give an algorithm with a matching upper bound (up to log factors) but show that it is contingent on predicting the position of the avoided crossing.)} 
+\end{abstract}	
+
+\section{Introduction}
+The study of adiabatic quantum systems \cite{aqc} has garnered significant attention in recent years due to its potential applications in designing optimal quantum algorithms. This has given birth to the promising paradigm of adiabatic quantum computing, which involves encoding a computational problem in the known ground state of an initial Hamiltonian. Then we evolve this Hamiltonian into a final one whose previously unknown ground state encodes the solution.\newline
+
+Now that we know what adiabatic quantum algorithms entail let's look into how their time complexity is calculated. Well, the computational time of any such algorithm is given by the time required for the initial Hamiltonian to transition to the final one. This time is, in turn, dependent on the rate of switching. This rate can either be constant throughout a globally adiabatic setting, or it can be continually adjusted in a locally adiabatic scenario \cite{local}.\newline
+
+So where do the points of avoided crossing come into the picture? As we will see, this rate of switching is dependent on the point(s) of avoided crossing and since the rate determines the time, the optimality of an adiabatic quantum algorithm rests often rests on the predictability of avoided crossings.
+
+{\color{blue}
+Points to mention in the intro of the paper: 
+\begin{itemize}
+\item General paragraph about importance of Adiabatic quantum computing, and in particular adiabatic quantum optimization and quantum annealing. 
+\item Mention it provides a natural way to solve NP-hard optimization problems by finding the global minimum of a cost function encoded in an Ising Hamiltonian. 
+\item Mention provable results about performance are largely unknown due to the difficulty of computing the gap throughout adiabatic evolution. Mention that exponential speed-ups are not expected as often we encounter exponentially small gaps [Roland, Krovi, Altschuler, Anderson localization...], it is still an open question whether polynomial speed-ups can be achieved. 
+\item A natural question is whether it is possible to at least prove a Grover-like speed-up over unstructured classical search approaches for the problem of finding the global minimum of a cost function.  
+\item This is known to be possible in the circuit model \cite{durr1996quantum, ambainis2004quantumsearch}: using Grover search as a subroutine, we may find the minimum of a cost function encoded in any Ising Hamiltonian in time $\text{poly}(n) 2^{n/2}$. 
+\item It is plausible to think that such a result should also be possible in the adiabatic setting, being a universal model of quantum computing. However, a naïve encoding of circuit model algorithm into an adiabatic quantum computation generally results in a polynomial overhead, which would erase a polynomial speed-up. 
+\item To tackle this problem, it is more natural to directly use the adiabatic version of Grover's algorithm \cite{local}. In adiabatic quantum optimization, it is known that the use of an unstructured quantum search approach leads to a minimum gap of $\Theta(2^{-n/2})$ which, in turn, gives a lower bound for the running time of the adiabatic algorithm of $\Omega(2^{n/2})$ \cite{farhi2008fail}. This work, does not show how to attain such lower bound. 
+\item In our work, we give a two analog quantum algorithms which can find the minimum of a Ising Hamiltonian in time $\text{poly}(n) 2^{n/2}$, one based on a time-independent Hamiltonian evolution and one based on the adiabatic approach to unstructured search. Both are based on the Hamiltonian ...., interpolating between the problem Hamiltonian and the projector on the equal superposition state.  However, to achieve such a running time, it is necessary to first compute with high accuracy the position of the avoided crossing in the adiabatic algorithm. The adiabatic algorithm uses this information in the adaptation of the adiabatic schedule, which can be fast in regions of higher gap and slow in regions of smaller gap, according to \cite{local}. The time-indepent version of the algorithm works by choosing the parameter $r$ close enough to the point of avoided crossing so as to ensure an oscillation between the initial state $\ket{s}$ and the ground state of the problem Hamiltonian. 
+
+\item We identify an important drawback of such algorithms: it is not known whether an efficient classical algorithm to compute the position of the avoided crossing to the necessary precision exists. 
+
+\item In fact, we show that the position of the avoided crossing is approximately given by a quantity that depends on the degeneracies and inverse gaps of the problem Hamiltonian which is \#P-hard to compute exactly or up to a $2^{-\text{poly}{(n)}}$ additive error. 
+
+\item Our work leaves open the questions of whether such a limitation may be overcome and, more generally, whether an adiabatic algorithm providing Grover-like speed-ups for the minimum finding problem exists. This may be possible either by a suitable modification of the Hamiltonian used or by finding a classical algorithm (or analog quantum algorithm) that can estimate the position of the avoided crossing to the necessary precision in time $O(2^{n/2})$.
+\end{itemize}
+}
+
+\section{The Adiabatic Theorem}
+
+We have roughly discussed the underpinnings of an adiabatic quantum algorithm. This is supported by the adiabatic theorem on whose shoulders this entire computational paradigm rests. The quantum adiabatic theorem \cite{born} is a principle in quantum mechanics that describes the behaviour of a system when it undergoes a slow, adiabatic process, where no heat is exchanged with the surroundings. The theorem states that, in an adiabatic process, the instantaneous eigenstates of a system will evolve in such a way that the system remains in its initial eigenstate, provided that the process is slow enough. Mathematically, this can be expressed as follows.
+
+$$i \hbar \frac{\partial}{\partial t} |\psi(t)\rangle = H(t) |\psi(t)\rangle$$
+
+where $i$ is the imaginary unit, $\hbar$ is the reduced Planck constant, $|\psi(t)\rangle$ is the wave function of the system at time $t$, and $H(t)$ is the Hamiltonian operator for the system at time $t$.\newline
+
+Thus, based on this principle, we can make sure that during the computation of an adiabatic quantum algorithm, the system always remains in its ground state while transitioning. This further explains why the evolution has to be adiabatic since, all information regarding the encoded computational problem and its associated solution are present in the relevant ground states.
+
+\subsection{Mathematical Background}
+Let $|E_k;t\rangle$ be the eigenstates of $H(t)$ such that $H(t)|E_k;t\rangle = E_k(t)|E_k;t\rangle$ with $E_k(t)$ being the respective eigenvalues. The minimum gap between the lowest eigenvalues can be given by
+
+\begin{align}
+g_{\min} = \min_{0 \leq t \leq T} (E_1(t) - E_0(t))
+\label{eq:def_g}
+\end{align}
+
+and now according to the adiabatic theorem, if we prepare the system at time $t = 0$ in its ground state $|E_0;0\rangle$ and let it evolve under $H(t)$ then
+
+$$|\langle E_0;T | \psi(T)\rangle|^2 \geq 1 - \epsilon^2$$
+
+provided that
+
+\begin{align}
+\frac{|\langle\frac{dH}{dt}\rangle_{1, 0}|}{g^2_{\min}} \leq \epsilon
+\end{align}
+
+where
+
+$$\langle\frac{dH}{dt}\rangle_{1, 0} = \langle E_1;t | \frac{dH}{dt} | E_0;t \rangle,\ \ \epsilon \ll 1.$$
+
+Consider a smooth one-parameter family of Hamiltonians $\tilde{H}(s),\ 0\leq s \leq 1$ such that $H(t) = \tilde{H}(t/T)$ so that $T$ controls the rate at which $H(t)$ varies.
+
+$$\langle \frac{dH}{dt} \rangle_{1, 0} = \frac{ds}{dt} \langle \frac{d\tilde{H}}{ds} \rangle_{1, 0}.$$
+
+If we maintain a globally adiabatic evolution, $\frac{ds}{dt} = 1/T$. Furthermore, we have $T \gg \epsilon/g^2_{\min}$ and
+
+$$\epsilon = \max_{0\leq s\leq 1} |\langle E_1;s | \frac{d\tilde{H}}{ds} | E_0;s \rangle|.$$
+
+Thus, clearly, $\epsilon$ would mostly be of the order of some eigenvalue of $H$ (not too large), making the computational time under globally adiabatic evolution, $T$, to be governed by $1/g^{2}_{\min}$ \cite{aqc}. And this minimum gap occurs at the point of avoided crossing.  
+
+\subsection{Formulating Adiabatic Evolution}
+We can consider that our algorithm involves the evolution of the known ground state of $H_B$ to the unknown ground state of $H_P$, which we can assume to be unique for now.
+\begin{align}
+&H(t) = (1- t/T) H_B + (t/T) H_P,\\
+&\tilde{H}(s) = (1-s)H_B + sH_P.
+\end{align}
+
+Hence, overall the algorithm will have a form as follows:
+\begin{enumerate}
+    \item Construct the time-dependent Hamiltonian $H(t)$ as described above.
+    \item Perform Schrodinger evolution \textit{adiabatically} for an evolution time $T$, which you should have obtained from prior information.
+    \item The final state $\ket{\psi(T)}$ will be arbitrarily close to the ground state of $H_P$.
+\end{enumerate}
+
+\subsection{Globally Adiabatic vs Locally Adiabatic}
+We have already seen how a globally adiabatic evolution works and how the computational time for an algorithm involving the same is just governed by  $1/g^{2}_{\min}$ with $\frac{ds}{dt} = 1/T$.\newline
+
+However, we can improve on this evolution method. Instead of imposing the same limit on the evolution rate throughout the time $T$ (which in turn is dependent on the energy gap at the point of avoided crossing), we can apply the condition of adiabaticity locally to every infinitesimal time interval $dt$.\newline
+
+Thus, $s(t)$ is no longer a linear evolution function and the rate of evolution changes continuously, being fast when the energy gap is high and being slow when the gap is low. This significantly reduces the time complexity of the entire algorithm. We, now, adapt the rate $\frac{ds}{dt}$ according to the following, at all times $t$.
+
+\begin{align}
+\left|\frac{ds}{dt}\right| \leq \epsilon \frac{g^2(t)}{|\langle \frac{d\tilde{H}}{s} \rangle_{1, 0}|}
+\label{eq:local_adiabatic_condition}
+\end{align}
+
+Interestingly, we can indeed prove that this speed up due local adiabaticity is quite significant \cite{local}. When we use the globally adiabatic formulation of our algorithm, the running time for an adiabatic quantum search algorithm comes out to be $O(N)$. This is not optimal, and we know that from Grover's search algorithm \cite{grover}.\newline
+
+But, when we consider the algorithm to be locally adiabatic, the time complexity reduces to an optimal $O(\sqrt{N})$.
+
+\section{Avoided Crossing}
+Avoided crossings occur when the energy levels of a system interact, causing them to split apart rather than cross. They play a crucial role in the success of algorithms based on adiabatic evolution since the complexity defining minimal energy gap occurs here.\newline
+
+Since we are mostly concerned with one-dimensional projective Hamiltonians, our system's evolution will have only a single avoided crossing. Now, let us think about what we learnt while dealing with local adiabatic evolutions. If we can predict the position of avoided crossing, then we would be able to know when to speed up our rate of transition and when to slow down.
+
+% \begin{figure}[!htbp]
+%     \centering
+%     \includegraphics[width=80mm]{images/avoided.png}
+%     \caption{Level crossing vs Avoided crossing}
+%     \label{fig:my_label}
+% \end{figure}
+
+\section{Predicting the point of Avoided Crossing}
+Our major goal in this project is to find the position of avoided crossing when the initial Hamiltonian is a one-dimensional projector. As a part of this venture, we plan to tackle the following.
+
+\begin{enumerate}
+\item Proving that classically predicting the exact position of avoided crossing is $\#P$ hard.\newline
+\item Finding a way to approximately predict the position of avoided crossing.\newline
+\item Exploring the possibilities of constructing a quantum algorithm to predict the exact position of avoided crossing, with a significant speed up over the classical method.
+\end{enumerate}
+
+% \subsection{Connection to the optimality of Spatial Search}
+% The problem of finding the point of avoided crossing in our scenerio is actually similar to the spatial search by continuous-time quantum walk problem where the underlying parameter is tuned so that the walk takes place at the avoided crossing \cite{optimal_search_ctqw}. Let us review the results from \cite{optimal_search_ctqw} to jog our memory on the methods used.
+
+% \section{Results on the Optimality of Spatial Search}
+% Childs and Goldstone Algorithm ($\mathcal{CG}$ Algorithm) formulates the problem of finding a marked node in a graph, or the spatial search problem, as a continuos time quantum walk (CTQW).\newline
+
+% For a graph $G$, let $\ket{w}$ represent the marked node, and $H$ be the Hamiltonian that encodes the connectivity of $G$. Then the $\mathcal{CG}$ algorithm is as follows:
+
+% \begin{center}
+% \begin{tabular}{|p{9cm}|}
+% \hline
+% \multicolumn{1}{|c|}{$\mathcal{CG}$ algorithm} \\
+% \hline
+% For some $r>0$ define $H_{search}=\ket{w}\bra{w}+rH$
+% \begin{enumerate}
+% \item Prepare the 1-eigenstate of $H$\label{pt:1}
+% \item Evolve the state of \ref{pt:1} under $H_{search}$ for some time $T$.
+% \end{enumerate} \\
+% \hline
+% \end{tabular}
+% \end{center}
+
+% In \cite{optimal_search_ctqw} it was proved that when the value for the constant $r$ is $S_1$, the $\mathcal{CG}$ algorithm prepares a states $\ket{f}$ such that
+% $$|\braket{w}{f}|=\Theta\left(\frac{S_1}{\sqrt{S_2}}\right)$$
+% after some time $$T=\Theta\left(\frac{1}{\sqrt{\epsilon}}\frac{\sqrt{S_2}}{S_1}\right)$$
+% where $0\le\lambda_1\le\ldots\le\lambda_{n-1}<\lambda_n=1$ are the eigenvectors of $H$ and $\ket{v_1},\ldots,\ket{v_n}$ are their corresponding eigenvectors,
+% $$\ket{w}=\sum_{i=1}^na_i\ket{v_i}$$
+% and
+% $$S_k=\sum_{i=1}^{n-1}\frac{|a_i|^2}{(1-\lambda_i)^k}$$
+% With another spectral condition
+% $$\sqrt{\epsilon}<c\min\left\{\frac{S_1S_2}{S_3},\Delta\sqrt{S_2}\right\}$$
+% where
+% $$\Delta=1-\lambda_{n-1}.$$
+
+
+\section{Exactly predicting the point of Avoided Crossing}
+Adiabatic quantum algorithms often display a remarkable similarity to sweep through quantum phase transitions. This motivates us to construct one in analogy to and based on the Ising model, while trying to predict the exact position of the point of avoided crossing. Hence, we will consider the problem of finding the ground state of classical Ising Hamiltonians using the framework of adiabatic quantum computation.
+
+\subsection{Finding the point of Avoided Crossing}
+Let us consider the Hamiltonian $H(s) = -(1-s)\ket{s}\bra{s} + s H_{\sigma}$. Here, $H_{\sigma}$ denotes the Hamiltonian of the Ising Model, with $J_{ij}, h_j \in \{-d, -d-1, \ldots, 0, 1, \ldots, d\}$ \leo{[we may need to change this to a wider range of values, where $d=poly(n)$ because of the complexity proof. Also, it might be good to use a new notation for $d$ since this is also used for the degeneracies.]} given by 
+\begin{equation}\label{eq:Ising_Ham}
+H_{\sigma} = \sum_{i>j} J_{ij} \sigma_z^{i} \sigma_z^{j} + \sum_{j}h_j\sigma_z^{j},     
+\end{equation}
+while $\ket{s}$ denotes equal superposition of all computational basis states 
+\begin{equation}
+  \ket{s}=\dfrac{1}{\sqrt{2^n}}\sum_{z\in\{0,1\}^n}\ket{z}  
+\end{equation}. 
+
+% \underline{\textcolor{blue}{TODO: how does $H(r)$ become $-\ket{s}\bra{s} + rH_\sigma$?}}\newline
+
+\noindent We redefine
+\begin{equation}
+  H(s)=(1-s)\left[-\ket{s}\bra{s}+\dfrac{s}{1-s}H_{\sigma}\right]=(1-s)H(r),
+  \label{eq:hamiltonian}
+\end{equation}
+where for $r=s/(1-s)$,
+\begin{equation}
+  H(r)=-\ket{s}\bra{s}+r H_{\sigma}
+  \label{eq:hamiltonian_updated}
+\end{equation}
+
+Any eigenvalue $\lambda'(s)$ of $H(s)$ is related to the corresponding eigenvalue $\lambda(r)$ of $H(r)$ as $\lambda'(s)=(1-s)\lambda(r)$. Similarly, if $r^{*}$ is the position of the avoided crossing for $H(r)$, it is related to the position of the avoided crossing of the original Hamiltonian $s^{*}/(1-s^{*})=r^{*}$.\newline
+
+We first construct a symmetric subspace $\mathcal{H}_S$ where the Ising model Hamiltonian $H_\sigma$ is non-degenerate. Let us assume that $H_\sigma$ has $m$ distinct eigenvalues $E_0<E_1<\ldots<E_{m-1}$. For each eigenvalue $E_k$, where $k\in[m]$, we define a set of bit-strings
+$$\Omega_k=\{z|z\in[N],\ H_\sigma\ket{z}=E_k\ket{z}\}$$
+and it's degeneracy in $H_\sigma$ by $d_k$.\newline
+
+Naturally, $|\Omega_k|=d_k$. Now, we define a state $\ket{\Bar{k}}=\frac{1}{\sqrt{d_k}}\sum_{z\in\Omega_k}\ket{z}$, and subsequently define the symmetric subspace as
+\begin{equation}\label{eq:Hs-def}
+  \mathcal{H}_S=\text{span}\left(\{\ket{\Bar{k}}|k\in[m]\}\right)
+\end{equation}
+
+We observe that
+$$\ket{s}=\sum_{k\in[m]}\sqrt{\frac{d_k}{N}}\ket{\Bar{k}}$$
+and hence, $\ket{s}\in\mathcal{H}_S$. We now define the Hamiltonian $\Bar{H}(r)$ as $H(r)$ being restricted to the subspace $\mathcal{H}_S$. Thus,
+\begin{align}
+  \bar{H}(r) & =\sum_{k,l\in[m]}\braket{\Bar{k}|H(r)}{\Bar{l}}\ket{\Bar{k}}\bra{\Bar{l}}                                             \\
+             & =-\ket{s}\bra{s}+r\underbrace{\sum_{k\in[m]}E_k\ket{\Bar{k}}\bra{\Bar{k}}}_{\Bar{H_\sigma}}\label{eq:def-H-sigma-bar}
+\end{align}
+
+It suffices then to look at the eigenvalues and eigenstates of $\Bar{H}(r)$.\newline
+
+Let $\ket{\psi}$ be an eigenstate of $\Bar{H}(r)$. Then, $\Bar{H}(r)\ket{\psi}=\lambda\ket{\psi}$, and suppose that
+
+$$\ket{\psi} = \sum_{k \in [m]} \alpha_k \ket{\Bar{k}}$$
+
+From what we have established earlier, for every $k$ in $[m]$,
+$$\Bar{H_{\sigma}} \ket{\Bar{k}} = E_k \ket{\Bar{k}}$$
+
+Thus,
+\begin{align*}
+  \Bar{H}(r)\ket{\psi} & = r \sum_{k\in[m]} E_k \alpha_k\ket{\Bar{k}} - \ket{s}\bra{s}\ket{\psi}           \\
+                       & = r \sum_{k\in[m]} E_k \alpha_k\ket{\Bar{k}} - \ket{s}\gamma = \lambda \ket{\psi}
+\end{align*}
+where, we have assumed $\gamma = \bra{s}\ket{\psi}$. Now, comparing each term yields
+
+\begin{align}
+           & \sum_{k\in[m]} (rE_k \alpha_k - \gamma\sqrt{\frac{d_k}{N}}) \ket{\Bar{k}} = \sum_{k\in[m]} \lambda \alpha_k \ket{\Bar{k}} \\
+  \implies & rE_k\alpha_k -\gamma\sqrt{\frac{d_k}{N}} = \lambda \alpha_k                                                               \\
+  \implies & \alpha_k= \dfrac{\gamma\sqrt{d_k}}{\sqrt{N}\left(rE_k-\lambda\right)}
+  \label{eq:expression-alpha-k}
+\end{align}
+
+Now, from the definition of $\gamma$, we have $\gamma=\braket{s}{\psi}=\sum_{k\in[m]}\alpha_k\sqrt{d_k/N}$. So, substituting the value of $\alpha_k$ obtained previously into this expression gives us
+
+\begin{equation}\label{eq:summation-equality}
+  1 = \dfrac{1}{ N} \sum_{k\in[m]}\dfrac{d_k}{rE_k - \lambda}
+\end{equation}
+
+% Summing over $z$ we obtain
+
+% $$\sum_z \alpha_z = \frac{\gamma}{\sqrt N} \sum_z \frac{1}{rE_z - \lambda}$$
+% $$\implies \sqrt N \gamma = \frac{\gamma}{\sqrt N} \sum_z \frac{1}{rE_z - \lambda}$$
+% \begin{equation}\label{eq:2}
+% \implies 1 = \frac{1}{N} \sum_z \frac{1}{rE_z - \lambda}.
+% \end{equation}
+
+Let us assume that Eq.~\eqref{eq:summation-equality} has a solution of the form $\lambda = rE_{\mathcal{G}} + \delta$, \textbf{where $E_{\mathcal{G}}$ is the energy associated with the ground state of $H_{\sigma}$}, i.e., $E_\mathcal{G}=E_0$. Then, for any $p\in\mathbb{N}$, we define
+\begin{equation}\label{eq:expression-Ap}
+  A_p = \frac{1}{N} \sum_{k \in [1, m]} \dfrac{d_k}{(E_k - E_{\mathcal G})^p}
+\end{equation}
+
+and here, $[1, m] = \{1, 2, 3, ..., m - 1\}$.\newline
+
+Furthermore, let us denote the degeneracy of the ground state by $d$, i.e., $d=d_0$. Then from Eq.~\eqref{eq:summation-equality} we obtain
+\begin{equation}
+  \frac{d}{N\delta} + \frac{1}{N} \sum_{k \in [1, m]} \frac{d_k}{r(E_k - E_{\mathcal{G}}) + \delta}=1
+\end{equation}
+
+Taking the Taylor series expansion, with $\delta$ being the variable we get
+\begin{equation}\label{eq:delta-taylor-expanison}
+  1 = \frac{d}{N\delta} + \frac{1}{N} \sum_{k \in [1, m]} \frac{d_k}{r(E_k - E_\mathcal{G})} - \frac{\delta}{N} \sum_{k \in [1, m]} \frac{d_k}{r^2(E_k - E_\mathcal{G})^2} + \ldots
+\end{equation}
+
+Ignoring the higher order terms, we obtain
+
+\begin{equation}\label{eq:delta-quadratic-eqn}
+  \delta^2 - \left(\frac{r^2}{A_2}\right)\left(\frac{A_1}{r} - 1\right) \delta - \frac{r^2d}{A_2 N} = 0
+\end{equation}
+$$\implies \delta = \frac{-b \pm \sqrt{b^2 - 4c}}{2}$$
+
+where $b = -\frac{r}{A_2}({A_1} - r)$ and $c = - \frac{r^2d}{A_2 N}$. The \textbf{validity} of this above assumption and when we can ignore higher order terms leading to the following analysis are \textbf{discussed in Section \ref{sec:validity}} for now. \newline
+
+Since $c$ is a negative number, the minimum gap is obtained at $b = 0$. Thus, occurs at $r^{*} = A_1$. That is,
+
+\begin{equation}\label{eq:expression-r-star}
+  \boxed{r^{*} = A_1 = \frac{1}{N} \sum_{k \in [1, m]} \frac{d_k}{(E_k - E_{\mathcal{G}})}}.
+\end{equation}
+
+Now, for this value of $r^{*}$, we obtain two values of $\delta$, given by $\delta_\pm=\pm\delta_o$ where
+\begin{equation}\label{eq:expression-delta-star}
+  \delta_o = \frac{A_1}{\sqrt{A_2}}\sqrt{\frac{d}{N}}
+\end{equation}
+
+and, then the point of the avoided crossing for $H(s)$ is given as follows
+\begin{equation}
+  \label{eq:avoided-crossing-position}
+  s^*=\dfrac{A_1}{1+A_1}.
+\end{equation}
+
+Next, we use the fact that the normalization factor $\sum_{k \in [m]} |\alpha_k|^2=1$, where $\alpha_k$ was obtained in Eq.~\eqref{eq:expression-alpha-k}. That is,
+$$
+  \dfrac{1}{N}\sum_{k \in [m]}\dfrac{d_k|\gamma_{\pm}|^2}{(\lambda_{\pm}- A_1 E_k)^2}=1
+$$
+
+Substituting $\lambda_{\pm}=A_1 E_{\mathcal{G}} +\delta_{\pm}$, and considering the Taylor series expansion of the denominator we obtain,
+
+% \textbf{I am here!!}
+
+$$1 = \dfrac{|\gamma_\pm|^2 d}{N \delta_o^2} + \dfrac{|\gamma_\pm|^2}{N}\sum_{k \in [1, m]} \dfrac{d_k}{A_1^2 (E_k - E_\mathcal{G})^2} + O\left(\frac{\delta_o^2}{\Delta}\right)$$
+
+where $\Delta = \min_{k \in [1, m]} (E_k - E_\mathcal{G})=E_1-E_0$. Ignoring the $\mathcal{O}\left(\dfrac{\delta_o^2}{\Delta}\right)$ terms we get
+
+$$\frac{\gamma^2 d}{N \delta_o^2} + \frac{\gamma^2 A_2}{A_1^2} = 1$$
+
+And substituting the value for $\delta_o$ as obtained in Eq.~\eqref{eq:expression-delta-star} implies
+$$2\gamma^2\frac{A_2}{A_1^2}=1$$
+
+Thus,
+\begin{equation}\label{eq:expression-gamma}
+  \gamma = \frac{A_1}{\sqrt{2A_2}}
+\end{equation}
+
+Then, from Eq.~\eqref{eq:expression-alpha-k} we obtain the overlaps, as follows.
+
+\begin{equation}\label{eq:expression-alpha-k-star}
+  \alpha_k^{\pm} = \frac{A_1\sqrt{d_k}}{\sqrt{2NA_2} (A_1E_k - A_1E_\mathcal{G} - \delta_\pm)}
+\end{equation}
+
+% \noindent \textcolor{red}{Done till here!!}
+
+And for $k=0$ we have,
+
+$$\alpha_0^{\pm} = -\frac{A_1\sqrt{d_0}}{\sqrt{2NA_2} \delta_\pm}=\mp \frac{1}{\sqrt{2}}$$
+
+and for all $k\in[1,m]$ we have
+
+$$\alpha_k^{\pm} = \frac{A_1\sqrt{d_k}}{\sqrt{2NA_2}} \left(\frac{1}{A_1(E_k - E_\mathcal{G})} + \frac{\delta_\pm}{A_1^2(E_k - E_{\mathcal{G}})^2}\right)$$
+
+$$\implies \alpha_k^{\pm} \approx \frac{\sqrt{d_k}}{\sqrt{2NA_2} (E_k - E_\mathcal{G})} + O\left(\frac{\sqrt{d\cdot d_k}}{NA_2 \Delta^2}\right)$$
+
+Note that for $A_1$ the following two bounds hold.
+
+$$A_1 = \frac{1}{N}\sum_{k \in [1, m]} \frac{d_k}{E_k - E_\mathcal{G}} \leq \frac{1}{\Delta} = O(1),\text{ and }A_1 \geq \frac{1}{E_{\max} - E_{\mathcal{G}}} = O\left(\frac{1}{n^2}\right)$$
+
+Similarly,
+
+$$A_2 \leq \frac{1}{\Delta^2} = O(1),\text{ and }A_2 \geq O\left(\frac{1}{n^4}\right)$$
+
+Hence, we obtain the two normalized eigenstates, namely,
+
+$$\ket{\psi^{\pm}} = \mp \frac{1}{\sqrt{2}} \ket{\Bar{0}} + \frac{1}{\sqrt{2NA_2}}\sum_{k\in [1,m]} \frac{\sqrt{d_k}}{E_k - E_\mathcal{G}}\ket{\Bar{k}}$$
+
+with energy $E_{\pm} = A_1 \left(E_{\mathcal{G}} \pm \sqrt{\frac{d}{NA_2}}\right)$.\newline
+
+Let us define the state $\ket{s_{\mathcal{G}}}$ as degenerate ground
+state of the Ising model Hamiltonian $H_\sigma$. That is,
+$\ket{s_{\mathcal{G}}} = \ket{\Bar{0}}$. And we define a state $\ket{{\bar{s_\mathcal{G}}}}$ as a component orthogonal to $\ket{{s_\mathcal{G}}}$ as follows:
+$$\ket{{\bar{s_\mathcal{G}}}} = \frac{1}{\sqrt{NA_2}} \sum_{k \in [1, m]} \frac{\sqrt{d_k}}{E_k - E_\mathcal G}\ket{\Bar k}$$
+
+Then, we can express the normalized eigenstates of $H(r^*)$ as follows:
+$$\ket{\psi^{\pm}} = \frac{1}{\sqrt 2}\left(\ket{{\bar{s_\mathcal G}}} \pm \ket{s_\mathcal G}\right)$$
+
+This implies that
+$$\ket{s_\mathcal G} = \frac{1}{\sqrt 2} \left(\ket{\psi^+} - \ket{\psi^-}\right).$$
+
+Let us now decompose the equal superposition $\ket{s}$ in terms of eigenstates of $H(r^*)$.
+
+$$\ket{s} = \gamma \left(\ket{\psi^+} + \ket{\psi^-}\right) + \sum_j \beta_j \ket{\psi_j}$$
+
+where $\ket{\psi_j}$ are states orthogonal to $\ket{\psi^{\pm}}$.\newline
+
+Then, we can have
+
+$$e^{-iH(r^{*})t} \ket{s} = \gamma \left(e^{-iE_+ t}\ket{\psi^+} + e^{iE_-t}\ket{\psi^-}\right) + \sum_j \beta_j e^{-iE_j t} \ket{\psi_j}.$$
+
+Choosing $t^* = \frac{\pi}{E_+ - E_-} = \frac{\pi\sqrt{NA_2}}{2A_1\sqrt d}$, we get
+
+$$|\langle s_{\mathcal{G}} | e^{-iH(r^*)t^*}\ket{s}| \approx \gamma\sqrt 2 = \frac{A_1}{\sqrt{A_2}}.$$
+
+Let us consider the $d$ states
+
+$$\ket{s^{(p)}_{\mathcal{G}}} = \frac{1}{\sqrt d} \sum_{z_l \in \Omega_0} e^{ilp \frac{2\pi}{d}}\ket{z_l},\ p \in \{0, 1, \ldots, d - 1\}.$$
+
+The labelling of $j$ of each of the ground states of the original Ising Hamiltonian $H_\sigma$, $\ket{z_l}$, is arbitrary. We have that $\ket{s^{(0)}_{\mathcal{G}}} = \ket{s_{\mathcal{G}}}$ and $\langle s_{\mathcal{G}}^{(p)} | s_{\mathcal{G}}^{(l)}\rangle = \delta_{lp}$. Also, for $p > 0$ we have
+
+\begin{align*}
+  H(r) \ket{s_{\mathcal{G}}^{(p)}} & = (-\ket{s}\bra{s} + rH_{\sigma})\ket{s_{\mathcal{G}}^{(p)}}                                                                                                         \\
+                                   & = -\ket{s}\bra{s}\ket{s_{\mathcal{G}}^{(p)}} + rE_\mathcal{G}\ket{s_{\mathcal{G}}^{(p)}}                                                                             \\
+                                   & = -\ket{s}\underbrace{\left(\sqrt{\frac{d}{N}}\bra{s_\mathcal{G}}\ket{s_{\mathcal{G}}^{(p)}}\right)}_{0,\ \forall p > 0} + rE_\mathcal{G}\ket{s_{\mathcal{G}}^{(p)}}
+\end{align*}
+
+\begin{equation}
+  \implies H(r) \ket{s_{\mathcal{G}}^{(p)}} = rE_\mathcal{G}\ket{s_{\mathcal{G}}^{(p)}}
+\end{equation}\label{eq:7}
+
+Hence, $\ket{s_{\mathcal{G}}^{(p)}}$ for $p\in[1,d]$ is also an eigenstate of the Hamiltonian $H(r)$, with energy $rE_\mathcal{G}$. This gives us a set of $d - 1$ eigenstates which do not play a role in the computation of the final amplitude, and allows us to express any ground state $\ket{z_l}$ as
+
+$$\ket{z_l} = \frac{1}{\sqrt d} \sum_{p} e^{-ilp\frac{2\pi}{d}}\ket{s_{\mathcal{G}}^{(p)}}$$
+
+and this way, we get
+
+\begin{align*}
+  \left|\bra{z_l} e^{-iH(r^*)t^*}\ket{s}\right| & = \left|\frac{1}{\sqrt d} \langle s_{\mathcal{G}} | e^{-iH(r^*)t^*}\ket{s}\right| \\
+                                                & = \frac{A_1}{\sqrt{dA_2}}.
+\end{align*}
+
+
+\subsection{Complexity of exactly finding the point of Avoided Crossing}
+Let us revisit the problem we were trying to solve. Our aim is to find the ground state of $H_\sigma$ via analog quantum search using the Hamiltonian $H(r) = \ket{s}\bra{s} + rH_\sigma$.\newline
+
+% \textcolor{blue}{\underline{Define where the - sign went in representation for $H$.}}\newline
+
+The algorithm involves evolving the initial state $\ket{s}$ for a suitable choice of $r$ and measuring in the computational basis after an adequate amount of time. Here, $\ket{s} = \frac{1}{\sqrt N} \sum_{j} \ket{j}$.\newline
+
+We have previously shown that the optimal choice for the value of $r$ is given by a function of eigenvalues of $H$, which we will denote as
+
+\begin{equation}
+A_1(H) = \frac{1}{{2^n}} \sum_{j = 1}^{2^n - 1} \frac{1}{E_j - E_{0}} = \frac{1}{N} \sum_{j = 1}^{N - 1} \frac{1}{\Delta_j}
+\end{equation}\label{eq:8}
+
+where $E_0 (= E_\mathcal G)$ is the ground state energy of $H_\sigma$.
+
+\begin{claim}
+    Exactly computing the optimal value of $r = r^* (= A_1)$ is \#P-Hard.
+\end{claim}
+To prove this claim we show that with a  polynomial number of calls to an algorithm that exactly computes $A1(H)$ for any Hamiltonian of the form in Eq.~\eqref{eq:Ising_Ham}, one can efficiently compute outcome probabilities of IQP circuits, or the degeneracy of the ground state energy, which are both known to be \#P-hard problems. In particular, we note that the problem determining the degeneracy of the ground state can be related to that of counting the number of solutions of NP-complete problems \leo{[can we give a concrete example here? We should show that we can solve any problem in \#P. The only \#P-complete problems I found are counting perfect matchings or counting solutions to 3-SAT \cite{lucas2014ising}. 3-SAT with $m$ clauses can be mapped to an MIS problem in a graph with $3m$ nodes, where the question is: is there a MIS with $m$ nodes? The counting version would then require us to define an Ising Hamiltonian whose degeneracy of the ground state counts the number of solutions of MIS with a certain number of nodes.  ]}
+
+First, let us  note that if $h_j, J_{jk} \in \{-1, 0, 1\}$ or to any set of integers of constant size, there can be almost $M = O(n^2)$ different values for the eigenenergies of $H_\sigma$. We denote all these possible values as $E_\alpha$ with its respective degeneracy being $d_\alpha$, where $\alpha \in \{0, \ldots, M - 1\}$ and $E_0$ corresponds to the ground state energy (previously denoted using $E_\mathcal G$). Thus, in our current re-formulation we have
+
+$$E_0 = E_\mathcal G,$$
+
+and some of the $d_\alpha\text{'s can be } 0, \text{ as long as } \sum_{j = 0}^{M - 1} d_\alpha = 2^n = N$. We can now rewrite $A_1(H)$ as
+
+$$A_1(H) = \frac{1}{N} \sum_{\alpha = 1}^{M - 1} \frac{d_\alpha}{\Delta_\alpha}$$
+
+with $\Delta_\alpha = E_\alpha - E_0$. Further note that, we can write the probability of an IQP circuit as
+
+\begin{equation}
+ |\bra{0}^{\otimes n} \mathcal{C}_{IQP} \ket{0}^{\otimes n}|^2= \left|\frac{1}{N}Tr(e^{i\frac{\pi}{8}H_{\sigma}})\right|^2  = \left|\frac{1}{N}\sum_{\alpha = 0}^{M - 1}d_\alpha e^{i\Delta_\alpha} \right|^2
+\end{equation}
+Hence, the exact knowledge of the values of $d_\alpha$ associated to each gap $\Delta_{\alpha}$ allows us to compute exactly this quantity which is known to be \#P-Hard.\newline
+
+In what follows, we show how to extract the values of $d_\alpha$ from a function that computes $A_1(H)$ exactly for any Ising Hamiltonian of the form $H_\sigma$. Suppose we can compute $A_1(H)$ exactly. Then, we can also compute this quantity for a Hamiltonian with an additional isolated spin 
+\begin{equation}
+  H'(x) = H - \frac{x}{2}\sigma_+^{(n + 1)},  
+\end{equation} 
+where 
+$$\sigma_+^{(n + 1)} = \frac{1 + \sigma_z^{(n + 1)}}{2}.$$
+It is possible to see that 
+\begin{equation}
+A_1(H'(x)) = \frac{1}{2^{n + 1}} \left(\sum_{\alpha = 1}^{M - 1}\frac{d_\alpha}{\Delta_\alpha} + \sum_{\alpha = 1}^{M - 1}\frac{d_\alpha}{\Delta_\alpha - x/2}\right)
+\end{equation}
+This allows us to use the function $A_1(H)$ to compute
+\begin{equation}
+ f(x) = 2A_1(H'(x)) - A_1(H) = \frac{1}{2^n} \sum_{\alpha = 1}^{M - 1}\frac{d_\alpha}{\Delta_\alpha - x/2}.   
+\end{equation}
+%
+By computing $f(x)$ for a polynomial number of different values of $x$ we can extract the values of the degeneracies $d_{\alpha}$. This can be seen as follows. We define the polynomial of degree $M-2$ given by:
+\begin{equation}
+    P(x) = \prod_{\alpha = 1}^{M - 1}(\Delta_\alpha - x/2)f(x) = \frac{1}{2^n}\sum_{\alpha = 1}^{M - 1} d_\alpha \prod_{\beta \neq \alpha} (\Delta_\beta - x/2)
+\end{equation}
+Since the values of the gaps $\Delta_{\alpha}$ are known (we assume them to be integers), we can evaluate $f(x)$ at $M - 1$ values $x_i$, ensuring that $x_i\neq 2\Delta_\alpha$, and $\alpha\in\{1,..., M-1\}$ to guarantee that $f(x)$ is finite, in order to obtain $M-1$ values $P(x_i)$. Since $f(x)$ for even values of $x$ may not be defined, we choose odd integer points $x_i= i$, where $i\in \{ 1, 3 ... , 2M-1\}$, which are sufficient to fully determine $P(x)$. Using, for example, Lagrange interpolation, we can fully reconstruct the polynomial $P(x)$, which can now be evaluated at any point. The degeneracies can be extracted since 
+\begin{align}
+  d_{\alpha} & = \frac{2^n P (2\Delta_{\alpha})}{\prod_{\beta \neq \alpha} (\Delta_\beta - \Delta_{\alpha})}, ~\alpha\in \{1,..., M-1\},\label{eq:d_alpha}\\ 
+  d_0&= 2^n- \sum_{\alpha=1}^{M-1}d_{\alpha}\label{eq:d_0}. 
+\end{align} 
+As argued previously, these values can be used to solve any problem in the $\#P$ complexity class.
+
+This hardness proof is robust to exponentially small additive errors in the computation of $A_1(H)$, which can be shown using Paturi's lemma (Corollary 1 of Ref.~\cite{paturi1992}), which we state below: 
+\begin{lemma}[Corollary 1 of \cite{paturi1992}]
+\label{lem:paturi}
+Let $P(x)$ be a polynomial of degree, $\mathrm{deg}(P)\leq M$, and $|P(i)|\leq c$ for integers $i\in \{0,1,\cdots,M\}$. Then, 
+$$
+\forall x\in [0,M], |P(x)|\leq c\cdot 2^{\mathrm{deg}(P)}.
+$$
+\end{lemma}
+~\\
+First assume we have access to a classical algorithm that outputs $\tilde{A}_1(H)$ such that 
+\begin{equation}
+|\tilde{A}_1(H)- A_1(H)|\leq\epsilon.     
+\end{equation}
+Then we can obtain an approximation $\tilde{f}(x)$ such that $|\tilde{f}(x)- f(x)|\leq 3 \epsilon$. We can also define the polynomial $\tilde{P}(x)$ as the $M-2$ degree polynomial defined by the $M$ points  $(x_i=i, \tilde{P}(x_i))$, where $ i\in \{1, 3, ... , 2M-1\}$ are odd integers and 
+\begin{equation}
+    \tilde{P}(x_i) = \prod_{\alpha = 1}^{M - 1}(\Delta_\alpha - x_i/2)\tilde{f}(x_i). 
+\end{equation}
+This implies that 
+\begin{equation}
+   D(x_i )= |\tilde{P}(x_i)-P(x_i)|\leq 3 \epsilon \prod_{\alpha=1}^{M-1}  \Delta_{\alpha}
+\end{equation} 
+and hence, from Lemma \ref{lem:paturi}, at any point $x\in [1, 2M-1]$ we have that 
+\begin{equation}
+    |\tilde{P}(x)-P(x)|\leq  3 \epsilon 2^{M-2} \prod_{\alpha=1}^{M-1}  \Delta_{\alpha}=O(\epsilon ~2^{\text{poly}(n)}).   
+\end{equation}
+ It can be seen, using Eqs.~\eqref{eq:d_alpha} and \eqref{eq:d_0} that for sufficiently small error $\epsilon= O(2^{-\text{poly}(n)})$ it is possible to ensure that the additive error in the approximation of the degeneracies $d_{\alpha}$ is less than 1/2, and so their exact values can simply be obtained by rounding up the approximate value to the nearest integer. 
+
+The derivation above shows that it is \#-P hard to approximate $A_1(H)$ up to additive error $\epsilon= O(2^{-\text{poly}(n)})$. Unfortunately, this proof technique based on polynomial interpolation does not allow us to conclude anything about the hardness of the approximation of $A_1(H)$ up to the additive error tolerated by the adiabatic algorithm described in Sec.~??.  We remark that limitations of hardness proofs based on polynomial interpolation were also identified in the context of proposals for demonstration of quantum computational advantage such as boson sampling \cite{} and random circuit sampling \cite{}, leading to conjectures about the hardness of approximating outcome probabilities from these circuits which still remain open.    
+
+
+% For example, if $P(x) = \sum_{k = 0}^{M - 2}c_kx^k$, then we have that $c_{M - 2} = \frac{1}{N}\sum_{\alpha = 1}^{M - 1}  d_\alpha$ which implies that $c_{M - 2} = 1 - \frac{d_0}{N}$. Hence, the degeneracy of the ground state is successfully computed, and so on.
+
+\section{Window in which the gap is minimum}
+
+We have seen that the \textbf{difference between the two lowest eigenlevels} is given by $\Delta_\pm(r)=\delta_+ - \delta_-$. Both $\delta_+$ and $\delta_-$ depend on $r$. From Eq.~\eqref{eq:delta-quadratic-eqn}, we have 
+\begin{equation}
+\label{eq:generic-gap-expression}
+    \Delta_\pm(r)=\dfrac{r}{A_2}\sqrt{(A_1-r)^2+\dfrac{4dA_2}{N}}.
+\end{equation}
+
+Now in the interval $r\in \left[r^* -\Theta(\sqrt{A_2d/N}), r^* + \Theta(\sqrt{A_2d/N})\right]$, the minimum gap of $H(r)$ still scales as
+\begin{equation}
+\label{eq:gap-optimal-window}
+    \Delta_\pm(r)=\Theta(\Delta_\pm{(r^*)})=\Theta\left(\dfrac{A_1}{\sqrt{A_2}}\sqrt{\dfrac{d}{N}}\right).
+\end{equation}
+
+This straightforwardly follows by observing that for any $r=r^*\pm \varepsilon_r$ chosen from the aforementioned interval, the term within the square root of the RHS of Eq.~\eqref{eq:generic-gap-expression} is $\Theta(\sqrt{A_2d/N})$. Then,
+$$
+\Delta_\pm(r)=\Theta\left(\dfrac{A_1}{\sqrt{A_2}}\sqrt{\dfrac{d}{N}}\pm \dfrac{\varepsilon_r}{\sqrt{A_2}}\sqrt{\dfrac{d}{N}}\right)=\Theta\left(\dfrac{A_1}{\sqrt{A_2}}\sqrt{\dfrac{d}{N}}\right),
+$$
+as $\varepsilon_r\ll A_1$. \newline
+
+Outside this interval, the gap $\Delta_\pm(r)$ is larger. This is because for any $2\sqrt{dA_2/N}<\varepsilon_r<1$, we have, $\Delta_\pm(r)=O(\varepsilon_r \cdot A_1/A_2)$.
+
+
+% We first define $\Delta_\pm(r)$ to be the difference between the energies of the two lowest states of $H(r)$. And since we have made the substitution $\lambda_{\pm}=rE_{\mathcal{G}}+\delta_{\pm}$ earlier, we get
+% $$
+% \Delta_\pm=\delta_+-\delta_-
+% $$
+% where $\delta_\pm$ are the solutions of Eq.~\eqref{eq:delta-quadratic-eqn}.\newline
+
+% We define the robustness window for predicting the position of avoided crossing $\Delta_r$ such that
+% $$
+% \forall r\in(r^*-\Delta_r,r^*+\Delta_r);\ \ \Delta_\pm(r)=\mathcal{O}\left(\Delta_\pm(r^*)\right)$$
+% $$
+% \implies\frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\mathcal{O}(1)
+% $$
+% $$\text{or in other words, }\Delta_\pm(r)=\kappa\Delta_\pm(r^*).$$
+
+% where $\kappa$ is some constant. From Eq.~\eqref{eq:delta-quadratic-eqn}, we get
+% \begin{equation}\label{eq:expression-delta-pm}
+% \Delta_\pm(r)=\frac{r}{A_2}\sqrt{(A_1-r)^2+\frac{4A_2d}{N}}
+% \end{equation}
+
+% % We also note that $\Delta_\pm(r)=\mathcal{O}\left(\Delta_\pm(r^*)\right)\implies\frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\mathcal{O}(1)$
+
+% Substituting $r=r^*$, i.e., $r=A_1$ as derived in Eq.~\eqref{eq:expression-r-star}, in Eq.~\eqref{eq:expression-delta-pm} we get
+% $$
+% \Delta_\pm(r^*)=\frac{2A_1}{\sqrt{A_2}}\sqrt{\frac{d}{N}}.
+% $$
+
+% Thus,
+% \begin{equation}\label{eq:expression-delta-ratio}
+% \frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\frac{r}{A_1}\sqrt{\frac{(A_1-r)^2N}{4A_2d}+1}
+% \end{equation}
+
+% Now we make the substitution $r=r^*+\delta_r$, i.e., $r=A_1+\delta_r$ as derived in Eq.~\eqref{eq:expression-r-star}, in Eq.~\eqref{eq:expression-delta-ratio} to get
+% $$
+% \frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\left(1+\frac{\delta_r}{A_1}\right)\sqrt{\frac{\delta_r^2N}{4A_2d}+1}.
+% $$
+
+
+% % Suppose that $A_1 \geq \sqrt{\frac{A_2 d}{N}}$. Upon this condition our following analysis holds true.
+% When $\delta_r\ge0$, we observe that $1+\frac{\delta_r}{A_1}\ge1$ and $1+\frac{\delta_r^2N}{4A_2d}\ge1$. Hence, we have the following.
+% \begin{align}
+% &\frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\mathcal{O}(1)\\
+% \implies&1+\frac{\delta_r}{A_1}=\mathcal{O}(1)\text{ and }1+\frac{\delta_r^2N}{4A_2d}=\mathcal{O}(1)\\
+% \implies&\delta_r \leq O(A_1) \text{ and } \delta_r \leq \mathcal{O}\left(\sqrt{\frac{A_2d}{N}}\right)\\
+% \implies&\delta_r \leq \mathcal{O}\left(\min\left(A_1, \sqrt{\frac{A_2d}{N}}\right)\right)
+% \end{align}
+
+% \subsection{Assumptions}
+% Now, we shall consider two assumptions:
+% \begin{enumerate}
+%     \item The robustness window must be symmetric.\newline
+%     \item $d = O(1)$ or that the ground state of $H_\sigma$ has a constant number of degenerate states.
+% \end{enumerate}
+
+% \subsection{Further Analysis}
+% Given our above assumptions, we can obtain the following maximal constraints on $\delta_r$, thereby defining a robustness window within which $\Delta_\pm(r)$ (first spectral gap) is a constant scaling of the minimum value of the first spectral gap.
+
+% \begin{align}
+%     |\delta_r| \leq \mathcal{O}\left(\min\left(A_1, \sqrt{\frac{A_2d}{N}}\right)\right)\\
+%     \implies |\delta_r| \leq \mathcal{O}\left(\min\left(A_1, \sqrt{\frac{A_2}{N}}\right)\right), & \text{ since $d = O(1)$}
+% \end{align}
+
+% \noindent To further simplify the above expression, we need to find a way to compare the terms $A_1$ and $\sqrt{\frac{A_2}{N}}$. We do so via the following lemma:
+
+% \begin{lemma}\label{lemma:1}
+% If $A_k$ is as defined in Eq.~\eqref{eq:expression-Ak} for $k=1,2$ then
+% $$A_1\ge\sqrt{\frac{A_2}{N}}$$
+% \end{lemma}
+% \begin{proof}
+% We know that $A_1 = \frac{1}{N} \sum_{z \notin \Omega_{\mathcal{G}}} \frac{1}{(E_z - E_{\mathcal{G}})}$. Now, if we square it, we get
+
+% $$A_1^2=\frac{1}{N^2} \sum_{z \notin \Omega_{\mathcal{G}}} \frac{1}{(E_z - E_{\mathcal{G}})^2} + \frac{1}{N^2} \sum_{z_1,z_2 \notin \Omega_{\mathcal{G}}} \frac{1}{(E_{z_1} - E_{\mathcal{G}})(E_{z_2} - E_{\mathcal{G}})}$$
+% $$\implies A_1^2 \ge \frac{A_2}{N}$$
+
+% Hence, we get
+% \begin{equation}\label{eq:inequality-A1-A2}
+% A_1\ge\sqrt{\frac{A_2}{N}}
+% \end{equation}
+% \end{proof}
+
+% \subsection{Robustness Results}
+% Using Eq.~\eqref{eq:inequality-A1-A2}, we can claim that as long as $|\delta_r| \leq \mathcal{O}\left(\sqrt{\frac{A_2}{N}}\right)$, the first spectral gap $\Delta_\pm(r)$ remains optimal. Thus, our required symmetric robustness window becomes $\Delta_r = \mathcal{O}\left(\sqrt{\frac{A_2}{N}}\right)$, given that the ground state of $H_\sigma$ has \textbf{constant degeneracy} [\textcolor{red}{Todo: Prove that the same holds even for $d \ll N$}].\newline
+
+% \noindent Thus,
+% \begin{align}\label{eq:13}
+%     &\Delta_r = \mathcal{O}\left(\sqrt{\frac{A_2}{N}}\right)
+% \end{align}
+
+% \noindent such that $\forall\ r\in(r^*-\Delta_r,r^*+\Delta_r)$ we have $\Delta_\pm(r)=\mathcal{O}\left(\Delta_\pm(r^*)\right)$.
+
+\section{Optimal Schedule}
+
+Before we attempt to find the optimal schedule, we need to establish how the gap between ground and first excited state of $H(s)$ scales throughout the evolution.\newline
+
+From Eq.~\eqref{eq:generic-gap-expression}, we find that for $H(r)$, within our defined robustness window, i.e., the spectral gap $\Delta_\pm$, scales as follows.
+
+$$\Delta_\pm(r) = \frac{r}{A_2}\sqrt{(A_1 - r)^2 + \frac{4dA_2}{N}}$$
+
+This results in the gap ($\Delta_\pm$) for the original Hamiltonian $H(s)$  [refer to Eq.~\eqref{eq:hamiltonian}], to scale (within the robustness window defined) as follows. 
+
+\begin{equation}
+\Delta_\pm(s) = \frac{s(A_1 + 1)}{(1-s)A_2} \sqrt{\left(\frac{A_1}{1 + A_1} - s\right)^2 + 4A_2d\frac{(1 - s)^2}{N(A_1 + 1)^2}}
+\label{eq:gap_og}
+\end{equation}.
+
+Note that, this gap $\Delta_\pm(s)$ between the lowest eigenlevels of $H(s)$ is equivalent to the quantity $g(s)$ and hence $\Delta_\pm{(s^*)} = \min{\Delta_\pm(s)} = g_{\min}$, as described in Eq.~(\ref{eq:local_adiabatic_condition}) and defined in \cite{local}.\newline
+
+Now, similar to the analysis done in Sec.~(\textcolor{red}{6}), we can bound the quantity $s - s^* = \epsilon_s$ such that within that interval the minimum gap $g(s)$ of H(s) scales with the same order as $\Delta_\pm(s^*)$ or $g_{\min}$. The bound is given by
+
+\begin{align}
+           & \epsilon_s^2 \leq \frac{4A_2d}{N(1+A_1)^2}(1 - s^* - \epsilon_s)^2                                          \\
+  \implies & \epsilon_s \leq \Theta\left(\frac{1}{(1 + A_1)^2}\sqrt{\frac{A_2d}{N}}\right)\label{eq:robustness-window-s}
+\end{align}
+
+under the presumption that $\epsilon_s \ll (1 - s^*)$. Thus, the robustness window in terms of $s$ is given by $\mathcal{S} = \left[S^-, S^+\right]$.
+
+\begin{align}
+\mathcal{S} = \left[\frac{A_1}{1+A_1} - \Theta\left(\frac{1}{(1 + A_1)^2}\sqrt{\frac{A_2d}{N}}\right), \frac{A_1}{1+A_1} + \Theta\left(\frac{1}{(1 + A_1)^2}\sqrt{\frac{A_2d}{N}}\right)\right]
+\label{eq:bound-s}
+\end{align}
+
+\subsection{Gap equivalence in the case of Quantum Search}
+
+Consider the case of quantum search using local adiabatic evolution in \cite{local}. We can obtain the exact minimal gap of $\frac{1}{\sqrt{N}}$ from general expression for the gap as provided in Eq.~\eqref{eq:gap_og}.\newline
+
+Since $\Delta_\pm$ or $g$ is minimum when $s = s^* = \frac{A_1}{1+A_1}$ [as derived in Eq.\eqref{eq:avoided-crossing-position}], and in the case of quantum search, \cite{local} $A_1 = A_2 = 1$ and $d = 1$. Then, we have the following:
+
+\begin{align*}
+\min\{\Delta_\pm(s)\} = \Delta_\pm(s^*) = \frac{\frac{A_1}{1+A_1}(A_1 + 1)}{(1 - \frac{A_1}{1 + A_1})A_2}\sqrt{\frac{4A_2d}{N(A_1 + 1)^2}\left(1 - \frac{A_1}{1 + A_1}\right)^2}
+\end{align*}
+\begin{align}
+\implies\min\{\Delta_\pm(s)\} &= \frac{2A_1}{(A_1+1)}\sqrt{\frac{d}{A_2N}}=\frac{1}{\sqrt N}
+\label{eq:min-delta-s}
+\end{align}
+
+\subsection{Calculating schedule}
+Our expression for gap in the form of $\Delta_\pm(s)$, as provided in Eq.~\eqref{eq:gap_og}, is valid only within the robustness window, beyond which $\Delta_\pm(s)$ isn't defined yet.
+
+\begin{align}
+\Delta_\pm(s) = \begin{cases}
+      \frac{s(A_1 + 1)}{(1-s)A_2} \sqrt{\left(\frac{A_1}{1 + A_1} - s\right)^2 + 4A_2d\frac{(1 - s)^2}{N(A_1 + 1)^2}} & s \in \mathcal{S} \\
+      < \text{ constant} & \text{otherwise}
+   \end{cases}
+\label{eq:piecewise-delta-s}
+\end{align}
+where, $\mathcal{S}$ is as defined in Eq.~(\ref{eq:bound-s}) Moving forward let us now provide the condition for local adiabatic evolution.
+
+\begin{equation}\label{eq:local-aqc-bound}
+\left|\frac{ds}{dt}\right| \leq \epsilon \frac{\Delta_\pm^2(s)}{\left|\langle \frac{dH}{ds} \rangle_{1, 0}\right|}
+\end{equation}
+
+
+Thus, we can choose to make the Hamiltonian evolve at a rate that is solution of the above inequality rephrased as a differential equation.
+
+\begin{equation}\label{eq:general-shedule-expression}
+\frac{ds}{dt}  = k \Delta_\pm^2(s)
+\end{equation}
+
+This holds because we can bound $\left|\langle \frac{dH}{ds} \rangle_{1, 0}\right|$ as a constant in terms of $s$, which might have a factor of $N$ in it.\newline
+
+We now solve this differential equation by taking a definite integral on both sides.
+\begin{align}
+&\frac{ds}{dt} = k \Delta_\pm^2(s)\\
+\implies&\int_{0}^1 \frac{ds}{\Delta_\pm^2(s)} = \int_0^T kdt
+\label{eq:schedule-integral}
+\end{align}
+where $T$ is the total time of evolution. 
+
+% And let us consider $\mathcal{R}=(\mathcal{R}^-,\mathcal{R}^+)$. Then the corresponding robustness window for values of $s$ is:
+% \begin{equation}
+% \mathcal{S}=(\mathcal{S}^-,\mathcal{S}^+)=\left(\frac{\mathcal{R}^-}{1+\mathcal{R}^-},\frac{\mathcal{R}^+}{1+\mathcal{R}^+}\right)
+% \end{equation}
+
+% Substituting $F(s)=\frac{1}{\Delta\pm^2(s)}$ when $s$ is in the robustness window of the position of avoided crossing, as defined in Eq~\eqref{eq:gap_og}, we now split the integral as follows:
+% \begin{align}
+% & kT = \int_0^{\mathcal{S^-}} ds + \int_{\mathcal{S}} F(s) ds +  \int_{\mathcal{S^+}}^1 ds\\
+% \implies& kT = (1 + \mathcal{S^-} - \mathcal{S^+}) + \int_{\mathcal S} F(s)ds\label{eq:diff-eqn-sol}
+% \end{align}
+
+% We now focus on the remaining integral
+% {\allowdisplaybreaks
+% \begin{align}
+% \int_{\mathcal S} F(s)ds&=\int_{\mathcal{S^-}}^{\mathcal{S^+}}\frac{ds}{\frac{s^2(A_1 + 1)^2}{(1-s)^2A_2^2} \left(\left(\frac{A_1}{1 + A_1} - s\right)^2 + 4A_2d\frac{(1 - s)^2}{N(A_1 + 1)^2}\right)}\\
+% &=A_2^2\int_{\mathcal{S^-}}^{\mathcal{S^+}}\frac{(1-s)^2ds}{s^2\left((A_1-s(A_1+1))^2+\frac{4A_2d}{N}(1-s)^2\right)}\\
+% &=\begin{matrix}
+% \left.\frac{A_2^2\left(A_1^2-\frac{4A_2d}{N}\right)}{2\sqrt{\frac{A_2d}{N}}\left(A_1^2+\frac{4A_2d}{N}\right)^2}\tan^{-1}\left(\frac{\left((A_1+1)^2+\frac{4A_2d}{N}\right)s-\left(A_1(A_1+1)+\frac{4A_2d}{N}\right)}{2\sqrt{\frac{A_2d}{N}}}\right)\right|_{\mathcal{S^-}}^{\mathcal{S^+}}\\
+% -\left.\frac{A_1A_2^2}{\left(A_1^2+\frac{4A_2d}{N}\right)^2}\log\left(\frac{s^2\left((A_1+1)^2+\frac{4A_2d}{N}\right)-2s\left(A_1(A_1+1)+\frac{4A_2d}{N}\right)+A_1^2+\frac{4A_2d}{N}}{s^2}\right)\right|_{\mathcal{S^-}}^{\mathcal{S^+}}\\
+% \left.-\frac{A_2^2}{s\left(A_1^2+\frac{4A_2d}{N}\right)}\right|_{\mathcal{S^-}}^{\mathcal{S^+}}
+% \end{matrix}\label{eq:integral-solution}
+% \end{align}
+% }
+
+% We note that here, boundaries of $\mathcal{S}$ are as follows:
+% \begin{equation}\label{eq:expression-robust-window-boundary-s}
+% \mathcal{S^\pm}=1-\frac{1}{1+A_1\pm\Theta\left(\sqrt{\frac{A_2d}{N}}\right)}
+% \end{equation}
+
+% \subsection{Verifying our results with results for Grover Search}
+
+% In the case of quantum search using local adiabatic evolution, as mentioned in \cite{local}, we want to obtain the value for the total time of evolution as $T=\mathcal{O}(\sqrt{N})$ to prove that the schedule we have constructed is an optimal one. We know that in the case of quantum search, $A_1=A_2=1$ and $d=1$. And, as mentioned in \cite{local}, we upper bound the value of $\left|\langle \frac{dH}{ds} \rangle_{1, 0}\right|$ by $1$. Hence, the constant $k$ used in Eq.~\eqref{eq:general-shedule-expression} will have a value of $\epsilon$, which depends on the required accuracy of the state resulting after the adiabatic evolution with respect to the required answer.\newline
+
+% We also know that the position of avoided crossing occurs at $s=\frac{1}{2}$. Thus, using the expression derived in Eq.~\eqref{eq:expression-robust-window-boundary-s}, we can assume the robustness window to be
+% \begin{equation}\label{eq:expression-window-grover}
+% \mathcal{S^\pm}=\frac{1\pm\frac{1}{\sqrt{N}}}{2\pm\frac{1}{\sqrt{N}}}\approx\frac{1}{2}\pm\frac{1}{\sqrt{N}}
+% \end{equation}
+
+% Therefore, substituting the expression derived in Eq.~\eqref{eq:integral-solution} in the solution for the differential equation derived in Eq.~\eqref{eq:diff-eqn-sol} along with values for $A_1,A_2,d,k$ we get:
+
+% \begin{align*}
+% \epsilon T&=\begin{matrix}
+% 1-\left.s\right|_{\mathcal{S^-}}^{\mathcal{S^+}}+\left.\frac{1-\frac{4}{N}}{\frac{2}{\sqrt{N}}\left(1+\frac{4}{N}\right)^2}\tan^{-1}\left(\frac{4\left(1+\frac{1}{N}\right)s-\left(2+\frac{4}{N}\right)}{\frac{2}{\sqrt{N}}}\right)\right|_{\mathcal{S^-}}^{\mathcal{S^+}}\\
+% -\left.\frac{1}{\left(1+\frac{4}{N}\right)^2}\log\left(\frac{4s^2\left(1+\frac{1}{N}\right)-4s\left(1+\frac{2}{N}\right)+1+\frac{4}{N}}{s^2}\right)\right|_{\mathcal{S^-}}^{\mathcal{S^+}}-\left.\frac{1}{s\left(1+\frac{4}{N}\right)}\right|_{\mathcal{S^-}}^{\mathcal{S^+}}
+% \end{matrix}\\
+% &\approx1-\left.s\right|_{\mathcal{S^-}}^{\mathcal{S^+}}+\underbrace{\left.\frac{\sqrt{N}}{2}\tan^{-1}(\sqrt{N}(2s-1))\right|_{\mathcal{S^-}}^{\mathcal{S^+}}}_{\mathcal{A}}
+% -\left.2\log\left(2-\frac{1}{s}\right)\right|_{\mathcal{S^-}}^{\mathcal{S^+}}-\left.\frac{1}{s}\right|_{\mathcal{S^-}}^{\mathcal{S^+}}
+% \end{align*}
+
+% In the above expression, apart from the term $\mathcal{A}$, all the other terms are either constants or can be upper bounded by constants. And the term $\mathcal{A}$ has a factor of $\sqrt{N}$ being multiplied to it. Hence, we can safely ignore all the other terms and the obtain the following approximation:
+% \begin{equation}
+% \epsilon T\approx\left.\frac{\sqrt{N}}{2}\tan^{-1}(\sqrt{N}(2s-1))\right|_{\mathcal{S^-}}^{\mathcal{S^+}}
+% \end{equation}
+
+% Plugging in the approximate values of the boundaries of the robustness window derived in Eq.~\eqref{eq:expression-window-grover} we get
+% \begin{equation}
+% T\approx\frac{\pi}{8\epsilon}\sqrt{N}
+% \end{equation}
+
+\subsection{Simplification of Schedule Calculation}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/regions_analysis.png}
+    \caption{Schedule and regions of analysis. $\mathcal{S} = (\mathcal S^-, \mathcal{S^+})$ denotes the robustness window. $\mathcal F = (\mathcal F^-, \mathcal F^+)$ denotes the regime of validity, with $\mathcal S \subseteq \mathcal F$. We call the region beyond $\mathcal{F}$ to be $outside$. Within $\mathcal S$ or the robustness window, $g'$ scales constantly with a value equal to $g(s^*)$ which is the minimum gap between the two lowest eigenlevels.}
+    \label{fig:schedule}
+\end{figure}
+
+Let us consider a different approach to calculating the schedule and proving its optimality. In this simplification, we calculate the schedule assuming gap difference to be smaller than actual. Thus, $g' \leq g = \Delta_\pm(s)$ for the entirety of the evolution. So what are we hoping to achieve through this? Well if we can show that $g'$ can yield an optimal schedule then $g$ must too.\newline
+
+For our analysis purpose we divide the evolution window into three separate regions (robustness window in Sec.~(\textcolor{red}{6}), regime of validity in Sec.~(\textcolor{red}{8}) which contains the robustness window essentially, the outside). These regions of analysis and the new $g'$ in comparison to the original $g$ is shown in Fig.~(\ref{fig:schedule}).\newline
+
+Note that the definition of $g$ or actual $\Delta_\pm(s)$ is still imprecise as in Eq.~(\ref{eq:piecewise-delta-s}), since we do not have a proper representation for the gap outside the robustness window except for the guarantee that it shall be upper bounded by a constant.\newline
+
+
+Now, we are stating ourselves to be oblivious of the actual gap $g$. Rather we are concerned with piece-wise defining $g' \leq g$ such that it leads to an easier integrable function for schedule and ideally results in optimality. Continuing from Eq.~(\ref{eq:schedule-integral}), the differential to obtain schedule for $g'$ as time in terms of $s$ is as follows. Here, $T$ is the time of evolution.
+
+\begin{align}
+&\frac{ds}{dt} = k g'(s)^2\\
+\implies&\int_{0}^1 \frac{ds}{g'(s)^2} = \int_0^T kdt\\
+\implies&kT = \int_{\text{outside}} \frac{ds}{g'(s)^2} + \int_{\mathcal{F} - \mathcal{S}}\frac{ds}{g'(s)^2} + \int_{S} \frac{ds}{g'(s)^2}\\
+\implies&kT = I_{\text{outside}} + I_{\mathcal{F} - \mathcal{S}} + I_{\mathcal{S}} = I_{\text{beyond}} + I_{\mathcal S}
+\label{eq:schedule-integral-2}
+\end{align}
+
+% \subsection*{Within the robustness window $\mathcal S$}
+
+When $s \in \mathcal{S}$, we can define $g'(s) = g_{\min}(s) = g(s^*) = \frac{2A_1}{1+A_1}\sqrt{\frac{d}{A_2N}}$ from Eq.~(\ref{eq:min-delta-s}). This satisfies our requirement for $g'(s) \leq g(s)$ within the robustness window (the current focus for analysis). Thus, $I_\mathcal{S}$ is calculated to be:
+
+
+\begin{align}
+    &I_{\mathcal{S}} = \int_{\mathcal{S}} \frac{ds}{g_{\min}(s)^2} = \int_{\mathcal S} \frac{ds}{\frac{4A_1^2d}{(A_1 + 1)^2A_2N}}\\
+    \implies &I_\mathcal{S} = \frac{(A_1 + 1)^2A_2N}{4A_1^2d} \int_\mathcal{S^-}^{\mathcal S^+} ds\\
+    \implies &I_\mathcal{S} = \frac{(A_1 + 1)^2A_2N}{4A_1^2d} (\mathcal{S^+} - \mathcal{S^-})\\
+% \end{align}
+% \begin{align}
+    \implies &I_\mathcal{S} = \left(\frac{(1 + A_1)^2A_2N}{4A_1^2d}\right) \cdot \Theta\left(\frac{1}{(1 + A_1)^2}\sqrt{\frac{A_2d}{N}}\right)\\
+% \end{align}
+% \begin{align}
+    \implies &I_\mathcal{S} = \Theta\left(\frac{A_2}{A_1^2}\sqrt{\frac{A_2N}{d}}\right)
+\label{eq:I-S}
+\end{align}
+
+Clearly, when $A_1, A_2$ and $d$ are constants, $I_\mathcal{S} = \Theta(\sqrt N)$. Note that value of $\mathcal{S^+ - S^-}$ is based on Eq.~(\ref{eq:bound-s}). Thus, $I_\text{beyond} = I_\text{outside} + I_{\mathcal F - \mathcal S}$ must be of order less than $\sqrt N$ for our schedule to be optimal.
+
+\subsection{Attempt at $I_{\text{beyond}}$ calculation}
+
+This exercise \textbf{is not to prove} that the following is indeed a valid $g'(s)$. Rather it is an \textbf{attempt to establish the fact} that if $g'(s) = {c_1}|s - s^*| + c_2$ where $c_1$ must be a constant or lower bounded by a positive polynomial in $N$.\newline
+
+Suppose that a valid $g'(s)$ can be piece-wise defined as follows.
+
+\begin{align}
+g'(s) = \begin{cases}
+      g_{\min}(s) & s \in \mathcal{S} \\
+      |s - s^*| & \text{otherwise}
+   \end{cases}
+\label{eq:piecewise-delta-s-new}
+\end{align}
+
+Then, we have $g'(s)^2 = |s - s^*|^2$ and the required integral $I_{\text{beyond}}$ is simplified.
+
+\begin{align}
+    &I_{\text{beyond}} = \int_{\text{beyond}} \frac{ds}{g'(s)^2}\\
+    \implies &I_{\text{beyond}} = \int_{0}^{S^-} \frac{ds}{(s^* - s)^2} + \int_{S^+}^1 \frac{ds}{(s - s^*)^2}\\
+    \implies &I_{\text{beyond}} = \left.\frac{1}{s^* - s}\right|^{S^-}_0 + \left.\frac{1}{s - s^*}\right|^{S^+}_1\\
+    \implies &I_{\text{beyond}} = \Theta\left((1+A_1)^2\sqrt{\frac{N}{A_2d}}\right)-2-\frac{1+A_1^2}{A_1}
+    \label{eq:I-beyond}
+\end{align}
+
+Thus, given $A_1, A_2$ and $d$ are constants, $kT = I_{\text{beyond}} + I_\mathcal{S} = \Theta(\sqrt N)$ from Eq.~(\ref{eq:schedule-integral-2}, \ref{eq:I-S}, \ref{eq:I-beyond}). As a result, required time remains optimal.
+
+% \begin{align}
+% g'(s) = \begin{cases}
+%       \frac{s(A_1 + 1)}{(1-s)A_2} \sqrt{\left(\frac{A_1}{1 + A_1} - s\right)^2 + 4A_2d\frac{(1 - s)^2}{N(A_1 + 1)^2}} & ,r \in \mathcal{R} \\
+%       1 & ,\text{otherwise}
+%    \end{cases}
+% \label{eq:piecewise-g}
+% \end{align}
+% 
+% \begin{align*}
+% \int_{\mathcal S} F(s)ds
+%  = \int_{S^-}^{S^+} \frac{(1 - s)^2}{s^2 \left( (A_1 - s (A_1 + 1))^2 + \frac{(4 A_2 d) (1 - s)^2}{N} \right)} \, ds 
+% \end{align*}
+% \begin{align*}
+% = \Bigg[\, &\frac{N}{2 (4 A_2 d + A_1^2 N)^2} \bigg[ -2 A_1 N \log\left(4 A_2 d (s - 1)^2 + A_1^2 N (s - 1)^2 \right. \\
+% &\left. + 2 A_1 N s (s - 1) + N s^2\right) - \frac{2 (4 A_2 d + A_1^2 N)}{s} \\
+% &+ \frac{\sqrt{N} (A_1^2 N - 4 A_2 d) \tan^{-1}\left(\frac{4 A_2 d (s - 1) + A_1^2 N (s - 1) + A_1 N (2 s - 1) + N s}{2 \sqrt{A_2} \sqrt{d} \sqrt{N}}\right)}{\sqrt{A_2} \sqrt{d}} \\
+% &+ 4 A_1 N \log(s) \bigg] \Bigg]_{\mathcal{S^-}}^{\mathcal{S^+}}
+% \end{align*}
+
+% Now, assuming $A_1 = A_2 = d = 1$ as is in the case of \cite{local} and $\{S^-, S^+\} = \left\{\frac{1}{2} - \frac{1}{\sqrt N}, \frac{1}{2} + \frac{1}{\sqrt N}\right\}$ we can simplify the integral as follows.
+
+% $$
+% \int_{\mathcal S} F(s)ds
+% $$
+
+% $$
+% \left[\frac{N \Bigg( &(-4 + N) \sqrt{N} s \tan^{-1}\left(\frac{-2 - N + 2 s + 2 N s}{\sqrt{N}}\right) \\
+% &+ 4 N s \log(s) \\
+% &- 2 \left(4 + N + N s \log\left(4 + N - 4 (2 + N) s + 4 (1 + N) s^2\right)\right)\Bigg)}{2 (4 + N)^2 s}\right]_{\frac{1}{2} - \frac{1}{\sqrt{N}}}^{\frac{1}{2} + \frac{1}{\sqrt{N}}}
+% $$
+
+% \newline \textcolor{red}{To do: What is the optimal schedule $s(t)$ which works when the avoided crossing is assumed to be any point within the optimal window? Show that, for this schedule, the algorithm is sub-optimal if $r^*$ is wrongly assumed to be outside this window.}
+
+% Thus given our supposition, we have $\delta_r \leq \sqrt{\frac{A_2d}{N}}$ whenever $\delta_r$ is positive, i.e., $r > r^*$.
+% As a result of the structure of our problem, we suppose that this robustness window must by symmetrical. That is, the window $\Delta_r$ should, therefore, be of $O\left(\sqrt{\frac{A_2}{N}}\right)$ both on the left and right of the point of avoided crossing $r^*$. We can further validate this supposition, and check if it holds under our assumptions, when $\delta_r$ is negative.\newline
+
+% For $\delta_r \leq 0$ and $\Delta_r = \mathcal{O}\left(\sqrt{\frac{A_2}{N}}\right)$, we have $|\delta_r| \leq \mathcal{O}\left(\sqrt{\frac{A_2}{N}}\right)$. According to lemma \ref{lemma:1}, we know that  $|\delta_r| \leq \mathcal{O}(A_1)$. This implies that $\left(1 + \frac{\delta_r}{A_1}\right) = \left(1 - \frac{|\delta_r|}{A_1}\right) \approx O(1)$. Thus, we also have
+
+% $$\sqrt{\frac{\delta_r^2 N}{4A_2d} + 1} = O(1) \implies |\delta_r| \leq O\left(\sqrt{\frac{A_2d}{N}}\right) \text{ as supposed}.$$
+
+% This validates our supposition and the robustness window $\Delta_r = O\left(\sqrt{\frac{A_2d}{N}}\right)$ as per our definition of robustness window.
+
+% so, as long as, $A_1 \geq \sqrt{\frac{A_2d}{N}}$.
+
+% These two statements imply that $\delta_r\le\mathcal{O}(A_1)$ and $\delta_r\le$, respectively. And as per our assumption, we get $\Delta_r=\mathcal{O}\left(\sqrt{\frac{A_2d}{N}}\right)$
+
+% For $\delta_r<0$, and when $\Delta_r=\mathcal{O}\left(\sqrt{\frac{A_2d}{N}}\right)$,  $1+\frac{\delta_r}{A_1}\approx\mathcal{O}(1)$, as we assume that $A_1>\sqrt{\frac{A_2d}{N}}$. Thus, we also get that $\frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\mathcal{O}(1)$
+
+% \textcolor{blue}{Hence, $\Delta_r=\mathcal{O}\left(\sqrt{\frac{A_2d}{N}}\right)$.}
+
+
+% Now we observe that $1+\frac{\delta_r}{A_1}=\mathcal{O}(1)$ and $\frac{\delta_r^2N}{4A_2d}+1=\mathcal{O}(1)$ would imply that $\frac{\Delta_\pm(r)}{\Delta_\pm(r^*)}=\mathcal{O}(1)$. \textcolor{red}{Note: While this is not the only case where we obtain favourable results, it is the most probable one as $\delta_r$ is in the numerator in both terms.}
+
+% \textcolor{blue}{Hence, we can say that $\Delta_r=\mathcal{O}\left(\min\left(A_1,\sqrt{\frac{A_2d}{N}}\right)\right)$, as we do not have sufficient information about $d$ to make a comparison between the two.}
+
+% \subsection{Random (Possibly Useful) Results}
+
+% {\allowdisplaybreaks
+% \begin{align*}
+% A_2&=\frac{1}{N}\sum_{z\in\Omega_{\mathcal{G}}}\frac{1}{(E_z-E_{\mathcal{G}})^2}\\
+% &\le\frac{1}{N}\sum_{z\in\Omega_{\mathcal{G}}}\frac{1}{\Delta(E_z-E_{\mathcal{G}})}\\
+% &=\frac{A_1}{\Delta}\\
+% &\le A_1
+% \end{align*}
+% }
+% $$
+% \therefore A_2\le\frac{A_1}{\Delta}\le A_1
+% $$
+
+% Similarly,
+% $$
+% \mathcal{O}\left(\frac{A_1}{N^2}\right)\le\frac{A_1}{E_{\max}-E_{\mathcal{G}}}\le A_2
+% $$
+
+% {\allowdisplaybreaks
+% \begin{align*}
+% A_1^2&=\frac{1}{N^2}\sum_{z\in\Omega_{\mathcal{G}}}\frac{1}{(E_z-E_{\mathcal{G}})^2}+\frac{1}{N^2}\sum_{\substack{z_1,z_2\in\Omega_{\mathcal{G}}\\z_1\ne z_2}}\frac{1}{(E_{z_1}-E_{\mathcal{G}})(E_{z_2}-E_{\mathcal{G}})}\\
+% &\ge\frac{A_2}{N}
+% \end{align*}
+% }
+% $$
+% \therefore A_1\ge\sqrt{\frac{A_2}{N}}
+% $$
+
+\section{Regime of Validity}\label{sec:validity}
+
+The expression derived in Eq.~\eqref{eq:expression-r-star} for the value of $r^*$ is derived using the quadratic equation in terms of $\delta$, Eq.~\eqref{eq:delta-quadratic-eqn}. This quadratic equation is obtained assuming the higher order terms of the taylor series expansion wrt $\delta$, Eq.~\eqref{eq:delta-taylor-expanison}, can be ignored. However, we need to verify if this is really the case. And if so, get constraints on the Ising model (whose Hamiltonian is denoted by $H_\sigma$) and $r$ for which the above assumptions can be made safely.\newline
+
+Rewriting Eq.~\eqref{eq:delta-taylor-expanison} we get
+
+\begin{equation}
+0=\underbrace{\frac{d}{N\delta}\left(1+\frac{N\delta}{d}\left(\frac{A_1}{r}-1\right)-\frac{\delta^2A_2N}{dr^2}+\underbrace{\frac{\delta^3A_3N}{dr^3}-\ldots}_{f(\delta)}\right)}_{F(\delta)}
+\end{equation}
+where we define $F(\delta)$ as the RHS of the equation, and $f(\delta)$ as the higher order terms of $F(\delta)$.
+
+Thus, the our assumption is valid when $|f(\delta)|$ is small enough. We can upper bound $|f(\delta)|$ as follows
+\begin{align}
+&f(\delta)=\sum_{p=3}^\infty(-1)^{p-3}\frac{\delta^pA_pN}{dr^p}\\
+\implies&|f(\delta)|\le\sum_{p=3}^\infty\frac{|\delta|^pA_pN}{d|r|^p}\label{eq:upper-bound-f-initial}
+\end{align}
+
+Now let us consider that $\Delta_k=E_k-E_{\mathcal{G}}$, for any $k\in [1,m]$. Now, if $\Delta$ is the spectral gap of the Ising Hamiltonian, for then any such $\Delta_k$, we have $\Delta_k\geq \Delta$. Thus, we observe that for any integer $p\ge3$
+\begin{equation}\label{eq:upper-bound-Ap}
+A_p\le\frac{A_3}{\Delta^{p-3}}
+\end{equation}
+
+Then, the derived upper bound on $|f(\delta)|$ in Eq.~\eqref{eq:upper-bound-f-initial} can be expressed as
+\begin{equation}
+|f(\delta)|\le\frac{A_3|\delta|^3N}{d|r|^3}\sum_{p=0}^\infty\left|\frac{\delta}{r\Delta}\right|^p
+\end{equation}
+
+If for some positive constant $c'<1$ if $|\delta|<c'|r|\Delta$, then we obtain
+\begin{equation}
+|f(\delta)|\le\frac{A_3|\delta|^3N}{d|r|^3}\frac{1}{1-c'}
+\end{equation}
+
+The quadratic equation Eq.~\eqref{eq:delta-quadratic-eqn} gives us the following two solutions
+\begin{equation}\label{eq:expression-delta-pm}
+\delta_\pm=\frac{r}{2A_2}\left(A_1-r\pm\sqrt{(A_1-r)^2+\frac{4A_2d}{N}}\right)
+\end{equation}
+
+First of all, we observe that $\delta_+>0$ and $\delta_-<0$. And, we can obtain the following upper bound on the value of $|\delta_\pm|$
+\begin{equation}\label{eq:delta-pm-upper-bound}
+|\delta_\pm|\le\frac{|r|}{A_2}\left(|A_1-r|+\sqrt{\frac{A_2d}{N}}\right)
+\end{equation}
+
+The solutions $\delta_\pm$ are obtained when the terms of $f(\delta)$ are ignored. So, let the actual solutions of the taylor series expanded Eq.~\eqref{eq:delta-taylor-expanison} be $\delta_\pm'$. Now, we claim that the relative error of these solutions wrt the previously obtained solutions of $\delta_\pm$, Eq.~\eqref{eq:expression-delta-pm}, can be bounded by a term $\eta$ as follows
+\begin{equation}\label{eq:delta-pm-dash-ranges}
+\delta_+'\in\left((1-\eta)\delta_+,(1+\eta)\delta_+\right)\text{ and }\delta_-'\in\left((1+\eta)\delta_-,(1-\eta)\delta_-\right)
+\end{equation}
+
+Now, assuming $\delta_\pm'=(1+\eta)\delta_\pm$ we can bound $|f(\delta_\pm')|$ as follows
+\begin{align}
+|f(\delta_\pm')|&\le\frac{A_3N}{d|r|^3}\cdot|\delta_\pm|^3\cdot(1+\eta)^3\cdot\frac{1}{1-c'}\label{eq:f-delta-pm-dash-upper-bound}\\
+&\le\frac{A_3N}{dA_2^3}\cdot\frac{(1+\eta)^3}{1-c'}\cdot\left(|A_1-r|+\sqrt{\frac{A_2d}{N}}\right)^3&\text{(using  Eq.~\eqref{eq:delta-pm-upper-bound})}
+\end{align}
+
+\subsection{Validity of Results Inside the Robustness Window}
+
+We now observe that for any $r$ in the robustness window derived earlier, i.e., $\left(A_1-\Theta\left(\sqrt{\frac{A_2d}{N}}\right),A_1+\Theta\left(\sqrt{\frac{A_2d}{N}}\right)\right)$, there exists a positive constant $\kappa>1$ such that
+\begin{equation}
+|f(\delta_\pm')|\le\frac{A_3\sqrt{d}}{A_2^{\frac{3}{2}}\sqrt{N}}\cdot\frac{\kappa^3(1+\eta)^3}{1-c'}
+\end{equation}
+
+Thus, to make the assertion $|f(\delta_\pm')|\le\frac{\eta \kappa^3(1+\eta)^3}{1-c'}$, we make the substitution
+\begin{equation}\label{eq:expression-relative-error-robustness-window}
+\eta=\frac{A_3}{A_2^{\frac{3}{2}}}\sqrt{\frac{d}{N}}
+\end{equation}
+
+We also need to ensure that $\eta$ is small to tightly upper bound $|f(\delta_\pm')|$ and safely ignore the terms of $f(\delta)$. Thus, we eventually need to get a bound of the form $\eta<c$.
+% Thus, we need to add the following two condition on the Ising Hamiltonian $H_\sigma$
+% \begin{equation}\label{eq:relative-error-bound-in-window}
+% \eta=\frac{1}{\Delta^3A_2^{\frac{3}{2}}}\sqrt{\frac{d}{N}}<c
+% \end{equation}
+% with this assumption and a sufficiently small $c$, we can state that $\eta$ is small enough.
+% $$\sqrt{\frac{A_2d}{N}}<A_1\text{ and for a small constant }c,\ \frac{A_1A_3}{A_2^2}<c$$
+
+% \textcolor{blue}{Note: We split the conditions in two parts as the first condition is necessary for the results of robustness window to be valid.}
+
+% With these two assumptions, we can state that $\eta$ is small enough in the following way
+% \begin{equation}
+% \eta=\frac{A_3}{A_2^{\frac{3}{2}}}\sqrt{\frac{d}{N}}<\frac{c}{A_1}\sqrt{\frac{A_2d}{N}}<c
+% \end{equation}
+
+But first, we verify our assumption $|\delta|<c'|r|\Delta$. We perform this verification for $|\delta_\pm'|$ as follows,
+\begin{align}
+|\delta_\pm'|&\le|\delta_\pm|(1+\eta)\\
+&\le\kappa(1+c)\cdot\frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}\cdot|r|\Delta
+\end{align}
+where we already assume that values of $r$ belong to the robustness window.
+
+Thus, we need to add the following two condition on the Ising Hamiltonian $H_\sigma$
+\begin{equation}
+\frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}<c
+\end{equation}
+so that for a small enough value of $c$, we can obtain a bound of the form $|\delta|<c'|r|\Delta$
+
+We now observe that using this condition we can upper bound $\eta$ as follows
+\begin{align}
+\eta&=\frac{A_3}{A_2^{\frac{3}{2}}}\sqrt{\frac{d}{N}}\\
+&=\frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}\cdot\frac{A_3\Delta}{A_2}\\
+&<c\frac{A_3\Delta}{A_2}\le c
+\end{align}
+
+Hence, for a sufficiently small $c$, we can also state that $\eta$ is small enough, and we can successfully get a tight upper bound on $|f(\delta)|$ in the robustness window.
+
+
+% We now observe that using the condition we added in Eq.~\eqref{eq:relative-error-bound-in-window}, and the bound on $A_k$ in Eq.~\eqref{eq:upper-bound-Ak} that
+% \begin{align}
+% \frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}&=\frac{1}{\Delta^3A_2^{\frac{3}{2}}}\sqrt{\frac{d}{N}}\cdot A_2\Delta^2\\
+% &<cA_2\Delta^2\le c
+% \end{align}
+
+% And hence, for a small enough value of $c$, we can obtain a bound of the form $|\delta|<c'|r|\Delta$
+
+% Thus, for our assumption to hold true, we require the condition
+% $$\frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}\le c''$$
+% for a small value $c''$.
+
+To summarise, if the following condition satisfied, our results hold for $r\in\left(A_1-\Theta\left(\sqrt{\frac{A_2d}{N}}\right),A_1+\Theta\left(\sqrt{\frac{A_2d}{N}}\right)\right)$, i.e., when $r$ is in the robustness window,
+\begin{equation}
+\frac{1}{\Delta}\sqrt{\frac{d}{A_2N}}<c
+\end{equation}
+% \begin{enumerate}
+% \item $\sqrt{\frac{A_2d}{N}}<A_1$
+% \item For a small positive constant $c$, $\frac{A_1A_3}{A_2^2}<c$
+% \item For a small positive constant $c''$, $\sqrt{\frac{d}{A_2N}}\le c''\Delta$
+% \end{enumerate}
+
+\subsection{Deriving the Regime of Validity}
+Here, we analyse our results outside the robustness window, i.e.,
+$$r\notin\left(A_1-\Theta\left(\sqrt{\frac{A_2d}{N}}\right),A_1+\Theta\left(\sqrt{\frac{A_2d}{N}}\right)\right)$$
+OR, if we express $r$ as $r=A_1+\epsilon_r$, then we consider the cases where
+\begin{equation}
+|\epsilon_r|>\Theta\left(\sqrt{\frac{A_2d}{N}}\right)
+\end{equation}
+
+Now, since we are no longer in the robustness window, using the bound derived in Eq.~\eqref{eq:delta-pm-upper-bound}, we can state that there exists a positive constant $\kappa>1$ such that
+\begin{equation}\label{eq:delta-pm-upper-bound-regime}
+|\delta_\pm|\le\frac{\kappa|r||\epsilon_r|}{A_2}
+\end{equation}
+
+Applying this bound in the bound on $|f(\delta_\pm')|$ derived in Eq.~\eqref{eq:f-delta-pm-dash-upper-bound} we get
+\begin{equation}
+|f(\delta_\pm')|\le\frac{A_3N|\epsilon_r|^3}{dA_2^3}\cdot\frac{\kappa^3(1+\eta)^3}{1-c'}
+\end{equation}
+
+Again, to make the assertion $|f(\delta_\pm')|\le\frac{\eta \kappa^3(1+\eta)^3}{1-c'}$, we need to make the substitution
+\begin{equation}\label{eq:expression-relative-error-regime}
+\eta=\frac{A_3N|\epsilon_r|^3}{dA_2^3}
+\end{equation}
+
+And now to upper bound $\eta$ so that $|f(\delta_\pm')|$ is tightly upper bound we assert that $\eta<c$ for a sufficiently small value of $c$. This implies that
+\begin{equation}\label{eq:eps-r-upper-bound-1}
+|\epsilon_r|<c^{\frac{1}{3}}A_2\sqrt[3]{\frac{d}{A_3N}}
+\end{equation}
+
+Although, we still need to verify if the condition $|\delta|<c'|r|\Delta$, which is required for the bound on $|f(\delta_\pm')|$ derived in Eq.~\eqref{eq:f-delta-pm-dash-upper-bound} to hold, is satisfied. We do so using the bound on $|\delta_\pm|$ outside the robustness window, as derived in Eq.~\eqref{eq:delta-pm-upper-bound-regime}, on $\delta_\pm'$ as follows
+\begin{equation}
+|\delta_\pm'|\le\kappa(1+c)\cdot\frac{|\epsilon_r|}{A_2\Delta}\cdot|r|\Delta
+\end{equation}
+
+% From the bound on $|\epsilon_r|$ we obtained above in Eq.~\eqref{eq:eps-r-upper-bound-1} we observe that
+% \begin{equation}
+% |\epsilon_r|<c^{\frac{1}{3}}A_2\Delta\sqrt[3]{\frac{d}{N}}<c^{\frac{1}{3}}A_2\Delta
+% \end{equation}
+Thus, we need to add another bound on $|\epsilon_r|$ for this condition to be valid of the form
+\begin{equation}\label{eq:eps-r-upper-bound-2}
+|\epsilon_r|<c''A_2\Delta
+\end{equation}
+where, for a sufficiently small value of $c''$, we obtain the necessary bound of the form $|\delta|<c'|r|\Delta$ to assert the validity of the bound in $|f(\delta_\pm')|$ derived in Eq.\eqref{eq:f-delta-pm-dash-upper-bound}.\newline
+
+Combining both the bounds on $|\epsilon_r|$ derived in Eq.~\eqref{eq:eps-r-upper-bound-1} and Eq.~\eqref{eq:eps-r-upper-bound-2} we get
+\begin{equation}
+|\epsilon_r|<\Theta\left(A_2\cdot\min\left(\Delta,\ \sqrt[3]{\frac{d}{A_3N}}\right)\right)
+\end{equation}
+as we cannot make a direct comparison between $\Delta$ and $\sqrt[3]{\frac{d}{A_3N}}$. To summarise, when $$r\in\left(A_1-\Theta\left(A_2\cdot\min\left(\Delta,\ \sqrt[3]{\frac{d}{A_3N}}\right)\right),A_1+\Theta\left(A_2\cdot\min\left(\Delta,\ \sqrt[3]{\frac{d}{A_3N}}\right)\right)\right),$$ the ground state energy and the first excited state energy of the Hamiltonian $H(r)$ fall on either side of the ground state energy of $rH_\sigma$ with a very small deviation. Or in other words, $$\left(A_1-\Theta\left(A_2\cdot\min\left(\Delta,\ \sqrt[3]{\frac{d}{A_3N}}\right)\right),A_1+\Theta\left(A_2\cdot\min\left(\Delta,\ \sqrt[3]{\frac{d}{A_3N}}\right)\right)\right)$$ is the regime of validity.
+
+\subsection{Confirming Analysis}
+
+Lastly, when we are still in the regime of validity, we need to prove that roots of $F(\delta)$, i.e., $\delta_\pm'$, exist within $\eta$ relative of $\delta_\pm$, where $\eta$ is given by Eq.~\eqref{eq:expression-relative-error-robustness-window}, and, $|\delta_\pm|$ are the roots of $F(\delta)=0$ when we ignore the terms in $f(\delta)$. To do this, we equate the following expression
+\begin{equation}
+F(\delta_\pm(1+\eta'))=\frac{d}{N\delta_\pm(1+\eta')}\left(1+\frac{N}{d}\left(\frac{A_1}{r}-1\right)\delta_\pm(1+\eta')-\frac{A_2N}{dr^2}\delta_\pm^2(1+\eta')^2+f(\delta_\pm(1+\eta'))\right)
+\end{equation}
+where we can substitute $\eta'$ with $\eta$ or $-\eta$.
+
+Substituting the expression for $\delta_\pm$ as derived in Eq.~\eqref{eq:expression-delta-pm} we get
+\begin{multline}
+F(\delta_\pm(1+\eta'))=-\frac{d}{N\delta_\pm(1+\eta')}\left(\begin{aligned}
+&2\eta'+{\eta'}^2+(\eta'+{\eta'}^2)\frac{(A_1-r)N}{2dA_2}\left(A_1-r\pm\sqrt{(A_1-r)^2+\frac{4A_2d}{N}}\right)\\
+&-f(\delta_\pm(1+\eta'))    
+\end{aligned}
+\right)
+\end{multline}
+
+Provided that constants $c$ and $c'$ (The constants by which we upper bound $\eta$ and $\frac{|\delta|}{|r|\Delta}$ respectively) are sufficiently small, we observe that $F(\delta_\pm(1+\eta'))$ has different signs for $\eta'=\pm\eta$. Hence, this shows that there exist $\delta_\pm'$ in the ranges of a relative error defined in Eq.~\eqref{eq:delta-pm-dash-ranges} as long the values of $r$ are in the regime of validity.
+
+\subsection{Analysis in terms of s}
+
+We consider the symmetric subspace $\mathcal{H}_S$, its states $\ket{\Bar{k}}$, eigen-energies $E_k$, etc. and derive the regime of validity using $H(s)$ rather than $H(r)$.
+
+We first define the Hamiltonian $\Bar{H}(s)$ as $H(s)$ being restricted to the subspace $\mathcal{H}_S$. Thus,
+\begin{equation}
+  \Bar{H}(s)=-(1-s)\ket{s}\bra{s}+s\Bar{H_\sigma}
+\end{equation}
+where we had defined $\Bar{H_\sigma}$ in Eq.~\eqref{eq:def-H-sigma-bar}
+
+Again, we consider $\lambda,\ket{\psi}$ to be the eigenvalue-eigenvector pair of $\Bar{H}(s)$, and let
+$$\ket{\psi}=\sum_{k\in[m]}\alpha_k\ket{\Bar{k}}$$
+
+Following the previous procedure,
+\begin{align}
+           & \Bar{H}(s)\ket{\psi}=\lambda\ket{\psi}                                                                                                                  \\
+  \implies & -\frac{(1-s)\gamma}{\sqrt{N}}\sum_{k\in[m]}\sqrt{d_k}\ket{\Bar{k}} + s\sum_{k\in[m]}\alpha_kE_k\ket{\Bar{k}}=\lambda\sum_{k\in[m]}\alpha_k\ket{\Bar{k}}
+\end{align}
+where $\gamma=\braket{s}{\psi}$. And thus, for all $k$ in $[m]$,
+\begin{align}
+           & -\frac{(1-s)\gamma\sqrt{d_k}}{\sqrt{N}}+s\alpha_kE_k=\lambda\alpha_k                         \\
+  \implies & \alpha_k=\frac{(1-s)\gamma\sqrt{d_k}}{\sqrt{N}(sE_k-\lambda)}\label{eq:expression-alpha-k-s}
+\end{align}
+
+Equating $\gamma=\sum_{k\in[m]}\alpha_k\sqrt{\frac{d_k}{N}}$, and substituting the expression for $\alpha_k$ we get
+\begin{equation}\label{eq:lambda-equation}
+  1=\frac{1-s}{N}\sum_{k\in[m]}\frac{d_k}{sE_k-\lambda}
+\end{equation}
+
+We assume that this equation has a solution of the form $\lambda=sE_k+\delta$. Using this definition, and the taylor expansion of the denominator we get
+\begin{equation}\label{eq:taylor-expansion-s}
+  \frac{1}{1-s}=-\frac{d}{N\delta}+\frac{1}{N}\sum_{k\in[1,m]}\frac{d_k}{s\Delta_k}+\frac{\delta}{N}\sum_{k\in[1,m]}\frac{d_k}{s^2\Delta_k^2}+\mathcal{O}(\delta^2)
+\end{equation}
+where $\Delta_k=E_k-E_0$. Now, we assume that we are close to the avoided crossing, in a regime where we can safely ignore the higher order $\mathcal{O}(\delta^2)$ terms. Then, we obtain the following quadratic equation in $\delta$
+\begin{equation}\label{eq:delta-quadratic-s}
+  \delta^2-\frac{s}{A_2}\left(\frac{s}{1-s}-A_1\right)\delta-\frac{ds^2}{NA_2}=0
+\end{equation}
+where $A_1,A_2$ are as defined in Eq.~\eqref{eq:expression-Ap}. We get their solutions as follows
+\begin{equation}\label{eq:delta-pm-s-exp1}
+  \delta_\pm=\frac{s}{2A_2}\left[\frac{s}{1-s}-A_1\pm\sqrt{\left(\frac{s}{1-s}-A_1\right)^2+\frac{4A_2d}{N}}\right]
+\end{equation}
+
+We also observe that the gap between the two minimum eigenvalues of $\Bar{H}(s)$, i.e., $\delta_+-\delta_-$ is minimum when $\frac{s}{1-s}=A_1$. Thus, we get the position of avoided crossing at
+\begin{equation}\label{eq:avoided-crossing-position-s}
+  s^*=\frac{A_1}{A_1+1}
+\end{equation}
+
+We now revisit the taylor expansion stated in Eq.~\eqref{eq:taylor-expansion-s}, and determine the regime in which ignoring the higher order terms can be bounded by a constant, and hence, be ignored safely. We rewrite this expansion as follows
+\begin{equation}
+  F(\delta)=\frac{(1-s)d}{N\delta}\left[-1+\frac{N\delta}{ds}\left(A_1-\frac{s}{1-s}\right)+\frac{NA_2\delta^2}{ds^2}+\underbrace{\frac{N}{d}\sum_{p=3}^\infty\frac{A_p\delta^p}{s^p}}_{f(\delta)}\right]=0
+\end{equation}
+where $F(\delta)$ is the RHS and $f(\delta)$ is the function of higher order terms of $F(\delta)$.
+
+We can safely ignore the higher order terms in taylor expansion when $|f(\delta)|$ is sufficiently small. And hence, we need to upper bound $|f(\delta)|$. Using the extended triangle-inequality and the bound stated in Eq.~\eqref{eq:upper-bound-Ap}, we get
+\begin{equation}
+  |f(\delta)|\le\frac{NA_3|\delta|^3}{ds^3}\sum_{p=0}^\infty\frac{|\delta|^p}{(s\Delta)^p}
+\end{equation}
+
+If for some positive constant $c'<1$, $|\delta|\le c's\Delta$, then we obtain
+$$|f(\delta)|\le\frac{NA_3|\delta|^3}{ds^3}\frac{1}{1-c'}$$
+
+Let the two smallest actual solutions of $F(\delta)=0$ be $\delta_\pm'$, and let them be within a small relative error of the derived solutions $\delta_\pm$. That is, let
+$$\delta_+'\in\left((1-\eta)\delta_+,(1+\eta)\delta_+\right)\text{ and }\delta_-'\in\left((1+\eta)\delta_-,(1-\eta)\delta_-\right)$$
+
+Thus, we can assert that
+\begin{equation}
+  |f(\delta_\pm')|\le\frac{NA_3|\delta_\pm|^3}{ds^3}\frac{(1+\eta)^3}{1-c'}
+\end{equation}
+
+We now recall the expression derived for $\delta_pm$ in Eq.~\eqref{eq:delta-pm-s-exp1}, and rewrite it as follows
+\begin{equation}\label{eq:delta-pm-s-exp2}
+  \delta_\pm=\frac{s(A_1+1)}{2A_2(1-s)}\left[s-\frac{A_1}{A_1+1}\pm\sqrt{\left(s-\frac{A_1}{A_1+1}\right)^2+\frac{4A_2d}{N(A_1+1)^2}(1-s)^2}\right]
+\end{equation}
+
+We now consider $s=s^*+\epsilon_s$. Using this substitution and assumption with the inequality $\forall a,b\ge0;\sqrt{a^2+b^2}\le a+b$ we obtain the following upper bound
+\begin{equation}
+  |\delta_\pm|\le\frac{s(A_1+1)}{A_2}\left(\frac{|\epsilon_s|}{1-s}+\frac{1}{A_1+1}\sqrt{\frac{A_2d}{N}}\right)
+\end{equation}
+
+We know that when $|\epsilon_s|\le\Theta\left(\frac{1}{(A_1+1)^2}\sqrt{\frac{A_2d}{N}}\right)$ we are in the robustness window, as stated in Eq.~\eqref{eq:robustness-window-s}. We consider the case when $|\epsilon_s|>\Theta\left(\frac{1}{A_1+1}\sqrt{\frac{A_2d}{N}}\right)$
+
+We can now say that for some constant $\kappa>1$,
+\begin{equation}\label{eq:upper-bound-delta-pm-s}
+  |\delta_\pm|\le\frac{\kappa(A_1+1)s}{A_2}\cdot\frac{|\epsilon_s|}{1-s}
+\end{equation}
+And hence,
+\begin{equation}
+  |f(\delta_\pm')|\le\frac{NA_3(A_1+1)^3}{dA_2^3}\cdot\frac{|\epsilon_s|^3}{(1-s)^3}\cdot\frac{\kappa^3(1+\eta)^3}{1-c'}
+\end{equation}
+
+We consider $\eta=\frac{NA_3(A_1+1)^3}{dA_2^3}\cdot\frac{|\epsilon_s|^3}{(1-s)^3}$ and assert that $\eta\le c$ for some small constant $c$ so that we can obtain the upper bound
+$$|f(\delta_\pm')|\le\frac{\kappa^3c(1+c)^3}{1-c'}$$
+and hence, safely ignore the higher order terms in $f(\delta)$ without loosing much precision in our results.
+
+The assertion $\eta\le c$ implies that
+\begin{align}
+  |\epsilon_s| & \le\sqrt[3]{c}\cdot\frac{A_2(1-s)}{A_1+1}\sqrt[3]{\frac{d}{A_3N}} \\
+               & \le\sqrt[3]{c}\cdot\frac{A_2}{A_1+1}\sqrt[3]{\frac{d}{A_3N}}
+\end{align}
+
+Now, we extend the bound on $|\delta_\pm|$ to get the following
+$$|\delta_\pm'|\le\kappa(1+c)\cdot\frac{(A_1+1)|\epsilon_s|}{A_2(1-s)\Delta}\cdot s\Delta$$
+
+We now assert that $\frac{(A_1+1)|\epsilon_s|}{A_2(1-s)\Delta}\le c''$ for a sufficiently small constant $c''$ such that $\kappa(1+c)c''\le c'$ and we satisfy the condition $|\delta_\pm'|\le c's\Delta$. This assertion implies that
+\begin{align}
+  |\epsilon_s| & \le c''\frac{A_2\Delta(1-s)}{A_1+1} \\
+               & \le c''\frac{A_2\Delta}{A_1+1}
+\end{align}
+
+Lastly, we need to verify that $F(\delta)=0$ has a root in the intervals $((1-\eta)\delta_+,(1+\eta)\delta_+)$ and $((1+\eta)\delta_-,(1-\eta)\delta_-)$. For this, we consider $F(\delta_\pm(1+\eta'))$. We get this expression to be as
+\begin{equation}
+  F(\delta_\pm(1+\eta'))=\frac{(1-s)d}{N\delta_\pm(1+\eta')}\left[\eta'(2+\eta')+\eta'(1+\eta')\left(\frac{s}{1-s}-A_1\right)\frac{\delta_\pm N}{ds}\right]
+\end{equation}
+
+We observe that for sufficiently small values of the constants $c,c'$ and $c''$, $F(\delta_\pm(1+\eta'))$ will have different signs when we substitute $\eta'=\eta$ and when $\eta'=-\eta$. Thus, we can prove that $\delta_\pm'$ exist within an $\eta$-relative error of $\delta_\pm$.
+
+Hence, to satisfy all the assertions made above, we define our regime of validity to be
+\begin{equation}\label{eq:regime-of-validity-s}
+  |\epsilon_s|\le\Theta\left(\frac{A_2}{A_1+1}\cdot\min\left(\Delta,\sqrt[3]{\frac{d}{A_3N}}\right)\right)
+\end{equation}
+
+\section{Ground State at Edge of Regime of Validity}
+
+We propose evolving the Hamiltonian $H(s)$ till the right edge of the regime of validity to get the desired ground state with sufficiently high probabilty. Thus, we derive an expression for the coefficients $\alpha_k$ of the eigenstate $\ket{\psi(s)}$ of the general Hamiltonian $\Bar{H}(s)$ in the symmetric subspace $\mathcal{H_S}$ like Eq.~\eqref{eq:expression-alpha-k-star} at the right edge of the regime of validity. We also lower bound the square of the overlap with the ground state $|\alpha_0|^2$.
+
+First, let us consider $s=s^*+\epsilon_s$, where $s^*$ is the position of avoided crossing given by Eq.~\eqref{eq:avoided-crossing-position-s} and we consider
+$$\epsilon_s=\Theta\left(\frac{A_2}{A_1+1}\cdot\min\left(\Delta,\sqrt[3]{\frac{d_0}{A_3N}}\right)\right)$$
+to denote the right edge of the regime of validity according to Eq.~\eqref{eq:regime-of-validity-s}.
+
+Eu use the substitution $\lambda=sE_0+\delta$ and the rephrased expression for $\delta_\pm(s)$ denoted in Eq.~\eqref{eq:delta-pm-s-exp2} to derive
+\begin{equation}
+  \delta_-(s^*+\epsilon_s)=-\frac{2d_0s(1-s)}{N(A_1+1)}\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^{-1}
+\end{equation}
+
+Using the expression derived for $\alpha_k(s)$ with the initial substitutions $\lambda=sE_0+\delta$ in Eq.~\eqref{eq:expression-alpha-k-s}, and normalising the eigenstate $\ket{\psi}$, we get
+\begin{align}
+   & \sum_{k=0}^{m-1}|\alpha_k|^2=1                                                                                                                                     \\
+  \implies & 1=(1-s)^2\gamma^2\frac{1}{N}\sum_{k=0}^{m-1} \frac{d_k}{(s(E_k-E_0)-\delta)^2}                                                                                     \\
+  \implies & 1=(1-s)^2\gamma^2\frac{1}{N}\left[\frac{d_0}{\delta^2}+\sum_{k=1}^{m-1} \frac{d_k}{(s(E_k-E_0)-\delta)^2}\right]                                                   \\
+  \implies & 1= (1-s)^2\gamma^2\frac{1}{N}\left[ \frac{d_0}{\delta^2} + \sum_{k=1}^{m-1} \frac{d_k}{s^2(E_k-E_0)^2}\frac{1}{\left(1-\frac{\delta}{s(E_k-E_0)}\right)^2} \right]
+\end{align}
+
+Taking its taylor expansion we get
+\begin{equation}
+  1= (1-s)^2\gamma^2\frac{1}{N}\left[ \frac{d_0}{\delta^2} + \sum_{k=1}^{m-1} \frac{d_k}{s^2(E_k-E_0)^2}\left(1+2\frac{\delta}{s(E_k-E_0)}+\sum_{p=2}^{\infty}(p+1)\left(\frac{\delta}{s(E_k-E_0)}\right)^p\right)\right]
+\end{equation}
+
+Using the definition of $A_p$ in Eq.~\eqref{eq:expression-Ap} we get
+\begin{align}
+   & 1= (1-s)^2\gamma^2\left[ \frac{d_0}{\delta^2 N} + \frac{A_2}{s^2}+\sum_{p=1}^{\infty}(p+1)\frac{\delta^pA_{p+2}}{s^{p+2}}\right]                     \\
+  \implies & \left( \frac{s}{1-s}\right)^2 = \gamma^2\left[ A_2 + \frac{d_0s^2}{\delta^2 N}+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(\frac{\delta}{s}\right)^p\right]
+\end{align}
+
+We know that $\delta_\pm$ are the solutions of the quadratic equation Eq.~\eqref{eq:delta-quadratic-s}. Using this we derive that
+\begin{equation}
+  \frac{d_0s^2}{\delta_\pm^2 N}=A_2-\frac{s(A_1+1)\epsilon_s}{\delta_\pm(1-s)}
+\end{equation}
+
+And hence,
+\begin{align}
+   & \gamma_-(s^*+\epsilon_s) = \frac{s}{1-s} \left( 2A_2-\frac{s(A_1+1)\epsilon_s}{\delta_-(1-s)}+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(\frac{\delta_-}{s}\right)^p\right)^{-\sfrac{1}{2}}                                                                                                                          \\
+  \implies & \gamma_-(s^*+\epsilon_s) = \frac{s}{1-s}\begin{pmatrix}2A_2+\frac{N(A_1+1)^2\epsilon_s}{2d_0(1-s)^2}\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]\\+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(-\frac{2d_0(1-s)}{N(A_1+1)}\right)^p\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^{-p}\end{pmatrix} ^{-\sfrac{1}{2}}
+\end{align}
+
+And finally, using Eq.~\eqref{eq:expression-alpha-k-s} we get
+\begin{multline}
+  \alpha_k^-(s^*+\epsilon_s)=\frac{s(1-s)}{s\Delta_k-\delta_-}\sqrt{\frac{d_k}{N}}\left(2A_2+\frac{N(A_1+1)^2\epsilon_s}{2d_0(1-s)^2}\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]\right.\\\left.+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(-\frac{2d_0(1-s)}{N(A_1+1)}\right)^p\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^{-p}\right)^{-\sfrac{1}{2}}
+\end{multline}
+where $\Delta_k=E_k-E_0$.
+
+We now look at the overlap of the ground state of $\Bar{H}(s^*+\epsilon_s)$ with the desired state, i.e., the ground state of $\Bar{H}\sigma$ or $\ket{\Bar{0}}$. Thus,
+\begin{multline}\label{eq:expression-mod-alpha-0-sq}
+  |\braket{\psi_-(s^*+\epsilon_s)}{\Bar{0}}|^2=|\alpha_0^-(s^*+\epsilon_s)|^2=\frac{N(A_1+1)^2}{4d_0}\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^2\\\left(2A_2+\frac{N(A_1+1)^2\epsilon_s}{2d_0(1-s)^2}\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]\right.\\\left.+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(-\frac{2d_0(1-s)}{N(A_1+1)}\right)^p\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^{-p}\right)^{-1}
+\end{multline}
+
+We use the inequality $\forall a,b\ge0; a\le\sqrt{a^2+b^2}\le a+b$ to get the following lower bound,
+\begin{multline}
+  % \label{eq:expression-mod-alpha-0-sq}
+  |\alpha_0^-(s^*+\epsilon_s)|^2\ge\frac{N(A_1+1)^2\epsilon_s^2}{d_0}\left(2A_2+\frac{N(A_1+1)^2\epsilon_s}{d_0(1-s)^2}\left[\epsilon_s+\frac{1-s}{A_1+1}\sqrt{\frac{A_2d_0}{N}}\right]\right.\\\left.+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(-\frac{2d_0(1-s)}{N(A_1+1)}\right)^p\left[\epsilon_s+\sqrt{\epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}\right]^{-p}\right)^{-1}
+\end{multline}
+
+As we are outside of the robustness window given by Eq.~\eqref{eq:robustness-window-s}, we can make the following assumption
+\begin{equation}
+  \epsilon_s^2+\frac{4A_2d_0}{N(A_1+1)^2}(1-s)^2\approx\epsilon_s^2
+\end{equation}
+and thus,
+\begin{align}
+  |\alpha_0^-(s^*+\epsilon_s)|^2 & \ge\frac{N(A_1+1)^2\epsilon_s^2}{d_0}\begin{pmatrix}2A_2+\frac{N(A_1+1)^2\epsilon_s}{d_0(1-s)^2}\left[\epsilon_s+\frac{1-s}{A_1+1}\sqrt{\frac{A_2d_0}{N}}\right]\\+\sum_{p=1}^{\infty}(p+1)A_{p+2}\left(-\frac{2d_0(1-s)}{N(A_1+1)\epsilon_s}\right)^p\end{pmatrix}^{-1}                     \\
+ & =\frac{(1-s)^2}{1+\frac{1-s}{(A_1+1)\epsilon_s}\sqrt{\frac{A_2d_0}{N}}+\frac{2A_2d_0(1-s)^2}{N(A_1+1)^2\epsilon_s^2}-\sum_{p=1}^{\infty}\frac{(p+1)A_{p+2}(1-s)}{2(A_1+1)\epsilon_s}\left(-\frac{2d_0(1-s)}{N(A_1+1)\epsilon_s}\right)^{p+1}}\label{eq:non-approx-lower-bound-alpha0}
+\end{align}
+
+According to the value of $\epsilon_s$ we get from Eq.~\eqref{eq:avoided-crossing-position-s}, we know that $\epsilon_s\le\Theta(N^{-\sfrac{1}{3}})$. And using this bound on the denominator of the lower bound of $|\alpha_0^-|^2$ we derived above, we get
+\begin{align}\label{eq:approx-lower-bound-alpha0}
+  |\alpha_0^-(s^*+\epsilon_s)|^2 & \ge\frac{(1-s)^2}{1+\frac{1-s}{(A_1+1)\epsilon_s}\sqrt{\frac{A_2d_0}{N}}}
+\end{align}
+
+Taking the taylor series expanison of the denominator and ignoring higher order terms we get,
+\begin{align}
+    |\alpha_0^-(s^*+\epsilon_s)|^2 & \ge(1-s)^2\left(1-\frac{1-s}{(A_1+1)\epsilon_s}\sqrt{\frac{A_2d_0}{N}}\right)\\
+     & =\left(\frac{1}{(A_1+1)^2}-\frac{2\epsilon_s}{A_1+1}+\epsilon_s^2\right)\left(1-\frac{1}{(A_1+1)}\sqrt{\frac{A_2d_0}{N}}\left(\frac{1}{(A_1+1)\epsilon_s}-1\right)\right)\\
+     & =\begin{matrix}\frac{1}{(A_1+1)^2}-\frac{1}{(A_1+1)^4\epsilon_s}\sqrt{\frac{A_2d_0}{N}}-\frac{2\epsilon_s}{A_1+1}\\+\frac{3}{(A_1+1)^3}\sqrt{\frac{A_2d_0}{N}}+\epsilon_s^2-\frac{3\epsilon_s}{(A_1+1)^2}\sqrt{\frac{A_2d_0}{N}}+\frac{\epsilon_s^2}{A_1+1}\sqrt{\frac{A_2d_0}{N}}\end{matrix}\label{eq:expanded-alpha-0-lower-bound}
+\end{align}
+
+Ignoring the lower order terms, except for the two highest order terms, which are the first two terms of Eq.~\eqref{eq:expanded-alpha-0-lower-bound}, we get the following lower bound,
+
+\begin{equation}
+  |\alpha_0^-(s^*+\epsilon_s)|^2 \ge\frac{1}{(A_1+1)^2}\left(1-\underbrace{\frac{1}{(A_1+1)^2\epsilon_s}\sqrt{\frac{A_2d_0}{N}}}_{\approx\mathcal{O}(N^{\sfrac{-1}{6}})}\right)
+  \label{eq:final_overlap_lower_bound}
+\end{equation}
+
+
+\section*{Appendix}
+
+\subsubsection*{Corollary 6.1}\label{sec:corollary-6.1} If $\int_{\forall s} \frac{1}{\Delta^p} ds = O(\Delta_m^{1-p})$ holds for all $p > 1$, $|\Delta'| = O(1)$, $|\omega_0'| = O(1)$, $\| H' \| = O(1)$, $\| H'' \| = O(1)$, then the procedure solves the problem with a time complexity of $O(\Delta_m^{-1})$ for all $1 < q < 2$. [This is from Joseph's notes.]\newline
+
+\noindent In our case we have:
+
+\begin{enumerate}
+  \item $\Delta_m = O\left(\frac{A_1}{A_1 + 1}\sqrt{\frac{d_0}{A_2N}}\right)$\newline
+  \item Left of avoided crossing, we use $\Delta = \frac{A_1(1+A_1)}{A_2}\left(\frac{A_1}{A_1 + 1} - s\right)$ which is less than the actual gap $g(s)$. This is proven previously.\newline
+  \item Right of the avoided crossing we use $\Delta = \frac{s^* (s - s*) (A_1 + 1)^2}{A_2}$, which we prove later on to be a lower bound on the spectral gap $g(s)$. Integration over this region is restricted from $S^+$ to the end of the regime of validity.\newline
+  \item $|\Delta'| = O(1)$, $|\omega_0'| = O(1)$, $\| H' \| = O(1)$, $\| H'' \| = O(1)$, all of these hold.
+\end{enumerate}
+
+\subsubsection*{Integral Calculation} To confirm that \hyperref[sec:corollary-6.1]{corollary 6.1} holds for our Hamiltonian, we have to prove:
+
+\begin{equation}
+  \int_{\forall s} \frac{ds}{\Delta^p} = \int_\text{left} \frac{ds}{\Delta^p} + \int_\text{right} \frac{ds}{\Delta^p} + \int_{\mathcal S} \frac{ds}{\Delta^p} = \mathcal O(\Delta_m^{1-p})
+  \label{eq:integral_corollary}
+\end{equation}
+
+First, let's evaluate the integral for the left of the robustness window. Thus the region of integration will range from $0$ to $S^-$.
+
+\begin{equation}
+  \int_\text{left} \frac{ds}{\Delta^p} = \int_{0}^{S^-} \frac{ds}{\Delta^p} = \int_{0}^{S-} \frac{ds}{\left[\frac{A_1(1+A_1)}{A_2}\left(\frac{A_1}{A_1 + 1} - s\right)\right]^p}
+\end{equation}
+
+For simplicity of writing we take $\beta=\frac{A_1(A_1+1)}{A_2}$. Thus,
+\begin{align}
+  \int_\text{left} \frac{ds}{\Delta^p} & =\int_{0}^{S-} \frac{ds}{\left[\beta\left(s^* - s\right)\right]^p} = \left[\frac{(s^* - s)(\beta(s^*-s))^{-p}}{p - 1}\right]_{0}^{S^-} \\
+   & = \frac{\beta^{-p}(s^*-S^-)^{1-p}}{p - 1} - \frac{\beta^{-p}(s^*)^{1-p}}{p - 1}                                                        \\
+   & = \mathcal O \left({\beta^{-p}}(s^* - S^-)^{1 - p}\right)
+\end{align}
+
+Re-substituting the value of $\beta$ we get,
+\begin{align}
+  \int_\text{left} \frac{ds}{\Delta^p} & =\mathcal O \left( \frac{A_2^p}{A_1^p (A_1 + 1)^p} \frac{(A_1 + 1)^{2p - 2}\sqrt{N^{p-1}}}{\sqrt{A_2^{p-1}d_0^{p-1}}} \right) \\
+  & = \mathcal O \left( \frac{(A_1 + 1)^{p - 2} \sqrt{A_2^{p + 1} N^{p -1}}}{A_1^p \sqrt{d_0^{p-1}}} \right)
+  \label{eq:integral_corollary_left}
+\end{align}
+
+Meanwhile, for evaluating the integral over the robustness window we consider $\Delta=\Delta_m$, as we know that $\Delta_m$ is a lower bound on the spectral gap, and that $\Delta=\mathcal{O}(\Delta_m)$ inside the robustness window. Evaluating the integral gives us the following.
+\begin{align}
+  \int_{\mathcal S} \frac{ds}{\Delta^p} & = \int_{\mathcal S} \frac{ds}{\Delta^p_m}\\
+   & = \mathcal O\left(\frac{(A_1 + 1)^p}{A_1^p}\sqrt{\frac{A_2^pN^p}{d_0^p}}\right) \cdot \mathcal O \left( \frac{\sqrt{A_2d_0}}{(A_1 + 1)^2 \sqrt{N}} \right) \\
+   & = \mathcal O \left( \frac{(A_1 + 1)^{p - 2} \sqrt{A_2^{p + 1} N^{p -1}}}{A_1^p \sqrt{d_0^{p-1}}} \right)
+  \label{eq:integral_corollary_mid}
+\end{align}
+
+On the other hand, we have the explicit complexity of $\mathcal O({\Delta_m^{1-p}})$ as calculated below.
+
+\begin{equation}
+  \mathcal O({\Delta_m^{1-p}}) = \mathcal O\left(\frac{(A_1 + 1)^{p - 1}}{A_1^{p - 1}} \frac{\sqrt{A_2^{p - 1} N^{p - 1}}}{\sqrt {d_0^{p-1}}}\right)
+\end{equation}
+
+From Eq.~(\ref{eq:integral_corollary_left}, \ref{eq:integral_corollary_mid}) we have,
+\begin{align}
+  \int_\text{left} \frac{ds}{\Delta^p} + \int_{\mathcal S} \frac{ds}{\Delta^p} & =  \mathcal O \left( \frac{(A_1 + 1)^{p - 2} \sqrt{A_2^{p + 1} N^{p -1}}}{A_1^p \sqrt{d_0^{p-1}}} \right)
+  \label{eq:left_mid_integral}\\
+    & = \mathcal O \left( \frac{(A_1 + 1)^{p - 1} \sqrt{A_2^{p - 1} N^{p -1}}}{A_1^{p-1} \sqrt{d_0^{p-1}}} \cdot \frac{A_2}{A_1(A_1 + 1)}\right)  \\
+    & = \mathcal O \left( \frac{(A_1 + 1)^{p - 1} \sqrt{A_2^{p - 1} N^{p -1}}}{A_1^{p-1} \sqrt{d_0^{p-1}}}\right) = \mathcal O (\Delta_m^{1 - p})
+  \label{eq:integral_left_mid_satisfies}
+\end{align}
+since $\frac{A_2}{A_1(A_1 + 1)} \leq \frac{1}{E_1-E_0} \leq \mathcal O(1)$.\newline
+
+Finally we evaluate the integral over the right of the robustness window. This concludes the complete expression for Eq.~(\ref{eq:integral_corollary}).\newline
+
+In the region right to the point of avoided crossing we consider $\Delta = \frac{s^* (s - s^*) (A_1 + 1)^2}{A_2}$, where the following is the proof that $\Delta$ is a lower bound on the spectral gap when $s > s^*$.\newline
+
+Let us denote that $g(s)$ is the spectral gap. Then,
+\begin{align}
+  g(s) & = \frac{s(A_1 + 1)}{(1-s)A_2} \sqrt{\left(\frac{A_1}{1 + A_1} - s\right)^2 + 4A_2d_0\frac{(1 - s)^2}{N(A_1 + 1)^2}} \\
+    & \geq \frac{s(A_1 + 1)(s - s^*)}{A_2(1 - s)}  \\
+    & \geq \frac{s(s - s^*)(A_1 + 1)^2}{A_2} \\
+    & \geq \frac{s^*(s - s^*) (A_1 + 1)^2}{A_2} = \Delta
+\end{align}
+
+Note that the above only holds on the right of the avoided crossing ($s > s^*$) and till the end of the regime of validity since the expression used for $g(s)$ is from Eq.~(\ref{eq:piecewise-delta-s}).\newline
+
+Using the lower bound on $\Delta$ proved above,
+
+\begin{equation}
+  \int_{\text{right}} \frac{ds}{\Delta^p} = \frac{A_2^p}{A_1^p(A_1+1)^p}\int_{s^*+\epsilon_s^{RB}}^{s^*+\epsilon_s^{RV}} \frac{ds}{(s-s^*)^p}
+\end{equation}
+
+where $\epsilon_s^{RB}$ and $\epsilon_s^{RV}$ are the deviations from the position of avoided crossing at the right side edges of the Robustness Window and the Regime of Validity respectively. Their values are given by Eq.~\eqref{eq:robustness-window-s} and Eq.~\eqref{eq:regime-of-validity-s} respectively. We further calculate the integral.
+
+\begin{align}
+  \int_{\text{right}} \frac{ds}{\Delta^p} & = \frac{A_2^p}{A_1^p(A_1+1)^p}\cdot\frac{1}{p-1}\left(\frac{1}{(\epsilon_s^{RB})^{p-1}}-\frac{1}{(\epsilon_s^{RV})^{p-1}}\right) \\
+  & =\mathcal{O}\left(\frac{(A_1+1)^{p-2}}{A_1^p}\sqrt{\frac{A_2^{p+1}N^{p-1}}{d_0^{p-1}}}\right)
+  \label{eq:integral_right}
+\end{align}
+
+Thus, from Eq.~(\ref{eq:left_mid_integral}, \ref{eq:integral_left_mid_satisfies}, \ref{eq:integral_right}), we have
+
+\begin{align}
+  \int_{\text{left}} \frac{ds}{\Delta^p} + \int_{\mathcal S} \frac{ds}{\Delta^p} + \int_{\text{right}} \frac{ds}{\Delta^p} = \mathcal O (\Delta_m^{1 - p})
+\end{align}
+
+which satisfies \hyperref[sec:corollary-6.1]{\textbf{Corollary 6.1}}.
+
+\subsubsection*{Time Complexity} Upon scaling the derivative of the schedule with the gap (lower-bounded), we can obtain a time complexity of $\mathcal O(\Delta_m^{-1})$, since \hyperref[sec:corollary-6.1]{Corollary 6.1} holds true.\newline
+
+\begin{align}
+  T = \mathcal O (\Delta_m^{-1}) = O\left(\frac{A_1 + 1}{A_1}\sqrt{\frac{A_2N}{d_0}}\right)
+  \label{eq:time-complexity}
+\end{align}
+
+Thus, the required time complexity of the procedure is optimal. And, when $A_1, A_2, d_0$ are constants, the complexity is $\mathcal O(\sqrt N)$.
+
+\subsubsection*{Assumptions}
+Here is a comprehensive list of assumptions/conditions necessary for the above time complexity to hold true:
+\begin{itemize}
+    \item $\frac{A_2}{A_1(A_1 + 1)} \leq \mathcal O(1)$
+    \item In case $\frac{A_2}{A_1(A_1 + 1)} \leq \mathcal{\Tilde{O}}(1)$, can the log factor be absorbed in the formulation of the corollary.
+    \item Even if we integrate from $0$ to end of the regime of validity rather than $1$, \hyperref[sec:corollary-6.1]{Corollary 6.1} still holds.
+\end{itemize}
+
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
+\end{document}

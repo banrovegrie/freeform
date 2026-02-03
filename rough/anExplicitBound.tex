@@ -1,0 +1,99 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+% ------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+
+\newcommand{\defeq}{\coloneqq}
+% ------
+
+\title{An explicit bound}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle 
+
+Set $\epsilon \defeq \sqrt{d_0/N}$. 
+
+\begin{lemma}
+For all $s \in \frac{A_1}{A_1 + 1} + \big[-\frac{\sqrt{A_2}}{16A_1^2}\epsilon, \frac{\sqrt{A_2}}{16A_1^2}\epsilon\big]$, the gap is at least $\frac{A_1}{\sqrt{A_2}(1+A_1)}\epsilon$.
+
+Assuming $\epsilon \leq \frac{1}{5}\frac{A_1^2}{\sqrt{A_2}(1 + A_1)}$, $\epsilon \leq \frac{1}{322}\frac{A^{2/3}_2}{A_1^2A_3}$ and $1 \leq A_1, A_2$.
+\end{lemma}
+\begin{proof}
+We are looking for solutions of
+\begin{equation}
+0= \delta + \epsilon^2(1-s) - A_1 \frac{\delta(1-s)}{s} - A_2 \frac{\delta^2(1-s)}{s^2} + R(\delta, s). \label{eq1}
+\end{equation}
+Substituting in $s = \frac{A_1}{A_1+1} - s_0$ and $\delta = \frac{A_1}{\sqrt{A_2}(1+A_1)}(\epsilon + \delta_0)$. Then the claim is that for all $s_0 \in \big[-\frac{\sqrt{A_2}}{16A_1^2}\epsilon, \frac{\sqrt{A_2}}{16A_1^2}\epsilon\big]$, there exists a solution $\delta_0$ in the interval $\big[-\frac{\epsilon}{2}, \frac{\epsilon}{2}\big]$. Thus the gap is at least $\frac{A_1}{\sqrt{A_2}(1+A_1)}\epsilon$.
+
+To show the claim, we can expand \eqref{eq1} as a polynomial in $\delta_0$, without expanding $R$, i.e.\ we have an equation of the form $A\delta_0^2 + B\delta_0 + C = 0$, where $A,B,C$ may contain $\epsilon, s_0, A_1,A_2$ and $R$. The aim is then to show that $A\delta_0^2 + B\delta_0 + C$ is positive for $\delta_0 = \epsilon / 2$ and negative for $\delta_0 = -\epsilon / 2$. This is equivalent to
+\begin{align}
+0 &\leq \frac{\epsilon}{2}(B+ \frac{\epsilon A}{2}) + C \\
+0 &\geq -\frac{\epsilon}{2}(B- \frac{\epsilon A}{2}) + C
+\end{align}
+and both these inequalities follow from
+\begin{equation}
+\Big|\frac{2C}{\epsilon}\Big| + \Big|\frac{\epsilon A}{2}\Big| \leq B.
+\end{equation}
+Now asking the computer nicely gives the result
+\begin{multline}
+B = 2 A_{1}^{2} A_{2} \epsilon + s_{0}^{2} \left(- A_{1}^{4} \sqrt{A_{2}} - 3 A_{1}^{3} \sqrt{A_{2}} - 3 A_{1}^{2} \sqrt{A_{2}} - A_{1} \sqrt{A_{2}}\right) +
+\\ s_{0} \left(A_{1}^{4} \sqrt{A_{2}} + 2 A_{1}^{3} \sqrt{A_{2}} + 2 A_{1}^{3} A_{2} \epsilon + A_{1}^{2} \sqrt{A_{2}} + 2 A_{1}^{2} A_{2} \epsilon\right)
+\end{multline}
+Filling in the bounds on $s_0$ give a lower bound on $B$ of $A_1^2A_2\epsilon$.
+
+For $A$ the computer gives
+\begin{equation}
+A = A_{1}^{3} A_{2} s_{0} + A_{1}^{2} A_{2} s_{0} + A_{1}^{2} A_{2}.
+\end{equation}
+The assumptions on $\epsilon$ imply $\frac{1}{80}\frac{A_1^2A_2}{A_1^2A_2 + A_1^3A_2} = \frac{1}{80}\frac{1}{1 + A_1} \geq |s_0|$, so  $\big|\frac{\epsilon A}{2}\big|\leq \frac{1}{2}A_1^2A_2\epsilon + \frac{1}{160}A_1^2A_2\epsilon$.
+
+Finally we tackle $C$. This term contains $R$. By the Lagrange form of the Taylor remainder, we can bound
+\begin{align}
+|R| \leq 2 \frac{\delta^3}A_3 \frac{1-s}{s^3} &= \frac{2 A_{1}^{3} A_{3} \left(\delta_{0} + \epsilon\right)^{3} \left(\frac{1}{A_{1} + 1} + s_{0}\right)}{A_{2}^{\frac{3}{2}} \left(A_{1} + 1\right)^{3} \left(\frac{A_{1}}{A_{1} + 1} - s_{0}\right)^{3}} \\
+&\leq \frac{16 A_{1}^{3} A_{3} \left(\delta_{0} + \epsilon\right)^{3} \left(\frac{1}{A_{1} + 1} + s_{0}\right)}{A_{2}^{\frac{3}{2}} \left(A_1 - 1/2\right)^{3}} \\
+&\leq 128 A_{1}^{3} A_2^{-3/2} A_{3} \left(\delta_{0} + \epsilon\right)^{3} \left(\frac{1}{A_{1} + 1} + s_{0}\right) \\
+&\leq 192 A_{1}^{3} A_2^{-3/2} A_{3} \left(\delta_{0} + \epsilon\right)^{3} \frac{1}{A_{1} + 1} \\
+&\leq 648 A_{1}^{3} A_2^{-3/2} A_{3} \frac{1}{A_{1} + 1} \epsilon^3 \\
+&\leq 648 A_{1}^{2} A_2^{-3/2} A_{3} \epsilon^3
+\end{align}
+For $C$, we have
+\begin{multline}
+C = R \left(A_{1}^{3} A_{2} s_{0}^{2} - 2 A_{1}^{3} A_{2} s_{0} + A_{1}^{3} A_{2} + 3 A_{1}^{2} A_{2} s_{0}^{2} - 4 A_{1}^{2} A_{2} s_{0} + A_{1}^{2} A_{2} + 3 A_{1} A_{2} s_{0}^{2} - 2 A_{1} A_{2} s_{0} + A_{2} s_{0}^{2}\right) \\
++ \epsilon^{2} \left(- A_{1}^{3} A_{2} s_{0}^{3} + 2 A_{1}^{3} A_{2} s_{0}^{2} - 3 A_{1}^{2} A_{2} s_{0}^{3} + 3 A_{1}^{2} A_{2} s_{0}^{2} + 2 A_{1}^{2} A_{2} s_{0} - 3 A_{1} A_{2} s_{0}^{3} + 2 A_{1} A_{2} s_{0} - A_{2} s_{0}^{3} - A_{2} s_{0}^{2}\right) \\
++ \epsilon \left(- A_{1}^{4} \sqrt{A_{2}} s_{0}^{2} + A_{1}^{4} \sqrt{A_{2}} s_{0} - 3 A_{1}^{3} \sqrt{A_{2}} s_{0}^{2} + 2 A_{1}^{3} \sqrt{A_{2}} s_{0} - 3 A_{1}^{2} \sqrt{A_{2}} s_{0}^{2} + A_{1}^{2} \sqrt{A_{2}} s_{0} - A_{1} \sqrt{A_{2}} s_{0}^{2}\right)
+\end{multline}
+and we can split $C = RC_1 + \epsilon^2C_2 + \epsilon C_3$. We see that $|C_1| \leq 10 A_1^2A_2$. We do not need to worry about $s_0$ and the assumption on $\epsilon$ implies $|2RC_1 / \epsilon| \leq \frac{1}{8}A_1^2A_2 \epsilon$.
+
+
+Next $|C_2| \leq 20 A_1^2A_2|s_0|$. The first assumption on $\epsilon$ implies $|s_0| \leq \frac{1}{80}\frac{1}{1+A_1} \leq \frac{1}{160}$. Then $|C_2\epsilon| \leq \frac{20}{160}A_1^2A_2 \epsilon = \frac{1}{8}A_1^2A_2 \epsilon$.
+
+Finally, $|C_3| \leq A_1^4\sqrt{A_2}|s_0| \leq \frac{1}{16}A_1^2A_2\epsilon \leq \frac{1}{8}A_1^2A_2\epsilon$.
+
+Putting everything together yields
+\begin{equation}
+\Big|\frac{2C}{\epsilon}\Big| + \Big|\frac{\epsilon A}{2}\Big| \leq \frac{3}{8}A_1^2A_2 \epsilon + \frac{1}{2}A_1^2A_2\epsilon + \frac{1}{160}A_1^2A_2\epsilon \leq A_1^2A_2\epsilon \leq B
+\end{equation}
+\end{proof}
+
+\begin{lemma}
+\begin{align}
+\int_{\frac{A_1}{A_1+1} - \frac{\sqrt{A_2}}{16A_1^2}\epsilon}^{\frac{A_1}{A_1+1} + \frac{\sqrt{A_2}}{16A_1^2}\epsilon} \Big(\frac{A_1}{\sqrt{A_2}(1+A_1)}\epsilon\Big)^{-p}d{s} &= \frac{\sqrt{A_2}^{p+1}(1+A_1)^p}{8A_1^{p+2}}\epsilon^{p-1} \\
+\int^{\frac{A_1}{A_1+1} - \frac{\sqrt{A_2}}{16A_1^2}\epsilon}_{0} \Big(\frac{A_1(1+A_1)}{A_2}\big(\frac{A_1}{1+A_1} - s\big)\Big)^{-p}d{s} &= \frac{- A_{1}^{1 - p} \left(A_{1} + 1\right)^{p - 1} + A_{2}^{\frac{1}{2} - \frac{p}{2}} \left(16 A_{1}^{2}\right)^{p - 1}\epsilon^{p-1}}{p - 1}
+\end{align}
+\end{lemma}
+
+
+\end{document}

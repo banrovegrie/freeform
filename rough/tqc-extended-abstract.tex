@@ -1,0 +1,156 @@
+\documentclass[a4paper,11pt]{article}
+
+\pdfoutput=1
+
+\usepackage[final]{hyperref}
+\hypersetup{
+           breaklinks=true,   % splits links across lines
+           colorlinks=true,   % displays links as colored text instead of blocks
+        }
+\usepackage{natbib} %%% https://www.overleaf.com/learn/latex/Bibliography_management_with_natbib
+\setcitestyle{square,compress,numbers,comma}
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,bindingoffset=0cm,left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm,footskip=1.0cm]{geometry}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{thm-restate}
+\usepackage{physics}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{doi}
+
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage[center]{caption}
+
+% \theoremstyle{definition}
+\newtheorem{theorem}{Theorem} %[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+
+% \numberwithin{theorem}{section}
+% \numberwithin{definition}{section}
+% \numberwithin{lemma}{section}
+% \numberwithin{conjecture}{section}
+% \numberwithin{corollary}{section}
+% \numberwithin{equation}{section}
+
+\newcommand{\rr}{\mathbb{R}}
+\newcommand{\nn}{\mathbb{N}}
+%\newcommand{\cc}{\mathbb{C}}
+\newcommand{\paren}[1]{\left( #1 \right)}
+\newcommand{\parenfl}[1]{\left\{ #1 \right\}}
+\newcommand{\logp}[1]{\log \left( #1 \right)}
+\newcommand{\logpp}[2]{\log^{#1} \left( #2 \right)}
+\newcommand{\maxp}[1]{\max \left( #1 \right)}
+\newcommand{\normalized}[1]{\frac{#1}{\norm{#1}}}
+\newcommand{\ohtilde}[1]{\widetilde{\mathcal{O}}\paren{ #1 }}
+%\newcommand{\polylog}[1]{\mathrm{polylog}\paren{#1}}
+\newcommand{\controlled}[1]{C\text{-}#1}
+\def\wmax{{w_\text{max}}}
+\def\wmin{{w_\text{min}}}
+
+\usepackage{complexity}
+\newclass{\sharpP}{\#P}
+\newclass{\MAXproblem}{MAX}
+
+\allowdisplaybreaks
+\renewcommand{\thefootnote}{\roman{footnote}}
+
+%% Autoref prefixes
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\def\theoremautorefname{Theorem}
+\def\lemmaautorefname{Lemma}
+\def\definitionautorefname{Definition}
+\def\conjectureautorefname{Conjecture}
+\def\proofautorefname{Proof}
+
+\title{Unstructured Adiabatic Quantum Optimization: Optimality with Limitations}
+\author{
+    Arthur Braida\thanks{QuIC, ULB, Belgium. \texttt{arthur.braida@ulb.be}}
+    \and
+    Shantanav Chakraborty\thanks{CQST and CSTAR, IIIT Hyderabad, India. \texttt{shchakra@iiit.ac.in}} 
+    \and
+    Alapan Chaudhuri\thanks{CQST and CSTAR, IIIT Hyderabad, India. \texttt{alapan.chaudhuri@research.iiit.ac.in}}
+    \and
+    Joseph Cunningham\thanks{QuIC, ULB, Belgium. \texttt{joseph.cunningham@ulb.be}}
+    \and
+    Rutvij Menavlikar\thanks{CQST and CSTAR, IIIT Hyderabad, India. \texttt{rutvij.menavlikar@research.iiit.ac.in}}
+    \and
+    Leonardo Novo\thanks{INL Braga, Portugal. \texttt{leonardo.novo@inl.int}}
+    \and
+    J\'{e}r\'{e}mie Roland\thanks{QuIC, ULB, Belgium. \texttt{jeremie.roland@ulb.be}}
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+Adiabatic Quantum Computation (AQC) is an interesting, Hamiltonian-based alternative to the standard gate-based model of quantum computation \cite{farhi2000adiabatic, farhi2001adiabatic}. It is also universal for quantum computation: the circuit and the adiabatic models are equivalent up to a polynomial overhead \cite{aharonov2007adiabatic}. Consequently, over the years, it has been instrumental to the design of several novel quantum algorithms \cite{aharonov2003stategeneration, krovi2010adiabatic, somma2012quantum, garnerone2012pagerank, Hastings2021powerofadiabatic, gilyen2021subexponential}. The underlying principle behind AQC is the adiabatic theorem of quantum mechanics \cite{jansen2007bounds}, an idea that is quite distinct from the circuit model. The computation starts from the known ground state of an initial Hamiltonian $H_0$, which is easy to prepare (usually a product state). This Hamiltonian is then transformed ``slowly'' (adiabatically) into a final Hamiltonian $H_P$, whose ground states encapsulate the solution to the underlying computational problem. The total Hamiltonian is an interpolation between the initial and the final Hamiltonians, i.e.\ $H(s)=(1-s)H_0+sH_P$, where $s:[0, T]\mapsto [0,1]$, known as the adiabatic ``\textit{schedule}'', determines the adiabatic path from $H_0$ to $H_P$, while $T$ is the total time of evolution. The quantum adiabatic theorem guarantees that the final state has a large overlap with the desired ground state, provided $T$ (which is also the algorithmic running time) is at least a polynomial in the inverse of the minimum spectral gap of any intermediate Hamiltonian $H(s)$ along the adiabatic path \cite{jansen2007bounds, elagrt2012note}. 
+
+Originally, AQC was formulated as a generic method for efficiently solving classically hard optimization problems, known as adiabatic quantum optimization (AQO) \cite{farhi2000adiabatic, farhi2001adiabatic, reichardt2004adiabatic}. Indeed, AQO provides a natural framework to solve \NP-hard problems by finding the minimum of a cost function encoded in the ground states of an $n$-qubit Ising Hamiltonian \cite{barahona1982computational, lucas2014ising}. However, provable results about the performance of AQO in such settings are largely unknown, as it becomes difficult to compute the spectral gap throughout the adiabatic evolution. Exponential speedups are unlikely as for random instances of certain \NP-hard problems, exponentially small gaps appear, and the system gets stuck in one of the many local minima, leading to a running time that can be slower than even classical brute force search \cite{altshuler2010anderson}. In this regard, a natural question to ask is whether it is possible to prove at least a Grover-like speedup \cite{roland2004quantum} over unstructured classical search approaches for the problem of finding the global minimum of a cost function. Note that this is possible in the circuit model: amplitude amplification techniques can be used to find solutions to NP-hard problems defined on $n$-bits in time $\text{poly}(n) 2^{n/2}$. On the other hand, in the adiabatic setting, although a lower bound of $\Omega(2^{n/2})$ has existed for over a decade \cite{farhi2008fail}, a purely adiabatic algorithm with this running time has been absent. Note that naively encoding a circuit model algorithm as an AQC already requires a polynomial overhead, erasing any speed-up that is quadratic. Indeed, as mentioned previously, this has been an outstanding problem primarily because it is difficult to bound the spectral gap throughout the adiabatic evolution, which is crucial for determining the running time of any adiabatic algorithm.
+
+In this work, our first contribution is that we provide an adiabatic algorithm based on unstructured quantum search that can find the minimum of an Ising Hamiltonian in time $O(2^{n/2}~\poly(n))$, matching the aforementioned lower bound (up to a factor of poly$(n)$). The results are quite general: our algorithm can find the minimum of any Hamiltonian that is diagonal in the computational basis, provided it has a sufficiently large spectral gap. More precisely, consider any $n$-qubit, $\sigma_z$-diagonal Hamiltonian $H_z$ with distinct eigenvalues $0\leq E_0<E_1<\cdots<E_M\leq 1$, such that each $E_k$ has degeneracy $d_k$, satisfying $\sum_{k=0}^{M-1} d_k=2^n$. Moreover, assume that its spectral gap $\Delta$, satisfies $\Delta>50\sqrt{d_0/2^n}$. Furthermore, for positive integers $k$, define spectral parameters
+$$
+A_k=\sum_{\ell=1}^{M-1}\dfrac{d_\ell}{(E_\ell-E_0)^k},
+$$
+of $H_z$. Then, we prove the following theorem:  
+\begin{restatable}[Running time of AQO]{theorem}{mainresultone}
+\label{thm:main-result-1}
+Let $\varepsilon\in [0,1)$ and consider the adiabatic Hamiltonian 
+$$
+H(s)=-(1-s)\ket{\psi_0}\bra{\psi_0}+s H_z,
+$$ 
+such that $\ket{\psi_0}=\ket{+}^{\otimes n}$.  Furthermore, if $\Omega_0$ denotes the ground energy space of $H_z$, i.e. $\Omega_0=\{z| z\in\{0,1\}^n,~H_z\ket{z}=E_0\ket{z}\}$, then adiabatic quantum optimization prepares a quantum state that has a fidelity of at least $1-\varepsilon$ with an equal superposition of the ground states of $H_z$, given by
+$$
+\ket{v(1)}=\dfrac{1}{\sqrt{d_0}}\sum_{z\in \Omega_0}\ket{z},
+$$
+in time 
+$$
+T=O\left(\dfrac{1}{\varepsilon}\cdot\dfrac{\sqrt{A_2}}{A_1^2\Delta^2}\cdot \sqrt{\dfrac{2^n}{d_0}}\right).
+$$
+\end{restatable} 
+Our results hold for a broad class of classical spin models, including Hamiltonians whose ground states encode solutions of \NP-hard problems. For instance, consider the $n$-qubit 2-local classical Ising Hamiltonian $H_{\sigma}=\sum_{\langle i,j \rangle} J_{ij}\sigma^{i}_z \sigma^{j}_z +\sum_{i=1}^n h_j \sigma^{j}_z$, where both $J_{ij},~h_i$ takes integer values between $[-m,m]$, where $m=\poly(n)$. These are the quantum versions of classical Ising spin glass Hamiltonians, which are known to encode a plethora of \NP-hard problems \cite{barahona1982computational, lucas2014ising}. For the normalized version of $H_{\sigma}$ (i.e., $H_{\sigma}$ rescaled so that its spectrum lies in $[0,1]$), the spectral gap $ \Delta\geq 1/\poly(n)$, $A_1\geq \Theta(1)$ and $A_2\leq O(\poly(n))$. This implies that the running time of AQO, from Theorem \ref{thm:main-result-1} is $T=O(2^{n/2}\poly(n)/\varepsilon)$.
+
+Much like the adiabatic version of Grover's algorithm, having a one-dimensional projector as the initial Hamiltonian ensures that the spectrum of the $H(s)$ has only a single avoided crossing between the ground and the first excited state. However, the position of this avoided crossing is non-trivial in our case and depends on the spectrum of the problem Hamiltonian $H_z$. Moreover, the spectrum is significantly more complicated owing to the presence of avoided crossings between the higher excited states, which makes it challenging to bound the spectral gap of $H(s)$ (denoted by $g(s)$) throughout the adiabatic evolution. Here we outline a sketch of the proof of Theorem \ref{thm:main-result-1}:
+
+\textbf{Proof sketch of Theorem \ref{thm:main-result-1}:~} We first provide an approximation of the position of the avoided crossing between the ground and the first excited states. This involves (a) finding the point where the spectral gap of $H(s)$ is minimum, (b) identifying a narrow window of $s$, in which the spectral gap scales similarly to the minimum gap, and (c) proving that the spectral gap is at least as large outside this window.  We prove (a) by showing that the position of the avoided crossing is well approximated by $s^*=A_1/(A_1+1)$, and use a perturbative analysis to demonstrate (b), i.e.\ the spectral gap of $H(s)$ (denoted by $g(s)$) remains close to the minimum gap within a small window $\delta_s$ (of width roughly $\sqrt{d_0 A_2/2^n}$) around $s^*$, where \begin{equation}
+ g_{\min}=\dfrac{2A_1}{A_1+1}\sqrt{\dfrac{d_0}{A_2 N}},
+\end{equation}
+is the minimum spectral gap of $H(s)$. Outside this window, we define two distinct regions and use different techniques for each of these regions to obtain lower bounds on $g(s)$, thereby proving (c). To the left of the avoided crossing, we make use of the variational principle to obtain a tight lower bound on $g(s)$. However, the same technique does not yield any bound on $g(s)$ to the right of the avoided crossing, as the spectrum is significantly more complicated. Indeed, it is considerably more challenging to obtain a tight bound on $g(s)$ in this region. We consider a carefully chosen line $\gamma(s)$ that lies between the lowest and the second lowest eigenvalues of $H(s)$ and show that the spectrum is at least a certain distance from this line by obtaining the resolvent of $H(s)$. 
+
+Having a tight bound on $g(s)$ for any $s$, (i) allows us to construct the optimal local schedule and (ii) apply the adiabatic theorem. In this regard, we develop a result of independent interest, namely, a simplified version of the adiabatic theorem that is quite general and requires minimal assumptions on $H(s)$: it holds for any bounded, twice differentiable Hamiltonian with a known lower bound on its gap $g(s)$. We are able to obtain a generic expression for the running time of any adiabatic algorithm under a local adaptive schedule whose derivative scales with $g(s)$. We apply these bounds in the context of AQO, in conjunction with the bounds obtained for $g(s)$, to obtain a closed-form expression on the running time $T$, proving Theorem \ref{thm:main-result-1}.
+
+Note that to run the AQO algorithm, we need to construct the appropriate local schedule, for which we argue that prior knowledge of the position of the avoided crossing is required to an additive precision of $O(\delta_s)$. This, in turn, necessitates the estimation of $A_1$ prior to the running of the adiabatic algorithm. Our second contribution is to rigorously prove that this is computationally hard. More precisely, we prove that it is \NP-hard to approximate $A_1$ even to within an additive precision of $1/\poly(n)$ (which is much larger than the desired accuracy). Moreover, estimating this quantity exactly (or near exactly) is as hard as solving any problem in \sharpP~(the counting analogue of \NP), i.e.\ it is \sharpP-hard. Formally, we prove the following theorem:
+\begin{theorem}[Hardness of estimating $A_1$]
+\label{thm:np-hardness-3sat}
+Let $\varepsilon\in [0,1)$. Suppose there exists a classical procedure $\mathcal{C}_{\varepsilon}(\langle H \rangle)$ that accepts as input, the description of an $n$-qubit Hamiltonian $H$ and outputs $\tilde{A}_1(H)$ such that
+$$
+\left|\tilde{A}_1(H)-A_1(H)\right|\leq \varepsilon.
+$$
+Then, it is possible to solve the $3$-\SAT\ problem by making only two calls to $\mathcal{C}_{\varepsilon}$, provided $
+\varepsilon < 1/(72(n-1))$. 
+
+Furthermore, for any Ising Hamiltonian $H_{\sigma}$, if $\varepsilon < O(2^{-\poly(n)})$, then it is possible to estimate the degeneracy of the ground state of $H_{\sigma}$ by only $O(\poly(n))$ calls to $\mathcal{C}_{\varepsilon}$.
+\end{theorem}
+\textbf{Proof Sketch of Theorem \ref{thm:np-hardness-3sat}:~} For the first part of the proof, we consider the 3-\SAT~problem which asks if a given Boolean formula has a satisfying assignment; solving it reduces to whether we can disambiguate between two promised thresholds of the ground energy of a 3-local Hamiltonian $H$. We prove that it is possible to distinguish between these two thresholds of the ground energy by making only two calls to any classical algorithm $\mathcal{C}_{\varepsilon}$ that estimates $A_1$ to an additive accuracy of $\varepsilon<1/(72(n-1))$.  
+
+For the second part, we modify the Ising Hamiltonian $H_{\sigma}$ by adding an extra spin qubit of a certain local energy and use $\mathcal{C}$ to estimate $A_1$ for this modified Hamiltonian. By varying this local energy term of the additional spin, we estimate $A_1$ for $O(\poly(n))$ different values, requiring only $O(\poly(n))$ calls to any classical procedure that exactly estimates $A_1$. By using polynomial interpolation techniques, we construct a polynomial from which the degeneracies $d_k$  of $H_{\sigma}$ can be extracted exactly. Recall that the counting version of 3-\SAT~(\#3-\SAT) asks the number of satisfying assignments of a given Boolean formula and is \sharpP-complete. This is equivalent to extracting the degeneracy of the ground state $d_0$, of $H_{\sigma}$. Thus, our reduction proves that computing $A_1$ exactly is \sharpP-hard. We also prove that this result is robust to sufficiently small errors (as long as $\varepsilon\in O(2^{-\poly(n)})$) in the approximation of $A_1$.
+
+Overall, we prove that AQO can quadratically speed up solutions to \NP-hard problems, closing a long-standing open problem. However, we also show that this is contingent on solving a computationally hard problem a priori, pointing to a fundamental limitation that is absent in the circuit model. 
+
+ 
+ 
+\bibliography{bibliography}
+\bibliographystyle{unsrturl}
+
+\end{document}

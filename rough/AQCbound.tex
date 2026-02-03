@@ -1,0 +1,439 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{bbold}
+\usepackage{mathtools} % For coloneqq
+\usepackage[ruled, linesnumbered]{algorithm2e}
+\usepackage[margin=1.1in]{geometry}
+
+% ------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+\DeclareMathOperator{\diff}{d \!}
+\DeclareMathOperator\Tr{Tr}
+\DeclareMathOperator\id{id}
+
+\providecommand{\od}[3][]{\ensuremath{
+\ifinner
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\else
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\fi
+}}
+
+\providecommand{\tod}[3][]{\ensuremath{\mathinner{
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\providecommand{\dod}[3][]{\ensuremath{\mathinner{
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+
+\newcommand\ket[1]{|#1\rangle}
+\newcommand\bra[1]{\langle#1|}
+\newcommand\ketbra[2]{|#1\rangle\langle#2|}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+
+\newcommand{\setbuilder}[3][\null]{%
+  \ifx#1\null
+       { \left\{ #2 \;\middle|\; #3 \right\} }%
+    \else%
+       { #1\{ #2 \;#1|\; #3 #1\} }%
+    \fi}
+
+\newcommand{\defeq}{\coloneqq}
+% ------
+
+\title{Adiabatic theorem with adapted schedule}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle 
+
+\begin{abstract}
+Some notes on AQC with adapted schedule.
+\end{abstract}
+
+\section{Introduction}
+
+
+\subsection{Technical assumptions}
+\label{assumptions}
+For a given instance of a problem, we assume that we have a continuous, twice differentiable path of admissible Hamiltonians $H(s)$, where $s\in [0,1]$. We also assume that we can prepare a relevants eigenstate of $H(0)$.
+
+We assume the existence of the following objects: a number $\Delta_m >0$ and functions $\omega_0: [0,1]\to \R$ and $\Delta: [0,1]\to [0,1]$ such that
+\begin{itemize}
+\item $\omega_0$ continuous;
+\item $\omega_0(s)$ is an eigenvalue of $H(s)$ for all $s\in [0,1]$;
+\item $\Delta(s) \geq \Delta_m$ for all $s\in [0,1]$;
+\item the intersection of $[\omega_0(s) - \Delta(s), \omega_0(s) + \Delta(s)]$ with the spectrum of $H(s)$ is exactly $\{\omega_0(s)\}$.
+\end{itemize}
+Let $P(s)$ be the projector on the eigenspace associated to the eigenvalue $\omega(s)$. We also set $Q(s) = \id - P(s)$.
+
+In order to perform our algorithm, we assume knowledge of $\Delta$, which bounds the gap. We do not assume more detailed knowledge of the gap, $\omega_0$, or any other part of the spectrum.
+
+\section{Adiabatic eigenpath traversal}
+Suppose we have a time-dependent Hamiltonian $H_a(t)$. The Liouville–von Neumann equation is
+\begin{equation}
+\od{\rho}{t} = -i[H,\rho(t)].
+\end{equation}
+Now suppose the time depends on some parameter $s\in [0,1]$, so $t = K(s)$.
+
+By performing a change of variable, we have a parameter-dependent Hamiltonian $H(s)$, where $s\in [0,1]$. The Liouville–von Neumann equation then becomes
+\begin{equation} \label{adiabaticDifferentialEq}
+\od{\rho}{s} = -iK'[H,\rho(s)].
+\end{equation}
+We call $K(s)$ the schedule.
+
+\begin{lemma}
+Let $H$ be a bounded self-adjoint operator with $0\in\sigma(H)$ and $\min\big|\sigma(H)\setminus\{0\}\big| = \Delta \neq 0$. Consider the real functions
+\begin{itemize}
+\item $f(x) = \begin{cases}1 & (x = 0) \\ 0 & (x\neq 0)\end{cases}$;
+\item $g(x) = 1- f(x)$;
+\item $h(x) = \begin{cases}0 & (x = 0) \\ x^{-1} & (x\neq 0)\end{cases}$.
+\end{itemize}
+By continuous functional calculus,\footnote{While none of $f,g,h$ are continuous as real functions, they are continuous when restricted to $\sigma(H)$, which means wee can apply continuous functional calculus.} we can define $P_H \defeq f(H)$, $Q_H \defeq g(H)$ and $H^+ \defeq h(H)$. Then 
+\begin{enumerate}
+\item $P_H$ is the projector onto the ground eigenspace of $H$;
+\item $Q_H = \id - P_H$;
+\item $HH^+ = Q_H$;
+\item $\norm{H^+} = \Delta^{-1}$.
+\end{enumerate}
+\end{lemma}
+
+\begin{lemma} \label{lemma:errorBound}
+Let $K: [0,1]\to \R^+$ be a differentiable function such that the derivative $K'$ is absolutely continuous.
+
+Under the assumptions in \ref{assumptions}, the evolution with schedule $K(s)$ has an error that is bounded by
+\begin{equation}
+\epsilon \leq \begin{aligned}[t] &(K'(0))^{-1}\norm{\big[P'(0), (H(0)-\omega_0(0)\id)^{+}\big]}
++ (K'(1))^{-1}\norm{\big[P'(1), (H(1)-\omega_0(1)\id)^{+}\big]} \\
+&+ \int_0^1(K')^{-1}\norm{\big[P', (H-\omega_0\id)^{+}\big]'}\diff{s} + \int_0^1\big((K')^{-1}\big)'\norm{\big[P', (H-\omega_0\id)^{+}\big]}\diff{s}.
+\end{aligned}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The error is given by $\epsilon = 1 - \Tr\big(P(1)\rho(1)\big) = \Tr\big(P(0)\rho(0)\big) - \Tr\big(P(1)\rho(1)\big) = \Big|\Tr(P\rho)\big|_0^1\Big|$, so it makes sense to track how the fidelity $\Tr\big(P(s)\rho(s)\big)$ changes in time.
+
+We construct a differential equation for $\Tr(P\rho)$ by taking the derivative with respect to $s$, $\Tr(P\rho)' = \Tr(P'\rho) + \Tr(P\rho')$. This can be simplified using the fact that $PP'P = 0$ and $QP'Q = 0$,\footnote{We have $P' = (PP)' = P'P + PP'$, so $PP'P = 2PP'P$ and $QP'Q = 0$.} since
+\begin{equation}
+\Tr(P\rho') = -iK' \Tr\big(P[H,\rho(s)]\big) = -iK' \Tr\big([H,P\rho(s)]\big) = 0.
+\end{equation}
+As $HP = \omega_0 P$, we have
+\begin{align}
+(H- \omega_0\id)\rho P &= (H\rho - \rho H)P = [H,\rho]P \\
+P\rho (H- \omega_0\id) &= P(\rho H - H\rho) = -P[H,\rho].
+\end{align}
+We then calculate:
+\begin{align}
+\Tr(P\rho)' &= \Tr(P'\rho) + \Tr(P\rho') \\
+&= \Tr(P'\rho) \\
+&= \Tr(PP'Q\rho) + \Tr(QP'P\rho) \\
+&= \Tr\Big(PP'(H- \omega_0\id)^{+}(H-\omega_0\id)\rho\Big) + \Tr\Big((H-\omega_0\id)(H-\omega_0\id)^{+}P'P\rho\Big) \\
+&= \Tr\Big(PP'(H-\omega_0\id)^{+}[H,\rho]\Big) - \Tr\Big((H-\omega_0\id)^{+}P'P[H,\rho]\Big) \\
+&= \Tr\Big(P'(H-\omega_0\id)^{+}[H,\rho]\Big) - \Tr\Big((H-\omega_0\id)^{+}P'[H,\rho]\Big) \\
+&= \Tr\Big(\big[P', (H-\omega_0\id)^{+}\big][H,\rho]\Big) \\
+&= i(K')^{-1}\Tr\Big(\big[P', (H-\omega_0\id)^{+}\big]\rho'\Big).
+\end{align}
+Integrating gives
+\begin{align}
+\Tr(P\rho)\big|_0^1 &= i\int_0^1(K')^{-1}\Tr\Big(\big[P', (H-\omega_0\id)^{+}\big]\rho'\Big)\diff{s} \\
+&= i(K')^{-1}\Tr\Big(\big[P', (H-\omega_0\id)^{+}\big]\rho\Big)\big|_0^1 \begin{aligned}[t]&- i\int_0^1(K')^{-1}\Tr\Big(\big[P', (H-\omega_0\id)^{+}\big]'\rho\Big)\diff{s} \\
+&-i\int_0^1\big((K')^{-1}\big)'\Tr\Big(\big[P', (H-\omega_0\id)^{+}\big]\rho\Big)\diff{s}.\end{aligned}
+\end{align}
+The error $\epsilon = \Big|\Tr(P\rho)\big|_0^1\Big|$ can be bounded by bounding the absolute value of these three terms separately. We then have
+\begin{equation}
+\epsilon \leq \begin{aligned}[t] &(K'(0))^{-1}\norm{\big[P'(0), (H(0)-\omega_0(0)\id)^{+}\big]}
++ (K'(1))^{-1}\norm{\big[P'(1), (H(1)-\omega_0(1)\id)^{+}\big]} \\
+&+ \int_0^1(K')^{-1}\norm{\big[P', (H-\omega_0\id)^{+}\big]'}\diff{s} + \int_0^1\big((K')^{-1}\big)'\norm{\big[P', (H-\omega_0\id)^{+}\big]}\diff{s}.
+\end{aligned}
+\end{equation}
+\end{proof}
+
+\begin{lemma} \label{lemma:pseudoInverseDerivative}
+Let $H(s)$ be a path of operators with $0\in\sigma\big(H(s)\big)$ and $\min\big|\sigma(H(s))\setminus\{0\}\big| = \Delta(s) \neq 0$ for all $s$. We have $(H^+)' = -H^+H'H^+ + P_H'H^+ + H^+P_H'$.
+\end{lemma}
+\begin{proof}
+We calculate
+\begin{align}
+(H^+)' &= \lim_{h\to 0} \frac{H^+(s+h) - H^+(s)}{h} \\
+&= \lim_{h\to 0} \frac{Q_H(s)T^+(s+h) - H^+(s)Q_H(s+h)}{h} + \frac{P_H(s)H^+(s+h) - H^+(s)P_H(s+h)}{h}.
+\end{align}
+We first develop the second part:
+\begin{multline}
+\lim_{h\to 0} \frac{P_H(s)H^+(s+h) - H^+(s)P_H(s+h)}{h} \\
+= \lim_{h\to 0} \frac{P_H(s)H^+(s+h) - P_H(s+h)H^+(s+h) - H^+(s)P_H(s+h) + H^+(s)P_H(s)}{h} \\
+= \lim_{h\to 0} \frac{P_H(s) - P_H(s+h)}{h}H^+(s+h) + H^+(s)\frac{P_H(s) - P_H(s+h)}{h}.
+\end{multline}
+Taking the limit gives $P_H'H^+ + H^+P_H'$. For the first part, we calculate
+\begin{align}
+\lim_{h\to 0} \frac{Q_H(s)H^+(s+h) - H^+(s)Q_H(s+h)}{h} &= \lim_{h\to 0} \frac{H^+(s)H(s)H^+(s+h) - H^+(s)H(s+h)H^+(s+h)}{h} \\
+&= \lim_{h\to 0} H^+(s)\frac{H(s) - H(s+h)}{h}H^+(s+h) \\
+&= \lim_{h\to 0} -H^+(s)\frac{H(s+h) - H(s)}{h}H^+(s+h) \\
+&= -H^+H'H^+.
+\end{align}
+\end{proof}
+\begin{lemma} \label{lemma:projectorDerivativeBounds}
+Under the assumptions in \ref{assumptions}, we have
+\begin{enumerate}
+\item $\lVert P'\rVert \leq 2 \dfrac{\lVert H'\rVert}{\Delta}$;
+\item $\lVert P^{\prime\prime}\rVert \leq 8 \dfrac{\lVert H'\rVert^2}{\Delta^2} + 2 \dfrac{\lVert H^{\prime\prime}\rVert}{\Delta}$;
+\item $\norm{\big((H-\omega_0\id)^+\big)'} \leq \dfrac{1}{\Delta^2}(5\norm{H'}+|\omega_0'|)$;
+\item $\norm{\big[P', (H-\omega_0\id)^+\big]} \leq 4\dfrac{\norm{H'}}{\Delta^2}$;
+\item $\norm{\big[P', (H-\omega_0\id)^+\big]'} \leq 36\dfrac{\norm{H'}^2}{\Delta^3} + 4\dfrac{\norm{H''}}{\Delta^2} + 4\dfrac{\norm{H'}}{\Delta^3}|\omega_0'|$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(1) Let $\Gamma$ be a circle in the complex plane, centred at the ground energy with radius $\Delta /2$. Then we have the Riesz form of the projector
+\[ P = \frac{1}{2\pi i}\oint_\Gamma R_H(z)\diff{z}, \]
+where $R_H(z) = \big(z\id - H\big)^{-1}$ is the resolvent of $H$ at $z$. Then $R_H(z)' = R_H(z)H'R_H(z)$ (the derivative is with respect to $s$, not $z$). As $H$ is a normal operator, the norm $\lVert R_H(z)\rVert$ is equal to the inverse of the distance from $z$ to the spectrum $\sigma(H)$. On the circle $\Gamma$ this is equal to $(\Delta/2)^{-1}$ everywhere. We can then approximate
+\begin{align*}
+\lVert P'\rVert &= \Big\lVert \frac{1}{2\pi i}\oint_\Gamma R_H(z)' \diff{z} \Big\rVert \\
+&\leq  \frac{1}{2\pi}\oint_\Gamma \lVert R_H(z)'\lVert \diff{z} \\
+&\leq \frac{1}{2\pi}\oint_\Gamma \lVert R_H(z) \rVert\cdot \lVert H' \rVert\cdot \lVert R_H(z)\rVert\diff{z} \\
+&= \frac{1}{2\pi} \Big(\frac{2}{\Delta}\Big)^2 \lVert H'\rVert \oint_\Gamma \diff{z} \\
+&= \frac{1}{2\pi} \Big(\frac{2}{\Delta}\Big)^2 2\pi \frac{\Delta}{2} \lVert H'\rVert \\
+&= 2\frac{\lVert H'\rVert}{\Delta}.
+\end{align*}
+(2) Similarly, we can write
+\[ P^{\prime\prime} = \frac{1}{2\pi i}\oint_\Gamma 2R_H(z)H'R_H(z)H'R_H(z) + R_H(z)H^{\prime\prime}R_H(z)\diff{z}. \]
+Estimating this in the same way yields
+\[ \lVert P^{\prime\prime}\rVert \leq 8\frac{\lVert H'\rVert^2}{\Delta^2} + 2\frac{\lVert H^{\prime\prime}\rVert}{\Delta}.  \]
+
+(3, 4, 5) Follow from points (1) and (2) and lemma \ref{lemma:pseudoInverseDerivative}.
+\end{proof}
+
+\subsection{Linear schedule}
+We first derive a theorem under the assumption that $K'$ is constant.
+In this case we obtain the following result:
+\begin{theorem} \label{theorem:constantRate}
+Under the assumptions in \ref{assumptions}, the target state is produced with a fidelity of at least $1-\epsilon$ if $K'$ is constant and
+\begin{equation}
+\epsilon^{-1} \bigg(4\frac{\norm{H'(0)}}{\Delta(0)^2} + 4\frac{\norm{H'(1)}}{\Delta(1)^2} + \int_0^1\Big(36 \frac{\norm{H'}^2}{\Delta^3} + 4\frac{\norm{H''}}{\Delta^2} + 4\frac{\norm{H'}}{\Delta^3}|\omega_0'|\Big)\diff{s}\bigg) \leq K'.
+\end{equation}
+In this case the time complexity of the procedure is given by $T = K(1) = \int_0^1 K'\diff{s} = K'$.
+\end{theorem}
+\begin{proof}
+Let $\epsilon_0$ be the actual error of the algorithm. We need $\epsilon_0\leq \epsilon$. We can use lemma \ref{lemma:projectorDerivativeBounds} to rewrite the inequality in lemma \ref{lemma:errorBound} as
+\begin{align}
+\epsilon_0 &\leq \epsilon \leq \begin{aligned}[t] &(K')^{-1}\norm{\big[P'(0), (H(0)-\omega_0(0)\id)^{+}\big]}
++ (K')^{-1}\norm{\big[P'(1), (H(1)-\omega_0(1)\id)^{+}\big]} \\
+&+ \int_0^1(K')^{-1}\norm{\big[P', (H-\omega_0\id)^{+}\big]'}\diff{s}
+\end{aligned} \\
+&\leq (K')^{-1}\bigg(4\frac{\norm{H'(0)}}{\Delta(0)^2} + 4\frac{\norm{H'(1)}}{\Delta(1)^2} + \int_0^1\Big(36 \frac{\norm{H'}^2}{\Delta^3} + 4\frac{\norm{H''}}{\Delta^2} + 4\frac{\norm{H'}}{\Delta^3}|\omega_0'|\Big)\diff{s}\bigg)
+\end{align}
+Set $B \defeq \bigg(4\frac{\norm{H'(0)}}{\Delta(0)^2} + 4\frac{\norm{H'(1)}}{\Delta(1)^2} + \int_0^1\Big(36 \frac{\norm{H'}^2}{\Delta^3} + 4\frac{\norm{H''}}{\Delta^2} + 4\frac{\norm{H'}}{\Delta^3}|\omega_0'|\Big)\diff{s}\bigg)$.
+Then we have
+\begin{equation}
+\epsilon_0 \leq (K')^{-1}B \leq \epsilon B^{-1}B = \epsilon,
+\end{equation}
+so the procedure works.
+\end{proof}
+
+\subsection{Scaling the derivative of the schedule with the gap}
+
+\begin{theorem} \label{theorem:adaptiveRate}
+Under the assumptions in \ref{assumptions}, we additionally assume that there exists $1\leq q\leq 2$ and $B_1,B_2$ such that $\int_0^1 \frac{1}{\Delta^{q}}\diff{s} \leq B_1\Delta_m^{1-q}$ and $\int_0^1 \frac{1}{\Delta^{3-q}}\diff{s} \leq B_2\Delta_m^{q-2}$ for all instances of the problem. Then the target state is produced with a fidelity of at least $1-\epsilon$ if
+\begin{equation}
+K' = \epsilon^{-1}\frac{c}{\Delta^q\Delta_m^{2-q}},
+\end{equation}
+where
+\begin{equation}
+c = \sup_{s\in[0,1]}\Big(8\norm{H'(s)} + 36\norm{H'(s)}^2B_2 + 4\norm{H''(s)} + 4\norm{H'(s)}\,|\omega_0'(s)| B_2 + q|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)B_2 \Big).
+\end{equation}
+In this case the time complexity is given by $T = K(1) \leq \dfrac{\epsilon^{-1}cB_1}{\Delta_m}$.
+\end{theorem}
+\begin{corollary} \label{corollary:adaptiveRate}
+If $\int_0^1 \frac{1}{\Delta^p} \diff{s} = O(\Delta_m^{1-p})$ holds for all $p>1$, $|\Delta'| = O(1)$, $|\omega_0'| = O(1)$, $\norm{H'} = O(1)$ and $\norm{H''} = O(1)$, then the procedure solves the problem with a time complexity of $O(\Delta_m^{-1})$ for all $1<q<2$.
+\end{corollary}
+\begin{proof}[Proof of theorem \ref{theorem:adaptiveRate}]
+Let $\epsilon_0$ be the actual error of the algorithm. We need $\epsilon_0\leq \epsilon$. In this case the inequality in lemma \ref{lemma:errorBound} becomes
+\begin{equation}
+\epsilon_0 \leq \begin{aligned}[t] &\epsilon c^{-1}\Delta_m^{2-q}\Big(\Delta(0)^q\norm{\big[P'(0), (H(0)-\omega_0(0)\id)^{+}\big]}
++ \Delta(1)^q\norm{\big[P'(1), (H(1)-\omega_0(1)\id)^{+}\big]}\Big) \\
+&+ \epsilon c^{-1}\Delta_m^{2-q}\int_0^1\Delta^q\norm{\big[P', (H-\omega_0\id)^{+}\big]'}\diff{s} + c^{-1}\Delta_m^{2-q}\int_0^1\big|\big(\Delta^q\big)'\big|\norm{\big[P', (H-\omega_0\id)^{+}\big]}\diff{s}.
+\end{aligned} \label{eq:errorBoundAdaptiveSchedule}
+\end{equation}
+We bound the terms separately, using lemma \ref{lemma:projectorDerivativeBounds}. For the first, we have
+\begin{equation}
+\Delta_m^{2-q}\Delta^{q}\norm{\big[P', (H-\omega_0\id)^{+}\big]} \leq 4\Delta_m^{2-q}\Delta^{q}\frac{\norm{H'}}{\Delta^2} \leq 4\Delta_m^{2-q}\frac{\norm{H'}}{\Delta_m^{2-q}} = 4\norm{H'} \leq 4\sup_{s\in [0,1]}\norm{H'}
+\end{equation}
+at both $s=0$ and $s=1$, so we bound the sum by $8\sup_{s\in [0,1]}\norm{H'}$.
+
+The second term splits into three, since we bound $\norm{\big[P', (H-\omega_0\id)^{+}\big]'}$ by $36\frac{\norm{H'}^2}{\Delta^3} + 4\frac{\norm{H''}}{\Delta^2} + 4\frac{\norm{H'}}{\Delta^3}|\omega_0'|$. For the first part we have
+\begin{align}
+36\Delta_m^{2-q}\int_0^1\Delta^{q}\frac{\norm{H^{\prime}}^2}{\Delta^3}\diff{s} &\leq 36\sup_{s\in[0,1]}\norm{H'(s)}^2\Delta_m^{2-q}\int_0^1\frac{1}{\Delta^{3-q}}\diff{s} \\
+&\leq 36\sup_{s\in[0,1]}\norm{H'(s)}^2B_2\Delta_m^{2-q}\Delta_m^{q-2} = 36\sup_{s\in[0,1]}\norm{H'(s)}^2B_2.
+\end{align}
+For the second part,
+\begin{align}
+4\Delta_m^{2-q}\int_0^1\Delta^{q}\frac{\norm{H^{\prime\prime}}}{\Delta^2}\diff{s} &\leq 4\sup_{s\in[0,1]}\norm{H''(s)}\Delta_m^{2-q}\int_0^1\frac{1}{\Delta^{2-q}}\diff{s} \\
+&\leq 4\sup_{s\in[0,1]}\norm{H''(s)}\Delta_m^{2-q}\Delta_m^{q-2} = 4\sup_{s\in[0,1]}\norm{H''(s)}.
+\end{align}
+For the third part,
+\begin{align}
+4\Delta_m^{2-q}\int_0^1\Delta^{q}\frac{\norm{H^{\prime}}|\omega_0'|}{\Delta^3}\diff{s} &\leq 4\sup_{s\in[0,1]}\norm{H'(s)}\,|\omega_0'(s)|\Delta_m^{2-q}\int_0^1\frac{1}{\Delta^{3-q}}\diff{s} \\
+&\leq 4\sup_{s\in[0,1]}\norm{H'(s)}\,|\omega_0'(s)|\Delta_m^{2-q}\Delta_m^{q-2}B_2 = 4\sup_{s\in[0,1]}\norm{H'(s)}\,|\omega_0'(s)|B_2.
+\end{align}
+Finally, for the third term,
+\begin{align}
+\Delta_m^{2-q}\int_0^1\big|\big(\Delta^{q}\big)'\big|\norm{\big[P', (H-\omega_0\id)^{+}\big]}\diff{s} &= \Delta_m^{2-q}\int_0^1 q\Delta^{q-1}\big|\Delta'\big|\norm{\big[P', (H-\omega_0\id)^{+}\big]}\diff{s} \\
+&\leq q\Delta_m^{2-q}\Big(\sup_{s\in [0,1]}|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)\Big)\int_0^1\frac{\Delta^{q-1}}{\Delta^2}\diff{s} \\
+&= q\Delta_m^{2-q}\Big(\sup_{s\in [0,1]}|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)\Big)\int_0^1\frac{1}{\Delta^{3-q}}\diff{s} \\
+&\leq q\Big(\sup_{s\in [0,1]}|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)\Big)\Delta_m^{2-q}B_2\Delta_m^{q-2} \\
+&= qB_2\Big(\sup_{s\in [0,1]}|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)\Big).
+\end{align}
+Plugging everything back into equation \eqref{eq:errorBoundAdaptiveSchedule}, gives
+\begin{align}
+\epsilon_0 &\leq \epsilon c^{-1}\sup_{s\in[0,1]}\Big(8\norm{H'(s)} + 36\norm{H'(s)}^2B_2 + 4\norm{H''(s)} + 4\norm{H'(s)}\,|\omega_0'(s)| B_2 + q|\Delta'(s)|\,\big(5\norm{H'(s)}+|\omega_0'(s)|\big)B_2 \Big) \\
+&= \epsilon c^{-1}c = \epsilon,
+\end{align}
+so the procedure works. We can then calculate the time complexity
+\begin{equation}
+T = K(1) = \int_0^1 K' \diff{s} = \epsilon^{-1}\int_0^1 \frac{c}{\Delta^q\Delta_m^{2-q}} \diff{s} = \epsilon^{-1}c\Delta_m^{q-2}\int_0^1 \frac{1}{\Delta^{q}} \diff{s} \leq \epsilon^{-1}c\Delta_m^{q-2}B_1\Delta_m^{1-q} =  \epsilon^{-1}cB_1\Delta_m^{-1}.
+\end{equation}
+\end{proof}
+
+\section{Applied to the model}
+Set $g_{\min} = 2s^*\sqrt{\epsilon / A_2}$. For $s \in [0, s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}]$, we have the bound
+\begin{equation}
+g(s) = \frac{A_1}{A_2}\frac{s^* - s}{1-s^*}.
+\end{equation}
+From $s \in [s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}, s^*]$, we have the bound $g_{\min}$ and for $s\in [s^*,1]$, we have the bound $g$ as defined in the notebook.
+
+For $p>1$, we have
+\begin{equation}
+\int_0^1 \frac{1}{g^{p}}\diff{s} = \int_0^{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}} \frac{1}{g^{p}}\diff{s} + \int_{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}}^{s^*} \frac{1}{g^{p}}\diff{s} + \int_{s^*}^1 \frac{1}{g^{p}}\diff{s}.
+\end{equation}
+We then have
+\begin{align}
+\int_0^{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}} \frac{1}{g^{p}}\diff{s} &= \Big(\frac{A_2(1-s^*)}{A_1}\Big)^p\int_0^{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}} \frac{1}{(s^*-s)^{p}}\diff{s} \\
+&= \Big(\frac{A_2(1-s^*)}{A_1}\Big)^p\int_{\frac{A_2}{A_1(A_1+1)}g_{\min}}^{s^*} \frac{1}{x^{p}}\diff{x} \\
+&= \Big(\frac{A_2(1-s^*)}{A_1}\Big)^p\frac{1}{p-1}\bigg(\Big(\frac{A_1(A_1+1)}{A_2g_{\min}}\Big)^{p-1} - \Big(\frac{1}{s^*}\Big)^{p-1}\bigg) \\
+&\leq \frac{1}{g_{\min}^{p-1}}\frac{(A_1+1)^{p-1}A_2(1-s^*)^p}{(p-1)A_1} \\
+&\leq \frac{1}{g_{\min}^{p-1}}\frac{(A_1+1)A_2(1-s^*)}{(p-1)A_1} = \frac{1}{g_{\min}^{p-1}}\frac{(A_1+1)A_2}{(p-1)A_1^2}.
+\end{align}
+Next
+\begin{equation}
+\int_{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}}^{s^*} \frac{1}{g^{p}}\diff{s} = \int_{s^* - \frac{A_2}{A_1(A_1+1)}g_{\min}}^{s^*} \frac{1}{g_{\min}^{p}}\diff{s} = \frac{A_2}{A_1(A_1+1)}\frac{1}{g_{\min}^{p-1}}.
+\end{equation}
+and finally we use the bound on the right-hand side. For which we have
+\begin{equation}
+\int_{s^*}^1 \frac{1}{g^{p}}\diff{s} \leq \Big(\max_{s^*\leq s \leq 1}\frac{1}{g'}\Big)\int_{g(s^*)}^{g(1)}\frac{1}{g^{p}}\diff{g}.
+\end{equation}
+Using $g(s^*) = \frac{g_{\min}}{20}$, $g(1) = \frac{E_1-E_0}{8} + O(\sqrt{\epsilon})$ and $\max_{s^*\leq s \leq 1}\frac{1}{g'} \leq \frac{100}{(E_1-E_0)s^*A_1} + O(\sqrt{\epsilon})$, we have
+\begin{align}
+\int_{s^*}^1 \frac{1}{g^{p}}\diff{s} &\leq \frac{100}{(E_1-E_0)s^*A_1}\frac{20^{p-1}}{(p-1)g_{\min}^{p-1}} \\
+&\leq \frac{100(1+A_1)}{(E_1-E_0)A_1^2}\frac{20^{p-1}}{(p-1)g_{\min}^{p-1}} \\
+\end{align}
+Putting everything together gives
+\begin{align}
+B_1, B_2 &= O\Big(\frac{(E_1-E_0)(1+A_1)^2A_2 + (E_1-E_0)A_1A_2 + A_1(1+A_1)^2}{A_1^2(A_1+1)(E_1-E_0)}\Big) \\
+&= O\Big(\frac{(E_1-E_0)(1+A_1)^2A_2 + A_1(1+A_1)}{A_1^2(E_1-E_0)}\Big)
+\end{align}
+The time complexity is then
+\begin{equation}
+T = O\Big(\frac{B_1B_2}{g_{\min}}\Big) = O\bigg(\Big(\frac{(E_1-E_0)(1+A_1)^2A_2 + A_1(1+A_1)}{A_1^2(E_1-E_0)}\Big)^2\frac{1}{g_{\min}}\bigg).
+\end{equation}
+
+\section{Grover search}
+For the Grover problem, we have an $N$-dimensional vector space we want to find an element of an $M$-dimensional subspace $\mathcal{M}$. In order to help us, we assume we have access to an oracle Hamiltonian $H_1 = \mathbb{1} - P_\mathcal{M}$, where $P_\mathcal{M}$ is the orthogonal projector on $\mathcal{M}$. We also construct $H_0 = \mathbb{1} - \ketbra{u}{u}$, where $\ket{u} = \frac{1}{\sqrt{N}}\sum_{i=1}^N\ket{i}$ is the uniform superposition. The aim is now to use the interpolation $H(s) = (1-s)H_0 + sH_1$ to prepare as state in $\mathcal{M}$.
+
+We see that $H(s)$ has four eigenvalues:
+\begin{align}
+\lambda_{1,2} &= \frac{1}{2}\left(1\pm \sqrt{1-4(1- \frac{M}{N})s(1-s)}\right) &\text{with multiplicity $1$} \\
+\lambda_{3} &= 1-s &\text{with multiplicity $M-1$}\\
+\lambda_{4} &= 1 &\text{with multiplicity $N-M-1$.}
+\end{align}
+The eigenvectors corresponding to $\lambda_3$ are the eigenvectors in $\mathcal{M}$ with zero overlap with $\ket{u}$. The eigenvectors corresponding to $\lambda_4$ are the eigenvectors in $\mathcal{M}^\perp$ with zero overlap with $\ket{u}$. Since the initial state has zero overlap with any of these vectors and they are eigenvectors of each $H(s)$, none of them are prepared by the procedure and everything happens in the two-dimensional space spanned by the eigenvectors associated to $\lambda_1$ and $\lambda_2$.
+
+We have explicitly computed the gap, so we can use this as the bound $\Delta$:
+\begin{equation}
+\Delta(s) = \sqrt{1-4(1- \frac{M}{N})s(1-s)}. \label{eq:GroverGap}
+\end{equation}
+We can set $\Delta_m = \min_{s\in [0,1]} \Delta(s) = \sqrt{M/N}$. In order to give bounds on the time-complexity, we use the following lemma:
+\begin{lemma} \label{lemma:GroverLemma}
+For all $p > 1$ and $\Delta$ given by \eqref{eq:GroverGap}, we have
+\begin{equation}
+\int_0^1 \frac{1}{\Delta(s)^p}\diff{s} = O\big(\sqrt{N/M}^{p-1}\big) = O\big(\Delta_m^{1-p}\big),
+\end{equation}
+and, for $p=1$,
+\begin{equation}
+\int_0^1 \frac{1}{\Delta(s)}\diff{s} = O\big(\log(N/M)\big).
+\end{equation}
+\end{lemma}
+\begin{proof}
+We note that $\Delta(s)$ is symmetric about $s= 1/2$. It is also strictly decreasing on $[0,1/2]$, going from $1$ to a minimum of $\sqrt{M/N}$.  So we can write
+\begin{align}
+\int_0^1 \frac{1}{\Delta(s)^p}\diff{s} &= 2\int_0^{1/2} \frac{1}{\Delta(s)^p}\diff{s} \\
+&= 2\Big(\int_0^{1/2- \sqrt{M/N}} \frac{1}{\Delta(s)^p}\diff{s} + \int_{1/2- \sqrt{M/N}}^{1/2} \frac{1}{\Delta(s)^p}\diff{s} \Big).
+\end{align}
+Since $\Delta$ has a minimum of $\sqrt{M/N}$, we can bound the second integral by
+\[ \int_{1/2- \sqrt{M/N}}^{1/2} \frac{1}{\Delta(s)^p}\diff{s} \leq \sqrt{\frac{M}{N}}\Big(\frac{1}{\min_{s\in[0,1]}\Delta(s)}\Big)^p = \frac{\sqrt{M/N}}{\sqrt{M/N}^p} = \sqrt{N/M}^{p-1}. \]
+For the first integral, we write
+\begin{align}
+\int_0^{1/2 - \sqrt{M/N}} \frac{1}{\Delta(s)^p}\diff{s} &= \int_1^{\Delta\big(1/2- \sqrt{M/N}\big)} \frac{1}{\Delta^p}\dod{s}{\Delta}\diff{\Delta} \\
+&= \int_{\Delta\big(1/2- \sqrt{M/N}\big)}^1 \frac{1}{\Delta^p}\Big(-\dod{s}{\Delta}\Big)\diff{\Delta}.
+\end{align}
+We can invert \eqref{eq:GroverGap} to obtain
+\begin{equation}
+s = \frac{1}{2} - \frac{1}{2}\sqrt{1-\frac{1-\Delta^2}{1-N/M}}.
+\end{equation}
+Then we have
+\begin{equation}
+-\od{s}{\Delta} = \frac{\Delta}{2\sqrt{(1-M/N)(\Delta^2 - M/N)}}.
+\end{equation}
+We now calculate
+\[ \Delta\Big(\frac{1}{2} - \sqrt{\frac{M}{N}}\Big) = \sqrt{\frac{M}{N}}\sqrt{5 - 4 \frac{M}{N}} \geq 2\sqrt{\frac{M}{N}}, \]
+assuming $M/N \leq 1/4$. So
+\begin{align}
+\int_0^{1/2 - \sqrt{M/N}} \frac{1}{\Delta^p}\diff{s} &\leq \int_{2\sqrt{\frac{M}{N}}}^1 \frac{1}{\Delta^p}\Big(-\dod{s}{\Delta}\Big)\diff{\Delta} \\
+&= \int_{2\sqrt{\frac{M}{N}}}^1 \frac{1}{\Delta^p} \frac{\Delta}{2\sqrt{(1-M/N)(\Delta^2 - M/N)}}\diff{\Delta} \\
+&\leq \int_{2\sqrt{\frac{M}{N}}}^1 \frac{1}{\Delta^p} \frac{\Delta}{2\sqrt{(1-M/N)(\Delta^2 - \Delta^2/4)}}\diff{\Delta} \\
+&= \frac{1}{\sqrt{3(1-M/N)}} \int_{2\sqrt{\frac{M}{N}}}^1 \frac{1}{\Delta^p} \diff{\Delta}.
+\end{align}
+Now $\frac{1}{\sqrt{3(1-M/N)}}$ is $O(1)$ and $\int_{2\sqrt{\frac{M}{N}}}^1 \frac{1}{\Delta^p} \diff{\Delta} = \Big[\frac{1}{(p-1)\Delta^{p-1}}\Big]_{2\sqrt{M/N}}^1$ is $O\big(\sqrt{N/M}^{p-1}\big)$, if $p>1$. If $p=1$, then it is $O\big(\log\sqrt{N/M}\big)$.
+\end{proof}
+
+
+For linear schedule $K$, we apply \ref{theorem:constantRate} and use the lemma \ref{lemma:GroverLemma} to get a time complexity $O(N/M)$.
+
+If we can apply corollary \ref{corollary:adaptiveRate}, we get a time complexity of $O(\sqrt{N/M})$. The main condition is satisfied due to the lemma \ref{lemma:GroverLemma}.
+It is easy to check that the other conditions for corollary \ref{corollary:adaptiveRate} hold: $\norm{H'} = \norm{H_1 - H_0}$, $\norm{H''} = 0$,
+\begin{align}
+|\Delta'| &= \Big|\frac{4(1 - \frac{M}{N})(\frac{1}{2}-s)}{\Delta}\Big| \\
+&\leq \frac{2\sqrt{4(1 - \frac{M}{N})(\frac{1}{2}-s)^2}}{\Delta} \\
+&\leq \frac{2\sqrt{\frac{M}{N} + 4(1 - \frac{M}{N})(\frac{1}{2}-s)^2}}{\Delta} = 2\frac{\Delta}{\Delta}  =2
+\end{align}
+and finally, $|\omega_0'| = \frac{1}{2}|\Delta'| = O(1)$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

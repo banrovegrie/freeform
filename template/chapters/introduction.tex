@@ -1,0 +1,173 @@
+\section{Physics and Computation}
+
+\section{Why Add `Quantum' to Everything}
+
+Mankind’s survival and well-being directly correlates to and depends on the production of new knowledge \cite{deutsch2011beginning}. 
+In the past century, Computers of some form have been the tools that we use to assist that production of knowledge, producing as a byproduct an insanely high number of dressed up golden retrievers and cat memes. 
+One insane example is the proof of four colour theorem, which has applications in (…). 
+But what is and isn’t computable depends on the underlying physics of the universe we live in \cite{deutsch2011beginning}. Therefore at the height of the quantum revolution in physical sciences, it was natural to look at what power a programable, quantum mechanical device would give us.
+
+\section{Quantum Computing for Natural Sciences}
+
+\section{Outline of the Thesis}
+
+\section{Notation}
+\label{sec:notation}
+
+
+For a matrix $ A \in \rr^{N \times d} $,
+$A_{i, .}$ denotes the $i^{th}$ row of $A$,
+and $\norm{A_{i,\cdot}}$ denotes the vector norm of $A_{i, .}^T$.
+$s^A_r$ and $s^A_c$ denote the row and column sparsity of the matrix, which is the maximum number of non-zero entries in any row and any column respectively. 
+
+When talking about quantum input models (\autoref{sec:quantum-input-models}), the following notation would be useful. $ A^{(p)} $ is defined as $ A^{(p)}_{i,j} = (A_{i, j})^p $. Also, $ \forall q \in [0, 1] : s_q(A) := \max_{i \in M} \norm{A_{i, .}}_q^q $ and $ \forall p \in [0, 1] : \mu_p(A) := \sqrt{ s_{2p}(A) s_{2(1-p)}(A^T) } $.
+\\~\\
+\textbf{Singular Value Decomposition.} The decomposition $A = W\Sigma V^{\dagger}$, where $W$ and $V$ are unitary and $\Sigma$ is a diagonal matrix, represents the \textit{singular value decomposition} (SVD) of $A$. All matrices can be decomposed in this form. The diagonal entries of $\Sigma$, usually denoted by $\sigma(A) = \{\sigma_j\}$, is the multiset of all \textit{singular values} of $A$, which are real and non-negative. $\sigma_{\max}$ and $\sigma_{\min}$ denote the maximum and minimum singular values of $A$. $r(A) = \mathrm{rank}(A)$ is the number of non-zero singular values of $A$. The columns of $W,~V$ (denoted by $\{\ket{w_j}\}$ and $\{\ket{v_j}\}$) are the left and right \textit{singular vectors} of $A$. Thus $A = \sum_j^r \sigma_j \ket{w_j}\bra{v_j}$.
+The singular vectors of $A$ can be computed as the positive square roots of the eigenvalues of $A^TA$ (which is Hermitian, and therefore has real eigenvalues.)
+\\~\\
+\textbf{Condition Number.} $\kappa_A$ denotes (an upper bound on) the condition number of $A$, defined as the ratio of the maximum and minimum singular values of $A$, $$\kappa_A \ge \frac{\sigma_{\max}(A)}{\sigma_{\min}(A)}.$$
+\\~\\
+\textbf{Norm.} Unless otherwise specified, $\norm{A}$ denotes the spectral norm of $A$, while $\norm{A}_F$ denotes the Frobenius norm of $A$, defined as
+\begin{align*}
+    &\norm{A} := \max_{x \neq 0} \frac{\norm{Ax}}{\norm{x}} = \sigma_{\max}(A) \\
+    &\norm{A}_F := \sqrt{\sum_{j=1}^{r} \sigma_j^2}
+\end{align*}
+Unless otherwise specified, when $A$ is assumed to be normalized, it is with respect to the spectral norm. 
+\\~\\
+\textbf{Big-O Notation.} Let $f$ and $g$ be real valued functions in $t$ defined on a subset of $\rr$ unbounded from above. Then we have the following notations to represent their asymptotic scaling with respect to each other.
+\begin{equation}
+    f(t) = \order{g(t)} \iff \exists t_0, C \in \rr : \forall t > t_0 : \abs{f(t)} \leq C \abs{g(t)},
+\end{equation}
+which means that $f$ does not scale faster than $g$. Similarly, 
+\begin{equation}
+    f(t) = \Omega({g(t)}) \iff \exists t_0, C \in \rr : \forall t > t_0 : \abs{f(t)} \geq C \abs{g(t)},
+\end{equation}
+which means that $f$ scales faster than $g$. And
+\begin{equation}
+    f(t) = \Theta({g(t)}) \iff f(t) = \order{g(t)} \land g(t) = \order{f(t)},
+\end{equation}
+which means that they scale similarly (asymptotically.) 
+\\~\\
+\textbf{Soft-O Complexity.} Finally, we use
+$f = \ohtilde{g}$ to denote $f = \order{g\cdot\mathrm{polylog}(g)}$.
+\\~\\
+\textbf{Controlled Unitaries}. If $U$ is a $s$-qubit unitary, then $\controlled{U}$ is a $(s+1)$-qubit unitary defined by
+\begin{equation*}
+    \controlled{U} = \ketbra{0} \otimes I_s + \ketbra{1} \otimes U
+\end{equation*}
+
+
+
+\section{Models of Quantum Computing}
+
+    The most familiar model of quantum computation in terms of a universal set of gates was proposed by \citet{Deutsch1989} following the ideas of Paul Benioff and Richard Feynman for a quantum Turing machine (\citet{Benioff1980}, \citet{Benioff1982}, \citet{Feynman1982}), and for simulating physical systems which are quantum in nature using a `quantum' machine, to circumvent the problem with the exponential size of the Hilbert space. 
+    A programmable computer is a system based on some laws of physics, the initial state of which is programmable by us to represent the problem, into the evolution of which (the system) we can encode our solution procedure (an algorithm), and reading out the final state of the system (measurement) gives us the solution to the problem. 
+    Quantum computing is based on the idea of a computational problem being encoded as a quantum system, evolving with a sequence of quantum gates (Unitaries, in accordance with the axiom of quantum mechanics), similar to that encoded as a classical system evolving with a sequence of classical logic gates. 
+    
+    Adiabatic quantum computing is another such framework where the initial state of the system is a Hamiltonian whose ground state is easy to prepare, which evolves according to the adiabatic theorem to a final Hamiltonian whose ground state encodes the solution to a computational problem. The adiabatic theorem guarantees that the system will remain in the ground state of the instantaneous hamiltonian, given that the evolution takes place sufficiently slowly. 
+    The idea to encode the solution to a computational problem into the ground state of a quantum Hamiltonian appeared in 1998 by \citet{Brooke1999}, in trying to solve classical combinatorial optimization problem. This was called Quantum Annealing. This was introduced as a classical `quantum inspired' algorithm, akin to Simulated Annealing, and made use of simulated quantum fluctuations and tunneling (similar to thermal fluctuations simulated by SA.) 
+    
+    In 2007 in a paper titled ``Adiabatic Quantum Computation is Equivalent to Standard Quantum Computation,''  \citet{Aharonov2007} showed that Adiabatic quantum computation with non-stoquastic Hamiltonians is polynomially equivalent to the circuit model (`Standard Quantum Computation'.) 
+    
+    
+    Quantum annealing was proposed as one of the first adiabatic quantum algorithm, to solve combinatorial optimization problems. These problems can be notoriously hard, due to the vastness of the search space. The original proposal was a `simulated quantum annealing,' in which the evolution of a quantum system was simulated on a classical computer, such that the final state contained the solution to a computational problem. \citet{Nishimori1998} and \citet{Farhi2001} showed that there is an advantage in using algorithms like these. It was thought that is large, controlled, programmable quantum systems (quantum computers) could be built, then such advantages would continue, ushering the era of quantum supremacy \cite{preskill2012quantum}. 
+    
+    
+    Companies like DWave have built physical devices, and considerable effort has gone into testing them. Although small speedups for curated problems have been seen, a conclusive picture does not exist.
+
+\subsection{Circuit Model of Quantum Computing}
+
+
+
+
+
+\subsection{Adiabatic Quantum Computing}
+
+    A computation in this model is specified by two Hamiltonians $H_i$ and $H_f$, such that the ground state of $H_i$ is easy to prepare, and the ground state of $H_f$ represents the solution to our computational problem. 
+    The Hamiltonians have to be \textit{local}, i.e., they should only involve interactions between a constant number of particles. This requirement is equivalent, in the circuit model, to only allowing gates acting on a constant number of qubits at a time.
+    The running time of the adiabatic computation is determined by the minimal spectral gap of all the Hamiltonians connecting $H_i$ and $H_f$, given by 
+    
+    \begin{equation}
+    \label{eqn:hamiltonian_evolution}
+        H(s) = (1-s) H_i + s H_f
+    \end{equation}
+    
+    where $s(t) : [0, t_f] \to [0, 1]$ is called the schedule, and $t_f$ is the annealing time. 
+    
+    The following definition of adiabatic quantum computing has been taken from \citet{Aharonov2007}.
+    
+    \begin{definition}[$k$-local Hamiltonian]
+        
+        A Hamiltonian $H$ acting on $n$ particles is called $k$-local $H$ can be written as $ \sum_{A} H_A $, where $A$ runs over all the subsets of $k$ out of $n$ particles, and $H_A$ acts trivially on all but the particles in $A$. 
+        
+    \end{definition}
+    
+    That is, for each $A$, $H_A$ is a tensor product of a Hamiltonian on $A$, with identity on all the other particles. 
+    Notice that for any constant $k$, a $k$-local Hamiltonian on $n$ qubits can be described in $ 2^{2k} n^k = poly(n) $ space, whereas describing an arbitrary Hamiltonian requires roughly $2^{2n}$ space. 
+    
+    \begin{definition}[Adiabatic Quantum Computation]
+    
+        A $k$-local adiabatic computation $AC(n, d, H_i, H_f, \epsilon)$ is specified by two $k$-local Hamiltonians, $H_i$ and $H_f$ acting on $n$ $d$-dimensional particles, such that both Hamiltonians have unique ground states. The ground state of $H_i$ is a tensor product state. The output is a state that is $\epsilon$-close in $l_2$-norm to the ground state of $H_f$. Let $t_f$ be the smallest time such that the final state of an adiabatic evolution according to \autoref{eqn:hamiltonian_evolution} for time $t_f$ is $\epsilon$-close in $l_2$-norm to the ground state of $H_f$. The running time of the adiabatic algorithm is defined to be
+        
+        \begin{equation}
+            \label{eqn:runtime}
+            \text{cost} := t_f \cdot \max_s H(s)
+        \end{equation}
+        
+    \end{definition}
+    
+    Notice that the definition of running time as defined in \autoref{eqn:runtime} is invariant under the scaling of the Hamiltonians by some overall factors. 
+    
+    \begin{theorem}[Adiabatic Theorem]
+    \label{thm:adiabatic_theorem}
+        
+        Let $H_i$ and $H_f$ be two Hamiltonians acting on a $n$-qubit quantum systems, and consider the time dependent Hamiltonian as described in \autoref{eqn:hamiltonian_evolution}. Assume that for all $s$, $H(s)$ has a unique ground state. Then for any fixed $\delta > 0$, if 
+        
+        \begin{equation}
+            \label{eqn:adiabatic_theorem}
+            t_f \geq \Omega \left( \frac{ || H_f - H_i ||^{1+\delta} } { \epsilon^{\delta} \min_{s \in [0, 1]} \{ \Delta^{2 + \delta} ( H(s) ) \} } \right)
+        \end{equation}
+        
+        then the final state of an adiabatic evolution according to $H(s)$ for time $t_f$ is $\epsilon$-close in the $l_2$-norm to the ground state of $H_f$. 
+        
+    \end{theorem}
+    
+    The matrix norm is the spectral norm. $\Delta ( H(s) )$ is the spectral gap, defined as the minimum eigenvalue gap between the ground state and the first excited state of the instantaneous Hamiltonian.
+    
+    Using the above definitions, \citet{Aharonov2007} show the following theorem.
+    
+    \begin{theorem}[Equivalence of Adiabatic and Circuit Model Quantum Computation]
+        Given a quantum circuit on $n$ qubits with $L$ two qubit gates implementing a unitary $U$, and an $\epsilon > 0$, there exists a 5-local adiabatic quantum computation $AC(n+L, 2, H_i, H_f, \epsilon)$, whose running time is $poly(L, \frac{1}{\epsilon})$ and whose output after tracing out some ancilla qubits is $\epsilon$-close in the trace distance to $U \ket{0^{\otimes n}}$. Moreover, $H_i$ and $H_f$ can be computed by a PTTM. 
+    \end{theorem}
+    
+    The runtime for this algorithm is $\mathcal{O}(\epsilon^{-(5+3 \delta)}L^{5 + 2 \delta})$ for any fixed $ \delta > 0$.
+    
+    Note that an adiabatic quantum algorithm can always be converted to a quantum circuit that can approximate the adiabatic computation by discretizing the time dependent Hamiltonian for some finite sequence of time steps and then using a standard Hamiltonian simulation algorithm to simulate the evolution. 
+    
+    % \begin{algorithm}
+    % \label{algo:simulating_adiabatic_with_circuits}
+    % \caption{ Simulating Adiabatic Quantum Algorithm Using a Quantum Circuit }
+    % \begin{algorithmic}[1]
+    %     \State \textbf{Inputs:}\quad $ H_i, H_f, t_f, \ket{\psi} = \ket{\psi_i} $  \Comment{Initial and Final Hamiltonian, Annealing time, the ground state of $ H_i $ }
+    %     \State \textbf{Outputs:}\quad A quantum state $ \ket{\psi_f} $ in the ground state of $ H_f $
+    %     \State \textbf{Procedure: }
+    %     \Statex
+    %     \State $ H(s) \gets (1 - s) H_i + s H_f $ \Comment{Can be replaced by an arbitrary schedule.}
+    %     \State $ T \gets \{t_0 = 0 < t_1 < \ldots < t_m = t_f \} $ \Comment{Discretize the annealing time into $m$ timestamps}
+    %     \For{$t_j$ in $T$}
+    %         \State Use a Hamiltonian simulation quantum algorithm to get $ \ket{\psi_j} $, the ground state of $ H(t_j) $.
+    %     \EndFor
+    %     \State return $ \ket{\psi_m} $ as the final state $ \ket{\psi_f} $.
+    % \end{algorithmic}
+    % \end{algorithm}
+
+    % \subsubsection{Topological Structure of the Space of Hamiltonians}
+    
+
+
+
+\section{Quantum Machine Learning}
+
+\section{Research Focus and Contributions}
+
+

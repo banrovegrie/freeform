@@ -1,0 +1,305 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{bbold}
+\usepackage{xcolor}
+\usepackage[margin=1.4in]{geometry}
+
+% ------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+
+\newcommand{\defeq}{\coloneqq}
+
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+\newcommand{\ket}[1]{\left| #1 \right\rangle}
+\newcommand{\bra}[1]{\left\langle #1 \right|}
+\let\abraket\braket
+\newcommand{\braket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \langle#2|#3\rangle%
+    \else%
+       \langle#2|#1|#3\rangle%
+    \fi}
+\newcommand{\sbraket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \left\langle#2\vphantom{#3}\right.\left|#3\vphantom{#2}\right\rangle%
+    \else%
+         \left\langle#2\vphantom{#1}\vphantom{#3}\right.\left|#1\vphantom{#2}\vphantom{#3}\right|\left.#3\vphantom{#1}\vphantom{#2}\right\rangle%
+    \fi}
+\newcommand{\ketbra}[2]{|#1\rangle\langle#2|}
+
+\DeclareMathOperator{\diff}{d \!}
+
+\providecommand{\od}[3][]{\ensuremath{
+\ifinner
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\else
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\fi
+}}
+
+\providecommand{\tod}[3][]{\ensuremath{\mathinner{
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\providecommand{\dod}[3][]{\ensuremath{\mathinner{
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+% ------
+
+\title{Bound on the right-hand side}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle 
+
+Set $\epsilon \defeq d_0/N$. The following development may depend on the assumptions $1 \leq A_1 \leq A_2$ and $E_1 - E_0 \leq 1$.
+
+We can derive a bound on the right of the minimum gap by using the following facts:
+\begin{itemize}
+\item For all $\lambda \in \mathbb{C}$ and normal operators $A$ (which include the self-adjoint operators), the distance between $\lambda$ and the closest point in the spectrum of $A$ is given by $\norm{R_A(\lambda)}^{-1}$, where $R_A(\lambda) \defeq (\lambda \mathbb{1} - A)^{-1}$ is the resolvent.
+\item The Sherman-Morrison formula
+\[ (A + \ketbra{u}{v})^{-1} = A^{-1} - \frac{A^{-1}\ketbra{u}{v}A^{-1}}{1+\braket[A^{-1}]{u}{v}} \]
+holds for all operators $A$ and vectors $u,v$.
+\end{itemize}
+Setting $H(s) = (s-1)\ketbra{u}{u} + sH_0$, we can calculate
+\begin{align}
+\norm{R_{H(s)}(\lambda)} &= \norm*{\big(\lambda \mathbb{1} - sH_0 + (1-s)\ketbra{u}{u}\big)^{-1}} \\
+&= \norm*{R_{sH_0}(\lambda) - (1-s)\frac{R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)}{1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}}} \\
+&\leq \norm*{R_{sH_0}(\lambda)} + (1-s)\frac{\norm{R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)}}{1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}} \label{eq:inverseGapBound}
+\end{align}
+The quantity $\norm*{R_{sH_0}(\lambda)}$ is relatively straightforward, it is the inverse of the distance between $\lambda$ and the spectrum of $sH_0$. We need to calculate $1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}$. Letting $d_k$ be the degeneracy of the energy $E_k$ of $H_0$, we have
+\[ 1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u} = 1 + (1-s)\sum_{k}\frac{d_k}{N}\frac{1}{\lambda - sE_k}, \]
+so this is zero exactly when $\lambda \in \sigma\big(H(s)\big)\setminus\sigma(sH_0)$.
+
+We now fix a line $\lambda = \lambda(s)$ that lies between the lowest and second lowest eigenvalues of $H(s)$, for $s \geq \frac{A_1}{A_1+1}$, and show that the spectrum lies at least a certain distance from this line. The gap is bounded by twice this distance, i.e.\ $\Delta \geq 2\norm{R_{H(s)}(\lambda)}^{-1}$.
+
+A natural choice for this line seems to be $\lambda(s) = sE_0 + \delta(s)$, where $\delta(s) = \frac{E_1 - E_0}{2}\big((A_1+1)s - A_1\big)$. This line $\lambda$ interpolates linearly between $sE_0$ at $s = \frac{A_1}{A_1+1}$ and $\frac{E_0+E_1}{2}$ at $s=1$. It seems likely that a more intelligent choice of $\lambda$ exists, which could simplify the analysis.
+
+With this form of $\lambda$, we have $\norm*{R_{sH_0}(\lambda)} = \delta^{-1}$ and
+\begin{align}
+1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u} &= 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\sum_{k\neq 0}\frac{d_k}{N}\frac{1}{s(E_k - E_0) - \delta} \\
+&= 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\sum_{k\neq 0}\frac{d_k}{N}\Big(\frac{1}{s(E_k - E_0)} + \frac{\delta}{s(E_k - E_0)\big(s(E_k - E_0) - \delta\big)}\Big) \\
+&\geq 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\Big(\frac{A_1}{s} + 2\frac{A_2\delta}{s^2}\Big).
+\end{align}
+The last bound follows from the fact that $\delta \leq s(E_k - E_0)/2$ for all $k \neq 0$. \textcolor{blue}{~I'm not sure this holds unconditionally. We have that 
+$$
+\delta\leq \Delta(A_1+1)s/2\leq (E_k-E_0)(A_1+1)s/2.
+$$
+}
+
+Also 
+\begin{align}
+\norm*{\Big.R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)} &= \norm{R_{sH_0}(\lambda)\ket{u}}^2 \\
+&= \frac{\epsilon}{\delta^2} + \sum_{k\neq 0} \frac{d_k}{N} \frac{1}{\big(s(E_k - E_0) - \delta\big)^2} \\
+&\leq \frac{\epsilon}{\delta^2} + 4 \frac{A_2}{s^2}.
+\end{align}
+Again the fact that $\delta \leq s(E_k - E_0)/2$ for all $k \neq 0$ is used.
+
+Plugging everything into \eqref{eq:inverseGapBound} gives a bound $\Delta$ on the gap. The expression is large, but tractable with the help of a computer.
+
+It is straightforward (with a CAS) to verify that $\Delta(1) = E_1-E_0$ and
+\begin{align}
+\Delta\Big(\frac{A_1}{A_1+1} + \frac{\sqrt{A_2}}{16A_1^2}\sqrt{\epsilon}\Big) &= 2\frac{16}{512}\frac{512A_1^6\sqrt{A_2}E_{1,0}(1+A_1) + A_2^{3/2}E_{1,0}^2(A_1-A_2E_{1,0})(A_1+1)^5}{1024A_1^{8} + A_1^2A_2E_{1,0}(A_1+A_2E_{1,0})(A_1+1)^4}\sqrt{\epsilon} + O(\epsilon) \\
+&\geq 32\frac{A_1^6\sqrt{A_2}E_{1,0}(1+A_1)}{1024A_1^{8} + 2A_1^4(A_1+1)^4}\sqrt{\epsilon} + O(\epsilon) \\
+&= 32\frac{A_1^2\sqrt{A_2}E_{1,0}(1+A_1)}{1024A_1^{4} + 2(A_1+1)^4}\sqrt{\epsilon} + O(\epsilon) \\
+&\geq 32\frac{A_1^2\sqrt{A_2}E_{1,0}}{1024A_1^{3} + 2(A_1+1)^3}\sqrt{\epsilon} + O(\epsilon)
+\end{align}
+In this calculation we have used $A_1 \geq A_2(E_1 - E_0)$.
+
+By the (sketchy) calculation,
+\begin{align}
+\int \frac{1}{\Delta^p} \diff{s} &= \int \frac{1}{\Delta^p} \dod{s}{\Delta} \diff{\Delta} \\
+&\leq \Big(\max \dod{s}{\Delta}\Big) \int \frac{1}{\Delta^p} \diff{\Delta} \\
+&\leq \Big(\max \dod{s}{\Delta}\Big) O(\sqrt{\epsilon}^{1-p}),
+\end{align}
+it is clear that it is enough to show that $\od{s}{\Delta}$ bounded. By the inverse function theorem, this is equivalent to showing that $\big(\od{\Delta}{s}\big)^{-1}$ is bounded. 
+Setting $E_{1,0} \defeq E_1-E_0$, we can write this as
+\begin{equation}
+\frac{\big(A_2E_{1,0}(1-s)+s\big)^2 + O(\epsilon)}{s^2(A_1+1)+2A_2E_{1,0} - A_2^2E_{1,0}^2(1+A_1)(1-s)^2 - 2A_1A_2E_{1,0}(1-s) + O(\epsilon)}.
+\end{equation}
+The numerator is obviously positive and bounded. We need to show that the denominator is bounded away from zero. To that end we use the bounds $s \geq \frac{A_1}{A_1+1}$, $(1-s) \leq \frac{1}{A_1+1}$ and $A_1 \geq A_2E_{1,0}$. We calculate
+\begin{align}
+s^2(A_1+1)+2A_2E_{1,0} - A_2^2E_{1,0}^2&(1+A_1)(1-s)^2 - 2A_1A_2E_{1,0}(1-s) \\
+&\geq \frac{A_1^2}{A_1+1} + 2A_2E_{1,0}  - \frac{A_2^2E_{1,0}^2}{1+A_1} - \frac{2A_1A_2E_{1,0}}{1+A_1} \\
+&\geq \frac{A_1A_2E_{1,0}}{A_1+1} + 2A_2E_{1,0}  - \frac{A_1A_2E_{1,0}}{1+A_1} - \frac{2A_1A_2E_{1,0}}{1+A_1} \\
+&= 2A_2E_{1,0}\Big(\frac{1}{1+A_1} + \frac{A_1}{1+A_1}\Big) - \frac{2A_1A_2E_{1,0}}{1+A_1} \\
+&= \frac{2A_2E_{1,0}}{1+A_1} > 0.
+\end{align}
+
+
+
+
+
+
+
+\paragraph{Proof of the bound, right of the AC.} Let us see how we need to choose the function $\delta(s)$ so that all the constraints are satisfied. First let's recap the bound on the gap.
+
+\begin{align*}
+    \| R_{H(s)}(\lambda) \| &\leq \frac{1}{\delta}+(1-s)\frac{\frac{\varepsilon}{\delta^2}+4\frac{A_2}{s^2}}{1+(1-s)\frac{\varepsilon}{\delta}-(1-s)\left( \frac{A_1}{s}+2\frac{A_2 \delta}{s^2}\right)} \\
+    &\leq \frac{1}{\delta}\left [1+(1-s)\frac{\varepsilon s^2+4\delta^2 A_2}{\delta s^2+(1-s)s^2\varepsilon-(1-s)\delta \left( A_1 s+2A_2 \delta\right)}\right] \\
+    &\leq \frac{1}{\delta}\left [1+\frac{\varepsilon s^2 (1-s)+4\delta^2 A_2(1-s)}{\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2\delta^2 A_2 (1-s)}\right]
+\end{align*}
+The bound on the gap is then:
+\begin{align}
+    g(s) &\geq 2\| R_{H(s)}(\lambda) \|^{-1} \\
+    &\geq 2 \delta \left [1+\frac{\varepsilon s^2 (1-s)+4\delta^2 A_2(1-s)}{\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2\delta^2 A_2 (1-s)}\right]^{-1}(s)\\
+    &\geq \frac{2\delta(s)}{1+f(s)} \geq \frac{2\delta(s)}{1+\max_s f}
+\end{align}
+We know that $g(1)$ should be larger than something, call it $c$, smaller than $\Delta$. So $\frac{2\delta(1)}{1+\max_s f}=c\leq \Delta$. This imposes that $\delta(1) =a= \frac{1+\max_s f}{2}c \leq \frac{1+\max_s f}{2} \Delta$. We further assume that $\delta(s)$ can be linear and of the form $$\delta(s)=a\frac{s-s_0}{1-s_0}$$
+
+
+We choose $s_0=s^*-kg_{min}\frac{1-s^*}{a-kg_{min}}$ so that, we have $\delta(s^*)=kg_{min}$ for some constant $k$, which is tight at $s^*$.
+\\
+
+\noindent We will prove that $f(s^*)$ is the maximum of $f$ by proving that $f'$ is negative in $[s^*,1]$ and $$f(s^*)=\frac{1+16k^2}{1-8k^2}$$ We want this maximum to be positive so this implies $$k< \frac{1}{2\sqrt{2}}\simeq 0.35$$ To try to simplify the reading, we write $f=\frac{u}{v}$ so that $f'=\frac{u'v-uv'}{v^2}$, where $u$ and $v$ are given by:
+\begin{align*}
+    u&=\varepsilon s^2 (1-s)+4A_2\delta^2 (1-s)\\
+    v&=\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2A_2\delta^2  (1-s)
+\end{align*}
+We focus on $u'v$:
+\begin{align*}
+    u'v=&\left [\frac{4aA_2}{1-s_0}\delta (2+s_0-3s) +\varepsilon s(2-3s)\right ]\times \left [\delta s \frac{s-s^*}{1-s^*}-2A_2 \delta^2(1-s) +\varepsilon s^2 (1-s)\right ] \\
+    =&\phantom{+}\frac{4aA_2}{1-s_0}\delta^2(2+s_0-3s)  \left [ s \frac{s-s^*}{1-s^*}-2A_2 \delta(1-s)\right ] \\
+    &-  \varepsilon s(2-3s) 2A_2 \delta^2(1-s)+\varepsilon s^2(2-3s)\delta \frac{s-s^*}{1-s^*}\\
+    &+ \varepsilon s^2 (1-s)\frac{4aA_2}{1-s_0}\delta (2+s_0-3s)+  \varepsilon^2 s^3(2-3s)(1-s)
+\end{align*}
+Now on $uv'$:
+\begin{align*}
+    uv'=&\phantom{+}\left [4A_2 \delta^2 (1-s) +\varepsilon s^2 (1-s)\right ]\times \left [a\frac{(3s^2-2s(s^*+s_0)+s^*s_0)}{(1-s_0)(1-s^*)}-\frac{2aA_2}{1-s_0}\delta (2+s_0-3s)+\varepsilon s(2-3s)\right ] \\
+    =&\phantom{+}\frac{4aA_2 \delta^2 (1-s)}{(1-s_0)(1-s^*)}(3s^2-2s(s^*+s_0)+s^*s_0) - \frac{8aA_2^2 }{1-s_0}\delta^3 (1-s) (2+s_0-3s) \\
+    &+\varepsilon s(2-3s) 4A_2 \delta^2 (1-s) + \varepsilon s^2 (1-s) a\frac{(3s^2-2s(s^*+s_0)+s^*s_0)}{(1-s_0)(1-s^*)} \\
+    &- \varepsilon s^2 (1-s) \frac{2aA_2}{1-s_0}\delta (2+s_0-3s) + \varepsilon^2 s^3(2-3s)(1-s)
+\end{align*}
+
+\noindent Taking $u'v-uv'$, we see that $\varepsilon^2 s^3(2-3s)(1-s)$ and $\frac{8aA_2^2 }{1-s_0}\delta^3 (1-s) (2+s_0-3s)$ will cancel, giving:
+\begin{align}
+    u'v-uv'=& \phantom{+}\frac{4aA_2\delta^2}{(1-s_0)(1-s^*)}\left[s (s-s^*)(2+s_0-3s)  - (1-s)(3s^2-2s(s^*+s_0)+s^*s_0)\right] \nonumber \\
+    &+\frac{6A_2a\delta}{1-s_0}\varepsilon s(1-s)\left[ s(2+s_0-3s) - (s-s_0)(2-3s)\right] \nonumber \\
+    &+ \frac{\varepsilon s^2 a}{(1-s_0)(1-s^*)}[(2-3s)(s-s_0)(s-s^*)-(1-s)(3s^2-2s(s^*+s_0)+s^*s_0)] \\
+    =& -\frac{4aA_2\delta^2}{(1-s_0)(1-s^*)}(s^2(1+s_0-s^*)-2ss_0+s^*s_0) \nonumber \\
+    &+\frac{6A_2a\delta}{1-s_0}\varepsilon s(1-s)2s_0(1-s) \nonumber \\
+    &- \frac{\varepsilon s^2 a}{(1-s_0)(1-s^*)}(-s^2(s^*+s_0-1)+2ss_0s^*-s_0s^*) 
+\end{align}
+
+%% not needed
+%where we used in the last summand that for $s\geq s^*$
+%\begin{align*}
+%    (3s^2-2s(s^*+s_0)+s^*s_0)&=\left (s-\frac{s^*+s_0}{2}\right)\left(3s-\frac{s^*+s_0}{2}\right)-\left ( \frac{s^*-s_0}{2}\right)^2\\
+%    &\geq \left (s-\frac{s^*+s_0}{2}\right)\left(3s-\frac{s^*+s_0}{2}\right) \\
+%    &\geq (s-s^*)(3s-s^*)
+%\end{align*}
+So we have two negative terms and one positive term. We now prove that the first term is always larger than the second one.
+\begin{align*}
+    &-\frac{4aA_2\delta^2}{(1-s_0)(1-s^*)}(s^2(1+s_0-s^*)-2ss_0+s^*s_0)+\frac{6A_2a\delta}{1-s_0}\varepsilon s(1-s)2s_0(1-s) \\ 
+    =& -\frac{4aA_2\delta}{1-s_0}\underbrace{\left( \frac{\delta}{1-s^*}\underbrace{(s^2(1+s_0-s^*)-2ss_0+s^*s_0)}_{\text{always positive, and min at some }s_m<s^*}-3s_0\varepsilon \underbrace{s(1-s)^2}_{\text{max at }s=1/3<s^*}\right)}_{\text{ bounded by the value at }s^*}\\
+    \leq & -\frac{4aA_2s^*\delta}{1-s_0} \left( a\frac{(s^*-s_0)^2}{1-s_0}-3s_0\varepsilon (1-s^*)^2\right)
+\end{align*}
+We assume that $s^*\geq1/3$, which means that $A_1 \geq 1/2$, which is the case when working with normalized Hamiltonians. Knowing that $s^*-s_0=kg_{min}\frac{1-s^*}{a-kg_{min}}$, we can choose an $a$ that leaves the term negative. It imposes that 
+\begin{align}
+    a<\frac{4}{3}k^2\frac{A_1}{A_2}
+\end{align}
+Fixing $$a=\frac{4}{3}k^2 \Delta$$ finishes the proof of the negativity of $f'$ for all $s\geq s^*$ and in this interval function $f$ is bounded by $f(s^*)$.
+\\
+The bound on the gap becomes:
+\begin{align}
+    g(s) &\geq \frac{2}{1+\max_s f}\delta(s) \\
+    &\geq a \frac{1-8k^2}{1+4k^2}\frac{s-s_0}{1-s_0} \\
+    &\geq  \frac{4}{3} k^2 \frac{1-8k^2}{1+4k^2}\Delta \frac{s-s_0}{1-s_0}
+\end{align}
+The best $k$ that maximizes the prefactor happens for $k=\frac{1}{2}\sqrt{\sqrt{\frac{3}{2}}-1} \simeq 0.237$ and evaluates to $\frac{1}{3}(5-2\sqrt{6})\simeq 0.03367 \geq 1/30$. It turns into the following bound on the gap:
+\begin{align}
+    g(s) \geq \frac{\Delta}{30}\frac{s-s_0}{1-s_0}
+\end{align}
+\qed
+
+\noindent \textbf{Time Complexity.} Here we detail the integration of $g(s)^{-p}$ between 0 and 1, where $$\delta_s=2(1-s^*)^2\sqrt{\varepsilon A_2}=\frac{A_2}{A_1(1+A_1)}g_{min}$$
+\begin{align}
+    \int_0^1 g(s)^{-p} ds&\leq\int_0^{s^*-\delta_s} g(s)^{-p} ds + \int_{s^*-\delta_s}^{s^*} g(s)^{-p} ds + \int_{s^*}^1 g^{-p} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{A_1}(1-s^*)\right]^p\int_0^{s^*-\delta_s} \frac{1}{(s^*-s)^p} ds + \int_{s^*-\delta_s}^{s^*} g_{min}^{-p} ds + \left[ \frac{30}{\Delta}(1-s_0)\right]^p\int_{s^*}^1 \frac{1}{(s-s_0)^p} ds \nonumber \\
+    &\leq\left[ \frac{A_2}{A_1}(1-s^*)\right]^p\int_{\delta_s}^{s^*} \frac{1}{u^p} du + \delta_s g_{min}^{-p} + \left[ \frac{30}{\Delta}(1-s_0)\right]^p\int_{s^*-s_0}^{1-s_0} \frac{1}{u^p} du \nonumber \\
+    &\leq\left[ \frac{A_2}{A_1(1+A_1)}\right]^p \frac{1}{(p-1)\delta_s^{p-1}}  + \delta_s g_{min}^{-p}  + \left[ \frac{30}{\Delta}(1-s_0)\right]^p \frac{1}{(p-1)(s^*-s_0)^{p-1}} \nonumber \\
+    &\leq \frac{1}{p-1} \frac{A_2}{A_1(1+A_1)} g_{min}^{p-1}  + \frac{A_2}{A_1(1+A_1)} g_{min}^{p-1} + \frac{1}{p-1} \left( \frac{30}{\Delta}\right)^p \left( \frac{a}{k}\right)^{p-1} (1-s_0)g_{min}^{p-1} \nonumber \\
+    &\leq \frac{1}{p-1} \frac{A_2}{A_1(1+A_1)} g_{min}^{p-1}  + \frac{A_2}{A_1(1+A_1)} g_{min}^{p-1} + \frac{1}{p-1} \left( \frac{30}{\Delta}\right)^p \left( \frac{a}{k}\right)^{p-1} (1-s_0)g_{min}^{p-1} \nonumber \\
+    &\leq g_{min}^{p-1}\frac{1}{(p-1)(1+A_1)}  \left( p\frac{A_2}{A_1}+\frac{3}{\Delta}10^p\right) \\
+    &\leq g_{min}^{p-1}\frac{p+3\times 10^p}{(p-1)(1+A_1)\Delta} 
+\end{align}
+where we used the definition of $s^*-s_0=kg_{min}\frac{1-s^*}{a-kg_{min}}$ with $a=\frac{4}{3}k^2\Delta$ and applied with $k=1/4$. For the last inequality, we used $\Delta A_2 \leq A_1$. Using Theorem 6 of the file “AQCbound.tex” we have that $B_1=B_2=\mathcal{O}\left(\frac{1}{\Delta(1+A_1)}\right)$ giving 
+$$T=\mathcal{O}\left(\frac{\sqrt{A_2}}{\Delta^2 A_1(1+A_1)}\sqrt{\frac{2^n}{d_0}}\right)$$
+
+
+\newpage
+\textbf{Proof using direct calculation.} 
+
+Let's bound function $f$:
+
+\begin{align}
+    f(s) &= \frac{\varepsilon s^2 (1-s)+4A_2\delta^2 (1-s)}{\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2A_2\delta^2  (1-s)} \\
+    &\leq \frac{\varepsilon s^2 (1-s) +4A_2a^2 \left(\frac{s-s_0}{1-s_0}\right)^2(1-s)}{\varepsilon s^2 (1-s)+\delta \left(s \frac{s-s^*-s_0+s_0}{1-s_0}-2A_2a\frac{s-s_0}{1-s_0}  (1-s)\right)}  \qquad \text{  with }\frac{1}{1-s_0}<\frac{1}{1-s^*} \\
+    &\leq \frac{\varepsilon s^2 (1-s)+4A_2 a^2\left(\frac{s-s_0}{1-s_0}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s_0}{1-s_0}\right)^2 \left(s -2A_2a (1-s)\right)-as\frac{s-s_0}{(1-s_0)^2}(s^*-s_0)} \\
+    &\leq \frac{\varepsilon s^2 (1-s)+2a\frac{\hat{s}}{1-\hat{s}}\left(\frac{s-s_0}{1-s_0}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s_0}{1-s_0}\right)^2 \frac{s-\hat{s}}{1-\hat{s}}-as\frac{s-s_0}{(1-s_0)^2}(s^*-s_0)} 
+\end{align}
+where we used the variable $\hat{s}=\frac{2aA_2}{1+2aA_2}$. Now, using the definition of $s_0$, $s^*-s_0=kg_{min}\frac{1-s^*}{a-kg_{min}}$ which is $\mathcal{O}(\sqrt{\varepsilon})$. So up to some error of order $\mathcal{O}(\sqrt{\varepsilon})$, as long as we are far enough from $s^*$, i.e., for $s\geq s^*+ \mathcal{O}(\varepsilon^{0.5-c})$ for any $c>0$, the function $f$ can be written as:
+\begin{align*}
+    f(s) \leq 2\hat{s}\frac{1-s}{s-\hat{s}} + \mathcal{O}(\sqrt{\varepsilon})
+\end{align*}
+which (see Case 1) is bounded by 1 if $s\geq \Tilde{s}+ \mathcal{O}(\sqrt{\varepsilon})=\frac{3\hat{s}}{1+2\hat{s}}+ \mathcal{O}(\sqrt{\varepsilon})$. This is satisfied by fixing $a=\frac{\Delta}{6}$. Unfortunately we cannot conclude as $\delta_s= \mathcal{O}(\sqrt{\varepsilon})$. And we don't know what happens around $s^*+\delta_s$...
+\\
+
+\textbf{for the derivative of f.}
+So we start with $v^2$:
+\begin{align*}
+    v^2&=\delta^2 s^2 \left( \frac{s-s^*}{1-s^*}\right)^2+4A_2^2 \delta^4(1-s)^2-4A_2\delta^3 s(1-s)\frac{s-s^*}{1-s^*} +\mathcal{O}(\varepsilon) \\
+    &= \delta^2 \left ( s^2 \left( \frac{s-s^*}{1-s^*}\right)^2+4A_2^2 \delta^2(1-s)^2-4A_2\delta s(1-s)\frac{s-s^*}{1-s^*}\right)+\mathcal{O}(\varepsilon) \\
+    &\geq \delta^2 \left( \frac{s-s^*}{1-s^*}\right)^2 \left ( s^2 +4a^2A_2^2 (1-s)^2-4aA_2 s(1-s)\right)+\mathcal{O} (\varepsilon) \qquad \text{ by using } \frac{s-s_0}{1-s_0}\geq \frac{s-s^*}{1-s^*} \\
+    &\geq \delta^2 \left( \frac{s-s^*}{1-s^*}\right)^2 \left ( \frac{s-\hat{s}}{1-\hat{s}}\right)^2+\mathcal{O} (\varepsilon)
+\end{align*}
+
+\newpage
+\noindent $\bullet$ \textbf{ Case 1: $s_0=s^*$.} This simple case allows you to derive a nice bound on function $f$. Let's introduce $\hat{s}=\frac{2a A_2}{1+2a A_2} $, and with some manipulations we can write:
+
+\begin{align*}
+    f(s) &= \frac{\varepsilon s^2 (1-s)+4A_2\delta^2 (1-s)}{\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2A_2\delta^2  (1-s)} \\
+    &= \frac{\varepsilon s^2 (1-s) +4A_2a^2 \left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+\delta \left(s \frac{s-s^*}{1-s^*}-2A_2a\frac{s-s^*}{1-s^*}  (1-s)\right)} \\
+    &= \frac{\varepsilon s^2 (1-s)+4A_2 a^2\left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s^*}{1-s^*}\right)^2 \left(s -2A_2a (1-s)\right)} \\
+    &= \frac{\varepsilon s^2 (1-s)+2a\frac{\hat{s}}{1-\hat{s}}\left(\frac{s-s^*}{1-s^*}\right)^2(1-s)}{\varepsilon s^2 (1-s)+a\left(\frac{s-s^*}{1-s^*}\right)^2 \frac{s-\hat{s}}{1-\hat{s}}} 
+\end{align*}
+With that it is easy to see that:
+\begin{align*}
+    f(s) \leq 1 &\Longleftrightarrow 2\hat{s}(1-s) \leq (s-\hat{s}) \\
+    &\Longleftrightarrow s \geq \frac{3\hat{s}}{1+2\hat{s}}=\Tilde{s}=\frac{6aA_2}{1+6aA2}
+\end{align*}
+By playing with $a$, we can make $\Tilde{s} \leq s^*$ if $A_1 \geq 6a A_2$. Knowing that $A_1\geq \Delta A_2$, we can fix $a= \Delta/6$. So that the function $f$ is upper-bounded by 1 in the whole interval $[s^*,1]$.
+
+We checked that with $\max_s f=f(s^*)=1$, $a=c\leq \Delta$, which is satisfied with $a= \Delta/6$. So our bound on the gap becomes:
+\begin{align}
+    g(s)\geq \delta(s)=\frac{\Delta}{6}\frac{s-s^*}{1-s^*}
+\end{align}
+
+\noindent \textit{However}, by evaluating this bound at $s^*+\delta_s$, where $$\delta_s=\frac{2}{(1+A_1)^2}\sqrt{\varepsilon A_2} \text{  and 
+ } g_{min}=2s^*\sqrt{\varepsilon/A_2}$$ we get:
+$$g(s^*+\delta_s)\geq\frac{1}{6}\frac{\Delta A_2}{A_1}g_{min}=\mathcal{O}\left(\frac{g_{min}}{\text{poly}(n)}\right)$$ which is too small at the right side of the validity region.
+\\
+
+
+
+\paragraph{A direct (and hopefully correct) bound on $f$}
+It is quite difficult to bound $f$ close to $s^*$. Here we aim to bound $f$ for $s \geq s^* + 2kg_{\min}\frac{A_2}{A_1}$.
+\[ f = \frac{\varepsilon s^2 (1-s)+4\delta^2 A_2(1-s)}{\varepsilon s^2 (1-s)+\delta s \frac{s-s^*}{1-s^*}-2\delta^2 A_2 (1-s)} = \frac{u}{v}. \]
+Now we have
+\begin{align}
+v &\geq \delta s \frac{s-s^*}{1-s^*}-2\delta^2 A_2 (1-s) \\
+&= 2\delta^2 A_2s + \delta \Big(\frac{s-s^*}{1-s^*}s - 2aA_2 \frac{s-s_0}{1-s_0} \Big) \\
+&\geq 2\delta^2 A_2s + \delta \Big(\frac{s-s^*}{1-s^*}s - 2aA_2 \frac{s-s_0}{1-s_0} \Big) \\
+\end{align}
+\end{document}

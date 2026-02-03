@@ -1,0 +1,551 @@
+\section{Int}
+
+This section introduces the building blocks of our quantum algorithms for quantum linear regression with general $\ell_2$-regularization. As mentioned previously, we work in the block-encoding framework. 
+We develop robust quantum algorithms for arithmetic operations, inversion, and positive and negative powers of matrices using quantum singular value transformation, assuming that we have access to approximate block-encodings of these matrices. While some of these results were previously derived assuming perfect block-encodings \cite{GSLW2019, CGJ19}, we calculate the precision required in the input block-encodings to output a block-encoding or quantum state arbitrarily close to the target.  
+
+In particular for the problem of inverting a matrix using QSVT, we reformulate QSVT-based matrix inversion as a variable stopping time algorithm such that VTAA is applicable. The use of QSVT instead of controlled Hamiltonian simulation improves the complexity of the overall matrix inversion algorithm (using QSVT and VTAA) by a log factor and reduces the number of ancilla qubits substantially. Furthermore, in order to convert the usual matrix inversion algorithm to a variable stopping time algorithm, we make use of quantum eigenvalue discrimination using QSVT \cite{Grand_Uni_2021}, instead of gapped phase estimation used in \cite{CKS17}. This further reduces the number of additional qubits by $O(\log^2(\kappa/\delta))$, where $\kappa$ is the condition number of the underlying matrix and $\delta$ is the desired accuracy. 
+
+\section{Amplification of Block Encodings}
+\label{sec:amplification-of-be}
+
+Given a $(\alpha,a,\varepsilon)$-block-encoding of a matrix $A$, we can efficiently amplify the sub-normalization factor from $\alpha$ to a constant and obtain an amplified block-encoding of $A$. For our quantum algorithms in Sec.~\ref{sec:variable-time-qlsa-qsvt}, we show working with pre-amplified block-encodings often yields better complexities. We state the following lemma which was proven in Ref.~\cite{low2017hamiltonian}:
+
+\begin{lemma}[Uniform Block Amplification of Contractions, \cite{low2017hamiltonian}]
+  \label{lem:uniform_block_ampl_contractions}
+  Let $A \in \rr^{N \times d}$ such that $\norm{A} \le 1$
+  If $\alpha \ge 1$ and
+  $U$ is a $(\alpha, a, \varepsilon)$-block-encoding of A
+  that can be implemented at a cost of $T_U$,
+  then there is a $(\sqrt 2, a + 1, \varepsilon + \gamma)$-block-encoding of A
+  that can be implemented at a cost of $\order{\alpha T_U \log\paren{1/\gamma}}$.
+\end{lemma}
+
+\begin{corollary}[Uniform Block Amplification]
+\label{lem:uniform_block_ampl}
+  Let $A \in \rr^{N \times d}$ and $\delta \in (0, 1]$.
+  Suppose $U$ is a $(\alpha, a, \varepsilon)$-block-encoding of A,
+  such that $\varepsilon \leq \frac{\delta}{2}$,
+  that can be implemented at a cost of $T_U$.
+  Then a $(\sqrt 2 \norm{A}, a + 1, \delta)$-block-encoding of A can be implemented
+  at a cost of $\order{\frac{\alpha T_U}{\norm{A}} \log\paren{\norm{A}/\delta}}$.
+\end{corollary}
+
+\begin{proof}
+  We can re-interpret $U$ as a
+    $(\alpha/\norm{A}, a, \varepsilon/\norm{A})$-block-encoding
+    of $A/\norm{A}$.
+  Invoking \autoref{lem:uniform_block_ampl_contractions}
+    with $\gamma = \frac{\delta}{2\norm{A}}$,
+    we get $U'$, a $(\sqrt 2, a + 1, \varepsilon/\norm{A} + \frac{\delta}{2\norm{A}})$-block-encoding
+    of $A/\norm{A}$,
+    implemented at a cost of $\order{\frac{\alpha}{\norm{A}} T_U \log\paren{\norm{A}/\delta}}$ which is a
+    $(\sqrt 2 \norm{A}, a + 1, \delta)$-block-encoding of $A$.
+\end{proof}
+
+
+We now obtain the complexity of applying a block-encoded matrix to a quantum state, which is a generalization of a lemma proven in Ref.~\cite{CGJ19}.
+
+\begin{lemma}[Applying a Block-encoded Matrix on a Quantum State]
+  \label{lem:apply_block_enc}
+  Let $A$ be an $s$-qubit operator such that its singular values lie in $[\norm{A}/\kappa,\norm{A}]$. Also let $\delta \in (0, 1)$, and $U_A$ be an $(\alpha, a, \varepsilon)$-block-encoding of $A$,
+    such that 
+    $$
+    \varepsilon \leq \frac{\delta\norm{A}}{2\kappa},
+    $$
+    that can be implemented in time $T_A$.
+  Furthermore, suppose $\ket b$ be an $s$-qubit quantum state that can be prepared in time $T_b$.
+  Then we can prepare a state that is $\delta$-close to
+  $\frac{A\ket b}{\norm{A\ket b}}$
+  with success probability $\Omega \paren{1}$  at a cost of
+  \begin{equation*}
+      \order{\frac{\alpha\kappa}{\norm{A}}(T_A + T_b)}
+  \end{equation*}
+\end{lemma}
+
+\begin{proof}
+    The proof is similar to Lemma 24 of \cite{CGJ19}.
+    We have $\norm{A\ket{b}}\geq\frac{\norm{A}}{\kappa}$.
+    By applying $U_A$ to $\ket{0}\ket{b}$ (implementable at a cost of $T_A+T_B$), 
+    followed by $\frac{\alpha\kappa}{\norm{A}}$-rounds of amplitude amplification (conditioned on having $\ket{0}$ in the first register) , we obtain a quantum state that within $\delta$ of $\ket{0}\otimes\frac{A\ket{b}}{\norm{A\ket{b}}}$.
+\end{proof}
+
+ 
+\begin{corollary}[Applying a pre-amplified Block-encoded Matrix on a Quantum State]
+  \label{lem:apply_block_enc_preamp}
+  Let $A$ be an $s$-qubit operator such that its singular values lie in $[\norm{A}/\kappa,\norm{A}]$. Also let $\delta \in (0, 1)$, and $U_A$ be an $(\alpha, a, \varepsilon)$-block-encoding of $A$,
+    such that 
+    $$
+    \varepsilon \leq \frac{\delta\norm{A}}{4\kappa},
+    $$
+    that can be implemented in time $T_A$.
+  Furthermore, suppose $\ket b$ be an $s$-qubit quantum state that can be prepared in time $T_b$.
+  Then we can prepare a state that is $\delta$-close to
+  $\frac{A\ket b}{\norm{A\ket b}}$
+  with success probability $\Omega \paren{1}$ at a cost of
+  \begin{equation*}
+     \order{\frac{\alpha\kappa}{\norm{A}}\logp{\frac{\kappa}{\delta}} T_A + \kappa T_b}
+  \end{equation*}
+\end{corollary}
+
+\begin{proof}
+    We first pre-amplify the unitary using \autoref{lem:uniform_block_ampl} with some $\gamma \ge 2\varepsilon$.
+    We get a $(\sqrt{2}\norm{A}, a + 1, \gamma)$-block-encoding of $A$ implemented at a cost of
+    \begin{equation*}
+        T_{A'} := \order{\frac{\alpha T_A}{\norm{A}} \logp{\frac{\norm{A}}{\gamma}}}
+    \end{equation*}
+    
+    Now we invoke \autoref{lem:apply_block_enc} with $\delta = \frac{2\kappa\gamma}{\norm{A}}$ and the above unitary to prepare the state,
+    which has a time complexity of
+    \begin{equation*}
+        \order{\kappa\paren{T_{A'} + T_b}} 
+        = \order{\frac{\alpha\kappa}{\norm{A}}\logp{\frac{\kappa}{\delta}} T_A + \kappa T_b}
+    \end{equation*}
+\end{proof}
+ 
+Now, it may happen that the $U_b$ prepares a quantum state that is only $\varepsilon$-close to the desired state $\ket{b}$. In such cases, we have the following lemma
+
+
+\begin{lemma}[Robustness of state preparation]
+  \label{lem:apply_block_enc_approx}
+  Let $A$ be an $s$-qubit operator such that its singular values lie in $[\frac{\norm{A}}{\kappa},\norm{A}]$. Suppose $\ket{b'}$ is a quantum state that is $\varepsilon/2\kappa$-close to $\ket b$
+  and $\ket\psi$ is a quantum state that is $\varepsilon/2$-close to
+  $A\ket{b'}/\norm{A\ket{b'}}$. Then we have that $\ket\psi$ is $\varepsilon$-close to $A\ket{b}/\norm{A\ket{b}}$.
+\end{lemma}
+
+\begin{proof}
+  We know that $$\norm{\ket b - \ket{b'}} \le \frac{\varepsilon}{2\kappa}$$
+  and $$\norm{\ket\psi - \frac{A\ket{b'}}{\norm{A\ket{b'}}}} \le \frac{\varepsilon}{2}$$
+  For small enough $\varepsilon \ll \kappa$, we can assume that
+    $\norm{A\ket b} \approx \norm{A\ket{b'}}$.
+\\~\\
+  We can derive the final error as
+  \begin{align*}
+    \norm{\ket\psi - \frac{A\ket{b}}{\norm{A\ket{b}}}}
+    &= \norm{\ket\psi - \frac{A\ket{b} - A\ket{b'} + A\ket{b'}}{\norm{A\ket{b}}}} \\
+    &= \norm{\ket\psi - \frac{A\ket{b'}}{\norm{A\ket{b}}}
+        + \frac{A\ket{b'} - A\ket{b'}}{\norm{A\ket{b}}}} \\
+    &\le \norm{\ket{\psi} - \frac{A\ket{b'}}{\norm{A\ket{b'}}}}
+        + \norm{\frac{A\ket{b'} - A\ket{b'}}{\norm{A\ket{b}}}} \\
+    &\le \frac{\varepsilon}{2} + \frac{\norm{A} \norm{\ket b - \ket{b'}}}{\norm{A\ket{b}}} \\
+    &\le \frac{\varepsilon}{2} + \frac{\varepsilon}{2} \\
+    &= \varepsilon
+  \end{align*}
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Arithmetic with Block-Encoded Matrices}
+\label{sec:arith-w-block}
+
+The block-encoding framework embeds a matrix on the top left block of a larger unitary $U$. It has been demonstrated framework allows us to obtain sums, products, linear combinations of block-encoded matrices. This is particularly useful for solving linear algebra problems in general. Here, we state some of the arithmetic operations on block-encoded matrices that we shall be using in order to design the quantum algorithms of \autoref{sec:main_proof} and tailor existing results to our requirements. 
+
+First we prove a slightly more general form of linear combination of unitaries in the block-encoding framework, presented in \cite{GSLW2019}. To do this we assume that we are given optimal state preparation pairs, defined as follows.
+
+\begin{lemma}[Optimal State Preparation Unitary]
+    \label{lem:constr_opt_spu}
+    Let $m \in \mathbb{Z}^+$,
+    $\eta \in \mathbb{R}^m_+$,
+    and $s = \lceil\log{m}\rceil$.
+    Then there exists an $s$-qubit unitary $P$
+    -- called a $\eta$ state-preparation unitary --
+    such that $P\ket{0}$
+    is proportional to $\sum_j \sqrt{\eta_j} \ket{j}$
+\end{lemma}
+
+\begin{lemma}[Linear Combination of Block Encoded Matrices]
+    \label{lem:constr_lincomb}
+    For each $j \in \{0, \ldots, m-1\}$,
+      let $A_j$ be an $s$-qubit operator,
+      and $y_j \in \mathbb{R}^+$.
+      Let $U_j$ be a $(\alpha_j, a_j, \varepsilon_j)$-block-encoding of $A_j$
+        , implemented in time $T_j$.
+    Define the matrix $A = \sum_j y_j A_j$,
+      and the vector $\eta \in \rr^m$ s.t. $\eta_j = y_j\alpha_j$.
+    Let $U_\eta$ be a $\eta$ state-preparation unitary
+      , implemented in time $T_\eta$.
+    Then we can implement a 
+    $$\paren{\sum_j y_j \alpha_j ,\max_j(a_j) + s, \sum_j y_j \varepsilon_j}$$
+    block-encoding
+    of $A$
+    % using one call each to controlled $A_j$
+    % and $\order{1}$ calls to a $\eta$ state-preparation unitary.
+    at a cost of $\order{\sum_j T_j + T_\eta}$.
+\end{lemma}
+
+\begin{proof}
+The proof is similar to the one in Ref.~\cite{GSLW2019}, with some improvements to the bounds. 
+Let $a = max_j(a_j) + s$ and $\alpha = \sum_j y_j \alpha_j$.
+For each $j \in \{0,\ldots,m-1\}$,
+construct the extended unitary $U'_j$ by padding ancillas to $U_j$,
+i.e. $U_j^\prime = I_{a - s - a_j} \otimes U_j$.
+Note that $U'_j$ is a $(\alpha_j, a - s, \varepsilon_j)$-block-encoding of $A_j$.
+Let $B_j = (\bra{0}^{a_j} \otimes I_s)U_j(\ket{0}^{a_j} \otimes I_s)$
+  denote the top left block of $U_j$ and $U_j^\prime$,
+  and observe that $\|A_j - \alpha_j B_j \| \le \varepsilon_j$.
+We also construct $P$
+  --- an $\eta$ state-preparation unitary 
+  s.t. $P\ket{0} = \sum_j \sqrt{y_j\alpha_j} \ket j$ ---
+  by invoking \autoref{lem:constr_opt_spu}.
+
+Consider the unitary
+$W = (P^\dagger \otimes I_{a - 1} \otimes I_s)(\sum_j \ketbra{j}{j} \otimes U_j^\prime ) (P\otimes I_{a - 1} \otimes I_s)$.
+This is a $(\alpha, a, \varepsilon)$-block-encoding
+of $A = \sum_j y_j A_j$,
+where $\varepsilon$ is computed as:
+
+\begin{align*}
+\norm{ A - \alpha (\bra{0}^a \otimes I_s)W(\ket{0}^a \otimes I_s) }
+&= \norm{ \sum_{j=0}^{m-1} y_j A_j - \alpha(\bra{0}^a \otimes I_s)W(\ket{0}^a \otimes I_s) } \\
+&= \norm{ \sum_j y_j A_j - \alpha(\bra{0}^a \otimes I_s)(\sum_j P^\dagger \ketbra{j}{j} P \otimes U_j^\prime)(\ket{0}^a \otimes I_s) } \\
+&= \norm{ \sum_j y_j A_j - \alpha\sum_j \bra{0}P^\dagger \ketbra{j}{j}P\ket{0} \otimes B_j } \\
+&= \norm{ \sum_j \bigg( y_j A_j - \alpha\bra{0}P^\dagger \ketbra{j}{j}P\ket{0}  B_j \bigg) } \\
+&= \norm{ \sum_j \bigg( y_j A_j - \alpha\Big(\frac{y_j \alpha_j}{\alpha}\Big) B_j \bigg) } \\
+&\le \sum_j y_j \norm{ A_j - \alpha_j B_j } \\
+&\le \sum_j y_j \varepsilon_j = \varepsilon
+\end{align*}
+\end{proof}
+
+
+We now specialize the above lemma for the case where we need a linear combination of just two unitaries. This is the case used in this work, and we obtain a better error scaling for this by giving an explicit state preparation unitary.
+
+\begin{corollary}[Linear Combination of Two Block Encoded Matrices]
+    \label{lem:constr_lincomb_two}
+    For $j \in \{0, 1\}$,
+    let $A_j$ be an $s$-qubit operator
+    and $y_j \in \mathbb{R}^+$.
+    Let $U_j$ be a $(\alpha_j, a_j, \varepsilon_j)$-block-encoding of $A_j$,
+      implemented in time $T_j$.
+    Then we can implement a $(y_0 \alpha_0 + y_1 \alpha_1, 1 + \max(a_0, a_1), y_0 \varepsilon_0 + y_1 \varepsilon_1)$ encoding of $y_0 A_0 + y_1 A_1$
+    % using one call each to controlled $A_j$ and $\order{1}$ primitive gates.
+    in time $\order{T_0 + T_1}$.
+\end{corollary}
+
+\begin{proof}
+
+Let $\alpha = y_0 \alpha_0 + y_1 \alpha_1$
+and $P = \frac{1}{\sqrt{\alpha}}
+\begin{pmatrix} \sqrt{y_0 \alpha_0} & -\sqrt{y_1 \alpha_1} \\
+\sqrt{y_1 \alpha_1} & \sqrt{y_0 \alpha_0} \end{pmatrix}$.
+By \autoref{lem:constr_opt_spu}, we have that
+$P$ is an $\{y_0\alpha_0, y_1\alpha_1\}$ state preparation unitary.
+Invoking \autoref{lem:constr_lincomb} with $P$,
+we get the required unitary.
+
+\end{proof}
+
+Given block-encodings of two matrices $A$ and $B$, it is easy to obtain a block-encoding of $AB$. 
+
+\begin{lemma}[Product of Block Encodings, \cite{GSLW2019}]
+     \label{lem:prod_of_be}
+    If $U_A$ is an $(\alpha, a, \delta)$-block-encoding
+      of an $s$-qubit operator $A$
+      implemented in time $T_A$,
+    and $U_B$ is a $(\beta, b, \varepsilon)$-block-encoding
+      of an $s$-qubit operator $B$
+      implemented in time $T_B$,
+    then $(I^{\otimes b} \otimes U_A) (I^{\otimes a} \otimes U_B)$
+    is an $(\alpha\beta, a+b, \alpha\varepsilon + \beta\delta)$-block-encoding of $AB$
+      implemented at a cost of $\order{T_A + T_B}$.
+\end{lemma}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Directly applying \autoref{lem:prod_of_be} results in a block-encoding of $\frac{AB}{\alpha\beta}$. If $\alpha$ and $\beta$ are large, then the sub-normalization factor $\alpha\beta$ might incur an undesirable overhead to the cost of the algorithm that uses it. In many cases, the complexity of obtaining products of block-encodings can be improved if we first amplify the block-encodings (using Lemma \ref{lem:uniform_block_ampl}) and then apply \autoref{lem:prod_of_be}. We prove the following lemma:
+
+\begin{lemma}[Product of Amplified Block-Encodings]
+     \label{lem:prod_of_be_preamp}
+    Let $\delta \in (0, 1]$. If $U_A$ is an $(\alpha_A, a_A, \varepsilon_A)$-block-encoding
+      of an $s$-qubit operator $A$
+      implemented in time $T_A$,
+    and $U_B$ is a $(\alpha_B, a_B, \varepsilon_B)$-block-encoding
+      of an $s$-qubit operator $B$
+      implemented in time $T_B$,
+      such that $\varepsilon_A \leq \frac{\delta}{4\sqrt{2}\norm{B}}$ and $\varepsilon_B \leq \frac{\delta}{4\sqrt{2}\norm{A}}$.
+    Then we can implement a
+    $(2\norm{A}\norm{B}, a_A+a_B+2, \delta)$-block-encoding of $AB$
+      implemented at a cost of 
+      $$\order{\paren{\frac{\alpha_A}{\norm{A}} T_A + \frac{\alpha_B}{\norm{B}} T_B}\log\paren{\frac{\norm{A}\norm{B}}{\delta}}}.$$
+\end{lemma}
+
+\begin{proof}
+  Using \autoref{lem:uniform_block_ampl}
+    for some $\delta_A \ge 2\varepsilon_A$ we get a
+    $(\sqrt 2 \norm{A}, a_A + 1, \delta_A)$-block-encoding of $A$
+    at a cost of 
+    $$\order{\frac{\alpha_A T_A}{\norm{A}} \log\paren{\norm{A}/\delta_A}}.$$
+  Similarly for some $\delta_B \ge 2\varepsilon_B$ we get a
+    $(\sqrt 2 \norm{B}, a_B + 1, \delta_B)$-block-encoding of $B$
+    at a cost of 
+    $$\order{\frac{\alpha_B T_B}{\norm{B}} \log\paren{\norm{B}/\delta_B}}.$$
+      Now using \autoref{lem:prod_of_be} we get 
+    a $(2, a_A+a_B+2, \sqrt{2}\paren{\norm{A}\delta_B + \norm{B}\delta_A})$-block-encoding of $AB$.
+  We can choose
+    $\delta_A = \frac{\delta}{2\sqrt 2\norm{B}}$
+    and 
+    $\delta_B = \frac{\delta}{2\sqrt 2\norm{A}}$
+  which bounds the final block-encoding error by $\delta$.
+\end{proof}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Observe that although we assumed that $A$ and $B$ are $s$-qubit operators, this is without loss of generality. For any any two matrices of dimension ${N\times d}$, where $N$ and $d$ and $d \times K$, such that $N,d, K \leq 2^s$ we can always pad them with rows of zero entries. This leaves the matrix product unaltered. 
+
+Next we show how to find the block encoding of tensor product of matrices from their block encodings. This procedure will be useful in creating the dilated matrices required for regularization. The proof can be found in \autoref{app:algo_primitives}. 
+
+\begin{lemma}[Tensor Product of Block Encoded Matrices]
+\label{lemma:block_enc_tensor}
+  Let $U_1$ and $U_2$ be
+  $(\alpha, a, \varepsilon_1)$ and $(\beta, b, \varepsilon_2)$-block-encodings
+  of $A_1$ and $A_2$, $s$ and $t$-qubit operators,
+  implemented in time $T_1$ and $T_2$ respectively.
+  Define $S := \Pi_{i=1}^s \texttt{SWAP}_{a+b+i}^{a+i}$. 
+  Then, $S (U_1 \otimes U_2) S^\dagger$ is an $(\alpha\beta, a+b, \alpha\varepsilon_2 + \beta\varepsilon_1 +\varepsilon_1\varepsilon_2)$ block-encoding of $A_1 \otimes A_2$,
+    implemented at a cost of $\order{T_1 + T_2}$.
+\end{lemma}
+
+
+\begin{proof}
+    From the property of Kronecker products $(A \otimes B)(C \otimes D) = (AC) \otimes (BD)$. For $j \in \{1, 2\}$ let $\tilde{A_j} = \paren{\bra{0}^{\otimes a_j} \otimes I_s} U_j \paren{\ket{0}^{\otimes a_j} \otimes I_s}$. Then it follows that 
+
+    \begin{equation}
+        \label{eqn:block_encoding_tensor_block}
+        \paren{ \bra{0}^{\otimes a} \otimes I_s \otimes \bra{0}^{\otimes b} \otimes I_t } (U_1 \otimes U_2) \paren{ \ket{0}^{\otimes a} \otimes I_s \otimes \ket{0}^{\otimes b} \otimes I_t } = \tilde{A}_1 \otimes \tilde{A}_2
+    \end{equation}
+
+    Therefore $\tilde{A}_1 \otimes \tilde{A}_2$ is block-encoded in $U_1 \otimes U_2$ as a non-principal block-encoding, and we can use \texttt{SWAP} gates to move it to the principal block as follows.
+
+    \begin{align*}
+        S \paren{ \ket{0}^{\otimes a} \otimes I_s \ket{0}^{\otimes b} \otimes I_t } &= \Pi_{i=1}^s \texttt{SWAP}_{a+b+i}^{a+i} \paren{ \ket{0}^{\otimes a} \otimes I_s \ket{0}^{\otimes b} \otimes I_t } \\
+                                                                                    &= \Pi_{i=1}^{s-1} \texttt{SWAP}_{a+b+i}^{a+i} \texttt{SWAP}_{a + b + s}^{a+s} \paren{ \ket{0}^{\otimes a} \otimes I_s \ket{0}^{\otimes b} \otimes I_t } \\
+                                                                                    &= \Pi_{i=1}^{s-1} \texttt{SWAP}_{a+b+i}^{a+i} \paren{ \ket{0}^{\otimes a} \otimes I_{s-1} \ket{0}^{\otimes b} \otimes I_{t+1} } \\
+                                                                                    &= \ldots \\ 
+                                                                                    &= \ket{0}^{\otimes a+b} \otimes I_{s+t}
+    \end{align*}.
+
+    Similarly,
+
+    \begin{equation*}
+        \paren{\bra{0}^{\otimes a} \otimes I_s \otimes \bra{0}^{\otimes b} \otimes I_t} S^{\dagger} = \bra{0}^{\otimes a + b} \otimes I_{s+t}.
+    \end{equation*}
+
+    From \autoref{eqn:block_encoding_tensor_block} we have 
+
+    \begin{align*}
+        \tilde{A}_1 \otimes \tilde{A}_2 &= \paren{\bra{0}^{\otimes a} \otimes I_s \otimes \bra{0}^{\otimes b} \otimes I_t} S^{\dagger}S(U_1 \otimes U_2) S^{\dagger}S \paren{ \ket{0}^{\otimes a} \otimes I_s \ket{0}^{\otimes b} \otimes I_t } \\ 
+                                        &= \paren{\bra{0}^{\otimes a + b} \otimes I_{s+t}} S (U_1 \otimes U_2) S^{\dagger} \paren{\ket{0}^{\otimes a+b} \otimes I_{s+t}}
+    \end{align*}
+
+    Next, we look at the subnormalization and error terms. 
+
+    \begin{align*}
+        \norm{A_1 \otimes A_2 - \alpha \beta \tilde{A}_1 \otimes \tilde{A}_2}_2 &\leq \norm{(\alpha \tilde{A}_1 + \varepsilon_1 I_s) \otimes (\beta \tilde{A}_2 + \varepsilon_2 I_t) - \alpha \tilde{A}_1 \otimes \beta \tilde{A}_2}_2 \\ 
+                                                                                &= \norm{\alpha \tilde{A}_1 \otimes \varepsilon_2 I_2 + \varepsilon_1 I_s \otimes \beta \tilde{A}_2 + \varepsilon_1 I_s \otimes \varepsilon_2 I_2}_2 \\
+                                                                                &\leq \alpha \varepsilon_2 \norm{\tilde{A}_1}_2 + \beta \varepsilon_2 \norm{\tilde{A}_2}_2 + \varepsilon_1 \varepsilon_2 \\ 
+                                                                                &= \alpha \varepsilon_2 + \beta \varepsilon_1 + \varepsilon_1 \varepsilon_2
+    \end{align*}
+
+    where we have used $\norm{A_1}_2 \leq \alpha \norm{\tilde{A}_1}_2 + \varepsilon_1$ and $\norm{\tilde{A}_1}_2 \leq 1$ and similarly for $A_2$. 
+
+\end{proof}
+
+
+We will now use Lemma \ref{lemma:block_enc_tensor} to augment one matrix into another, given their approximate block-encodings.
+
+\begin{lemma}[Block-encoding of augmented matrix]
+  \label{lem:augmented_regression_matrix}
+If $U_A$ is an $(\alpha_A, a_A,\varepsilon_A)$-block encoding of an $s$-qubit operator $A$ that can be implemented in time $T_A$ and $U_B$ is an $(\alpha_B, a_B,\varepsilon_B)$-block encoding of an $s$-qubit operator $B$ that can be implemented in time $T_B$, then we an implement an
+$(\alpha_A + \alpha_B,
+    \max(a_A, a_B) + 2,
+    \varepsilon_A + \varepsilon_B)$-block-encoding of
+  \begin{equation*}
+    A_B = \begin{pmatrix}A&0\\ B&0\end{pmatrix}
+  \end{equation*}
+
+at a cost of $\order{T_A + T_B}$.
+\end{lemma}
+
+\begin{proof}
+    %%% Dilate A
+    Let $M_A = \begin{pmatrix}
+        1 & 0 \\
+        0 & 0
+    \end{pmatrix}$.
+    Then the \texttt{SWAP} gate is a $(1, 1, 0)$ block encoding of $M_A$.
+    By \autoref{lemma:block_enc_tensor},
+    we can implement $U_A'$, an $(\alpha_A, a_A + 1, \varepsilon_A)$-block-encoding
+    of their tensor product $M_A \otimes A = \begin{pmatrix}
+        A & 0 \\
+        0 & 0
+    \end{pmatrix}$
+    at a cost of $\order{T_A}$.
+    %%%
+    %%% Dilate L
+    Similarly, Let $M_B = \begin{pmatrix}
+        0 & 0 \\
+        1 & 0
+    \end{pmatrix}$.
+    Then $ (I\otimes X)\cdot \texttt{SWAP}$ is a $(1, 1, 0)$-block-encoding of $M_B$.
+    Similarly \autoref{lemma:block_enc_tensor},
+    we can implement $U_B'$, an $(\alpha_B, a_B + 1, \varepsilon_B)$-block-encoding
+    of $M_B \otimes B = \begin{pmatrix}
+        0 & 0 \\
+        B & 0
+    \end{pmatrix}$
+    at a cost of $\order{T_B}$.
+    %%%
+    %%% Combine A and L
+    We add them by using \autoref{lem:constr_lincomb_two} on $U_A'$ and $U_B'$,
+    to implement $U_{A_B}$,
+    an $(\alpha_A + \alpha_B, 2 + \max(a_A,a_B), \varepsilon_A + \varepsilon_B)$-block-encoding of
+    $A_B = \begin{pmatrix}A&0\\ B&0\end{pmatrix}$.
+    This can be implemented at a cost of $\order{T_A + T_B}$.
+\end{proof}
+
+
+\begin{lemma}[Block-Encoding of a dilated matrix]
+    \label{lem:block_encoding_of_dilated_matrix}
+    If $U_A$ is an $(\alpha, a, \varepsilon)$-block-encoding of an $s$-qubit operator $A$ implemented in time $T_A$,
+    then there is a $(\alpha, a,\varepsilon)$-block-encoding of an $s+1$-qubit operator $\bar{A} := \begin{pmatrix}
+    0 & A \\
+    A^{\dagger} & 0
+    \end{pmatrix}$,
+    that can be prepared at a cost of $\order{T_A}$.
+\end{lemma}
+
+\begin{proof}
+By adding an additional qubit, we can implement a controlled unitary $\controlled{U_A}$ that acts on $(a+s+1)$ qubits such that controlled on the $(a+1)^{\mathrm{th}}$ qubit, it implements $U_A$ on the first $a$ and the last $s$ qubits. Let,
+\begin{equation*}
+V
+=\controlled{U}^{\dag}_A(X \otimes I)\controlled{U_A}
+=\ketbra{0}{1} \otimes U_A + \ketbra{1}{0} \otimes U^{\dag}_A,
+\end{equation*}
+Then
+$\texttt{SWAP}_{a,1}V$ is an $(\alpha, a, \varepsilon)$-block encoding of $\bar{A}$. Here $\texttt{SWAP}_{a,1}$ is a sequence of $\texttt{SWAP}$ gates that swaps the entire $a$-qubit register, $\ket{0}^{\otimes a}$ with the single qubit control register, one qubit at a time. 
+\end{proof}
+
+When using a dilated matrix $\bar{A}$, we must also extend the input state to $\bar{\ket{b}} = \ket{0}\ket{b}$. This just increases the number of input qubits by 1, but keeps the rest of the behaviour identical to the non-dilated setting.
+
+% spurious explanation (repeats below)
+% In the next subsection, we deal with the problem of deciding whether the eigenvalue of a matrix is above or below a certain threshold using QSVT.  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\section{Robust Quantum Eigenvalue Discrimination}
+\label{sec:qevd}
+
+The problem of deciding whether the eigenvalues of a Hamiltonian lie above or below a certain threshold, known as \textit{eigenvalue discrimination}, finds widespread applications. For instance, the problem of determining whether the ground energy of a generic local Hamiltonian is $<\lambda_a$ or $>\lambda_b$ is known to be QMA-Complete \cite{kempe2006complexity}. Nevertheless, quantum eigenvalue discrimination has been useful in preparing ground states of Hamiltonians. Generally, a variant of quantum phase estimation, which effectively performs a projection onto the eigenbasis of the underlying Hamiltonian is used to perform eigenvalue discrimination \cite{ge2019faster}. Recently, it has been shown that QSVT can be used to approximate a projection onto the eigenspace of an operator by implementing a polynomial approximation of the \textit{sign function} \cite{lin2020near}. This was then used to design improved quantum algorithms for ground state preparation. In our work, we will use this procedure to develop a more space-efficient variable stopping time matrix inversion algorithm in \autoref{ssec:mi_using_qsvt}.
+
+Given a threshold eigenvalue $c$, the \textit{sign function} is defined as follows
+
+\begin{equation}
+    \mathrm{sign} (x - c) = \begin{cases}
+        -1 \quad x < c \\
+        0 \quad x = c \\
+        1 \quad x > c. \\
+    \end{cases}
+\end{equation}
+
+Low and Chuang \cite{low2017hamiltonian} showed that there exists a polynomial approximation to $\mathrm{sign}(x-c)$ (based on its approximation of the \textit{erf function}). We use the result of Ref.~\cite{Grand_Uni_2021}, where such a polynomial of even parity was considered. 
+
+\begin{lemma}[Polynomial approximation to the sign function \cite{low2017hamiltonian,low2017quantum,Grand_Uni_2021}]
+\label{lem:approx-sign}
+Suppose $\varepsilon\in (0,1)$, $\Delta\in(0,1)$ and $c\in (0,1)$. Then there exists an efficiently computable polynomial $P_{\varepsilon,\Delta,c}(x)$ of degree $l=\order{\frac{1}{\Delta}\log(1/\varepsilon)}$ and of even parity such that 
+\begin{itemize}
+\item[1.~] $\forall x\in [0,1],~\abs{P_{\varepsilon,\Delta,c}(x)}\leq 1$\\
+\item[2.~] $\forall x \in [0, 1] \setminus \paren{c - \frac{\Delta}{2}, c + \frac{\Delta}{2}} :  \abs{P_{\varepsilon, \Delta, c}(x)-\mathrm{sign}(c - x)} \leq \varepsilon$
+\end{itemize}
+\end{lemma}
+
+Therefore, given a Hermitian matrix $A$ with eigenvalues between $[0,1]$, we can use QSVT to implement $P_{\varepsilon,\Delta,c}(A)$ which correctly distinguishes between eigenvalues of $A$ that are less than $c-\Delta/2$ and those that are greater than $c+\Delta/2$. 
+
+For our purposes, we shall consider that we are given $U_A$, which is an $(\alpha,a,\varepsilon)$ block-encoding of a Hermitian matrix $A$. Our goal would be to determine whether a certain eigenvalue $\lambda$ satisfies $0\le\lambda\le\phi$ or $2\phi\le\lambda\le 1$. Since $U_A$ (approximately) implements $A/\alpha$, the task can be rephrased as distinguishing whether an eigenvalue of $A/\alpha$ is in $[0,\phi/\alpha]$ or in $[2\phi/\alpha,1]$.
+
+For this task, we develop a robust version of the quantum eigenvalue discrimination problem which indicates the precision $\varepsilon$ required to commit an error that is upper bounded by at most $\delta$. In order to bound the error, we first state a general lemma on the robustness of QSVT from \cite{GSLW2019}:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{lemma}[Robustness of Quantum Singular Value Transformation, \cite{GSLW2019}]
+    \label{lem:robustness_of_QSVT}
+    Let $P \in \mathbb{C}[x]$ be a polynomial of degree $n$. Let $A, \tilde{A} \in \mathbb{C}^{N \times d}$ be matrices of spectral norm at most 1, such that 
+    \begin{equation*}
+        \norm{A - \tilde{A}} + \norm{\frac{A + \tilde{A}}{2}}^2 \leq 1.
+    \end{equation*}
+    Then, 
+    \begin{equation*}
+        \norm{P^{SV}(A) - P^{SV}(\tilde{A})} \leq n \sqrt{\frac{2}{1 - \norm{\frac{A + \tilde{A}}{2}}^2}} \norm{A - \tilde{A}}. 
+    \end{equation*}
+\end{lemma}
+
+We shall use this result to show how errors propagate in the quantum eigenvalue discrimination problem. For the eigenvalue discrimination problem, we have the following theorem:
+
+\begin{theorem}[Quantum Eigenvalue Discrimination using QSVT]
+    \label{thm:QEVD}
+    Suppose $A$ is a Hermitian matrix such that its eigenvalues are in $[0,1]$ and $\ket{\lambda}$ is an eigenvector of $A$ with eigenvalue $\lambda$. Furthermore, let $\phi,~\delta \in \paren{0,\frac{1}{2}}$.
+    Suppose that for some $\varepsilon$ satisfying
+    \begin{equation*}
+        \varepsilon\leq \dfrac{\phi^2\delta}{8\alpha\log^2(2/\delta)}
+    \end{equation*}
+    we have access to $U_A$, an $(\alpha, a, \varepsilon)$-block-encoding of a Hermitian matrix $A$ implemented in time $T_A$.
+    Then there exists a quantum algorithm QEVD$(\phi, \delta)$ that implements the following transformation 
+    \begin{equation*}
+        \ket{0}_C \ket{\lambda}_I \mapsto (\beta_0 \ket{0}_C + \beta_1 \ket{1}_C ) \ket{\lambda}_I,
+    \end{equation*}
+   such that 
+    \begin{itemize}
+        \item $\lambda \in [0, \phi] \implies \abs{\beta_1} \leq \delta$
+        \item $\lambda \in [2\phi, 1] \implies \abs{\beta_0} \leq \delta$.
+    \end{itemize}
+    This algorithm has a cost of
+    $$\order{\frac{\alpha}{\phi}\logp{\frac{1}{\delta}}T_A}$$.
+\end{theorem}
+
+
+
+\begin{proof}
+    Set $c = \frac{3\phi}{2}, \Delta = \frac{\phi}{\alpha}$ and $\varepsilon' = \frac{\delta}{2}$. We assume $U_A$ is an $(\alpha,a,\varepsilon)$-block encoding of some operator $\tilde{A}$, such that $\norm{A - \tilde{A}} \leq \varepsilon$.
+    
+    Apply the operator $P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{A}/\alpha)$ using QSVT, controlled on an ancillary qubit in the $\ket{+}$ state to $\ket{0}_C\ket{\lambda}$. Let us call this procedure $W$. That is,
+    \begin{equation*}
+        W := \paren{H\otimes I}\paren{\controlled{P_{\varepsilon', \Delta, \frac{c}{\alpha}}}(\tilde{A}/\alpha)}\paren{H \otimes I},
+    \end{equation*}
+    that $W$ acts as 
+    \begin{equation*}
+        W : \ket{0}\ket{\lambda} \mapsto \frac{1}{2} \paren{ \paren{1 + P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{\lambda}/\alpha)} \ket{0} + \paren{1 - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{\lambda}/\alpha)} \ket{1} } \ket{\lambda}
+    \end{equation*}
+
+   From \autoref{lem:approx-sign}, the degree of the polynomial is $\order{\frac{1}{\Delta}\logp{\frac{1}{\varepsilon'}}}$, and as many queries to $U_A$ and $U_A^{\dagger}$ are made. 
+   The error in this procedure can be computed as:
+    
+    \begin{align*}
+        &\norm{\mathrm{sign}\paren{c/\alpha - \lambda/\alpha} - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{\lambda}/\alpha)} \\
+        &= \norm{
+        \mathrm{sign}\paren{c/\alpha - \lambda/\alpha} 
+        - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha)
+        + P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha)
+        - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{\lambda}/\alpha)
+        } \\
+        &\leq \underbrace{\norm{\mathrm{sign}\paren{c/\alpha - \lambda/\alpha} - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha)}}_{\leq \varepsilon'} + \norm{P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha) - P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\tilde{\lambda}/\alpha) } \\ 
+        &\leq \varepsilon' + \frac{1}{\Delta}\logp{\frac{1}{\varepsilon'}} \sqrt{\frac{2 \varepsilon}{\alpha}} \quad ~~~~~\left[\text{By \autoref{lem:robustness_of_QSVT}}\right] \\ 
+        &\leq \frac{\delta}{2} + \frac{\delta}{2} ~~~~~~~~~~~~~~~~~~~~~~~~~~~\left[\text{As $\varepsilon\leq \dfrac{\phi^2\delta}{8\alpha\log^2(2/\delta)} $ }\right] \\
+        &\leq \delta
+    \end{align*}
+
+    Now depending on where $\lambda$ lies, we have the following two cases:
+~\\~\\
+    \textbf{Case 1: $\lambda > \lambda_{\mathrm{th}} + \frac{\phi}{2} = 2 \phi$.} Observe that for this case, 
+    \begin{equation*}
+    P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha) \in [-1 - \delta, -1 + \delta].
+    \end{equation*}
+    
+    Thus, $\abs{\beta_0} \leq \frac{\delta}{2}$. 
+~\\~\\
+    \textbf{Case 2: $\lambda \leq \lambda_{\mathrm{th}} - \frac{\phi}{2} = \phi$.} Observe that for this case, 
+    \begin{equation*}
+    P_{\varepsilon', \Delta, \frac{c}{\alpha}}(\lambda/\alpha) \in [1 - \delta, 1 + \delta].
+    \end{equation*}
+    Thus, $\abs{\beta_1} \leq \frac{\delta}{2}$. 
+\end{proof}
+
+When $\phi\leq\lambda\leq 2\phi$, the polynomial no longer approximates the sign function but rather is an approximation of the erf function. The algorithm $\mathrm{QEVD}(\phi,\delta)$ outputs a quantum state that is close to $(\beta_0\ket{0}+\beta_1\ket{1})\ket{\lambda}$, for some non-zero $\beta_0$ and $\beta_1$. By linearity, this algorithm also works when the input is a general superposition state instead of an eigenstate $\ket{\lambda}$.
+
+Although \autoref{thm:QEVD} assumes that $A$ is Hermitian, this is without loss of generality. For any $A\in\mathbb{R}^{N\times d}$, we can construct the dilated matrix $\bar{A}\in\mathbb{R}^{(N+d)\times (N+d)}$ by adding an extra qubit such that $\bar{A}=\ketbra{0}{1}\otimes A^T+\ketbra{1}{0}\otimes A$. Note that given an $(\alpha,a,\varepsilon)$-block encoding of $A$, from \autoref{lem:block_encoding_of_dilated_matrix}, we can construct an $(\alpha,a,\varepsilon)$ block encoding of $\bar{A}$ that can be implemented at the same cost as $A$. The input state can be transformed accordingly. 
+
+Furthermore, if $A$ has negative eigenvalues, it is possible to appropriately shift and rescale $A$ such that they are in $[0,1]$. For instance if the eigenvalues of $A$ are in $\left[-\norm{A},-\norm{A}/\kappa\right]\cup \left[\norm{A}/\kappa, \norm{A}\right]$, then for any $\mu\geq\norm{A}$, the matrix $(A+\mu I)/(2\mu)$ which can be implemented by linear combination of unitaries with cost $\Theta(T_A)$. Consequently, while implementing this algorithm, we shall consider any general $A\in \mathbb{R}^{N\times d}$, assuming that these transformations have already been made.
+
+

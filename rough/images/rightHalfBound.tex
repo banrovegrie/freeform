@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{bbold}
+\usepackage[margin=1.4in]{geometry}
+
+% ------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+
+\newcommand{\defeq}{\coloneqq}
+
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+\newcommand{\ket}[1]{\left| #1 \right\rangle}
+\newcommand{\bra}[1]{\left\langle #1 \right|}
+\let\abraket\braket
+\newcommand{\braket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \langle#2|#3\rangle%
+    \else%
+       \langle#2|#1|#3\rangle%
+    \fi}
+\newcommand{\sbraket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \left\langle#2\vphantom{#3}\right.\left|#3\vphantom{#2}\right\rangle%
+    \else%
+         \left\langle#2\vphantom{#1}\vphantom{#3}\right.\left|#1\vphantom{#2}\vphantom{#3}\right|\left.#3\vphantom{#1}\vphantom{#2}\right\rangle%
+    \fi}
+\newcommand{\ketbra}[2]{|#1\rangle\langle#2|}
+
+\DeclareMathOperator{\diff}{d \!}
+
+\providecommand{\od}[3][]{\ensuremath{
+\ifinner
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\else
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\fi
+}}
+
+\providecommand{\tod}[3][]{\ensuremath{\mathinner{
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\providecommand{\dod}[3][]{\ensuremath{\mathinner{
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+% ------
+
+\title{Right-hand side bound}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle 
+
+Set $\epsilon \defeq d_0/N$. The following development may depend on the assumptions $1 \leq A_1 \leq A_2$ and $E_1 - E_0 \leq 1$.
+
+We can derive a bound on the right of the minimum gap by using the following facts:
+\begin{itemize}
+\item For all $\lambda \in \mathbb{C}$ and normal operators $A$ (which include the self-adjoint operators), the distance between $\lambda$ and the closest point in the spectrum of $A$ is given by $\norm{R_A(\lambda)}^{-1}$, where $R_A(\lambda) \defeq (\lambda \mathbb{1} - A)^{-1}$ is the resolvent.
+\item The Sherman-Morrison formula
+\[ (A + \ketbra{u}{v})^{-1} = A^{-1} - \frac{A^{-1}\ketbra{u}{v}A^{-1}}{1+\braket[A^{-1}]{u}{v}} \]
+holds for all operators $A$ and vectors $u,v$.
+\end{itemize}
+Setting $H(s) = (s-1)\ketbra{u}{u} + sH_0$, we can calculate
+\begin{align}
+\norm{R_{H(s)}(\lambda)} &= \norm*{\big(\lambda \mathbb{1} - sH_0 + (1-s)\ketbra{u}{u}\big)^{-1}} \\
+&= \norm*{R_{sH_0}(\lambda) - (1-s)\frac{R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)}{1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}}} \\
+&\leq \norm*{R_{sH_0}(\lambda)} + (1-s)\frac{\norm{R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)}}{1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}} \label{eq:inverseGapBound}
+\end{align}
+The quantity $\norm*{R_{sH_0}(\lambda)}$ is relatively straightforward, it is the inverse of the distance between $\lambda$ and the spectrum of $sH_0$. We need to calculate $1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u}$. Letting $d_k$ be the degeneracy of the energy $E_k$ of $H_0$, we have
+\[ 1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u} = 1 + (1-s)\sum_{k}\frac{d_k}{N}\frac{1}{\lambda - sE_k}, \]
+so this is zero exactly when $\lambda \in \sigma\big(H(s)\big)\setminus\sigma(sH_0)$.
+
+We now fix a line $\lambda = \lambda(s)$ that lies between the lowest and second lowest eigenvalues of $H(s)$, for $s \geq \frac{A_1}{A_1+1}$, and show that the spectrum lies at least a certain distance from this line. The gap is bounded by twice this distance, i.e.\ $\Delta \geq \norm{R_{H(s)}(\lambda)}^{-1}$.
+
+A natural choice for this line seems to be $\lambda(s) = sE_0 + \delta(s)$, where $\delta(s) = \frac{E_0 + E_1}{2}\big((A_1+s)s - A_1\big)$. This line $\lambda$ interpolates linearly between $sE_0$ at $s = \frac{A_1}{A_1+1}$ and $\frac{E_0+E_1}{2}$ at $s=1$. It seems likely that a more intelligent choice of $\lambda$ exists, which could simplify the analysis.
+
+With this form of $\lambda$, we have $\norm*{R_{sH_0}(\lambda)} = \delta^{-1}$ and
+\begin{align}
+1+(1-s)\braket[R_{sH_0}(\lambda)]{u}{u} &= 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\sum_{k\neq 0}\frac{d_k}{N}\frac{1}{s(E_k - E_0) - \delta} \\
+&= 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\sum_{k\neq 0}\frac{d_k}{N}\Big(\frac{1}{s(E_k - E_0)} + \frac{\delta}{s(E_k - E_0)\big(s(E_k - E_0) - \delta\big)}\Big) \\
+&\geq 1 + (1-s)\frac{\epsilon}{\delta} - (1-s)\Big(\frac{A_1}{s} + 2\frac{A_2\delta}{s^2}\Big).
+\end{align}
+The last bound follows from the fact that $\delta \leq s(E_k - E_0)/2$ for all $k \neq 0$.
+
+Also 
+\begin{align}
+\norm*{\Big.R_{sH_0}(\lambda)\ketbra{u}{u}R_{sH_0}(\lambda)} &= \norm{R_{sH_0}(\lambda)\ket{u}}^2 \\
+&= \frac{\epsilon^2}{\delta^2} + \sum_{k\neq 0} \frac{d_k}{N} \frac{1}{\big(s(E_k - E_0) - \delta\big)^2} \\
+&\leq \frac{\epsilon^2}{\delta^2} + 4 \frac{A_2}{s^2}.
+\end{align}
+Again the fact that $\delta \leq s(E_k - E_0)/2$ for all $k \neq 0$ is used.
+
+Plugging everything into \eqref{eq:inverseGapBound} gives a bound $\Delta$ on the gap. The expression is large, but tractable with the help of a computer.
+
+It is straightforward (with a CAS) to verify that
+\begin{equation}
+\Delta\Big(\frac{A_1}{A_1+1} + \frac{\sqrt{A_2}}{16A_1^2}\sqrt{\epsilon}\Big) = \Omega(\sqrt{\epsilon})\qquad\text{and}\qquad \Delta(1) = \frac{E1+E_2}{2}.
+\end{equation}
+In this calculation it is useful to observe $A_1 \geq A_2(E_1 - E_0)$.
+
+By the (sketchy) calculation,
+\begin{align}
+\int \frac{1}{\Delta^p} \diff{s} &= \int \frac{1}{\Delta^p} \dod{s}{\Delta} \diff{\Delta} \\
+&\leq \Big(\max \dod{s}{\Delta}\Big) \int \frac{1}{\Delta^p} \diff{\Delta} \\
+&\leq \Big(\max \dod{s}{\Delta}\Big) O(\sqrt{\epsilon}^{1-p}),
+\end{align}
+it is clear that it is enough to show that $\od{s}{\Delta}$ bounded. By the inverse function theorem, this is equivalent to showing that $\big(\od{\Delta}{s}\big)^{-1}$ is bounded. Setting $E_0 = 0$ and taking the limit $\epsilon \to 0$, yields
+\begin{equation}
+\frac{2 \left(- A_{2}^{2} E_{1}^{2} s^{2} + 2 A_{2}^{2} E_{1}^{2} s - A_{2}^{2} E_{1}^{2} + 2 A_{2} E_{1} s^{2} - 2 A_{2} E_{1} s - s^{2}\right)}{E_{1} \left(A_{1} A_{2}^{2} E_{1}^{2} s^{2} - 2 A_{1} A_{2}^{2} E_{1}^{2} s + A_{1} A_{2}^{2} E_{1}^{2} - 2 A_{1} A_{2} E_{1} s + 2 A_{1} A_{2} E_{1} - A_{1} s^{2} + A_{2}^{2} E_{1}^{2} s^{2} - 2 A_{2}^{2} E_{1}^{2} s + A_{2}^{2} E_{1}^{2} - 2 A_{2} E_{1} s - s^{2}\right)} \label{constBound}
+\end{equation}
+I have run out of time, but only two more things are needed to complete the proof:
+\begin{enumerate}
+\item Show that \eqref{constBound} is uniformly bounded for $s\in \big[\frac{A_1}{A_1+1}, 1\big]$. This seems clear from numerics.
+\item Show that the limit as $\epsilon \to 0$ is uniform. This is almost certainly not difficult.
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

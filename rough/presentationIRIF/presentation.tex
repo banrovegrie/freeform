@@ -1,0 +1,916 @@
+\documentclass{beamer}
+\usepackage{cancel}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{bbold}
+\usepackage{subfig}
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+\usetikzlibrary{decorations.pathmorphing}
+\usetikzlibrary{arrows.meta}
+
+\usepackage[ruled, linesnumbered]{algorithm2e}
+
+\usepackage[sorting=none, url=false, isbn=false]{biblatex}
+
+% Define the custom colors
+%% Base color and direct complement
+\definecolor{burntOrange}{HTML}{CC5500}
+\definecolor{compl}{RGB}{51,170,255} % Complementary color to (204,85,0)
+\definecolor{lightorange}{RGB}{255, 233, 217}
+
+%% Earthy Complementary Palette
+\definecolor{slateBlue}{HTML}{6699CC}
+\definecolor{cream}{HTML}{FFF0D6}
+\definecolor{charcoalBrown}{HTML}{331400}
+\definecolor{warmGray}{HTML}{666666}
+
+%% Warm Analogous Harmony
+\definecolor{redOrange}{HTML}{CC3300}
+\definecolor{goldenYellow}{HTML}{CC9900}
+\definecolor{coffeeBrown}{HTML}{331A00}
+\definecolor{antiqueWhite}{HTML}{F5E6CC}
+
+%% Muted Earth Tones
+\definecolor{oliveGreen}{HTML}{556B2F}
+\definecolor{mustardYellow}{HTML}{CCAA00}
+\definecolor{terracotta}{HTML}{994433}
+\definecolor{linen}{HTML}{FFF8E7}
+
+%% Monochromatic Depth
+\definecolor{palePeach}{HTML}{FFD699}
+\definecolor{spiceBrown}{HTML}{803300}
+\definecolor{clay}{HTML}{B34700}
+
+%% Triadic Boldness
+\definecolor{teal}{HTML}{00CC99}
+\definecolor{royalPurple}{HTML}{6600CC}
+\definecolor{mintFrost}{HTML}{99E5CC}
+\definecolor{lavenderMist}{HTML}{CCB3FF}
+
+% Change the color theme
+\setbeamercolor{normal text}{bg=antiqueWhite!25} % Background
+\setbeamercolor{structure}{fg=white, bg=oliveGreen}
+\setbeamercolor{title}{fg=white, bg=burntOrange}
+\setbeamercolor{block body}{bg=lightorange}
+\setbeamercolor{frametitle}{fg=white, bg=burntOrange}
+\setbeamercolor{section in toc}{fg=burntOrange}
+\setbeamercolor{itemize item}{fg=burntOrange}
+\setbeamercolor{enumerate item}{fg=burntOrange}
+\setbeamercolor{bibliography item}{fg=burntOrange}
+\setbeamercolor{bibliography entry author}{fg=burntOrange}
+\setbeamercolor{bibliography entry note}{fg=burntOrange}
+
+\setbeamercolor{palette quaternary}{fg=black, bg=palePeach}
+
+\AtBeginSection[]{
+\begin{frame}
+\vfill \centering
+\begin{beamercolorbox}[sep=8pt, center,rounded=true]{palette quaternary}%
+\usebeamerfont{title}\insertsectionhead\par%
+\end{beamercolorbox}
+\vfill
+\end{frame}
+}
+
+
+\newcommand\defeq{\coloneqq}
+
+% ------
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{corollary}{Corollary}[theorem]
+%\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+
+
+\newcommand{\dial}[1]{\tikz{\draw[thick] (0,0) circle (1em);\draw[thick,->] (0,0) -- ++(90-#1:0.8em);}}
+
+
+\title{Unstructured Adiabatic Quantum Optimization: Optimality with Limitations}
+\author{Arthur Braida \and Shantanav Chakraborty \and Alapan Chaudhuri \and \textbf{Joseph
+Cunningham} \and Rutvij Menavlikar \and Leonardo Novo \and Jérémie Roland}
+\date{}
+\setbeamertemplate{footline}[frame number]
+
+
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+% Differential (upface d)
+\DeclareMathOperator{\diff}{d \!}
+% Derivative (upface D)
+\DeclareMathOperator{\Diff}{D \!}
+% ordinary derivative - analogous to the partial derivative command
+\providecommand{\od}[3][]{\ensuremath{
+\ifinner
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\else
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\fi
+}}
+
+\providecommand{\tod}[3][]{\ensuremath{\mathinner{
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\providecommand{\dod}[3][]{\ensuremath{\mathinner{
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\DeclareMathOperator{\Tr}{Tr}
+
+\newcommand{\ket}[1]{\left| #1 \right\rangle}
+\newcommand{\bra}[1]{\left\langle #1 \right|}
+\let\abraket\braket
+\newcommand{\braket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \langle#2|#3\rangle%
+    \else%
+       \langle#2|#1|#3\rangle%
+    \fi}
+\newcommand{\ketbra}[2]{|#1\rangle\langle#2|}
+
+\begin{document}
+
+\frame{\titlepage \vspace{-3em} \begin{figure}
+\begin{minipage}[t]{.3\textwidth}
+  \centering
+  \includegraphics[height=4.5em]{logoULBsmall}
+\end{minipage}%
+\begin{minipage}[t]{.3\textwidth}
+  \centering
+  \includegraphics[height=4.5em]{logoIIIT}
+\end{minipage}
+\begin{minipage}[t]{.3\textwidth}
+  \centering
+  \includegraphics[height=4.5em]{logoINL}
+\end{minipage}
+\end{figure}\url{arXiv:2411.05736}}
+\begin{frame}
+\frametitle{Table of contents}
+\tableofcontents
+\end{frame}
+
+\section{The Ising model}
+\begin{frame}
+\frametitle{The Ising model}
+
+\begin{tikzpicture}[scale=2]
+    % Define grid size
+    \def \rows {5}
+    \def \cols {6}
+    \def \dx {0.8} % Horizontal step
+    \def \dy {0.5} % Vertical step
+    
+    % Loop through the grid with perspective
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            % Compute coordinates for perspective
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            
+            
+            % Draw the bonds
+            \ifnum \x<\cols
+                \pgfmathsetmacro\xb{(\x+1)*\dx + \y*\dx*0.5}
+                \pgfmathsetmacro\yb{\y*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xb,\yb);
+                
+                \onslide<2->{\pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xb,\yb);}
+                
+            \fi
+            \ifnum \y<\rows
+                \pgfmathsetmacro\xu{\x*\dx + (\y+1)*\dx*0.5}
+                \pgfmathsetmacro\yu{(\y+1)*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xu,\yu);
+                
+                \onslide<2->{\pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xu,\yu);}
+            \fi
+            
+            
+            % Assign spins (alternating up/down pattern)
+            \pgfmathtruncatemacro\randSpin{random(0,1)}
+            \ifnum\randSpin=0
+                \draw[->,thick] (\xa,\ya) --++ (0,0.3);
+            \else
+                \draw[->,thick] (\xa,\ya) --++ (0,-0.3);
+            \fi
+        }
+    }
+    
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            \fill (\xa,\ya) circle(0.05);
+        }
+    }
+
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Ising model: 2-colouring a graph}
+
+\begin{tikzpicture}[scale=2]
+    % Define grid size
+    \def \rows {5}
+    \def \cols {6}
+    \def \dx {0.8} % Horizontal step
+    \def \dy {0.5} % Vertical step
+    
+    % Loop through the grid with perspective
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            % Compute coordinates for perspective
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            
+            
+            % Draw the bonds
+            \ifnum \x<\cols
+                \pgfmathsetmacro\xb{(\x+1)*\dx + \y*\dx*0.5}
+                \pgfmathsetmacro\yb{\y*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xb,\yb);
+            \fi
+            \ifnum \y<\rows
+                \pgfmathsetmacro\xu{\x*\dx + (\y+1)*\dx*0.5}
+                \pgfmathsetmacro\yu{(\y+1)*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xu,\yu);
+            \fi
+            
+        }
+    }
+    
+    \pgfmathsetmacro\x{2}
+    \pgfmathsetmacro\y{2}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{2}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{3}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{4}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (\dx, 0);}
+    
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{2}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);}
+    \pgfmathsetmacro\x{4}
+    \pgfmathsetmacro\y{2}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{3}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);}
+    \pgfmathsetmacro\x{4}
+    \pgfmathsetmacro\y{3}
+    \draw[thick] (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);
+    \only<3>{\draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=red] 
+                    (\x*\dx + \y*\dx*0.5, \y*\dy) --++ (0.5*\dx, \dy);}
+    
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            \fill (\xa,\ya) circle(0.05);
+        }
+    }
+    
+    \pgfmathsetmacro\x{2}
+    \pgfmathsetmacro\y{2}
+    \only<2>{\fill[yellow] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{2}
+    \only<2>{\fill[blue] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{3}
+    \only<2>{\fill[yellow] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{3}
+    \pgfmathsetmacro\y{4}
+    \only<2>{\fill[blue] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{4}
+    \pgfmathsetmacro\y{2}
+    \only<2>{\fill[yellow] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{4}
+    \pgfmathsetmacro\y{3}
+    \only<2>{\fill[blue] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    \pgfmathsetmacro\x{4}
+    \pgfmathsetmacro\y{4}
+    \only<2>{\fill[yellow] (\x*\dx + \y*\dx*0.5, \y*\dy) circle(0.05);}
+    
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Ising model: the Hamiltonian}
+\begin{tikzpicture}[scale=2]
+    % Define grid size
+    \def \rows {5}
+    \def \cols {6}
+    \def \dx {0.8} % Horizontal step
+    \def \dy {0.5} % Vertical step
+    
+    % Loop through the grid with perspective
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            % Compute coordinates for perspective
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            
+            
+            % Draw the bonds
+            \ifnum \x<\cols
+                \pgfmathsetmacro\xb{(\x+1)*\dx + \y*\dx*0.5}
+                \pgfmathsetmacro\yb{\y*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xb,\yb);
+                
+                \pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xb,\yb);
+                
+            \fi
+            \ifnum \y<\rows
+                \pgfmathsetmacro\xu{\x*\dx + (\y+1)*\dx*0.5}
+                \pgfmathsetmacro\yu{(\y+1)*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xu,\yu);
+                
+                \pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.8,segment length=2mm,amplitude=1mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xu,\yu);
+            \fi
+        }
+    }
+    
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            \fill (\xa,\ya) circle(0.05);
+        }
+    }
+
+\end{tikzpicture}
+
+\begin{equation*}
+H = \sum_{\langle i,j \rangle} J_{ij} \sigma_z^{i} \sigma_z^{j} + \sum_{j=1}^{n}h_j\sigma_z^{j}
+\end{equation*}
+where $J_{ij},~h_j \in \{-1,0,1\}$.
+\end{frame}
+
+\begin{frame}
+\frametitle{Preparing the ground state of an Ising Hamiltonian}
+\begin{itemize}[<+->]
+\item Computationally interesting (NP-complete)
+\item Straightforward on a circuit-based quantum computer
+\item A physics problem (adiabatic methods seem natural)
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Ising model: adiabatic quantum computation}
+
+\begin{figure}
+\begin{minipage}[t]{.5\textwidth}
+  \centering
+  \begin{tikzpicture}[scale=1]
+    % Define grid size
+    \def \rows {5}
+    \def \cols {6}
+    \def \dx {0.8} % Horizontal step
+    \def \dy {0.5} % Vertical step
+    
+    % Loop through the grid with perspective
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            % Compute coordinates for perspective
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            
+            
+            % Draw the bonds
+            \ifnum \x<\cols
+                \pgfmathsetmacro\xb{(\x+1)*\dx + \y*\dx*0.5}
+                \pgfmathsetmacro\yb{\y*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xb,\yb);
+            \fi
+            \ifnum \y<\rows
+                \pgfmathsetmacro\xu{\x*\dx + (\y+1)*\dx*0.5}
+                \pgfmathsetmacro\yu{(\y+1)*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xu,\yu);
+            \fi
+            
+            \draw[->,thick, green] (\xa,\ya) --++ (0.4,0);
+        }
+    }
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            \fill (\xa,\ya) circle(0.05);
+        }
+    }
+\end{tikzpicture}
+\[ H_0 = \sum_{j=1}^n\sigma_x^j \]
+\end{minipage}%
+\begin{minipage}[t]{.5\textwidth}
+  \centering
+\begin{tikzpicture}[scale=1]
+    % Define grid size
+    \def \rows {5}
+    \def \cols {6}
+    \def \dx {0.8} % Horizontal step
+    \def \dy {0.5} % Vertical step
+    
+    % Loop through the grid with perspective
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            % Compute coordinates for perspective
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            
+            
+            % Draw the bonds
+            \ifnum \x<\cols
+                \pgfmathsetmacro\xb{(\x+1)*\dx + \y*\dx*0.5}
+                \pgfmathsetmacro\yb{\y*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xb,\yb);
+                
+                \pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.5,segment length=1.2mm,amplitude=0.6mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xb,\yb);
+                
+            \fi
+            \ifnum \y<\rows
+                \pgfmathsetmacro\xu{\x*\dx + (\y+1)*\dx*0.5}
+                \pgfmathsetmacro\yu{(\y+1)*\dy}
+                \draw[dashed] (\xa,\ya) -- (\xu,\yu);
+                
+                \pgfmathsetmacro\colorPercent{random(0,1)*100}
+                \pgfmathsetmacro\rand{random(0,100)}
+                \pgfmathsetmacro\opacity{ifthenelse(\rand<=70,1,0)}
+                \draw[thick,decorate,decoration={coil,aspect=1.5,segment length=1.2mm,amplitude=0.6mm},color=green!\colorPercent!red, opacity=\opacity] 
+                    (\xa,\ya) -- (\xu,\yu);
+            \fi
+        }
+    }
+    \foreach \x in {1,...,\cols} {
+        \foreach \y in {1,...,\rows} {
+            \pgfmathsetmacro\xa{\x*\dx + \y*\dx*0.5}
+            \pgfmathsetmacro\ya{\y*\dy}
+            \fill (\xa,\ya) circle(0.05);
+        }
+    }
+\end{tikzpicture}
+\[ H_1 = \sum_{\langle i,j \rangle} J_{ij} \sigma_z^{i} \sigma_z^{j} + \sum_{j=1}^{n}h_j\sigma_z^{j} \]
+\end{minipage}
+\end{figure}
+
+\onslide<2->{\[ H(s) = (1-s)H_0 + sH_1 \]}
+\onslide<3->{In this work:}
+\begin{itemize}
+\item<4-> $H_0 = - \ketbra{u}{u}$ ($\ket{u}$ is uniform superposition)
+\item<5-> Generalisation of $H_1$
+\end{itemize}
+
+\end{frame}
+
+\section{Adiabatic quantum computing}
+\begin{frame}
+\frametitle{Adiabatic quantum computing}
+
+\begin{algorithm}[H]
+Prepare system in the ground state of $H(0)$\;
+Apply $H(0)$\;
+Slowly change $s$ from $0$ to $1$ in the applied Hamiltonian $H(s)$\;
+\caption{Adiabatic quantum computing}
+\end{algorithm}
+
+\vspace{2em}
+
+We call the function $s(t)$ the \textit{schedule}.
+\end{frame}
+
+\begin{frame}
+\frametitle{The spectrum and the gap}
+Suppose $H(s)$ is a Hamiltonian for $s\in [0,1]$
+\[\begin{tikzpicture}[scale=6, every node/.style={font=\small}]
+
+  % Parameters for the avoided crossing (bottom two curves)
+  \def\Eavg{0.4}      % average level (center of the avoided crossing)
+  \def\Vval{0.04}     % coupling strength; minimal gap = 2*\Vval = 0.08
+  \def\kval{0.6}      % controls the "linear" splitting away from the crossing
+  %\def\Delta{0.08}    % minimal gap (at x = 0.5), equal to 2*\Vval
+  
+  % Parameter for the wavy upper lines
+  \def\A{0.03}       % amplitude for the sine waves
+
+  % Draw coordinate axes
+  \draw[->] (-0.05,0) -- (1.05,0) node[right] {$s$};
+  \draw[->] (0,-0.05) -- (0,1) node[above] {$E$};
+
+  % Label x-axis endpoints: "0" (moved slightly left) and tick/label at "1"
+  \node[below] at (-0.03,0) {0};
+  \draw (1, -0.01) -- (1, 0.01);
+  \node[below] at (1,0) {1};
+
+  % --------------------------
+  % Bottom two curves: avoided crossing
+  % The eigenvalue functions for a 2x2 system with off-diagonal coupling V are
+  %   E_\pm(x) = E_{\text{avg}} \pm \sqrt{(k(x-0.5))^2 + V^2}.
+  
+  % Lower branch
+  \draw[domain=0:1, smooth, variable=\x, compl, thick]
+    plot ({\x}, { \Eavg - sqrt((\kval*(\x-0.5))^2 + (\Vval)^2) });
+    
+  % Upper branch
+  \draw[domain=0:1, smooth, variable=\x, compl, thick]
+    plot ({\x}, { \Eavg + sqrt((\kval*(\x-0.5))^2 + (\Vval)^2) });
+    
+  % Draw a dashed double arrow at x=0.5 showing the minimal gap, labeled Δ.
+  % At x=0.5, (x-0.5)=0 so the values are E_avg ± V.
+  \draw[<->, >=stealth, dotted] (1, { \Eavg - sqrt((\kval*(1-0.5))^2 + (\Vval)^2) + 0.01 }) -- (1, { \Eavg + sqrt((\kval*(1-0.5))^2 + (\Vval)^2) - 0.01 }) node[midway, right] {$g$};
+
+  % --------------------------
+  % Upper three curves: random wavy lines (they do not intersect)
+  % All lines use the same complementary color.
+  
+  \draw[domain=0:1, smooth, variable=\x, compl, thick] 
+    plot ({\x}, {0.75 + \A*sin(360*\x + 150)});
+    
+  \draw[domain=0:1, smooth, variable=\x, compl, thick] 
+    plot ({\x}, {0.80 + \A*sin(360*\x + 220)});
+    
+  \draw[domain=0:1, smooth, variable=\x, compl, thick] 
+    plot ({\x}, {0.85 + \A*sin(360*\x + 290)});
+
+\end{tikzpicture}\]
+\end{frame}
+
+
+\begin{frame}
+\frametitle{A trade-off between speed and accuracy}
+For fixed precision $\epsilon$, the complexity scales as
+\begin{itemize}
+\item<1-> $O\big(\frac{\norm{H'}}{g_m^2}\big)$ (naive bound)
+\only<1>{\item[] \phantom{$O\big(\frac{\norm{H'}}{g_m^2} + \frac{\norm{H'}^2}{g_m^3} + \frac{\norm{H''}}{g_m^2}\big)$}}
+\only<2>{\item $O\big(\frac{\norm{H'}}{g_m^2} + \frac{\norm{H'}^2}{g_m^3} + \frac{\norm{H''}}{g_m^2}\big)$ (general bound)}
+\only<3->{\item $O\big(\frac{\norm{H'}}{g_m^2} + \int_0^1\frac{\norm{H'}^2}{g^3} + \frac{\norm{H''}}{g^2}\diff{s}\big)$ (general bound)}
+\item<4-> $O\big(\frac{1}{g_m}\big)$ (with adaptive scheduling)
+\end{itemize}
+\vspace{1em}
+$g_m$ is the minimal gap.
+\end{frame}
+
+\subsection{Grover}
+\begin{frame}
+\frametitle{Some examples}
+\begin{itemize}
+\item<1-> \textbf{Grover search} Let $P$ be a projector. Prepare a state in the subspace associated to $P$. \onslide<2->{Let $\ket{u}$ be the uniform superposition. Then
+\[ H(s) = (1-s)\big(\mathbb{1} - \ketbra{u}{u}\big) + s \big(\mathbb{1} - P\big) \]}
+\item<3-> \textbf{Quantum Linear Systems Problem (QLSP)} Let $A\in \mathbb{C}^{N\times N}$ be an invertible matrix and $b\in \mathbb{C}^N$ a vector. Prepare the quantum state $\frac{A^{-1}\ket{b}}{\norm{A^{-1}\ket{b}}}$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{The gap}
+
+\begin{figure}
+\begin{minipage}[t]{.5\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{GroverGap}
+  Grover
+  
+  \onslide<2->{$\min_s g(s) = \Omega(\sqrt{1/N})$}
+\end{minipage}%
+\begin{minipage}[t]{.5\textwidth}
+  \centering
+  \includegraphics[width=\textwidth]{QLSPGap}
+  QLSP
+  
+  \onslide<2->{$\min_s g(s) = \Omega(\kappa)$ where $\kappa = \norm{A}\norm{A^{-1}}$}
+\end{minipage}
+\end{figure}
+
+\onslide<3->{In both cases
+\[ \int_0^1 \frac{1}{g^p} \diff{s} = O\Big(\frac{1}{\min_s g^{p-1}}\Big) \]
+for all $p>1$.
+}
+\end{frame}
+
+\section{Analysis of the spectrum}
+
+\begin{frame}
+\frametitle{The spectrum}
+\[ H(s) = -(1-s)\ketbra{u}{u} + s H_1 \]
+\centering
+ \includegraphics[width=\textwidth]{plot_ACinAQC002}
+\end{frame}
+
+\begin{frame}
+\frametitle{The spectrum}
+\centering
+ \includegraphics[width=\textwidth]{plot_ACinAQC004}
+\end{frame}
+
+\begin{frame}
+\frametitle{Some spectral quantities}
+Given a spectral decomposition
+\[ H_1 = \sum_{k} E_k P_k \]
+with $0\leq E_0 < E_1 < E_2 < \ldots \leq 1 $ and $\operatorname{dim}(P_k) = d_k$, \pause we define
+\begin{itemize}
+\item $\Delta \coloneqq E_1 - E_0$
+\item $A_1 \coloneqq \frac{1}{2^n}\sum_{k\neq 0} \frac{d_k}{E_k - E_0}$
+\item $A_2 \coloneqq \frac{1}{2^n}\sum_{k\neq 0} \frac{d_k}{(E_k - E_0)^2}$
+\end{itemize}
+\pause
+
+We assume
+\[ \Delta \geq 100 \sqrt{\frac{d_0}{2^n A_2}} \]
+\end{frame}
+
+\begin{frame}
+\frametitle{The gap}
+The characteristic equation for the eigenvalues of
+\[ H(s) = -(1-s)\ketbra{u}{u} + s H_1 \]
+is
+\[ 0 = -1 + \frac{1-s}{2^n}\sum_k \frac{d_k}{sE_k - \lambda(s)}. \]
+\pause
+
+\begin{tikzpicture}[scale=0.8]
+    \begin{axis}[
+        width=14cm, height=7cm,
+        axis x line=middle,
+        axis y line=middle,
+        xmin=-1, xmax=10,
+        ymin=-10, ymax=10,
+        xtick={0},
+        ytick={0},
+        samples=100
+    ]
+        % Function plot: -1 + 1/(2-x) + 1/(3-x)
+        \addplot[compl, domain=-1:10, samples=200, thick] {-1 + 0.5/(1-x) + 0.5/(3-x) + 0.5/(6-x) + 0.5/(7-x)};
+        
+        \node[anchor=south west] at (axis cs:1,0) {$sE_0$};
+        \node[anchor=south west] at (axis cs:3,0) {$sE_1$};
+        \node[anchor=south west] at (axis cs:6,0) {$sE_2$};
+        \node[anchor=south west] at (axis cs:7,0) {$sE_3$};
+    \end{axis}
+\end{tikzpicture}
+\end{frame}
+
+\begin{frame}
+\frametitle{The spectrum}
+\[ H(s) = -(1-s)\ketbra{u}{u} + s H_1 \]
+\centering
+ \includegraphics[width=\textwidth]{plot_ACinAQC002}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{The gap}
+\begin{figure}
+\centering
+ \includegraphics[width=0.6\textwidth]{plot_ACinAQC005}
+ \end{figure}
+\onslide<2->{$\min_s g = \frac{2A_1}{A_1+1}\sqrt{\frac{d_0}{2^nA_2}}$}
+\onslide<3->{Again
+\[ \int_0^1 \frac{1}{g^p} \diff{s} = O\Big(\frac{1}{\min_s g^{p-1}}\Big) \]
+for all $p>1$}
+\end{frame}
+
+\subsection{A quadratic speedup}
+\begin{frame}
+\frametitle{A speedup}
+We have a complexity $O(1/g_m^2)$, can we get $O(1/g_m)$?
+\pause
+\begin{theorem}
+There exists a piecewise linear schedule $s(t)$, defined using $A_1,A_2$ and $\Delta$, such that the adiabatic procedure prepares an equal superposition of the ground states of $H_1$, with fidelity $1-\epsilon$ in time
+\[ T = O\Big(\frac{1}{\epsilon}\cdot \frac{\sqrt{A_2}}{A_1^2\Delta^2}\cdot \sqrt{\frac{2^n}{d_0}}\Big). \]
+\end{theorem}
+\end{frame}
+
+\begin{frame}
+\frametitle{A sketch of the proof}
+\begin{figure}
+\centering
+ \includegraphics[width=\textwidth]{plot2b}
+ \end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{A sketch of the proof}
+\begin{itemize}[<+->]
+\item \textbf{Left of the avoided crossing}: variational principle with ansatz
+\[ \ket{\phi} = \frac{1}{\sqrt{A_2 2^n}}\sum_k \frac{\sqrt{d_k}}{E_k - E_0}\ket{k} \]
+\item \textbf{At the avoided crossing}: set $\lambda = sE_0 + \delta$ in the eigenvalue equation to obtain
+\[ 0 = -1 + \frac{1-s}{2^n}\sum_k \frac{d_k}{s(E_k - E_0) - \delta} \]
+and analyse for small $\delta$
+\item \textbf{Right of the avoided crossing}: use the norm of the resolvent $g(s) \geq 2 \norm{(\gamma(s) - H(s))^{-1}}^{-1}$ with the Sherman-Morrison formula
+\[ \big(A + \ketbra{u}{v}\big)^{-1} = A^{-1} - \frac{A^{-1}\ketbra{u}{v}A^{-1}}{1+\braket[A]{u}{v}} \]
+\end{itemize}
+\end{frame}
+
+\section{Finding the location of the minimal gap is hard}
+\begin{frame}
+\frametitle{Locating the minimal gap}
+The minimal gap is located at $s^* = \frac{A_1}{1+A_1}$
+\pause
+
+\begin{theorem}
+Calculating $A_1$
+\begin{itemize}
+\item up to an error $O(1/n)$ is NP-hard.
+\item up to an error $O(2^{-\operatorname{poly}(n)})$ is \#P-hard.
+\end{itemize}
+\end{theorem}
+\end{frame}
+
+\subsection{Hardness for non-local Hamiltonians}
+\begin{frame}
+\frametitle{Calculating $A_1$ for non-local Hamiltonians is hard}
+\begin{itemize}[<+->]
+\item Consider the problem of determining whether $E_0 = 0$ or $E_0 \neq 0$ for some Hamiltonian $H$
+\item Apply the function
+\[\begin{tikzpicture}
+  \begin{axis}[
+      axis lines = middle,
+      xlabel = $x$,
+      ylabel = {$\theta(x)$},
+      xtick={-3,-2,-1,0,1,2,3},
+      ytick={0,1},
+      ymin=-0.2, ymax=1.8,
+      xmin=-1.1, xmax=1.1,
+      samples=2,
+      domain=-1.1:1.1,
+      width=10cm,
+      height=3cm,
+      clip=false
+    ]
+    % Plot for x < 0 (Heaviside value = 0)
+    \addplot[compl,domain=-1.1:0,thick] {0};
+    
+    % Plot for x > 0 (Heaviside value = 1)
+    \addplot[compl,domain=0:1.1,thick] {1};
+    
+    % Mark the discontinuity at x=0
+    % Open circle at (0,0) to indicate exclusion
+    \addplot[compl,only marks,mark=*,mark size=2pt] coordinates {(0,0)};
+    % Filled circle at (0,1) to indicate inclusion
+    \addplot[compl,only marks,mark=o,mark size=2pt] coordinates {(0,1)};
+  \end{axis}
+\end{tikzpicture}\]
+i.e.\ do spectral flattening
+\item (This can be approximated by polynomials)
+\item If $E_0 = 0$, then $A_1 = 1 - \frac{d_0}{2^n}$
+\item If $E_0 \neq 0$, then $A_1 = 0$
+\end{itemize}
+
+\onslide<6->{This is highly non-local!}
+\end{frame}
+
+\subsection{Approximating is still hard}
+\begin{frame}
+\frametitle{Calculating $A_1$ for local Hamiltonians is still hard}
+\begin{proposition}
+Let $\epsilon,~\mu_1, \mu_2\in (0,1)$. Suppose we have a procedure that outputs $\tilde{A}_1(H)$ such that
+$$
+\left|\tilde{A}_1(H)-A_1(H)\right|\leq \varepsilon.
+$$
+Suppose either (i)~$E_0=0$ or (ii)~$0\leq \mu_1\leq E_0\leq 1-\mu_2 \leq 1$. Then, it is possible to decide whether (i) or (ii) holds if
+$$
+\varepsilon < \dfrac{\mu_1}{6(1-\mu_1)}-\dfrac{d_0}{6~2^n}\cdot\dfrac{1}{\mu_1\mu_2}
+$$
+\end{proposition}
+\pause
+\textit{Proof.}
+We have
+\[ A_1(H)-2A_1\bigg(H\otimes \Big(\frac{1+\sigma_z}{2}\Big)\bigg) \quad \begin{cases}= 0 \\ \geq \dfrac{\mu_1}{1-\mu_1}-\dfrac{d_0}{2^n}\cdot\dfrac{1}{\mu_1\mu_2} \end{cases} \]
+\end{frame}
+
+\subsection{Finding it exactly is very hard}
+\begin{frame}
+\frametitle{Calculating $A_1$ almost exactly is very hard}
+\begin{proposition}
+Suppose $H$ be a $n$-qubit Ising Hamiltonian. Then it is possible to estimate the degeneracy $d_k$ of the energy eigenvalue $E_k$ by making $O(\mathrm{poly}(n))$ calls to $A_1$. 
+\end{proposition}
+\pause
+\textit{Proof.} Define
+\begin{align*}
+f(x) &= A_1(H)-2A_1\bigg(H\otimes \mathbb{1} - x\mathbb{1}\otimes \Big(\frac{1+\sigma_z}{4}\Big)\bigg) \\
+&= \frac{1}{2^n} \sum_{k = 0}\frac{d_k}{E_k - E_0 + x/2}
+\end{align*}
+and use Lagrange interpolation.
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}
+\frametitle{Conclusion}
+\begin{itemize}
+\item<1-> We have shown a generic quadratic speedup over brute force search
+\item<2-> Limited applicability if $s^*$ is not known
+\end{itemize}
+\onslide<3->{Open questions}
+\begin{itemize}
+\item<4-> Precise hardness of estimating $s^*$ to desired accuracy?
+\item<5-> Hardness of estimating $s^*$ for $2$-local Hamiltonians?
+\item<6-> What about $H_0 = \sum_{j}\sigma_x^j$?
+\end{itemize}
+\vspace{.5em}
+
+\centering
+\includegraphics[width=3cm]{qrcode}
+
+\url{arXiv:2411.05736}
+
+\end{frame}
+
+\begin{frame}[noframenumbering, allowframebreaks]
+\printbibliography
+\end{frame}
+
+\begin{frame}[noframenumbering]
+\frametitle{Rabi oscillation}
+\begin{itemize}
+\item Two-level system with qubit frequency $\omega_0$ due to Zeeman splitting
+\item High frequency ($\omega$), but low amplitude ($\omega_1$) transverse field
+\end{itemize}
+
+\[\begin{tikzpicture}
+  % Energy levels
+  \draw[thick] (0,0) -- (2,0) node[right] {$|0\rangle$};
+  \draw[thick] (0,2) -- (2,2) node[right] {$|1\rangle$};
+  
+  % Transition frequency (ω₀)
+  \draw[{<[scale=1.3]}-{>[scale=1.3]}, dashed] (1,0.05) -- (1,1.95) node[midway, right] {$\quad\omega_0$};
+  
+  % Driving field (wavy arrow with amplitude annotation)
+  \draw[->, decorate, decoration={snake, amplitude=2mm, segment length=2.5mm}] (-1.5,1) -- (0.5,1)
+    node[midway, above, yshift=4pt] {$\omega$};  % Raised frequency label
+  \draw[<->, gray] (-1.7,0.78) -- (-1.7,1.22)    % Amplitude indicator
+    node[midway, left] {$\omega_1$};           % Amplitude label
+\end{tikzpicture}\]
+\end{frame}
+
+\begin{frame}[noframenumbering]
+\frametitle{Rabi oscillation}
+\[ H(s) = \begin{pmatrix}\omega_0 & \omega_1e^{-i\omega s} \\ \omega_1e^{i\omega s} & -\omega_0 \end{pmatrix} \qquad g = 2\sqrt{\omega_0^2 + \omega_1^2} \qquad \begin{aligned}\norm{H'} &= \omega_1\omega \\ \norm{H''} &= \omega_1\omega^2\end{aligned} \]
+
+\[ \begin{tikzpicture}[xscale=5, yscale=1, every node/.style={font=\small}]
+
+  % Draw coordinate axes
+  \draw[->] (-0.05,0) -- (1.05,0) node[right] {$s$};
+  \draw[->] (0,-0.05) -- (0,1.05) node[above] {$P(0\to 1)$};
+
+  % Label x-axis endpoints: "0" (shifted left) and tick/label at "1"
+  \node[below] at (-0.03,0) {0};
+  \draw (1, -0.01) -- (1, 0.01);
+  \node[below] at (1,0) {1};
+
+  % Plot y = sin^2(6πx) in the complementary color.
+  % Note: sin(1080*x) is used because 6π rad = 1080°.
+  \draw[domain=0:1, smooth, variable=\x, compl, thick]
+    plot ({\x}, {sin(500*\x)^2});
+
+\end{tikzpicture} \qquad \raisebox{2em}{$\Omega = \sqrt{(\omega_0 - \omega)^2 + \omega_1^2}$} \]
+
+\begin{align*}
+\epsilon &= O\Big(\frac{\norm{H'}}{g_m^2} + \frac{\norm{H'}^2}{g_m^3} + \frac{\norm{H''}}{g_m^2}\Big) \\
+&= O\Big(\frac{\omega_0\omega_1}{\omega_0^2 + \omega_1^2} + \frac{\omega_0^2\omega_1^2}{(\omega_0^2 + \omega_1^2)^{3/2}} + \frac{\omega_0^2\omega_1}{\omega_0^2 + \omega_1^2}\Big) \\
+&\approx O\Big(\frac{1}{\omega_0} + \frac{1}{\omega_0} + \omega_1\Big) \\
+\end{align*}
+\end{frame}
+
+\end{document}
+

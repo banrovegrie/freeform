@@ -1,0 +1,472 @@
+\documentclass{article}
+\usepackage[text={6.8in,8.5in},centering]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{graphicx}
+
+\newtheorem{theorem}[]{Theorem}
+\newtheorem{lemma}[]{Lemma}
+
+\newcommand{\braket}[2]{\langle #1|#2 \rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\ket}[1]{|#1\rangle}
+
+\title{Anti-crossing in AQC}
+
+\begin{document}
+
+\maketitle
+
+\section{Details on the paper.}
+
+\paragraph{About Lemma 7.} It feels that we are adding new assumptions in the proof in paper.tex when we say that $\delta_s \ll ...$. We already have one assumption which is given at the beginning of the paper and it's enough. In the next paragraph I also show that we can take $c=0.2424$. \\
+
+For Lemma 7, I suggest the following proof:
+
+\begin{align}
+g(s)&= \dfrac{s(A_1+1)}{A_2(1-s)}\sqrt{\left(\dfrac{A_1}{A_1+1}-s\right)^2+\dfrac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}
+\end{align}
+Observe that for any $s$ in $[s^*-\delta_s,s^*+\delta_s]$,
+\begin{align}
+g(s)&\leq  \dfrac{(A_1+1)}{A_2}\frac{s}{1-s}\sqrt{\delta_s^2+(1+A_1)^2\delta_s^2(1-s)^2}\\
+&\leq s^*\dfrac{(A_1+1)^2}{A_2}\delta_s\frac{s}{s^*}\sqrt{\frac{1}{(1-s)^2(1+A_1)^2}+1} \\
+&\leq s^*\dfrac{(A_1+1)^2}{A_2}\delta_s \left( 1+\frac{\delta_s}{s^*} \right )\sqrt{1+\frac{1}{(1-\frac{\delta_s}{1-s^*})^2}}  \\
+&\leq g_{\text{min}} \cdot \kappa'
+\end{align}
+where we have observed that $\dfrac{s^*(A_1+1)^2}{A_2}\delta_s=g_{\text{min}}$. We also introduced the constant $\kappa'=\dfrac{1+2c}{1-2c}\sqrt{1+(1-2c)^2} $ thanks to the following inequalities:
+
+\begin{align*}
+    \frac{\delta_s}{1-s^*} &= \frac{2}{1+A_1}\sqrt{\frac{d_0A_2}{N}} \\
+    &= \frac{2A_2 \Delta}{1+A_1}\frac{1}{\Delta}\sqrt{\frac{d_0}{A_2N}} \\
+    &\leq 2s^* c  \\
+    &\leq 2c
+\end{align*}
+where we used the initial condition on the Hamiltonian, i.e. $\frac{1}{\Delta}\sqrt{\frac{d_0}{A_2N}}<c$, with $c=0.242$ and $A_2\Delta \leq A_1$.
+\\
+
+\paragraph{About constant c. }I now explain how do we fix $c$. It is needed in the proof of Lemma A1 where at some point it is needed to bound $\frac{|\delta_0^\pm(s)|}{s\Delta}$ by something smaller than 1 such that its geometric sum converges. Recall
+\begin{equation}
+\delta^{\pm}_{0}(s)=\dfrac{s(A_1+1)}{2A_2(1-s)}\left[~s-\dfrac{A_1}{A_1+1}\right.\left.\pm\sqrt{\left(\dfrac{A_1}{A_1+1}-s\right)^2+\dfrac{4A_2d_0}{N(A_1+1)^2}(1-s)^2}~\right]. 
+\end{equation}
+which is very close to the expression of the gap just above. So we can bound it similarly in the desired interval (it's even cleaner as we want to keep the factor $s$):
+\begin{align}
+    |\delta_0^\pm(s)| &\leq s\dfrac{(A_1+1)}{2A_2}\frac{1}{1-s}\left[\delta_s+\sqrt{\delta_s^2+(1+A_1)^2\delta_s^2(1-s)^2}~\right] \\
+    &\leq s \dfrac{(A_1+1)^2}{2A_2}\delta_s \left[\frac{1}{(1-s)(1+A_1)}+\sqrt{\frac{1}{(1-s)^2(1+A_1)^2}+1}~\right]  \\
+    &< s\Delta c \left[\frac{1}{1-\frac{\delta_s}{1-s^*}}+\sqrt{\frac{1}{(1-\frac{\delta_s}{1-s^*})^2}+1}~\right] \\
+    &< s\Delta c \dfrac{1+\sqrt{1+(1-2c)^2}}{(1-2c)}
+\end{align}
+where we used that $\frac{(A_1+1)^2}{2A_2}\delta_s = \Delta \frac{1}{\Delta} \sqrt{\frac{d_0}{A_2N}}<\Delta c$ and as above, $\frac{\delta_s}{1-s^*} < 2c$. Now the constant $\kappa$ from paper.tex writes $\kappa= \dfrac{1+\sqrt{1+(1-2c)^2}}{(1-2c)}$ with the desired that $c\cdot \kappa < 1$. This is satisfied as long as $c\leq 0.242...$ From these last calculations, we also understand that: $$\frac{|\delta_0^\pm(s)|}{s}\leq \sqrt{\frac{d_0}{A_2N}}\kappa$$
+\\ \\
+
+\noindent \textbf{About constant $\eta$.} There is another constraint coming from equation (A20) in paper.tex where we have the following function of $\eta$: 
+\begin{align}
+F(\delta^\pm_0(1+\eta))&=\dfrac{d_0}{N\delta^\pm_0(1+\eta)}\left[\eta(2+\eta)+\eta(1+\eta)\left(\dfrac{s}{1-s}-A_1\right)\dfrac{\delta^\pm_0 N}{d_0s}+f\left(\delta^\pm_0(1+\eta)\right)\right] \\
+&=\dfrac{d_0}{N\delta^\pm_0}\left[\eta \left( 1+\frac{1}{1+\eta} + \left(\dfrac{s}{1-s}-A_1\right)\dfrac{\delta^\pm_0 N}{d_0s}\right )+\frac{f\left(\delta^\pm_0(1+\eta)\right)}{1+\eta}\right] 
+\end{align}
+And we say that for sufficiently small values of $c$ and large values of $\eta$, $F(\delta^\pm_0(1+\eta))$ has opposite signs when we substitute $\eta=-\eta$. Knowing that:
+\begin{equation}
+\left|f(\delta^\pm_0(1+\eta))\right|\leq\dfrac{c\kappa^3(1+\eta)^3}{1-\kappa c (1+\eta)}
+\end{equation}
+
+We use a positive $\eta$ to show that $F(\delta^+_0(1+\eta))$ is positive and a negative $\eta$ to show that $F(\delta^+_0(1+\eta))$ is negative under the following constraints on $c$:
+\begin{align}
+    1+\frac{1}{1+\eta}-\frac{c}{\eta}\dfrac{\kappa^3(1+\eta)^2}{1-\kappa c} &\geq \frac{2\kappa}{1-2c} \mathbf{\geq 2*(1+\sqrt{2})}  \quad \textbf{this can never be satisfied..} \label{eq:unsatis_c}\\
+    1+\frac{1}{1-\eta}-\frac{c}{\eta}\dfrac{\kappa^3(1-\eta)^2}{1-\kappa c} &\geq \frac{2\kappa}{1-2c}
+\end{align}
+where we observed that $\left|\frac{s-s^*}{1-s^*}\right|\frac{N}{d_0}\frac{\delta^+_0}{s(1-s)} \leq \frac{2 \kappa}{1-2c}$.
+
+
+
+\paragraph{Correction \# 1: rescaling of $\delta_s$. } The main issue is that the RHS of Eq. (\ref{eq:unsatis_c}) is too large. $\kappa$ is a growing function for $c\in[0,0.5]$ going from $1+\sqrt{2} \simeq 2.14$ to $+\infty$. A smaller $\delta_s$ will affect all factors 2 that appears in $\kappa$ and in the RHS of Eq. (\ref{eq:unsatis_c}). For example, let's divide the former $\delta_s$ by 10 so $$\delta_s=\frac{0.2}{(1+A_1)^2} \frac{A_2d_0}{N}.$$
+With this new $\delta_s$, all factors 2 that we mentioned are replaced by $0.2$. This allows us to set $\eta=0.01$ which in turns forces $c\leq 0.001$. \\
+
+\noindent \textbf{Pros. } This rescaling factor is the same as the one we have for the bound on the right of the avoiding crossing at $s^*$. This smaller $\delta_s$ allows us to use directly our bound on the right of the AC without rescaling to reach the same rescaled minimum gap.
+
+\noindent \textbf{Cons. } We have a less tight bound on $\delta_s$. But we are already non-tight on the right...
+
+\paragraph{Correction \# 2: remanipulation of $F$. }
+Let's restart from the initial function $F$ coming from the eigenvalue relation with $\varepsilon=\frac{d_0}{N}$.
+
+$$F(\delta) = \frac{1}{\delta}\left [-\frac{d_0}{N} +\frac{\delta}{s} \left( A_1 - \frac{s}{1-s} \right) +\frac{\delta^2}{s^2}A_2+ f(\delta) \right]$$
+where $|f(\delta)|\leq \dfrac{\delta^3}{s^3}\dfrac{A_3}{1-\frac{\delta}{s\Delta}}$ and we showed previously that $\dfrac{|\delta_0^\pm|}{s\Delta} \leq \kappa c$. We know that $\delta_0^\pm$ are the roots of $F$ when taking $f(\delta)=0$, i.e.
+\begin{equation}
+\delta^{\pm}_{0}(s)=\dfrac{s}{2A_2}\left[ \left(\dfrac{s}{1-s}-A_1\right) \pm\sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}~\right] 
+\end{equation}
+We want to show that for some $\eta \leq 1$, $F(\delta_0^\pm(1+\eta)$ is changing sign when $\eta$ changes sign as well. We have: 
+\begin{align*}
+    F(\delta_0^\pm(1+\eta) &= -\frac{d_0}{N} +\frac{\delta_0^\pm(1+\eta)}{s} \left( A_1 - \frac{s}{1-s} \right) +\frac{{\delta_0^\pm}^2(1+\eta)^2}{s^2}A_2+ f(\delta_0^\pm(1+\eta)) \\
+    &= \eta\frac{\delta_0^\pm}{s} \left( A_1 - \frac{s}{1-s} \right) +\eta(2+\eta)\frac{{\delta_0^\pm}^2}{s^2}A_2+ f(\delta_0^\pm(1+\eta)) \\
+    &= \eta\frac{\delta_0^\pm}{s} \left( -\left(  \frac{s}{1-s}-A_1 \right) + 2\frac{\delta_0^\pm}{s}A_2 + \eta \frac{\delta_0^\pm}{s}A_2 \right)+ f(\delta_0^\pm(1+\eta)) \\
+    &= \eta\frac{\delta_0^\pm}{s} \left( \pm\sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta \frac{\delta_0^\pm}{s}A_2 \right)+ f(\delta_0^\pm(1+\eta)) \\
+    &= \pm\eta\frac{\delta_0^\pm}{s}  \sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta^2 \frac{{\delta_0^\pm}^2}{s^2}A_2 + f(\delta_0^\pm(1+\eta)) 
+\end{align*}
+Using the bound on $f$, we end up with the two following bound on $F$ focusing on $\delta_0^+ >0$:
+\begin{align}
+    F(\delta_0^+(1+\eta) &\geq \eta\frac{\delta_0^+}{s}  \sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta^2 \frac{{\delta_0^+}^2}{s^2}A_2 - \dfrac{{\delta_0^+}^3}{s^3}A_3\dfrac{(1+\eta)^3}{1-(1+\eta)\kappa c} \label{eq:boundFpos}\\
+    F(\delta_0^+(1-\eta)&\leq -\eta\frac{\delta_0^+}{s}  \sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta^2 \frac{{\delta_0^+}^2}{s^2}A_2 + \dfrac{{\delta_0^+}^3}{s^3}A_3\dfrac{(1-\eta)^3}{1-(1-\eta)\kappa c} \label{eq:boundFneg}
+\end{align}
+We observe that $\dfrac{{\delta_0^+}^2}{s^2}\leq \dfrac{d_0}{NA_2}\kappa^2$. So Eq. (\ref{eq:boundFpos}) gives us:
+\begin{align*}
+    F(\delta_0^+(1+\eta) &\geq \eta\frac{\delta_0^+}{s}  \sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta^2 \frac{{\delta_0^+}^2}{s^2}A_2 - \dfrac{{\delta_0^+}^3}{s^3}A_3\dfrac{(1+\eta)^3}{1-(1+\eta)\kappa c} \\
+    &\geq \frac{\delta_0^+}{s} \left ( 2 \eta \sqrt{A_2\frac{d_0}{N}} - \frac{d_0}{N}\frac{ A_3}{A_2}\dfrac{\kappa^2(1+\eta)^3}{1-(1+\eta)\kappa c}\right) \\
+    &\geq \frac{\delta_0^+}{s} \sqrt{A_2\frac{d_0}{N}}\left ( 2 \eta  - \frac{ 1}{\Delta}\sqrt{\frac{d_0}{NA_2}}\dfrac{\kappa^2(1+\eta)^3}{1-(1+\eta)\kappa c}\right) \quad \text{where we used } \Delta A_3 \leq  A_2 \\
+    &\geq \frac{\delta_0^+}{s} \sqrt{A_2\frac{d_0}{N}}\left ( 2 \eta  - c\dfrac{\kappa^2(1+\eta)^3}{1-(1+\eta)\kappa c}\right)
+\end{align*}
+This last inequality is positive whenever
+\begin{align}
+    \boxed{\frac{2\eta}{(1+\eta)^3} \geq \dfrac{c\kappa^2}{1-(1+\eta)\kappa c}}
+\end{align}
+Now on Eq. (\ref{eq:boundFneg}):
+\begin{align}
+    F(\delta_0^+(1-\eta)&\leq -\eta\frac{\delta_0^+}{s}  \sqrt{\left(\dfrac{s}{1-s}-A_1\right)^2+4A_2\frac{d_0}{N}}+ \eta^2 \frac{{\delta_0^+}^2}{s^2}A_2 + \dfrac{{\delta_0^+}^3}{s^3}A_3\dfrac{(1-\eta)^3}{1-(1-\eta)\kappa c} \\
+    &\leq \frac{\delta_0^+}{s} \left ( -2\eta \sqrt{A_2\frac{d_0}{N}}+ \eta^2\sqrt{A_2\frac{d_0}{N}} \kappa + \dfrac{d_0}{NA_2}A_3\dfrac{\kappa^2 (1-\eta)^3}{1-(1-\eta)\kappa c}\right) \\
+    &\leq \frac{\delta_0^+}{s}\sqrt{A_2\frac{d_0}{N}} \left ( -\eta (2-\kappa \eta) +\dfrac{c\kappa^2(1-\eta)^3}{1-(1-\eta)\kappa c}\right)
+\end{align}
+This last inequality is negative whenever
+\begin{align}
+    \boxed{\frac{\eta (2-\kappa \eta)}{(1-\eta)^3}\geq \dfrac{c\kappa^2}{1-(1-\eta)\kappa c}}
+\end{align}
+
+If we fix $\eta = 0.1$, the first condition gives $c\leq 0.022$ and the second $c\leq 0.034$.
+%One into the other gives us:
+%\begin{align}
+%    \frac{(1+\eta)^3}{(1-\eta)^3} \frac{c\kappa^2}{1-\kappa c} - \kappa \frac{\eta^2}{(1-\eta)^3} &\geq\frac{c\kappa^2}{1-\kappa c}  \\
+%    \frac{\eta^2}{(1-\eta)^3} &\leq \frac{c\kappa}{1-\kappa c} \left ( \frac{(1+\eta)^3}{(1-\eta)^3}-1\right ) \\
+%     \frac{\eta^2}{(1+\eta)^3-(1-\eta)^3} &\leq \frac{c\kappa}{1-\kappa c} \\
+%     \frac{\eta}{6+2\eta^2} \leq \frac{c\kappa}{1-\kappa c}
+%\end{align}
+
+
+\newpage
+
+
+\paragraph{Solving decision problem MaxCut. } Let $G(V,E)$ be a non-bipartite graph with $|V|=n$ nodes and $|E|$ edges. Given an integer $k$, is there a cut of size least $k$ in $G$? 
+Let $H=|E| \cdot \mathbf{1}-\sum_{(i,j)\in E}\frac{1-\sigma_z^(i)\sigma_z(j)}{2} $, so that the largest eigenvalue $E_m=|E|$ and the smallest $E_0\geq 1$. The decision problem is equivalent to distinguish between \textit{case 1}: $E_0 \geq  |E|- k +1$ and \textit{case 2}: $E_0\leq |E| -k$.
+Suppose we have an algorithm $\mathcal{C}$ that can compute in polynomial time $A_1(H)$ with precision $\varepsilon$, then we can answer the question in polynomial time. 
+
+
+We introduce $H'=H - x\frac{1-\sigma_z^{(1)}\sigma_z^{(n+1)}}{2}$. In other terms, finding the groundstate of $H'$ is equivalent to find the MaxCut of $G'$ obtained from $G$ by adding a node labeled $n+1$ and an edge between node 1 and node $n+1$ of weight $x>0$. Observe that $H'$ has $2^{n+1}$ eigenvalues of value $E_k$ and $E_k-x$, each of degeneracy $d_k$. Indeed, for any cut in $G$ of energy $E_k$, the same cut in $G'$ plus the position of the added edge (cut or uncut) affects by exactly x the energy if it's cut and by 0 if it's uncut. Now we compare $A_1(H)$ with $A_1(H')$:
+\begin{align*}
+2A_1(H') &= \frac{1}{2^n}\sum_{k\neq 0} \frac{d_k'}{E_k'-E_0'} \\
+&= \frac{1}{2^n}\left (\sum_{k\neq 0} \frac{d_k}{E_k-E_0} + \sum_{k\geq 0} \frac{d_k}{E_k-E_0+x} \right)\\
+&= A_1(H) +\underbrace{\frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-E_0+x}}_{=K} \\
+\end{align*}
+Now we study $K$ in the two different cases knowing that $E_m=|E|$ with $x=|E|-k$:
+
+\textit{Case 1. }$E_0 \geq |E|-k+1=x+1$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \geq \frac{1}{E_{k'}-1} = \frac{1}{E_{k'}} + \frac{1}{E_{k'}(E_{k'}-1)} \geq \frac{1}{E_{k'}} + \frac{1}{|E|(|E|-1)}
+\end{align}
+Therefore:
+\begin{align}
+    K \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-1} \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} + \frac{1}{|E|(|E|-1)} = 2A_1(H \otimes |1\rangle \langle 1|) + \frac{1}{|E|(|E|-1)}= K_1 
+\end{align}
+
+\textit{Case 2. }$E_0 \leq |E| -k=x$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \leq \frac{1}{E_{k'}} 
+\end{align}
+Therefore:
+\begin{align}
+    K \leq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} =2A_1(H \otimes |1\rangle \langle 1|) = K_2 
+\end{align}
+The two cases can be distinguish by 2 calls to algorithm $\mathcal{C}$ if 
+\begin{align}
+    K_1-5\varepsilon > K_2 +5\varepsilon
+\end{align}
+which means that 
+\begin{align}
+    10\varepsilon < K_1-K_2 = \frac{1}{|E|(|E|-1)}
+\end{align}
+Recall for any graph with $n$ nodes, $|E|\leq \frac{n(n-1)}{2}$, so 
+\begin{align}
+    \varepsilon<\frac{2}{5}\frac{1}{n^4}
+\end{align}
+
+\newpage
+
+
+\section{Perturbation theory}
+
+
+\paragraph{General setting.} We focus on Hamiltonian $H(s) = (1-s)H_0+sH_1$ where $H_0=-|\psi_0\rangle \langle \psi_0|$ with $|\psi_0\rangle$ being the uniform superposition over all classical states (bitstrings of length $n$). $H_1$ is a target Hamiltonian. $N=2^n$.
+
+\medskip
+
+\noindent Based on Jérémie works, we restrict the Hilbert space to $\mathcal{H}_S=\text{span}\{|\overline{k}\rangle, k \in [0,...,m-1] \}$ with $m$ the number of final distinct eigenvalues of $H_1$, each being with multiplicity $d_k$. The initial ground-state is $|\psi_0\rangle = \sum_k \sqrt{\frac{d_k}{N}}|\overline{k}\rangle$ with initial energy -1. We denote by $|\psi_{1,l}\rangle$ all other eigen-states of $H_0$ with energy 0. There are $m-1$ of them.
+\begin{enumerate}
+    \item[-] $H_0|\psi_0\rangle=-1|\psi_0\rangle$
+    \item[-] $H_0|\psi_{1,l}\rangle=0$
+\end{enumerate}
+
+\noindent The final ground-state is $|\overline{0}\rangle$ with energy $E_0$. The first-excited state $|\overline{1}\rangle$ with energy $E_1$. 
+\begin{enumerate}
+    \item[-] $H_1|\overline{0}\rangle=E_0|\overline{0}\rangle$
+    \item[-] $H_1|\overline{1}\rangle=E_1|\overline{1}\rangle$
+\end{enumerate}
+
+\paragraph{Perturbation expansion at the end.} We expand the energy expression of the ground-state $E_{glob}(s)$ and first excited state $E_{loc}(s)$ by studying the Hamiltonian $H(s)=H_1+(s-1)(H_1-H_0)$
+\begin{align*}
+    E_{glob}(s)&=E_0+(s-1)\langle \overline{0}|(H_1-H_0)|\overline{0}\rangle + (s-1)^2 \sum_{k \neq 0} \frac{|\langle \overline{k}|H_0|\overline{0}\rangle|^2}{E_0-E_k}+\mathcal{O}(s-1)^3 \\
+    &= E_0+(s-1)(E_0-\frac{d_0}{N})-(s-1)^2 \frac{1}{N^2} \sum_{k \neq 0} \frac{1}{E_k-E_0} +\mathcal{O}(s-1)^3 \\
+    &= \frac{d_0}{N}+s(E_0-\frac{d_0}{N})-(s-1)^2 \frac{d_0}{N^2} \sum_{k \neq 0} \frac{d_k}{E_k-E_0} +\mathcal{O}(s-1)^3
+\end{align*}
+where we used that $\forall k, |\langle \overline{k}|\psi_0\rangle|^2=\frac{d_k}{N}$. The sum over $k \neq 0$ is of size $m-1$ so if the energy difference of $H_1$ are not exponentially small, the second order term is exponentially small. This is coherent with the fact that $E_{glob}(s) \geq \langle \overline{0}|H(s)|\overline{0}\rangle=(1-s)\frac{d_0}{N}+sE_0$.
+
+\medskip
+
+For the first excited state, it is quite similar:
+
+\begin{align*}
+    E_{loc}(s)&=E_1+(s-1)\langle \overline{1}|(H_1-H_0)|\overline{1}\rangle + (s-1)^2 \sum_{k \neq 1} \frac{|\langle \overline{k}|H_0|\overline{1}\rangle|^2}{E_1-E_k}+\mathcal{O}(s-1)^3 \\
+    &= E_1+(s-1)(E_1-\frac{d_1}{N})-(s-1)^2 \frac{1}{N^2} \sum_{k \neq 1} \frac{1}{E_k-E_1} +\mathcal{O}(s-1)^3 \\
+    &= \frac{d_1}{N}+s(E_1-\frac{d_1}{N})-(s-1)^2 \frac{d_1}{N^2} \sum_{k \neq 1} \frac{d_k}{E_k-E_1} +\mathcal{O}(s-1)^3
+\end{align*}
+
+\paragraph{Perturbation expansion at the beginning.} We expand the initial energy $E_{\psi_0}(s)$ of the unique initial ground-state $|\psi_0\rangle$ and the energy of the first excited state $E_{\psi_1}(s)$ of degenerate first excited subspace $|\psi_1,l\rangle$ by studying the Hamiltonian $H(s)=H_0+s(H_1-H_0)$.
+\begin{align*}
+    E_{\psi_0}(s)&=E_{\psi_0}+s\langle \psi_0|(H_1-H_0)|\psi_0\rangle+s^2\sum_l \frac{|\langle \psi_1,l|H_1|\psi_0\rangle|^2}{E_{\psi_0}-E_{\psi_1}}+\mathcal{O}(s^3) \\
+    &=-1+s(1+\langle H_1 \rangle_0)-s^2\sum_l |\langle \psi_1,l|H_1|\psi_0\rangle|^2+\mathcal{O}(s^3) \\
+    &=-1+s(1+\langle H_1 \rangle_0)-s^2(\langle H_1^2 \rangle_0-\langle H_1 \rangle_0^2)+ ... + (-1)^{n-1}s^n\langle H_1(H_1-\langle H_1\rangle_0)^{n-1}\rangle_0+o(s^{n})
+\end{align*}
+and for the first excited state $|\psi_1,l\rangle$:
+\begin{align*}
+    E_{\psi_1}(s)&=E_{\psi_1}+s\langle \psi_1,l|(H_1-H_0)|\psi_1,l\rangle+s^2 \frac{|\langle \psi_0|H_1|\psi_1,l \rangle|^2}{E_{\psi_1}-E_{\psi_0}}+\mathcal{O}(s^3) \\
+    &=0+s\langle H_1 \rangle_{1,l}+s^2 |\langle \psi_0|H_1|\psi_1,l\rangle|^2+\mathcal{O}(s^3) 
+\end{align*}
+The higher order therms are described by:
+\begin{align*}
+    E_{\psi_1}^{(k)}&=\langle \psi_{1,l} | H_1|\psi_{1,l}^{(k-1)}\rangle \\
+    \langle \psi_0 |\psi_{1,l}^{(k)}\rangle &= \langle \psi_0 |H_1|\psi_{1,l}^{(k-1)}\rangle - (E_{\psi_0}+E_{\psi_1}^{(1)})\langle \psi_0 | \psi_1^{(k-1)}\rangle - \sum_{q=1}^{k-2}E_{\psi_1}^{(k-q)}\langle \psi_0|\psi_{1,l}^{(q)}\rangle \\
+    &= \langle \psi_0 |H_1|\psi_{1,l}^{(k-1)}\rangle + (1-\langle H_1 \rangle_{1,l})\langle \psi_0 | \psi_1^{(k-1)}\rangle - \sum_{q=1}^{k-2}E_{\psi_1}^{(k-q)}\langle \psi_0|\psi_{1,l}^{(q)}\rangle
+\end{align*}
+Using the fact that $|\psi_{1,l}^{(k)}\rangle$ is only supported on $|\psi_0\rangle$ (Is this true? Or is this the only component that has an impact on energy?), we can simplify the expressions like:
+\begin{align*}
+    E_{\psi_1}^{(k)}&=\langle \psi_{1,l} | H_1|\psi_0\rangle \langle \psi_0|\psi_{1,l}^{(k-1)}  \rangle \\
+    &=b u_{k-1} \\
+    u_k=\langle \psi_0 |\psi_{1,l}^{(k)}\rangle &= (1+\langle H_1\rangle_0-\langle H_1 \rangle_{1,l})\langle \psi_0 | \psi_1^{(k-1)}\rangle - \sum_{q=1}^{k-2}E_{\psi_1}^{(k-q)}\langle \psi_0|\psi_{1,l}^{(q)}\rangle \\
+    &= a u_{k-1} - b \sum_{q=1}^{k-2}u_{k-q-1}u_q
+\end{align*}
+with $a=(1+\langle H_1\rangle_0-\langle H_1 \rangle_{1,l})$, $b=\langle \psi_{1,l} | H_1|\psi_0\rangle$ and $u_1=b^\dagger$.
+This gives the following coefficients:
+\begin{align*}
+    E_{\psi_1}^{(1)} &=\langle H_1\rangle_{1,l} \\
+    E_{\psi_1}^{(2)} &=|\langle \psi_0 | H_1| \psi_{1,l} \rangle|^2 = |b|^2\\
+    E_{\psi_1}^{(3)} &= (1+ \langle H_1\rangle_{0}-\langle H_1\rangle_{1,l}) |\langle \psi_0 | H_1| \psi_{1,l} \rangle|^2 = a|b|^2\\
+    E_{\psi_1}^{(4)} &= |b|^2(a^2-|b|^2)
+\end{align*}
+
+\section{Eigenvalue of Hamiltonian}
+
+Let $\mathcal{H}$ be the total Hilbert space of size $N$ span by $N$ classical states $|z\rangle$. Let us define the subspace $\mathcal{H}_S$ span by vectors
+$$|\overline{k}\rangle = \frac{1}{\sqrt{d_k}}\sum_{z \in \Omega_k} |z\rangle $$
+where $\Omega_k$ is the subspace span by classical states $|z\rangle$ with final energy $E_k$. $d_k$ denotes the degeneracy of the subspace $\Omega_k$. We consider that there are $m$ distinct values of $E_k$ so that $\mathcal{H}_S$ is of dimension $m$. The starting state $|\psi_0\rangle$ belongs to $\mathcal{H}_S$ because we can write:
+\begin{align*}
+    |\psi_0\rangle &= \frac{1}{\sqrt{N}} \sum_z |z\rangle \\
+    &= \frac{1}{\sqrt{N}} \sum_k \sum_{z \in \Omega_k} |z\rangle \\
+    &= \sum_k \sqrt{\frac{d_k}{N}} |\overline{k}\rangle \in \mathcal{H}_S
+\end{align*}
+In addition, the Hamiltonian $H(s)$ stabilizes the subspace $\mathcal{H}_S$ because for any state of $\mathcal{H}_S$, we have:
+\begin{align*}
+    H(s)|\overline{k}\rangle &= (1-s)H_0|\overline{k}\rangle +sH_1|\overline{k}\rangle \\
+    &= -(1-s)\sqrt{\frac{d_k}{N}} |\psi_0\rangle + s E_k |\overline{k}\rangle \in \mathcal{H}_S
+\end{align*}
+
+Now let us define basis vectors for the rest of the Hilbert space. Inside each $\Omega_k$, we arbitrarily order the classical states like $z_k^{(1)}, z_k^{(2)}, ..., z_k^{(d_k)}$ and we define for $k\in [1,...,m]$ and for $l \in [0,...,d_k-1]$,
+$$|\overline{k}^{(l)}\rangle = \frac{1}{\sqrt{d_k}} \sum_{l' \in [1,...,d_k]} e^{\frac{2i \pi ll'}{d_k}} |z_k^{(l')}\rangle $$
+Remark that $|\overline{k}^{(0)}\rangle=|\overline{k}\rangle$ and for $l\neq l'$ we have $\langle \overline{k}^{(l)}|\overline{k}^{(l')}\rangle=0$ because for any $p\neq 0$, $\sum_{l \in [d_k]} e^{\frac{2i \pi lp}{d_k}}=0$. 
+We see that $\forall k$ and $\forall l\neq 0$, the state $|\overline{k}^{(l)}\rangle$ is an eigenstate of $H(s)$ with eigenvalue $sE_k$. Indeed,
+\begin{align*}
+    H(s)|\overline{k}^{(l)}\rangle &= (1-s)H_0 |\overline{k}^{(l)}\rangle +s H_1|\overline{k}^{(l)}\rangle \\
+    &= -(1-s)\langle \psi_0 |\overline{k}^{(l)}\rangle |\psi_0\rangle +s E_k|\overline{k}^{(l)}\rangle \\
+    &= 0+sE_k|\overline{k}^{(l)}\rangle
+\end{align*}
+So these states account for $N-m$ eigenvalues and are not affected by $H(s)$. They exist only when the subspace $\Omega_k$ is degenerated. The $m$ other eigenstates lie in $\mathcal{H}_S$. So let us look at a state $$|\psi\rangle = \sum_k \alpha_k |\overline{k}\rangle$$ and $\lambda |\psi\rangle=H(s)|\psi\rangle = -(1-s)\gamma |\psi_0\rangle + s\sum_k E_k \alpha_k |\overline{k}\rangle$ where $\gamma = \langle \psi_0 |\psi \rangle = \sum_k \alpha_k \sqrt{\frac{d_k}{N}}$. So $$\lambda \alpha_k =-(1-s)\gamma \sqrt{\frac{d_k}{N}} +sE_k\alpha_k$$ Assuming $\lambda\neq sE_k$ (otherwise $\gamma=0$), we have:
+\begin{align}
+\label{eq:alpha_k}
+    \alpha_k = (1-s)\gamma \sqrt{\frac{d_k}{N}}\frac{1}{sE_k-\lambda}
+\end{align}
+So by expressing $\gamma$ with these expressions of $\alpha_k$, we end up with:
+\begin{align}
+\label{eq:eigenval}
+    1=(1-s)\frac{1}{N}\sum_k \frac{d_k}{sE_k-\lambda}
+\end{align}
+The above function in $\lambda$ is increasing so there is one solution of the equation in $]-\infty,sE_0]$ and $m-1$ in the intervals $]sE_{k-1},sE_k[$ for $k$ running from 1 to $m-1$. 
+
+\paragraph{First bounds on the instantaneous eigenvalues.} This gives us bounds on the ground state $E_0(s)$ and first excited state energy $E_1(s)$:
+\begin{align}
+    E_0(s) < sE_0 \\
+    sE_0 < E_1(s) < sE_1
+\end{align}
+
+Now going back on Eq. (\ref{eq:eigenval}), we suppose that a solution of it write $sE_0+\delta$ and we use the Taylor expansion of $x \mapsto \frac{1}{1-x}=\sum_n x^n=1+x+R(x)$ for any $|x|<1$, where $R(x)=\frac{x^2}{1-x}$. 
+\begin{align*}
+    1&=\frac{(1-s)}{N}\sum_k \frac{d_k}{s(E_k-E_0)-\delta}\\
+    &=\frac{(1-s)}{N} \left ( \frac{-d_0}{\delta} + \sum_{k\neq 0} \frac{d_k}{s(E_k-E_0)}\frac{1}{1-\frac{\delta}{s(E_k-E_0)}} \right ) \\
+    &= \frac{(1-s)}{N} \left [ \frac{-d_0}{\delta} + \sum_{k\neq 0} \frac{d_k}{s(E_k-E_0)}\left(1+\frac{\delta}{s(E_k-E_0)}+R\left(\frac{\delta}{s(E_k-E_0)}\right) \right)\right ]
+\end{align*}
+Assuming $\frac{\delta}{s(E_k-E_0)}<1$ and that $R\left(\frac{\delta}{s(E_k-E_0)}\right)$ is negligeable, by writing $A_k=\frac{1}{N}\sum_{k\neq 0}\frac{d_k}{E_k-E_0}$ we have:
+\begin{align*}
+    &\frac{1}{1-s}=-\frac{d_0}{N\delta}+\frac{A_1}{s}+\frac{\delta A_2}{s^2} \\
+    \Rightarrow \quad&\frac{s^2}{1-s}\frac{\delta }{A_2}=-\frac{s^2d_0}{A_2N}+\delta \frac{sA_1}{A_2}+\delta^2 \\
+    \Rightarrow \quad & \delta^2+\delta \frac{s}{A_2}\left (A_1-\frac{s}{1-s}\right)- \frac{s^2d_0}{A_2N}=0 \\
+    \Rightarrow \quad & 2\delta_\pm(s) = -\frac{s}{A_2}\left (A_1-\frac{s}{1-s}\right)\pm \sqrt{\frac{s^2}{A_2^2}\left (A_1-\frac{s}{1-s}\right)^2+\frac{4s^2d_0}{A_2N}} \\
+    \Rightarrow \quad & 2\delta_\pm(s) = \frac{s}{A_2} \left[ \left (\frac{s}{1-s}-A_1\right)\pm \sqrt{\left (A_1-\frac{s}{1-s}\right)^2+\frac{4A_2d_0}{N}} \right]
+\end{align*}
+So in the regime of validity of the two assumptions we have: 
+\begin{align}
+\label{eq:E0_cross}
+    &E_0(s)=sE_0+\delta_-(s) \\
+    &E_1(s)=sE_0+\delta_+(s) \\
+    \Rightarrow \quad & g(s) = \delta_+(s)-\delta_-(s) = \frac{s}{A_2}\sqrt{\left (A_1-\frac{s}{1-s}\right)^2+\frac{4A_2d_0}{N}}
+\end{align}
+We observe a minimum when $\frac{s^*}{1-s^*}=A_1$, i.e. $s^*=\frac{A_1}{1+A_1}$ with $g_{min}=2s^*\sqrt{\frac{d_0}{NA_2}}$.
+
+\paragraph{Upper bound on the left of AC.}
+We first prove that the ground-state energy is concave.
+
+\begin{lemma}
+\label{eigenrelation}
+Let $\lambda_i, |n_i\rangle$ be an eigenvalue/eigenvector orthogonal pair of a real-valued symmetric matrix operator $B$ such that $\ddot{B}=0$, we have:
+\begin{align}
+\label{firstder}
+&\dot{\lambda_i} = \langle n_i |\dot{B}|n_i \rangle \\
+\label{firstdervec}
+&|\dot{n_i}\rangle = \sum_{j \neq i} \frac{\langle n_j |\dot{B}|n_i \rangle}{\lambda_i - \lambda_j} |n_j\rangle \\
+&\ddot{\lambda_i} = 2\sum_{j \neq i} \frac{|\langle n_j |\dot{B}|n_i \rangle| ^2}{\lambda_i - \lambda_j}  
+\end{align}
+\end{lemma}
+ \begin{proof}
+ We take the derivative of the eigen relation $B|n_i\rangle = \lambda_i |n_i\rangle$:
+ $$
+ \dot{B} |n_i \rangle + B |\dot{n_i} \rangle = \dot{\lambda_i}|n_i\rangle + \lambda_i |\dot{n_i} \rangle
+ $$and by fixing the global phase such that $\langle n_i | \dot{n_i} \rangle=0$ because $\langle n_i |n_i\rangle=1$, we compose by $\langle n_i |$ on the left to get the first expression. Then, composing the same expression by another eigenvector $|n_j\rangle$ with eigenvalue $\lambda_j$ we get $(\lambda_i - \lambda_j) \langle n_j|\dot{n_i} \rangle = \langle n_j |\dot{B}|n_i \rangle$. From that we get the second expression. Eventually, we take the second derivative of the eigen relation:
+ 
+ $$
+  \ddot{B} |n_i \rangle + 2\dot{B} |\dot{n_i} \rangle +B |\ddot{n_i} \rangle= \ddot{\lambda_i}|n_i\rangle + 2\dot{\lambda_i} |\dot{n_i} \rangle + \lambda_i |\ddot{n_i} \rangle
+ $$by hypothesis $\ddot{B}=0$, then projecting on $ |n_i \rangle$ and using (\ref{firstdervec}) give the third result.
+ 
+\end{proof}
+
+ 
+Applying this for $B=H(s)$ and $i=0$, we have that 
+\begin{align*}
+    \frac{d^2E_0}{ds^2}(s)=-2\sum_{j>0}\frac{|\langle \phi_j(s) |(H_1+|\psi_0\rangle\langle\psi_0|)|\phi_0(s) \rangle| ^2}{E_j(s)-E_0(s)} \leq 0
+\end{align*}
+This proves that the ground-state energy is concave. Taking the tangent at some given point will give an upper bound on $E_0(s)$. So we use Eq. (\ref{eq:E0_cross}) at some point in the validity region.
+First we bound $\delta_-(s)$ by observing that $\sqrt{a^2+b} \geq a+b/2$ if $a+b/4 \leq 1$. Applying this with $a=A_1-\frac{s}{1-s}$ and $b=\frac{4A_2d_0}{N}$ we have 
+\begin{align*}
+    &\delta_-(s) \leq -\frac{s}{A_2}\left( A_1-\frac{s}{1-s}\right) \\
+    \Rightarrow \quad & E_0(s) \leq sE_0 -\frac{s}{A_2}\left( A_1-\frac{s}{1-s}\right)=f(s)
+\end{align*}
+The equation of the tangent of $f$ at point $x$ is given by $s \mapsto f'(x)(s-x)+f(x)$. We use this at $x=s^*$ so that the condition $a+b/4<1$ becomes $\frac{A_2d_0}{N}<1$. The final upper bound is thus given by:
+\begin{align*}
+    \text{ub}(s)&=\left(E_0+\frac{A_1}{A_2}(1+A_1)\right)\left(s-\frac{A_1}{1+A_1}\right)+\frac{A_1}{1+A_1}E_0 \\
+    &= sE_0+s\frac{A_1}{A_2}(1+A_1)-\frac{A_1^2}{A_2} \\
+    &= \boxed{sE_0+\frac{A_1}{A_2}\frac{s-s^*}{1-s^*}}
+\end{align*}
+
+\paragraph{Same result. Second proof.} Using the variational principle we know that for any ansatz of unit norm, $|\eta\rangle$, $E_0(s) \leq \langle \eta |H(s)|\eta \rangle$. Let us apply this with 
+
+\begin{equation}
+  |\eta\rangle = \frac{1}{\sqrt{A_2N}}\sum_{k\neq 0} \frac{\sqrt{d_k}}{E_k-E_0}|\overline{k}\rangle 
+\end{equation} and we check that $\langle \eta|\eta \rangle=1$. Finally we show that:
+\begin{align*}
+    \langle \eta |H(s)|\eta \rangle &= -(1-s)|\langle \psi_0|\eta \rangle|^2+s \langle \eta |(H_1-E_0+E_0)|\eta \rangle \\
+    &= -(1-s)\left (\frac{A_1}{\sqrt{A_2}} \right)^2+sE_0+s\langle \eta |(H_1-E_0)|\eta \rangle \\
+    &= -(1-s)\frac{A_1^2}{A_2}+sE_0+s\langle \eta |\sum_{k\neq 0} (E_k-E_0) |\overline{k}\rangle\langle\overline{k}|\eta \rangle \\
+    &= -(1-s)\frac{A_1^2}{A_2}+sE_0+s\sum_{k\neq 0} (E_k-E_0) |\langle\overline{k}|\eta \rangle|^2 \\
+    &= -(1-s)\frac{A_1^2}{A_2}+sE_0+s\frac{A_1}{A_2} \\
+    &= \boxed{sE_0+\frac{A_1}{A_2}\frac{s-s^*}{1-s^*}=\text{ub}(s)}
+\end{align*}
+We recover the same equation.
+
+\paragraph{Bound on the gap.} We are now settled to bound the gap on the left of the avoided crossing. $E_1(s)>sE_0$ and $E_0(s)\leq \text{ub}(s)$. So for the gap we have
+\begin{align*}
+    g(s)&=E_1(s)-E_0(s) \\
+    &\geq sE_0-\text{ub}(s) \\
+    &\geq \frac{A_1}{A_2}\frac{s^*-s}{1-s^*}
+\end{align*}
+With a prefactor $\frac{A_1(1+A_1)}{A_2} \geq \frac{\Delta^2}{n^2}\left(1+\frac{1}{n^2}\right)$.
+At the limit of the robustness window, i.e. at $s_l=\frac{A_1}{1+A_1}-\Theta\left(\frac{1}{(1 + A_1)^2}\sqrt{\frac{A_2d_0}{N}}\right)$ we are left with:
+\begin{align}
+    \boxed{g(s_l) \geq \Theta\left(\frac{A_1}{1+A_1}\sqrt{\frac{d_0}{A_2N}}\right)=g_{min}}
+\end{align}
+
+\paragraph{Bound on the right of the AC.}
+On the right of the first AC, the second lowest eigenvalue $E_1(s)$ will undergo another AC with $E_2(s)$. After this second AC, it will be close to $sE_1$. We know that $E_0(s)<sE_0$. To lower bound $E_1(s)$ on the right, on idea is to take the interpolation between crossing point $s^*E_0$ and final point $E_1$. This is enough \textbf{if $E_1(s)$ is concave on the right part (see Fig. \ref{fig:spectrum}).} Suppose we can show this assumption then we have:
+\begin{align*}
+    E_0(s)&<sE_0 \\
+    E_1(s) &\geq \frac{s^*E_0-E_1}{1-s^*}(1-s)+E_1
+\end{align*}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/spectrum.png}
+    \caption{Eigenvalues evolution and bounds.}
+    \label{fig:spectrum}
+\end{figure}
+
+This allows us to bound the gap on the right part of the AC as 
+\begin{align*}
+    g(s)&=E_1(s)-E_0(s)\\
+    &\geq \frac{s^*E_0-E_1}{1-s^*}(1-s)+E_1 - sE_0\\
+    &\geq E_1+\frac{s^*E_0-E_1}{1-s^*}-s\left( E_0+\frac{s^*E_0-E_1}{1-s^*}\right) \\
+    &\geq -\frac{s^*(E_1-E_0)}{1-s^*}+s\frac{(E_1-E_0)}{1-s^*} \\
+    &\geq \frac{\Delta}{1-s^*}(s-s^*)
+\end{align*}
+
+\noindent \textit{Concavity of $E_1(s)$ on the right part?} We use the Lemma to write:
+\begin{align*}
+    \frac{d^2E_1}{ds^2}(s)&=-2\sum_{j\neq 1}\frac{|\langle \phi_j(s) |\dot{H}|\phi_1(s) \rangle| ^2}{E_j(s)-E_1(s)} \\
+    &=2\frac{|\langle \phi_0(s) |\dot{H}|\phi_1(s) \rangle| ^2}{E_1(s)-E_0(s)} -2\sum_{j \geq 2}\frac{|\langle \phi_j(s) |\dot{H}|\phi_1(s) \rangle| ^2}{E_j(s)-E_1(s)}
+\end{align*}
+If on the right part $|\phi_0(s)\rangle \simeq |\overline{0}\rangle$, then $|\langle \phi_0(s) |\dot{H}|\phi_1(s) \rangle| ^2 = \mathcal{O}(1/N)$ ? 
+
+\paragraph{Description of the eigenstates.} To fully described the eigenstates associated with energy $E_0(s)$ and $E_1(s)$ around crossing point, we need to access to each $\alpha_k$ via Eq. \ref{eq:alpha_k}. To do so we need an expression of $\gamma$. Let us use the normalization of the eigenstate $\sum_k |\alpha_k|^2=1$:
+\begin{align*}
+    &1=(1-s)^2\gamma_\pm^2\frac{1}{N}\sum_k \frac{d_k}{(s(E_k-E_0)-\delta_\pm)^2} \\
+    \Rightarrow \quad & 1= (1-s)^2\gamma_\pm^2\frac{1}{N}\left [ \frac{d_0}{\delta_\pm^2} + \sum_{k\neq 0} \frac{d_k}{s^2(E_k-E_0)^2}\frac{1}{\left(1-\frac{\delta_\pm}{s(E_k-E_0)}\right)^2} \right ]\\
+    \Rightarrow \quad & 1= (1-s)^2\gamma_\pm^2\frac{1}{N}\left[ \frac{d_0}{\delta_\pm^2} + \sum_{k\neq 0} \frac{d_k}{s^2(E_k-E_0)^2}\left(1+2\frac{\delta_\pm}{s(E_k-E_0)}+...\right)\right ] \\
+    \Rightarrow \quad & 1= (1-s)^2\gamma_\pm^2\left[ \frac{d_0}{\delta_\pm^2 N} + \frac{A_2}{s^2}+2\delta_\pm\frac{A_3}{s^3}\right ] \\
+    \Rightarrow \quad & \left( \frac{s}{1-s}\right)^2 = \gamma_\pm^2\left[ A_2 + \frac{d_0s^2}{\delta_\pm^2 N} +2\delta_\pm\frac{A_3}{s}\right ]
+\end{align*}
+Knowing from the equation on $\delta$ that $\delta^2+\delta \frac{s}{A_2}\left (A_1-\frac{s}{1-s}\right)- \frac{s^2d_0}{A_2N}=0$, we have that $\frac{d_0s^2}{\delta_\pm^2 N}=A_2+\frac{s}{\delta_\pm}\left (A_1-\frac{s}{1-s}\right)$.
+\begin{align}
+    \gamma_\pm = \frac{s}{1-s} \left( 2A_2+ \frac{s}{\delta_\pm}\left (A_1-\frac{s}{1-s}\right)+2\delta_\pm\frac{A_3}{s}\right)^{-\frac{1}{2}}
+\end{align}
+Focusing on the groundstate, we recover the different amplitude by Eq. (\ref{eq:alpha_k}):
+\begin{align*}
+    \alpha_k^- = (1-s)\gamma_- \sqrt{\frac{d_k}{N}}\frac{1}{s(E_k-E_0)-\delta_-(s)}
+\end{align*}
+\paragraph{Probability of success on the edge of the validity region.}
+The probability of measuring the ground-state at the edge of the validity region is given by $$|\alpha_0^-|^2= \frac{d_0}{N}\left (\frac{(1-s)\gamma_-}{\delta_-(s)}\right )^2 = \frac{d_0}{N}\left (\frac{1-s}{s}\gamma_-\right )^2\left (\frac{s}{\delta_-(s)}\right )^2$$ On the right of the AC, the validity region goes up to $$\frac{s}{1-s}=r =A_1 + \Theta(A_2 \sqrt[3]{\frac{d_0}{A_3N}})$$
+and the value of $\delta_-$ at this point is:
+\begin{align*}
+    \frac{\delta_-(s)}{s}&=-\frac{1}{2A_2} \left( (A_1-\frac{s}{1-s})+\sqrt{(A_1-\frac{s}{1-s})^2 + \frac{4d_0A_2}{N}}\right)\\
+    &=\frac{1}{2A_2} \left( A_2 \sqrt[3]{\frac{d_0}{A_3N}}-\sqrt{(A_2 \sqrt[3]{\frac{d_0}{A_3N}})^2 + \frac{4d_0A_2}{N}}\right) \\
+    &=\frac{1}{2} \left(  \sqrt[3]{\frac{d_0}{A_3N}}-\sqrt{ \left (\frac{d_0}{A_3N}\right)^{2/3} + \frac{4d_0}{A_2N}}\right)
+\end{align*}
+Looking at $\gamma_-$,
+\begin{align*}
+    \left (\frac{1-s}{s}\gamma_-\right )^2&=\left( 2A_2+\frac{s}{\delta_-}(A_1-\frac{s}{1-s})+2A_3\frac{\delta_-}{s}\right)^{-1} \\
+    &= \left( 2A_2-\frac{s}{\delta_-}A_2 \sqrt[3]{\frac{d_0}{A_3N}}+2A_3\frac{\delta_-}{s}\right)^{-1}
+\end{align*}
+and so we end up with:
+\begin{align*}
+    |\alpha_0^-|^2&=\frac{d_0}{N}\left (\frac{1-s}{s}\gamma_-\right )^2\left (\frac{s}{\delta_-(s)}\right )^2 \\
+    &= \frac{d_0}{N} \frac{\left(\frac{s}{\delta_-}\right)^2}{ 2A_2-\frac{s}{\delta_-}A_2 \sqrt[3]{\frac{d_0}{A_3N}}+2A_3\frac{\delta_-}{s}} \\
+    &=\frac{d_0}{N\frac{\delta_-}{s}} \left( 2A_2 \frac{\delta_-}{s}-A_2 \sqrt[3]{\frac{d_0}{A_3N}}+2A_3\left(\frac{\delta_-}{s}\right)^2\right)^{-1}
+\end{align*}
+at first order we have that:
+\begin{align*}
+    \frac{\delta_-(s)}{s}&\simeq -\left( \frac{d_0}{N}\right)^{\frac{2}{3}}\frac{A_3^{\frac{1}{3}}}{A_2}
+\end{align*}
+So it gives the following probability:
+\begin{align}
+    |\alpha_0^-|^2&\simeq \frac{1}{1+2\left( \frac{d_0}{N}\right)^{1/3}\frac{A_3^{2/3}}{A_2}-2\frac{d_0A_3^2}{NA_2}} \\
+    &\simeq 1-2\left( \frac{d_0}{N}\right)^{1/3}\frac{A_3^{2/3}}{A_2}+2\frac{d_0A_3^2}{NA_2}
+\end{align}
+
+\end{document}

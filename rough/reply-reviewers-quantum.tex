@@ -1,0 +1,180 @@
+\documentclass[a4paper,11pt,english]{article}
+
+\usepackage[final]{hyperref}
+\hypersetup{
+           breaklinks=true,   % splits links across lines
+           colorlinks=true,   % displays links as colored text instead of blocks
+           citecolor=red,
+        }
+\usepackage{natbib} %%% https://www.overleaf.com/learn/latex/Bibliography_management_with_natbib
+\setcitestyle{square,compress,numbers,comma}
+
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,bindingoffset=0cm,left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm,footskip=1.0cm]{geometry}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{thmtools}
+\usepackage{thm-restate}
+\usepackage{physics}
+\usepackage{mathtools}
+\usepackage{float}
+\usepackage{doi}
+
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage[center]{caption}
+
+% \theoremstyle{definition}
+\newtheorem{theorem}{Theorem} %[section]
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+
+% \numberwithin{theorem}{section}
+% \numberwithin{definition}{section}
+% \numberwithin{lemma}{section}
+% \numberwithin{conjecture}{section}
+% \numberwithin{corollary}{section}
+% \numberwithin{equation}{section}
+
+\newcommand{\rr}{\mathbb{R}}
+\newcommand{\nn}{\mathbb{N}}
+\newcommand{\cc}{\mathbb{C}}
+\newcommand{\paren}[1]{\left( #1 \right)}
+\newcommand{\parenfl}[1]{\left\{ #1 \right\}}
+\newcommand{\logp}[1]{\log \left( #1 \right)}
+\newcommand{\logpp}[2]{\log^{#1} \left( #2 \right)}
+\newcommand{\maxp}[1]{\max \left( #1 \right)}
+\newcommand{\normalized}[1]{\frac{#1}{\norm{#1}}}
+\newcommand{\smalloh}[1]{o\paren{#1}}
+\newcommand{\ohtilde}[1]{\widetilde{\mathcal{O}}\paren{ #1 }}
+\newcommand{\polylog}[1]{\mathrm{polylog}\paren{#1}}
+\newcommand{\controlled}[1]{C\text{-}#1}
+\def\wmax{{w_\text{max}}}
+\def\wmin{{w_\text{min}}}
+
+\allowdisplaybreaks
+\renewcommand{\thefootnote}{\roman{footnote}}
+
+%% Autoref prefixes
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\def\theoremautorefname{Theorem}
+\def\lemmaautorefname{Lemma}
+\def\definitionautorefname{Definition}
+\def\conjectureautorefname{Conjecture}
+\def\proofautorefname{Proof}
+
+%% Custom
+\usepackage{braket}
+
+%% Support for Comments
+
+\usepackage{xargs}
+\usepackage{xparse}
+\usepackage{xifthen, xstring}
+\usepackage{ulem}
+\usepackage{xspace}
+\usepackage{fancyhdr}
+
+\newcommand{\revcomment}[1]{\textit{``#1''}\newline}
+
+\begin{document}
+
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\fancyhead[LO]{Unstructured Adiabatic Quantum Optimization: Optimality with Limitations}
+~\\
+Dear Yu,
+~\\~\\
+We would like to thank you for handling our manuscript, “Unstructured Adiabatic Quantum Optimization: Optimality with Limitations.” We are pleased that both reviewers recommend acceptance, and we are grateful for their positive evaluation of our work. In the following, we respond to their comments and suggestions. A few minor changes have been made to the manuscript in response to the reviewers' suggestions; a summary of these changes is included at the end of this response.
+\\~\\
+\noindent Yours sincerely,
+\\~\\
+\noindent Arthur Braida
+
+\noindent Shantanav Chakraborty
+
+\noindent Alapan Chaudhuri
+
+\noindent Joseph Cunningham
+
+\noindent Rutvij Menavlikar
+
+\noindent Leonardo Novo
+
+\noindent J\'{e}r\'{e}mie Roland
+~\\~\\
+
+
+\section*{Reply to Reviewer 1}
+We thank the reviewer for their careful reading of our manuscript and for recommending its acceptance. Below, we provide point-by-point responses to the reviewer’s comments:
+
+
+\begin{itemize}
+    \item[1.~] \textcolor{blue}{`\textbf{Spectral gap analysis:~}Lemma 8 fully characterizes the entire spectrum of $H(s)$. Given this, why can’t the spectral gap be analyzed directly from it, instead of using the seemingly more complex techniques presented in the manuscript? Some explanation would be beneficial.'}
+
+\paragraph{Response:~}Lemma 8 indeed provides an eigenvalue equation that any eigenvalue of the adiabatic Hamiltonian $H(s)$ (say $\lambda(s)$) must satisfy. More precisely, this is given by the following equation:
+\[\frac{1}{1-s}=\frac{1}{N}\sum_k \frac{d_k}{sE_k-\lambda(s)},\]
+where $E_k$ is an eigenvalue of the problem Hamiltonian (See Definition 4 of our manuscript). This equation allows us to assign an interval to each eigenvalue. In particular, for the spectral gap analysis, the two lowest eigenvalues satisfy $\lambda_0(s)\in \ ]-\infty, sE_0[$, and $\lambda_1(s) \in \ ]sE_0,sE_1[$, respectively. Note that from this, we obtain that $\lambda_1(s) \geq sE_0$ and $\lambda_0(s)\leq sE_0$. This \textit{simply leads to a trivial bound on the spectral gap}, i.e.\ $g(s)\geq 0$, which is not useful. Indeed, while this equation can be solved numerically for some given values of $d_k,~E_k$, it is not straightforward to directly extract an analytical bound on the gap. 
+
+We make use of the aforementioned equation however, to obtain the minimum gap $g_{\min}$ at the vicinity of the avoided crossing via a perturbative analysis. Also, in order to bound the spectral gap to the left of the avoided crossing, we use $\lambda_1(s) \geq sE_0$ while the variational principle yields a tight upper bound on $\lambda_0(s)$.
+~\\
+\item[2.~]\textcolor{blue}{\textbf{Hardness of estimating $A_1$}
+‘The NP-hardness of estimating $A_1$ (Theorem 6) does not appear to be a strong enough obstacle to achieving a quadratic speedup. The authors embed an $n$-variable, $m$-clause 3SAT instance into the problem of estimating $A_1$ for an $n'$-qubit Hamiltonian with $n'=2n+2m$. However, even if we assume $m=0$, solving 3SAT via brute force requires only $\mathcal{O}(2^{n'/2})$ time, which remains feasible within the AQO framework, as its time complexity is also $\mathcal{O}(2^{n'/2})$. A similar argument applies to the $\#P$-hardness result (Theorem 7).’}
+
+\paragraph{Response.~}Our goal was to demonstrate a fundamental limitation of the adiabatic framework (as also pointed out by Reviewer 2): achieving a quadratic advantage over brute-force search using a purely unstructured adiabatic optimization algorithm requires solving an equally hard problem first (approximating the position of the avoided crossing). In principle, one might circumvent this by equipping the adiabatic optimizer with access to a gate-based quantum computer, which could estimate the location of the avoided crossing by using quantum amplitude amplification (to solve 3-SAT). However, in that case, the entire problem could be solved directly within the gate-based (circuit) model, rendering the adiabatic approach unnecessary. Crucially, the circuit model does not suffer from this fundamental limitation—it offers a clean, end-to-end quadratic advantage over classical brute-force search for NP-complete problems via quantum amplitude amplification.
+\end{itemize}
+~\\~\\
+\textbf{Additional comments}
+~\\
+\begin{itemize}
+    \item[(i)~]\textcolor{blue}{``\textit{p.2:~It is thus plausible to expect that such a generic result would also be possible in the adiabatic setting, given that it is a universal model of quantum computation.}''}
+
+    \textcolor{blue}{‘This plausibility is not obvious. The reduction proving the universality of adiabatic computing in Aharonov et al. [7] introduces a polynomial overhead relative to the gate number of the simulated quantum circuit. Consequently, an $O(2^{n/2})$-gate circuit would require $O(\text{poly}(2^{n/2}))$ time for simulation in the adiabatic setting. This polynomial overhead is also acknowledged later by the authors.’}
+
+\paragraph{Response.}We agree with the reviewer’s observation. As they note, we explicitly state this point on Page 2 (first paragraph). However, we would like to add that there exists an adiabatic formulation of Grover’s algorithm. Since quantum amplitude amplification generalizes Grover’s algorithm in the circuit model, it is natural to expect that a corresponding generalization may also be possible within the adiabatic framework.
+~\\
+\item[(ii)~] \textcolor{blue}{p.6: ``This is the quantum version of Ising spin glass Hamiltonians, and solutions to several NP-hard (or NP-complete) problems can
+be encoded in the ground states of $H_{\sigma}$.''}
+
+\textcolor{blue}{‘Ising spin glass Hamiltonians are NP-complete. Therefore solutions of any NP problems can be encoded into the ground states. I guess it is more informative to say that for some NP-complete problems, the encoding is direct and straightforward with low or no overhead on the system size n (Examples are QUBO and MAX-CUT).’}
+
+\paragraph{Response.}Based on the suggestion of the referee, we have now added the following sentence in page 6 (penultimate line) of our article:
+~\\~\\
+``\textit{In fact, for some NP-complete problems such as Quadratic Unconstrained Binary Optimization (QUBO) or MaxCut, the encoding is straightforward, with very little overhead on $n$.}''
+~\\
+\item[(iii)~]\textcolor{blue}{‘The hyperlink to Theorem A7 seems incorrect.’}
+
+\paragraph{Response.} We have fixed this.
+\end{itemize}
+
+
+\section*{Reply to Reviewer 2}
+
+We thank this reviewer for recommending the acceptance of our paper. Here, we respond to the following suggestion of the reviewer to restructure some sections of the paper.
+~\\~\\
+\noindent\textcolor{blue}{‘Given my comments on the limitations of the authors’ algorithm, I suggest some reorganization of the paper. I would move some of the technical analysis of the gap to the appendix (e.g., the proofs of lemmas 10 and 11) and perhaps also the $\#P$ hardness result. The section of the paper that may be most useful to the reader is the content of Appendix A III (in particular Theorem A7, and perhaps Lemma A4); I think some of the content there should be moved to the main text. The original trick of eigenpath traversal by phase randomization (Boixo, Knill, Somma) is already under-used in the algorithms community, let alone the recent improvement by Cunningham and Roland. An adiabatic version of this result is almost certainly useful in other settings. Presumably some applications will be the subject of [52], but I feel that this paper will be more useful to the community if these results were explained and emphasized more in the main text.’}
+
+\paragraph{Response.}We thank the reviewer for this suggestion. The central contribution of our work is to resolve a long-standing open question: whether unstructured adiabatic quantum optimization can generically achieve a quadratic speedup over classical brute-force search for solving NP-hard problems. We present an adiabatic algorithm with a matching lower bound, while also uncovering fundamental limitations, specifically, the computational hardness of selecting an appropriate adiabatic schedule, which complicates the realization of this speedup. This stands in contrast to the circuit model, where quantum amplitude amplification offers a clean and robust quadratic advantage. While we have developed a general version of the adiabatic theorem to prove the running time of our algorithm, we do not view this theorem as the main focus of the current work. As noted in the manuscript (and rightly emphasized by the reviewer), a more comprehensive treatment—including path randomization, the discrete-adiabatic theorem, and its applications—will appear in an upcoming work by co-authors Cunningham and Roland [52]. For this reason, we have chosen not to move the content of Appendix A-III into the main text.
+~\\~\\
+We thank both reviewers once again for their comments and suggestions.
+
+\section*{Changes to the Manuscript}
+
+We have made only minor changes to the manuscript. The list of changes are as follows:
+
+\begin{itemize}
+    \item We have added a sentence based on the suggestion of Reviewer 1 (see Additional comments reply to point (ii)). 
+
+    \item We also fixed some minor typos throughout the manuscript.
+
+    \item Finally, we have also streamlined the proof of the adiabatic theorem to make it more concise. In particular, in Lemma A6, we have replaced $|\lambda'_0|$ by its upper bound $\|H'\|$, in the RHS of (3) and (5). This follows from the Hellmann-Feynman theorem. Although this has not led to any quantitative changes in the results, it has simplified the expression for $c$ in Theorem A7 (and slightly shortened the proof of this theorem).   
+\end{itemize}
+\end{document}

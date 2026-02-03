@@ -1,0 +1,70 @@
+\section{Introduction}
+
+\section{Harrow-Hassidim-Lloyd Algorithm}
+
+\section{Solving Linear Systems Using LCU}
+
+\section{Solving Linear Systems Using Hamiltonian Simulation}
+
+\section{Adiabatic Quantum Algorithm for Solving Linear Systems}
+
+\subsection{Eigestate Filtering}
+
+\subsection{Algorithm}
+
+    \citet{Lin2020} gave an adiabatic quantum algorithm to solve linear systems. It allows us to prepare a target eigenstate of a given Hamiltonian if we have an initial state with a non-trivial overlap with the target eigenstate and there is a reasonable lower bound on the spectral gap. Later they discretize the algorithm for $d-$sparse matrices using a Hamiltonial simulation subroutine. They also review a couple of other papers that they follow with near optimal query complexity in the circuit model. 
+    
+    Given oracle access to the entries of a matrix $A \in \mathbb{C}^{N \times N}$, and a quantum state $\ket{b} \in \mathbb{C}^{N}$, the problem asks to prepare the quantum state $\ket{x} = \frac{A^{-1} \ket{b}}{ || A^{-1} \ket{b} || }$, where $\ket{x}$ is the quantum state proportional to the solution of the linear system $ Ax = b $. This is called the quantum linear systems problem. 
+    
+    (Note: the notation of a quantum state belonging to the vector space over $\mathbb{C}$ is a bit loose. Oracle access to a quantum state means that there is a unitary $U_b$ that can prepare the required quantum state as $U_b \ket{0} = \ket{b}$.) They also assume that the singular values of $A$ are contained in $[\frac{1}{\kappa}, 1]$, where $\kappa$ is the condition number of $A$. Following is a brief description of their algorithm.
+    
+    Define 
+    
+    \begin{equation}
+        Q_b = \mathbb{I} - \ket{b} \bra{b}
+    \end{equation}
+    
+    Then the initial Hamiltonian is 
+    
+    \begin{equation}
+        H_0 := \begin{pmatrix} 0 & Q_b \\
+        Q_b & 0
+        \end{pmatrix} = \sigma_x \otimes Q_b.
+    \end{equation}
+    
+    The final Hamiltonian is 
+    
+    \begin{equation}
+        H_1 := \begin{pmatrix} 0 & AQ_b \\
+        AQ_b & 0
+        \end{pmatrix} = \ket{0} \bra{1} \otimes A Q_b + \ket{1} \bra{0} \otimes A_b A.
+    \end{equation}
+    
+    Note that the null space of $H_1$ is spanned by $\ket{0}\ket{x} $ and $\ket{1} \ket{b}$. The rest of the spectrum is separated from 0 by a gap of $\frac{1}{\kappa}$. Then the adiabatic evolution is given by 
+    
+    \begin{equation}
+        H(f) = (1 - f) H_0 + f H_1.
+    \end{equation}
+    
+    Using the vanilla (linear) schedule $f(s) = s$ gives a time complexity of $\mathcal{O}(\kappa^2 / \epsilon)$. Using a method called AQC(p), where the schedule is 
+    
+    \begin{equation}
+        f(s) = \frac{\kappa}{\kappa - 1} \left( 1 - \left( 1 + s (\kappa^{p - 1} - 1) \right)^{\frac{1}{1 - p}} \right), \quad p \in (1, 2)
+    \end{equation}
+    
+    the time complexity can be reduced to $\mathcal{O}(\kappa / \epsilon)$, which is optimal in $\kappa$ but not in $\epsilon$. Using a method called AQC(exp), the the time complexity can be further reduced to $\mathcal{O}\left(\kappa \log^2(\kappa)\log^4\left(\frac{\log \kappa}{\epsilon}\right)\right)$, which is near-optimal in both $\kappa$ and $\epsilon$, although with a high constant overhead (numerically shown in their paper.) 
+    
+    They also describe eigenstate filtering, which they use after preparing the initial state using adiabatic evolution as described above, to filter out the required state and obtain the solution to the QLS.
+
+\section{Variable time Linear Systems Algorithm using QSVT}
+\label{sec:variable-time-qlsa-qsvt}
+
+\section{Applications of QLSA}
+
+\subsection{Electromagnetic Scattering}
+
+\subsection{Solving Linear Differential Equations}
+
+\subsection{Least Squares Fitting and Machine Learning}
+
+

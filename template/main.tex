@@ -1,0 +1,162 @@
+%%%%% Global Options
+
+\def\showcomments{}
+\def\showinlinecomments{}
+
+
+
+\documentclass[11.5pt, paper=a4]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsmath, amssymb, amscd, amsthm, amsfonts, mathtools}
+\usepackage[a4paper,bindingoffset=0cm,left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm,footskip=1.0cm]{geometry}
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0.8pt}
+\renewcommand{\footrulewidth}{0.8pt}
+\fancyhead{}
+\fancyhead[C]{\leftmark}
+
+\usepackage{graphicx}
+\usepackage[final]{hyperref}
+\hypersetup{
+           breaklinks=true,   % splits links across lines
+           colorlinks=true,   % displays links as colored text instead of blocks
+        }
+\usepackage{physics}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{natbib} %%% https://www.overleaf.com/learn/latex/Bibliography_management_with_natbib
+\setcitestyle{square,compress,numbers,comma}
+\usepackage{tabularx}
+
+\usepackage{braket}
+\usepackage{thmtools}
+\usepackage{float}
+\usepackage{doi}
+\usepackage{lipsum}
+\usepackage[center]{caption}
+
+% \theoremstyle{definition}
+\newtheorem{theorem}{Theorem} %[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\numberwithin{theorem}{section}
+\numberwithin{definition}{section}
+\numberwithin{lemma}{section}
+\numberwithin{conjecture}{section}
+\numberwithin{corollary}{section}
+\numberwithin{equation}{section}
+
+
+\allowdisplaybreaks
+\renewcommand{\thefootnote}{\roman{footnote}}
+
+%% Autoref prefixes
+\renewcommand{\sectionautorefname}{Section}
+\renewcommand{\subsectionautorefname}{Section}
+\renewcommand{\subsubsectionautorefname}{Section}
+\def\theoremautorefname{Theorem}
+\def\lemmaautorefname{Lemma}
+\def\definitionautorefname{Definition}
+\def\conjectureautorefname{Conjecture}
+\def\proofautorefname{Proof}
+
+
+% \usepackage[8-9]{pagesel} % Compile selected pages
+
+
+%% Writing algorithms
+
+\usepackage{algorithm} % captioning 
+\usepackage{algpseudocode}
+
+% \def\NoNumber#1{{\def\alglinenumber##1{}\State #1}\addtocounter{ALG@line}{-1}}
+
+\graphicspath{ {images/} }
+
+%%%%% Custom Definitions %%
+\newcommand{\rr}{\mathbb{R}}
+\newcommand{\nn}{\mathbb{N}}
+\newcommand{\cc}{\mathbb{C}}
+\newcommand{\paren}[1]{\left( #1 \right)}
+\newcommand{\parenfl}[1]{\left\{ #1 \right\}}
+\newcommand{\logp}[1]{\log \left( #1 \right)}
+\newcommand{\logpp}[2]{\log^{#1} \left( #2 \right)}
+\newcommand{\maxp}[1]{\max \left( #1 \right)}
+\newcommand{\normalized}[1]{\frac{#1}{\norm{#1}}}
+\newcommand{\ohtilde}[1]{\widetilde{\mathcal{O}}\paren{ #1 }}
+\newcommand{\polylog}[1]{\mathrm{polylog}\paren{#1}}
+\newcommand{\controlled}[1]{C\text{-}#1}
+\def\wmax{{w_\text{max}}}
+\def\wmin{{w_\text{min}}}
+%%%%%%%
+
+
+\begin{document}
+
+\pagenumbering{roman}
+
+\input{frontmatter/titlePage.tex}
+
+\input{frontmatter/copyright.tex}
+
+\input{frontmatter/certificate.tex}
+
+\input{frontmatter/dedication.tex}
+
+\input{frontmatter/quote.tex}
+
+\chapter*{Abstract}
+\input{frontmatter/abstract.tex}
+
+\chapter*{Acknowledgent}
+\input{frontmatter/acknowledgement.tex}
+
+\tableofcontents
+\listoftheorems
+\listofalgorithms
+\listoffigures
+
+
+\chapter{Overview and Motivation}
+
+\pagenumbering{arabic}
+
+\input{chapters/introduction.tex}
+
+\chapter{Background}
+\input{chapters/background.tex}
+
+\chapter{Linear Systems Problem}
+\input{chapters/least-squares.tex}
+
+\chapter{Algorithmic Primitives}
+\input{chapters/primitives.tex}
+
+\chapter{Quantum Linear Systems Algorithms}
+\input{chapters/qlsa.tex}
+
+\chapter{Regularized Quantum Regression}
+\input{chapters/regularized-quantum-regression.tex}
+
+% \chapter{Quantum Annealing}
+% \input{chapters/annealing.tex}
+% 
+\chapter{Conclusion and Future Directions}
+\input{chapters/conclusion.tex}
+
+\appendix
+
+\bibliographystyle{unsrtnat}
+\bibliography{./references/qlsa.bib, references/adiabatic.bib, references/qc-intro.bib}
+
+\end{document}
+

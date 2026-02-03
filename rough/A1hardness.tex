@@ -1,0 +1,333 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{bbold}
+\usepackage[margin=1.4in]{geometry}
+
+% ------
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{proposition*}{Proposition}
+% ------
+
+\newcommand{\defeq}{\coloneqq}
+
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
+
+\newcommand{\ket}[1]{\left| #1 \right\rangle}
+\newcommand{\bra}[1]{\left\langle #1 \right|}
+\let\abraket\braket
+\newcommand{\braket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \langle#2|#3\rangle%
+    \else%
+       \langle#2|#1|#3\rangle%
+    \fi}
+\newcommand{\sbraket}[3][\null]{%    %TOreDO!
+  \ifx#1\null
+       \left\langle#2\vphantom{#3}\right.\left|#3\vphantom{#2}\right\rangle%
+    \else%
+         \left\langle#2\vphantom{#1}\vphantom{#3}\right.\left|#1\vphantom{#2}\vphantom{#3}\right|\left.#3\vphantom{#1}\vphantom{#2}\right\rangle%
+    \fi}
+\newcommand{\ketbra}[2]{|#1\rangle\langle#2|}
+
+\DeclareMathOperator{\diff}{d \!}
+
+\providecommand{\od}[3][]{\ensuremath{
+\ifinner
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\else
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+\fi
+}}
+
+\providecommand{\tod}[3][]{\ensuremath{\mathinner{
+\tfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+\providecommand{\dod}[3][]{\ensuremath{\mathinner{
+\dfrac{\diff{^{#1}}#2}{\diff{{#3}^{#1}}}
+}}}
+% ------
+
+\title{NP hardness of calculating $A_1$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle 
+
+Let $0\leq H\leq \mathbb{1}$ be some Hamiltonian such that the ground energy is either $0$ or $\Delta$. 
+
+Let $E_k$ be the $k^{\text{th}}$ energy level of $H$, with degeneracy $d_k$. We aim to disambiguate between $E_0 = 0$ and $E_0 \geq \Delta$.
+
+Consider the Hamiltonian $H'\defeq H\otimes \ketbra{1}{1}$, where $\ketbra{1}{1}$ is the one-qubit projector on the $1$-state, which can be written as $\frac{1+\sigma_z}{2}$.
+
+First assume $E_0 = 0$. Then
+\begin{equation}
+A_1(H) = \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} \qquad\text{and}\qquad A_1(H') = \sum_{k\neq 0} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+so $A_1(H) = 2A_1(H')$ and $A_1(H) - 2A_1(H') = 0$.
+
+Now assume $E_0 \neq 0$. Then
+\begin{equation}
+A_1(H') = \sum_{k} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+and
+\begin{align}
+A_1(H) &= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k-E_0} \\
+&= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= \sum_{k} \frac{1}{N}\frac{d_k}{E_k} - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&\geq 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{1-E_0} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + (1- \frac{d_0}{N})\frac{E_0}{1-E_0} \\
+&= 2A_1(H') + \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1-\Delta+\Delta^2}{\Delta - \Delta^2} \\
+&\geq 2A_1(H') + \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1}{\Delta(1 - \Delta)}
+\end{align}
+Thus in this case $A_1(H) - 2A_1(H') \geq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1-\Delta+\Delta^2}{\Delta - \Delta^2}$.
+
+Suppose we have a method to calculate both $A_1(H)$ and $A_1(H')$ with some precision $p$, (i.e.\ our method produces $A_1(H)\pm p$ and $A_1(H')\pm p$). Then in the first case, we have
+\begin{equation}
+A_1(H) - 2A_1(H') \leq 3p.
+\end{equation}
+In the second case,
+\begin{equation}
+A_1(H) - 2A_1(H') \geq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1-\Delta+\Delta^2}{\Delta - \Delta^2} - 3p.
+\end{equation}
+In order to disambiguate, we need
+\begin{equation}
+6p \leq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1-\Delta+\Delta^2}{\Delta - \Delta^2}.
+\end{equation}
+If $\frac{d_0}{N}(1-\Delta+\Delta^2) \leq \frac{1}{2}\Delta^2$, then $\frac{d_0}{N}\frac{1-\Delta+\Delta^2}{\Delta - \Delta^2} \leq \frac{1}{2}\frac{\Delta}{1-\Delta}$ and we need $p \leq \frac{1}{12}\frac{\Delta}{1-\Delta}$.
+
+In particular, this can solve 3SAT with $n$ clauses and a guarantee of at most one satisfying assignment. This is NP-hard.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\paragraph{New version with modified assumption}
+Let $0\leq H\leq \mathbb{1}$ be some Hamiltonian and $\Delta > 0$ a number such that $H$ has an eigenvalue less than $1-\Delta$. 
+
+Let $E_k$ be the $k^{\text{th}}$ energy level of $H$, with degeneracy $d_k$. We aim to disambiguate between $E_0 = 0$ and $E_0 \geq \Delta$.
+
+Consider the Hamiltonian $H'\defeq H\otimes \ketbra{1}{1}$, where $\ketbra{1}{1}$ is the one-qubit projector on the $1$-state, which can be written as $\frac{1+\sigma_z}{2}$.
+
+First assume $E_0 = 0$. Then
+\begin{equation}
+A_1(H) = \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} \qquad\text{and}\qquad A_1(H') = \sum_{k\neq 0} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+so $A_1(H) = 2A_1(H')$ and $A_1(H) - 2A_1(H') = 0$.
+
+Now assume $E_0 \neq 0$. Then
+\begin{equation}
+A_1(H') = \sum_{k} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+and
+\begin{align}
+A_1(H) &= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k-E_0} \\
+&= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= \sum_{k} \frac{1}{N}\frac{d_k}{E_k} - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&\geq 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{1-E_0} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \Big(1- \frac{d_0}{N}\Big)\frac{E_0}{1-E_0} \\
+&= 2A_1(H') + \frac{E_0}{1-E_0} - \frac{d_0}{N}\Big(\frac{1-E_0 +E_0^2}{E_0-E_0^2}\Big) \\
+&\geq 2A_1(H') + \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1}{\Delta^2}
+\end{align}
+Thus in this case $A_1(H) - 2A_1(H') \geq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1}{\Delta^2}$.
+
+Suppose we have a method to calculate both $A_1(H)$ and $A_1(H')$ with some precision $p$, (i.e.\ our method produces $A_1(H)\pm p$ and $A_1(H')\pm p$). Then in the first case, we have
+\begin{equation}
+A_1(H) - 2A_1(H') \leq 3p.
+\end{equation}
+In the second case,
+\begin{equation}
+A_1(H) - 2A_1(H') \geq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1}{\Delta^2} - 3p.
+\end{equation}
+In order to disambiguate, we need
+\begin{equation}
+6p \leq \frac{\Delta}{1-\Delta} - \frac{d_0}{N}\frac{1}{\Delta^2}.
+\end{equation}
+If $\frac{d_0}{N} \leq \frac{\Delta^3}{2(1-\Delta)}$, then $\frac{d_0}{N}\frac{1}{\Delta^2} \leq \frac{1}{2}\frac{\Delta}{1-\Delta}$ and we need $p \leq \frac{1}{12}\frac{\Delta}{1-\Delta}$.
+
+In particular, this can solve 3SAT with $n$ clauses and a guarantee of at most one satisfying assignment. This is NP-hard.
+
+\paragraph{Solving 3SAT with a $2$-local Hamiltonian}
+Let $n\in \mathbb{N}$. Suppose we are given $n$ clauses of the form $a_k\lor b_k \lor c_k$, where each $a_k,b_k,c_k$ is either $x_l$ or $\overline{x}_l$ with $0\leq l \leq n-1$. A satisfying assignment makes
+\[ \bigwedge_{k=0}^{n-1}a_k\lor b_k \lor c_k \]
+true. We are given the promise that there is at most one satisfying assignment.
+
+Set $\displaystyle P_{x_l} \defeq \frac{\mathbb{1}-\sigma_z^{(l)}}{2}$ and $\displaystyle P_{\overline{x}_l} \defeq \frac{\mathbb{1}+\sigma_z^{(l)}}{2}$.
+Now construct the following Hamiltonian on $2n$ qubits:
+\begin{align}
+H_0 \defeq \sum_{k=0}^{n-1}\sum_{y\in{-1,1}} &P_{\overline{a}_k} + P_{\overline{b}_k} + P_{\overline{c}_k} + P_{\overline{x}_{n+k}} \\
+    & +P_{a_k}P_{b_k} + P_{a_k}P_{c_k} + P_{b_k}P_{c_k} \\
+    & +P_{\overline{a}_k}P_{x_{n+k}} + P_{\overline{b}_k}P_{x_{n+k}} + P_{\overline{c}_k}P_{x_{n+k}}
+\end{align}
+Then set $H\defeq \frac{H}{10 n}- \frac{3}{10}\mathbb{1}\in [0, \mathbb{1}]$. By enumeration of states, we have that either $E_0 = 0$ (if there is no satisfying assignment) or $E_0 = \frac{1}{n}$ (if there is a satisfying assignment). And $d_0 = 1$. For all $n$ we have $\frac{d_0}{N} = 2^{-n} \leq \frac{n^4}{2(n-1)} = \frac{\Delta^3}{2(1-\Delta)}$. So calculating $A_1$ to precision $p = \frac{1}{12}\frac{1}{n-1}$ is NP-hard. This is much larger than $\sqrt{d_0/N}$.
+
+
+\paragraph{Solving decision problem MaxCut. } Let $G(V,E)$ be a non-bipartite graph with $|V|=n$ nodes and $|E|$ edges. Given an integer $k$, is there a cut of size least $k$ in $G$? 
+Let $H=|E| \cdot \mathbf{1}-\sum_{(i,j)\in E}\frac{1-\sigma_z^(i)\sigma_z(j)}{2} $, so that the largest eigenvalue $E_m=|E|$ and the smallest $E_0\geq 1$. The decision problem is equivalent to distinguish between \textit{case 1}: $E_0 \geq  |E|- k +1$ and \textit{case 2}: $E_0\leq |E| -k$.
+Suppose we have an algorithm $\mathcal{C}$ that can compute in polynomial time $A_1(H)$ with precision $p$, then we can answer the question in polynomial time. 
+
+
+We introduce $H'=H - x\frac{1-\sigma_z^{(1)}\sigma_z^{(n+1)}}{2}$. In other terms, finding the groundstate of $H'$ is equivalent to find the MaxCut of $G'$ obtained from $G$ by adding a node labeled $n+1$ and an edge between node 1 and node $n+1$ of weight $x>0$. Observe that $H'$ has $2^{n+1}$ eigenvalues of value $E_k$ and $E_k-x$, each of degeneracy $d_k$. Indeed, for any cut in $G$ of energy $E_k$, the same cut in $G'$ plus the position of the added edge (cut or uncut) affects by exactly x the energy if it's cut and by 0 if it's uncut. Now we compare $A_1(H)$ with $A_1(H')$:
+\begin{align*}
+2A_1(H') &= \frac{1}{2^n}\sum_{k\neq 0} \frac{d_k'}{E_k'-E_0'} \\
+&= \frac{1}{2^n}\left (\sum_{k\neq 0} \frac{d_k}{E_k-E_0} + \sum_{k\geq 0} \frac{d_k}{E_k-E_0+x} \right)\\
+&= A_1(H) +\underbrace{\frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-E_0+x}}_{=K} \\
+\end{align*}
+Now we study $K$ in the two different cases knowing that $E_m=|E|$ with $x=|E|-k$:
+
+\textit{Case 1. }$E_0 \geq |E|-k+1=x+1$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \geq \frac{1}{E_{k'}-1} = \frac{1}{E_{k'}} + \frac{1}{E_{k'}(E_{k'}-1)} \geq \frac{1}{E_{k'}} + \frac{1}{|E|(|E|-1)}
+\end{align}
+Therefore:
+\begin{align}
+    K \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}-1} \geq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} + \frac{1}{|E|(|E|-1)} = 2A_1(H \otimes |1\rangle \langle 1|) + \frac{1}{|E|(|E|-1)}= K_1 
+\end{align}
+
+\textit{Case 2. }$E_0 \leq |E| -k=x$ so we have:
+\begin{align}
+    \frac{1}{E_{k'}-E_0+x} \leq \frac{1}{E_{k'}} 
+\end{align}
+Therefore:
+\begin{align}
+    K \leq \frac{1}{2^n}\sum_{k'\geq 0} \frac{d_{k'}}{E_{k'}} =2A_1(H \otimes |1\rangle \langle 1|) = K_2 
+\end{align}
+The two cases can be distinguish by 2 calls to algorithm $\mathcal{C}$ if 
+\begin{align}
+    K_1-5p > K_2 +5p
+\end{align}
+which means that 
+\begin{align}
+    10p < K_1-K_2 = \frac{1}{|E|(|E|-1)}
+\end{align}
+Recall for any graph with $n$ nodes, $|E|\leq \frac{n(n-1)}{2}$, so 
+\begin{align}
+    p<\frac{2}{5}\frac{1}{n^4}
+\end{align}
+
+\paragraph{Hardness of computing $A_1$ for 3-local Hamiltonians}
+\begin{lemma}
+The problem of computing $A_1$ up to a precision $p = \frac{1}{12}\frac{1}{n-1}$ for a $3$-local Hamiltonian on $n$ qubits that satisfies the conditions in definition 4 is NP-hard.
+\end{lemma}
+\begin{proof}
+We prove hardness by reducing the following NP-hard problem to it:
+
+\textbf{Given a $2$-local Hamiltonian $0\leq H\leq I$ on $n$ qubits with $n\geq 13$ terms and a non-degenerate ground state with energy either $0$ or in $\big[1/n, 1-1/n\big]$, decide which of these is the case.}
+
+Let $E_k$ be the $k^{\text{th}}$ energy level of $H$, with degeneracy $d_k$. We aim to disambiguate between $E_0 = 0$ and $E_0 \geq 1/n$.
+
+Consider the Hamiltonian $H'\defeq H\otimes \ketbra{1}{1}$, where $\ketbra{1}{1}$ is the one-qubit projector on the $1$-state, which can be written as $\frac{1+\sigma_z}{2}$. By assumption, we have $d_0 = 1$.
+
+First assume $E_0 = 0$. Then
+\begin{equation}
+A_1(H) = \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} \qquad\text{and}\qquad A_1(H') = \sum_{k\neq 0} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+so $A_1(H) = 2A_1(H')$ and $A_1(H) - 2A_1(H') = 0$.
+
+Now assume $E_0 \neq 0$. Then
+\begin{equation}
+A_1(H') = \sum_{k} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+and
+\begin{align}
+A_1(H) &= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k-E_0} \\
+&= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= \sum_{k} \frac{1}{N}\frac{d_k}{E_k} - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&\geq 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{1-E_0} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \Big(1- \frac{d_0}{N}\Big)\frac{E_0}{1-E_0} \\
+&= 2A_1(H') + \frac{E_0}{1-E_0} - \frac{d_0}{N}\frac{1-E_0 + E_0^2}{E_0(1-E_0)} \\
+&\geq 2A_1(H') + \frac{1}{n-1} - \frac{d_0}{N}n^2
+\end{align}
+
+Suppose we have a method to calculate both $A_1(H)$ and $A_1(H')$ with precision $p = \frac{1}{12}\frac{1}{n-1}$. We can then calculate $A_1(H) - 2A_1(H')$. In the first case we have
+\begin{equation}
+A_1(H) - 2A_1(H') \leq 3p = \frac{1}{4}\frac{1}{n-1}.
+\end{equation}
+In the second case, we have (using $n\geq 13$)
+\begin{align}
+A_1(H) - 2A_1(H') &\geq \frac{1}{n-1} - \frac{1}{N}n^2 - 3p \\
+&= \frac{1}{n-1} - \frac{n^2}{2^n} - \frac{1}{4}\frac{1}{n-1} \\
+&\geq \frac{1}{2}\frac{1}{n-1}.
+\end{align}
+
+Thus, if the calculation of $A_1(H) - 2A_1(H') $ is less than $\frac{1}{4}\frac{1}{n-1}$, we conclude that $E_0 = 0$. Otherwise, we know that $E_0 \geq 1/n$.
+\end{proof}
+
+\paragraph{Hardness of computing $A_1$ for 3-local Hamiltonians}
+
+\begin{lemma}
+The problem of computing $A_1$ up to a precision $p = \frac{1}{72}\frac{1}{n-1}$ for a $3$-local Hamiltonian on $n$ qubits that satisfies the conditions in definition 4 is NP-hard.
+\end{lemma}
+\begin{proof}
+We show that this problem is hard by reducing 3-SAT to it.
+
+Suppose we are given $m$ clauses of the form $a_k\lor b_k \lor c_k$, where each $a_k,b_k,c_k$ is either $x_l$ or $\overline{x}_l$ with $0\leq l \leq n-1$. A satisfying assignment makes
+\[ \bigwedge_{k=0}^{m-1}a_k\lor b_k \lor c_k \]
+true. If $n+m < 17$, use brute-force search. Now assume $n+m \geq 17$.
+
+Set $\displaystyle P_{x_l} \defeq \frac{\mathbb{1}-\sigma_z^{(l)}}{2}$ and $\displaystyle P_{\overline{x}_l} \defeq \frac{\mathbb{1}+\sigma_z^{(l)}}{2}$. For each $0\leq k < m$, define the following Hamiltonian:
+\begin{align}
+H_k \defeq \; &P_{\overline{a}_k} + P_{\overline{b}_k} + P_{\overline{c}_k} + P_{\overline{x}_{n+k}} \\
+    & +P_{a_k}P_{b_k} + P_{a_k}P_{c_k} + P_{b_k}P_{c_k} \\
+    & +P_{\overline{a}_k}P_{x_{n+k}} + P_{\overline{b}_k}P_{x_{n+k}} + P_{\overline{c}_k}P_{x_{n+k}}
+\end{align}
+If the $k^\text{th}$ clause is satisfied, then the lowest eigenvalue of $H_k$ is $3$, otherwise it is $4$. The largest possible eigenvalue of $H_k$ is $6$.
+
+Now consider the Hamiltonian, which acts on $2m+2n$ qubits,
+\begin{equation}
+H \defeq \frac{1}{6m}\sum_{k=0}^{m-1}H_k + \frac{1}{2n+2m}\sum_{k=n+m}^{2n+2m-1}P_{x_{k}} - \frac{1}{2}\mathbb{1} \quad\in [0,\mathbb{1}].
+\end{equation}
+Let $E_k$ be the $k^{\text{th}}$ energy level of $H$, with degeneracy $d_k$. We aim to disambiguate between $E_0 = 0$ and $E_0 \geq 1/6m$. We have $E_0 \leq 1/2$. 
+
+Consider the Hamiltonian $H'\defeq H\otimes \ketbra{1}{1}$, where $\ketbra{1}{1}$ is the one-qubit projector on the $1$-state, which can be written as $\frac{1+\sigma_z}{2}$.
+
+First assume $E_0 = 0$. Then
+\begin{equation}
+A_1(H) = \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} \qquad\text{and}\qquad A_1(H') = \sum_{k\neq 0} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+so $A_1(H) = 2A_1(H')$ and $A_1(H) - 2A_1(H') = 0$.
+
+Now assume $E_0 \neq 0$. Then
+\begin{equation}
+A_1(H') = \sum_{k} \frac{1}{2N}\frac{d_k}{E_k},
+\end{equation}
+and
+\begin{align}
+A_1(H) &= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k-E_0} \\
+&= \sum_{k\neq 0} \frac{1}{N}\frac{d_k}{E_k} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= \sum_{k} \frac{1}{N}\frac{d_k}{E_k} - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{E_k(E_k-E_0)} \\
+&\geq 2A_1(H') - \frac{d_0}{NE_0} + \sum_{k\neq 0} \frac{1}{N}\frac{d_kE_0}{1-E_0} \\
+&= 2A_1(H') - \frac{d_0}{NE_0} + \Big(1- \frac{d_0}{N}\Big)\frac{E_0}{1-E_0} \\
+&= 2A_1(H') + \frac{E_0}{1-E_0} - \frac{d_0}{N}\frac{1-E_0 + E_0^2}{E_0(1-E_0)} \\
+&\geq 2A_1(H') + \frac{1}{6m-1} - \frac{d_0}{N}12m
+\end{align}
+
+Suppose we have a method to calculate both $A_1(H)$ and $A_1(H')$ with precision $p = \frac{1}{72}\frac{1}{n+m-1}$. We can then calculate $A_1(H) - 2A_1(H')$. In the first case we have
+\begin{equation}
+A_1(H) - 2A_1(H') \leq 3p = \frac{1}{24}\frac{1}{n+m-1}.
+\end{equation}
+In the second case, we use $d_0 \leq 2^{n+m}$ and $N = 2^{2n+2m}$. Then
+\begin{align}
+A_1(H) - 2A_1(H') &\geq \frac{1}{6m-1} - \frac{d_0}{N}12m - 3p \\
+&\geq \frac{1}{6m-1} - \frac{12m}{2^{n+m}} - \frac{1}{24}\frac{1}{n+m-1} \\
+&\geq \frac{1}{6}\frac{1}{m+n-1} - \frac{12m}{2^{n+m}} - \frac{1}{24}\frac{1}{n+m-1} \\
+&= \frac{3}{24}\frac{1}{m+n-1} - \frac{12m}{2^{n+m}} \\
+&= \frac{3}{24}\frac{1}{m+n-1} - \frac{12(m+n)}{2^{n+m}} \\
+&\geq \frac{2}{24}\frac{1}{m+n-1}.
+\end{align}
+Here we have used that $n+m \geq 17$ implies $\frac{12(n+m)}{2^{n+m}} \leq \frac{1}{24}\frac{1}{m+n-1}$.
+
+Thus, if the calculation of $A_1(H) - 2A_1(H') $ is less than $\frac{1}{24}\frac{1}{n-1}$, we conclude that $E_0 = 0$ and the SAT instance has a satisfying assignment. Otherwise, we know that $E_0 \geq 1/6m$ and the SAT instance does not have a satisfying assignment.
+\end{proof}
+
+\end{document}
