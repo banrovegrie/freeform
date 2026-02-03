@@ -4,7 +4,13 @@ Alignment tests for thesis quality control.
 
 ## The Standard
 
-A reader should finish this thesis understanding adiabatic quantum optimization better than any other single source would give them. The writing should be clear enough to teach, precise and rigorous enough that Shantanav finds no errors, and honest about what is achieved. The published paper is the foundation. The thesis explains it deeply and weaves the background into a unified whole. It proposes directions beyond the paper (legitimate future work, even if unproven) and `src/experiments/` is where we try to realize them. What succeeds gets folded back into the thesis.
+A reader should finish this thesis understanding adiabatic quantum optimization better than any other single source would give them.
+
+- The writing should be clear enough to teach.
+- Precise and rigorous enough that Shantanav finds no errors. 
+- Honest, personal and reflective...
+
+The published paper is the foundation. The thesis explains it deeply and weaves the background into a unified whole. It proposes directions beyond the paper (legitimate future work, even if unproven) and `src/experiments/` is where we try to realize them. What succeeds gets folded back into the thesis.
 
 ## Purpose
 
