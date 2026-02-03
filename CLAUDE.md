@@ -81,6 +81,7 @@ All important content lives in `src/`.
 - Avoid `---` separators in `.md` files.
 - No non-ASCII characters in the codebase.
 - Everything should be aligned well.
+- All math in `.tex` or `.md` should follow right LaTeX conventions.
 
 ### Taste and Style
 

@@ -68,6 +68,14 @@ pythontex-files-*/
 *-blx.aux
 *-blx.bib
 
+# Lean 4
+.lake/
+lake-packages/
+build/
+*.olean
+*.ilean
+*.trace
+
 # Editor/IDE
 .vscode/
 .idea/
