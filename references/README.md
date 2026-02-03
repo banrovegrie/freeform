@@ -22,7 +22,7 @@
 20. jansen2007bounds - Jansen, Ruskai, Seiler - Bounds for the adiabatic approximation with applications to quantum computation (2007)
 21. elgart2012note - Elgart, Hagedorn - A note on the switching adiabatic theorem (2012)
 22. reichardt2004adiabatic - Reichardt - The quantum adiabatic optimization algorithm and local minima (2004)
-23. barahona1982computational - Barahona - On the computational complexity of ising spin glass models (1982)
+23. barahona1982computational - Barahona - On the computational complexity of ising spin glass models (1982) [missing: paywall]
 24. lucas2014ising - Lucas - Ising formulations of many NP problems (2014)
 25. altshuler2010anderson - Altshuler, Krovi, Roland - Anderson localization makes adiabatic quantum optimization fail (2010)
 26. roland2002quantum - Roland, Cerf - Quantum search by local adiabatic evolution (2002)
@@ -40,23 +40,23 @@
 38. chakraborty2024implementing - Chakraborty - Implementing any Linear Combination of Unitaries on Intermediate-term Quantum Computers (2024)
 39. lin2020nearoptimalground - Lin, Tong - Near-optimal ground state preparation (2020)
 40. chakraborty2019power - Chakraborty, Gilyen, Jeffery - The Power of Block-Encoded Matrix Powers (2019)
-41. sherman_morrison - Sherman, Morrison - Adjustment of an Inverse Matrix Corresponding to a Change in One Element (1950)
-42. arora2009computational - Arora, Barak - Computational complexity: a modern approach (2009)
-43. valiant1979permanent - Valiant - The complexity of computing the permanent (1979)
+41. sherman_morrison - Sherman, Morrison - Adjustment of an Inverse Matrix Corresponding to a Change in One Element (1950) [missing: paywall]
+42. arora2009computational - Arora, Barak - Computational complexity: a modern approach (2009) [missing: textbook]
+43. valiant1979permanent - Valiant - The complexity of computing the permanent (1979) [missing: paywall]
 44. cunningham2024eigenpath - Cunningham, Roland - Eigenpath Traversal by Poisson-Distributed Phase Randomisation (2024)
 45. horvat2006exponential - Znidaric, Horvat - Exponential complexity of an adiabatic algorithm for an NP-complete problem (2006)
 46. hen2014continuous - Hen - Continuous-time quantum algorithms for unstructured problems (2014)
-47. born1928beweis - Born, Fock - Beweis des adiabatensatzes (1928)
+47. born1928beweis - Born, Fock - Beweis des adiabatensatzes (1928) [missing: paywall]
 48. arthurthesis - Braida - Analog Quantum Computing for NP-Hard Combinatorial Graph Problems (2024)
 49. childs2004spatial - Childs, Goldstone - Spatial search by quantum walk (2004)
 50. chakraborty2016spatial - Chakraborty, Novo, Ambainis, Omar - Spatial search by quantum walk is optimal for almost all graphs (2016)
 51. chakraborty2020optimality - Chakraborty, Novo, Roland - Optimality of spatial search via continuous-time quantum walks (2020)
-52. cunningham2025forthcoming - Cunningham, Roland - Quantum adiabatic theorem (2025)
-53. golub1973modified - Golub - Some modified matrix eigenvalue problems (1973)
-54. garey1976simplified - Garey, Johnson, Stockmeyer - Some simplified NP-complete graph problems (1976)
+52. cunningham2025forthcoming - Cunningham, Roland - Quantum adiabatic theorem (2025) [missing: in preparation]
+53. golub1973modified - Golub - Some modified matrix eigenvalue problems (1973) [missing: paywall]
+54. garey1976simplified - Garey, Johnson, Stockmeyer - Some simplified NP-complete graph problems (1976) [missing: paywall]
 55. choi2011different - Choi - Different adiabatic quantum optimization algorithms for NP-complete exact cover and 3sat (2011)
-56. phillips2003interpolation - Phillips - Interpolation and approximation by polynomials (2003)
-57. paturi1992 - Paturi - On the degree of polynomials that approximate symmetric boolean functions (1992)
+56. phillips2003interpolation - Phillips - Interpolation and approximation by polynomials (2003) [missing: textbook]
+57. paturi1992 - Paturi - On the degree of polynomials that approximate symmetric boolean functions (1992) [missing: paywall]
 58. gurvits2005mixed - Gurvits - On the complexity of mixed discriminants and related problems (2005)
 59. callison2019finding - Callison, Chancellor, Mintert, Kendon - Finding spin glass ground states using quantum walks (2019)
-60. eduardo - Araujo, Chakraborty, Novo - Advantages and limitations of analog quantum search methods (2025)
+60. eduardo - Araujo, Chakraborty, Novo - Advantages and limitations of analog quantum search methods (2025) [missing: in preparation]
