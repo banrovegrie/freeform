@@ -72,7 +72,7 @@ All important content lives in `src/`.
 - No non-ASCII characters in the codebase.
 - Everything should be aligned well.
 
-## Taste and Style
+### Taste and Style
 
 Good technical writing makes the reader feel that each idea arrives exactly when needed. Before any definition appears, the reader already wants it. Before any theorem is stated, the reader understands what gap it fills. This is not achieved by announcing "we now motivate X" but by genuinely building the intellectual tension that makes X necessary.
 
@@ -85,3 +85,7 @@ When writing with AI assistance, there is a specific danger. LLMs are trained on
 The thesis concerns adiabatic quantum optimization. Use consistent notation throughout. Import mathematical statements directly from the published paper where possible. Notation and mathematical details are where LLMs fail most invisibly. Shantanav will catch errors here.
 
 For elaboration on specific authors and detailed patterns, see `taste/README.md`.
+
+### Testing
+
+See `src/tests/README.md` for alignment and correctness tests. Run before finalizing chapters. Iterate till satisfied.

@@ -4,7 +4,7 @@ New ideas, explorations, and rough drafts.
 
 ## Purpose
 
-This directory is a staging area for content that is not yet ready for `chapters/`. Ideas are developed here before they mature into formal thesis sections.
+This directory is a staging area for content that is not yet ready for `src/chapters/`. Ideas are developed here before they mature into formal thesis sections.
 
 The thesis is built on a single published paper (`paper/`). This directory is also where we go beyond it. The paper establishes the foundation. The experiments here aim to extend that foundation with new contributions: generalizations, alternative approaches, open questions pursued further. A thesis that merely explains existing work is a report. A thesis that advances it is a contribution.
 

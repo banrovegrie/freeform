@@ -7,8 +7,8 @@ Alignment tests for thesis quality control.
 A reader should finish this thesis understanding adiabatic quantum optimization better than any other single source would give them.
 
 - The writing should be clear enough to teach.
-- Precise and rigorous enough that Shantanav finds no errors. 
-- Honest, personal and reflective...
+- Precise and rigorous enough that Shantanav finds no errors. State what results achieve and what they do not.
+- Honest, personal and reflective. The goal is new perspective: understanding reality better or building practical things.
 
 The published paper is the foundation. The thesis explains it deeply and weaves the background into a unified whole. It proposes directions beyond the paper (legitimate future work, even if unproven) and `src/experiments/` is where we try to realize them. What succeeds gets folded back into the thesis.
 
@@ -32,4 +32,5 @@ Before introducing any definition, check if it already exists in earlier chapter
 
 ## Usage
 
-Run these checks before finalizing any chapter. Feed relevant test content to the LLM along with the draft section to catch errors early.
+- Run these checks before finalizing any chapter. Feed relevant test content to the LLM along with the draft section to catch errors early.
+- Perform multiple passes through each chapter. Iterate till satisfied. Also, writing later chapters deepens understanding of earlier ones. Revisit as needed.
