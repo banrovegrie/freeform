@@ -12,4 +12,4 @@ require mathlib from git
 
 @[default_target]
 lean_lib «AdaptiveSchedules» where
-  globs := #[.one `AdaptiveSchedules, .submodules `AdaptiveSchedules]
+  globs := #[.submodules `AdaptiveSchedules]

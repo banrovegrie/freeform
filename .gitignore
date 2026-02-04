@@ -69,7 +69,9 @@ pythontex-files-*/
 *-blx.bib
 
 # Lean 4
+.lake
 .lake/
+.lake-cache/
 lake-packages/
 build/
 *.olean
