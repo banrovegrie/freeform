@@ -4,120 +4,86 @@ Lean 4 formalization of the Hedging Theorem for adiabatic quantum optimization.
 
 ## Main Result
 
-When the crossing position is known to lie in `[u_L, u_R]`, a hedging schedule
-achieves error ratio `(u_R - u_L)` compared to uniform schedule.
+When the crossing position is known to lie in $[u_L, u_R]$, a hedging schedule
+achieves error ratio $(u_R - u_L)$ compared to uniform schedule.
 
-For `[u_L, u_R] = [0.4, 0.8]`, this means 60% error reduction.
+For $[u_L, u_R] = [0.4, 0.8]$, this means 60% error reduction.
 
 ## Files
 
 - `HedgingTheorem/Basic.lean`: Core definitions and numerical verification (Float)
 - `HedgingTheorem/Proofs.lean`: Machine-checked proofs (Real)
 - `HedgingTheorem.lean`: Root module
-- `Main.lean`: Executable for numerical verification
 
 ## Building
 
+Build from the `experiments/` directory:
+
 ```bash
-lake build
+cd src/experiments
+lake build HedgingTheorem
 ```
 
-## Key Theorems and Verification Status
+## Verification Status
 
-### Fully Machine-Checked
+### Fully Machine-Checked (No Sorry)
 
 1. **Schedule Constraint** (`schedule_constraint`):
-   For w in (0,1) and v_slow > w, defining v_fast = (1-w)*v_slow/(v_slow-w)
-   gives w/v_slow + (1-w)/v_fast = 1.
+   For $w \in (0,1)$ and $v_{slow} > w$, defining $v_{fast} = (1-w) v_{slow} / (v_{slow} - w)$
+   gives $w / v_{slow} + (1-w) / v_{fast} = 1$.
 
-   ```lean
-   theorem schedule_constraint (w v_slow : Real)
-       (hw_pos : 0 < w) (hw_lt : w < 1) (hv : w < v_slow) :
-       w / v_slow + (1 - w) / (v_fast w v_slow) = 1
-   ```
-   Axioms: propext, Classical.choice, Quot.sound
+   Axioms: propext, Classical.choice, Quot.sound (standard Lean axioms)
 
 2. **Sqrt Term Bound** (`sqrt_term_bound`):
-   For any epsilon > 0, there exists R0 such that for R > R0,
-   sqrt((1-w)*w/R) < epsilon.
-
-   ```lean
-   theorem sqrt_term_bound (w epsilon : Real)
-       (hw_pos : 0 < w) (hw_lt : w < 1) (heps : 0 < epsilon) :
-       exists R0 : Real, R0 > 0 /\ forall R : Real, R > R0 ->
-         sqrt_term w R < epsilon
-   ```
-   Axioms: propext, Classical.choice, Quot.sound
+   For any $\epsilon > 0$, there exists $R_0$ such that for $R > R_0$,
+   $\sqrt{(1-w) w / R} < \epsilon$.
 
 3. **Optimal Velocity Convergence** (`v_slow_opt_approaches_w`):
-   The optimal slow velocity v_slow_opt = w + sqrt((1-w)*w/R) approaches w
-   as R -> infinity.
-
-   ```lean
-   theorem v_slow_opt_approaches_w (w epsilon : Real)
-       (hw_pos : 0 < w) (hw_lt : w < 1) (heps : 0 < epsilon) :
-       exists R0 : Real, R0 > 0 /\ forall R : Real, R > R0 ->
-         |v_slow_opt w R - w| < epsilon
-   ```
-   Axioms: propext, Classical.choice, Quot.sound
+   The optimal slow velocity $v_{slow}^{opt} = w + \sqrt{(1-w) w / R}$ approaches $w$
+   as $R \to \infty$.
 
 4. **Supporting Lemmas**:
-   - `v_slow_opt_gt_w`: optimal velocity exceeds w
+   - `v_slow_opt_gt_w`: optimal velocity exceeds $w$
    - `sqrt_term_nonneg`: sqrt term is nonnegative
-   - `optimal_velocity_decomposition`: v_slow_opt = w + sqrt_term
+   - `corollary_w_04_velocity`: For $w = 0.4$, $v_{slow}^{opt} \to 0.4$
+   - `improvement_factor`: algebraic fact about improvement
 
-### Statement Verified, Proof Incomplete
+### Statement Verified, Proof Uses Sorry
 
 5. **Main Theorem** (`error_ratio_approaches_w`):
-   Error ratio E_hedge/E_unif approaches w as R -> infinity.
+   Error ratio $E_{hedge} / E_{unif}$ approaches $w$ as $R \to \infty$.
 
-   The statement is machine-checked but the proof uses `sorry`.
-   The incomplete step involves analyzing the v_fast contribution
-   to the error formula in the limit.
+   The statement is machine-checked. The proof requires connecting the
+   algebraic structure of the error ratio formula to the established bounds.
+   This involves showing:
+   $$\text{ratio} - w = \frac{2w(1-w) + s(1-2w)}{s(R+1)}$$
+   where $s = \sqrt{(1-w)w/R}$, and bounding this expression.
 
-   ```lean
-   theorem error_ratio_approaches_w (w epsilon : Real)
-       (hw_pos : 0 < w) (hw_lt : w < 1) (heps : 0 < epsilon) :
-       exists R0 : Real, R0 > 0 /\ forall R : Real, R > R0 ->
-         |optimal_error_ratio w R - w| < epsilon
-   ```
-
-### Numerical Verification
-
-The `Basic.lean` file provides Float-based computations that numerically verify:
-- Constraint satisfaction for various R values
-- Asymptotic behavior of error ratio
-- Optimal velocity convergence
-
-Run with:
-```bash
-lake env lean --run Main.lean
-```
+   The mathematical proof is complete in `proof.md` and numerically validated
+   in `Basic.lean`. The formal Lean proof of this algebraic connection is pending.
 
 ## Mathematical Content
 
 The Hedging Theorem establishes that for adiabatic quantum optimization
 with uncertainty about the gap minimum location:
 
-1. **Constraint Identity**: The hedging schedule satisfies the normalization
-   w/v_slow + (1-w)/v_fast = 1 when v_fast = (1-w)*v_slow/(v_slow-w).
+1. **Constraint Identity**: The hedging schedule satisfies normalization
+   $w / v_{slow} + (1-w) / v_{fast} = 1$ when $v_{fast} = (1-w) v_{slow} / (v_{slow} - w)$.
 
 2. **Optimal Velocity**: The error-minimizing slow velocity is
-   v_slow = w + sqrt((1-w)*w/R) where R = I_slow/I_fast.
+   $v_{slow} = w + \sqrt{(1-w) w / R}$ where $R = I_{slow} / I_{fast}$.
 
-3. **Asymptotic Ratio**: As R -> infinity, the error ratio approaches w,
-   meaning the improvement factor approaches (1-w).
+3. **Asymptotic Ratio**: As $R \to \infty$, the error ratio approaches $w$,
+   meaning the improvement factor approaches $(1-w)$.
 
-4. **Practical Result**: For w = 0.4 (uncertainty interval [0.4, 0.8]),
+4. **Practical Result**: For $w = 0.4$ (uncertainty interval $[0.4, 0.8]$),
    the hedging schedule achieves 60% error reduction compared to uniform.
-
-See `proof.md` in the parent directory for the full mathematical treatment.
 
 ## Axiom Summary
 
-All machine-checked proofs depend only on standard Lean/Mathlib axioms:
+All completed proofs depend only on standard Lean/Mathlib axioms:
 - `propext` (propositional extensionality)
 - `Classical.choice` (axiom of choice)
 - `Quot.sound` (quotient soundness)
 
-No custom axioms are declared. One theorem (`error_ratio_approaches_w`) uses `sorry`.
+No custom axioms are declared. One theorem uses `sorry` (see above).
