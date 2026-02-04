@@ -164,19 +164,113 @@ theorem finalState_symmetric {n M : Nat} (es : EigenStructure n M)
 
 /-! ## Measurement and solution extraction -/
 
-/-- Measuring the final state yields a ground state with high probability.
+/-- Cauchy-Schwarz for complex sums: |Σ conj(a_i) * b_i|² ≤ (Σ |a_i|²)(Σ |b_i|²)
 
-    If the final state is ε-close to the symmetric ground state, then measuring
-    in the computational basis yields a ground state with probability ≥ 1 - 2ε.
-    This follows from the relation between state fidelity and measurement probability. -/
-axiom measurement_yields_groundstate {n M : Nat} (es : EigenStructure n M)
+    This is the standard Cauchy-Schwarz inequality for the discrete inner product
+    ⟨a, b⟩ = Σ conj(a_i) * b_i on finite-dimensional complex vector spaces.
+
+    This is kept as an axiom since the full proof requires either:
+    1. Setting up the EuclideanSpace structure and using inner_mul_le_norm_mul_norm
+    2. A direct algebraic proof using the quadratic discriminant method -/
+axiom complex_cauchy_schwarz {ι : Type*} [DecidableEq ι] (s : Finset ι)
+    (a b : ι → Complex) :
+    Complex.normSq (s.sum (fun i => conj (a i) * b i)) ≤
+    (s.sum (fun i => Complex.normSq (a i))) * (s.sum (fun i => Complex.normSq (b i)))
+
+/-- The measurement probability bound: Σ_{z ∈ Ω₀} |φ_z|² ≥ 1 - 2√ε.
+
+    If ‖φ - g‖² ≤ ε where g is the symmetric ground state,
+    then the probability of measuring a ground state is at least 1 - 2√ε.
+
+    NOTE: The correct mathematical bound is 1 - 2√ε, not 1 - 2ε.
+    This follows from |⟨g|δ⟩| ≤ ‖g‖·‖δ‖ = 1·√ε = √ε by Cauchy-Schwarz.
+
+    The proof uses:
+    1. Expand |φ|² = |g + δ|² = |g|² + 2·Re(⟨g|δ⟩) + |δ|²
+    2. Sum over Ω₀: Σ|φ|² = 1 + 2·Re(⟨g|δ⟩_Ω₀) + Σ|δ|²
+    3. Bound: Re(⟨g|δ⟩) ≥ -|⟨g|δ⟩| ≥ -√ε by Cauchy-Schwarz
+    4. Final: Σ|φ|² ≥ 1 - 2√ε -/
+theorem measurement_yields_groundstate {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2)
     (_hspec : spectralCondition es hM 0.02 (by norm_num))
-    (epsilon : Real) (_heps : 0 < epsilon ∧ epsilon < 1) :
+    (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1) :
     ∀ (finalState : NQubitState n),
       (normSquared (fun i =>
         finalState i - symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ i) <= epsilon) ->
       Finset.sum (eigenspace es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩)
-        (fun z => Complex.normSq (finalState z)) >= 1 - 2 * epsilon
+        (fun z => Complex.normSq (finalState z)) >= 1 - 2 * Real.sqrt epsilon := by
+  intro finalState hclose
+  -- Let g = groundSym, δ = finalState - g
+  let g := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
+  let δ := fun i => finalState i - g i
+  let Ω₀ := eigenspace es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
+  have hδ : normSquared δ ≤ epsilon := hclose
+  have hg_zero : ∀ z, z ∉ Ω₀ → g z = 0 := by
+    intro z hz
+    simp only [symmetricState]
+    have hne : ¬(es.assignment z = ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩) := by
+      simp only [eigenspace, Finset.mem_filter, Finset.mem_univ, true_and] at hz
+      exact hz
+    simp only [hne, ite_false]
+  have hg_norm : normSquared g = 1 := symmetricState_normalized es _
+  -- g is supported on Ω₀, so Σ_{Ω₀} |g|² = 1
+  have hsum_g : Ω₀.sum (fun z => Complex.normSq (g z)) = 1 := by
+    rw [← hg_norm]
+    simp only [normSquared]
+    rw [Finset.sum_eq_sum_diff_singleton_add (Finset.subset_univ Ω₀)]
+    simp only [add_comm]
+    congr 1
+    apply Finset.sum_eq_zero
+    intro z hz
+    rw [Finset.mem_sdiff, Finset.mem_univ, true_and] at hz
+    rw [hg_zero z hz, Complex.normSq_zero]
+  have hsum_δ_nonneg : 0 ≤ Ω₀.sum (fun z => Complex.normSq (δ z)) :=
+    Finset.sum_nonneg (fun z _ => Complex.normSq_nonneg _)
+  have hsum_δ_bound : Ω₀.sum (fun z => Complex.normSq (δ z)) ≤ epsilon := by
+    calc Ω₀.sum (fun z => Complex.normSq (δ z))
+        ≤ Finset.univ.sum (fun z => Complex.normSq (δ z)) := Finset.sum_le_sum_of_subset (Finset.subset_univ _)
+      _ = normSquared δ := rfl
+      _ ≤ epsilon := hδ
+  -- Cauchy-Schwarz: |⟨g|δ⟩_Ω₀| ≤ √(Σ|g|²) · √(Σ|δ|²) = 1 · √ε = √ε
+  have hcross_bound : Complex.abs (Ω₀.sum (fun z => conj (g z) * δ z)) ≤ Real.sqrt epsilon := by
+    have hCS := complex_cauchy_schwarz Ω₀ g δ
+    have hnorm : Complex.normSq (Ω₀.sum (fun z => conj (g z) * δ z)) ≤ epsilon := by
+      calc Complex.normSq (Ω₀.sum (fun z => conj (g z) * δ z))
+          ≤ (Ω₀.sum fun z => Complex.normSq (g z)) * (Ω₀.sum fun z => Complex.normSq (δ z)) := hCS
+        _ = 1 * (Ω₀.sum fun z => Complex.normSq (δ z)) := by rw [hsum_g]
+        _ = Ω₀.sum fun z => Complex.normSq (δ z) := one_mul _
+        _ ≤ epsilon := hsum_δ_bound
+    calc Complex.abs (Ω₀.sum (fun z => conj (g z) * δ z))
+        = Real.sqrt (Complex.normSq (Ω₀.sum (fun z => conj (g z) * δ z))) := Complex.abs_eq_sqrt_normSq _
+      _ ≤ Real.sqrt epsilon := Real.sqrt_le_sqrt hnorm
+  -- Expand finalState = g + δ and sum over Ω₀
+  have hfinal : ∀ z, finalState z = g z + δ z := by intro z; simp only [δ]; ring
+  have hexpand : ∀ z, Complex.normSq (finalState z) =
+      Complex.normSq (g z) + 2 * (conj (g z) * δ z).re + Complex.normSq (δ z) := by
+    intro z; rw [hfinal z, Complex.normSq_add]; ring
+  have hsum_expand : Ω₀.sum (fun z => Complex.normSq (finalState z)) =
+      Ω₀.sum (fun z => Complex.normSq (g z)) +
+      Ω₀.sum (fun z => 2 * (conj (g z) * δ z).re) +
+      Ω₀.sum (fun z => Complex.normSq (δ z)) := by
+    conv_lhs => arg 2; ext z; rw [hexpand z]
+    rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
+  rw [hsum_expand, hsum_g]
+  -- Bound the cross term using |Re(z)| ≤ |z|
+  have hcross_re : |Ω₀.sum (fun z => 2 * (conj (g z) * δ z).re)| ≤ 2 * Real.sqrt epsilon := by
+    calc |Ω₀.sum (fun z => 2 * (conj (g z) * δ z).re)|
+        = |2 * Ω₀.sum (fun z => (conj (g z) * δ z).re)| := by rw [← Finset.mul_sum]; rfl
+      _ = 2 * |Ω₀.sum (fun z => (conj (g z) * δ z).re)| := by
+          rw [abs_mul, abs_of_pos (by norm_num : (2 : Real) > 0)]
+      _ ≤ 2 * Complex.abs (Ω₀.sum (fun z => conj (g z) * δ z)) := by
+          apply mul_le_mul_of_nonneg_left _ (by norm_num : (0 : Real) ≤ 2)
+          calc |Ω₀.sum (fun z => (conj (g z) * δ z).re)|
+              ≤ |(Ω₀.sum (fun z => conj (g z) * δ z)).re| := by rw [Complex.re_sum]
+              _ ≤ Complex.abs (Ω₀.sum (fun z => conj (g z) * δ z)) :=
+                Complex.abs_re_le_norm (Ω₀.sum (fun z => conj (g z) * δ z))
+      _ ≤ 2 * Real.sqrt epsilon := mul_le_mul_of_nonneg_left hcross_bound (by norm_num)
+  have hre_bound : Ω₀.sum (fun z => 2 * (conj (g z) * δ z).re) ≥ -2 * Real.sqrt epsilon := by
+    have h := neg_abs_le (Ω₀.sum (fun z => 2 * (conj (g z) * δ z).re))
+    linarith [hcross_re]
+  linarith [hsum_δ_nonneg]
 
 end UAQO

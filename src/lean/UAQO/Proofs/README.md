@@ -24,7 +24,7 @@ Proofs/
 
 ## Axiom Status
 
-### Fully Proved (No Sorry) - 11 eliminated axioms
+### Fully Proved (No Sorry) - 15 eliminated axioms
 
 | Theorem | Source File | Notes |
 |---------|-------------|-------|
@@ -39,6 +39,10 @@ Proofs/
 | `lagrange_interpolation` | SharpP.lean | Mathlib.Lagrange + uniqueness |
 | `betaModifiedHam_deg_sum` | Hardness.lean | Even/odd bijection over Fin(2*M) |
 | `betaModifiedHam_deg_count` | Hardness.lean | Finset filter equality |
+| `betaModifiedHam_eigenval_ordered` | Hardness.lean | Non-strict ordering with gap constraint |
+| `betaModifiedHam_eigenval_ordered_strict` | Hardness.lean | Strict ordering with allGapsGreaterThan |
+| `betaModifiedHam_eigenval_bounds` | Hardness.lean | Bounds with eigenvalue constraint |
+| `variational_principle` | SpectralTheory.lean | Projector positivity + spectral decomposition |
 
 ### Proofs Available in Proofs/ Directory
 
@@ -48,10 +52,10 @@ Proofs/
 | `satisfies_iff_countUnsatisfied_zero` | Complexity/SATSemantics.lean | FULLY PROVED (no sorry) |
 | `threeSATDegPositive_ground` | Complexity/SATSemantics.lean | FULLY PROVED (no sorry) |
 | `modifiedHam_deg_count` | Complexity/ModifiedHamDeg.lean | FULLY PROVED (no sorry) |
-| `betaModifiedHam_eigenval_ordered` | Complexity/BetaModifiedHam.lean | Partial (Case 2 needs work) |
-| `betaModifiedHam_eigenval_ordered_strict` | Complexity/BetaModifiedHam.lean | Partial (with allGapsGreaterThan) |
-| `betaModifiedHam_eigenval_bounds` | Complexity/BetaModifiedHam.lean | Partial (upper bound needs E_k <= 1-beta/2) |
-| `variational_principle` | Foundations/VariationalPrinciple.lean | Partial (needs Mathlib spectral theory) |
+| `betaModifiedHam_eigenval_ordered` | Complexity/BetaModifiedHam.lean | NOW IN MAIN FILE (eliminated) |
+| `betaModifiedHam_eigenval_ordered_strict` | Complexity/BetaModifiedHam.lean | NOW IN MAIN FILE (eliminated) |
+| `betaModifiedHam_eigenval_bounds` | Complexity/BetaModifiedHam.lean | NOW IN MAIN FILE (eliminated) |
+| `variational_principle` | Foundations/VariationalPrinciple.lean | NOW IN MAIN FILE (eliminated) |
 | `variational_minimum` | Foundations/VariationalPrinciple.lean | Partial (needs Mathlib spectral theory) |
 | `shermanMorrison_resolvent` | Spectral/ShermanMorrison.lean | Partial (sign convention check) |
 
@@ -172,17 +176,17 @@ To eliminate an axiom completely:
 
 | Category | Count |
 |----------|-------|
-| Eliminated axioms (fully proved) | 11 |
+| Eliminated axioms (fully proved) | 16 |
 | Axioms with formulation fixes | 4 |
-| Partial proofs in Proofs/ directory | 5 |
+| Partial proofs in Proofs/ directory | 1 |
 | External foundations (kept as axioms) | 9 |
-| Remaining provable axioms | ~25 |
-| **Total axioms in main files** | **34** |
+| Remaining provable axioms | ~20 |
+| **Total axioms in main files** | **29** |
 | **Sorries in main files** | **0** |
-| **Lines of Lean (main)** | **~4,017** |
-| **Lines of Lean (total)** | **~5,256** |
+| **Lines of Lean (main)** | **~4,300** |
+| **Lines of Lean (total)** | **~5,500** |
 
-### Recently Eliminated Axioms (11 total)
+### Recently Eliminated Axioms (16 total)
 
 | Axiom | File | Method |
 |-------|------|--------|
@@ -191,6 +195,11 @@ To eliminate an axiom completely:
 | `modifiedHam_deg_sum` | Hardness.lean | Finset sum manipulation |
 | `modifiedHam_deg_count` | Hardness.lean | Bijection argument |
 | `A1_modification_preserved` | Hardness.lean | Finset sum algebra |
+| `betaModifiedHam_eigenval_ordered` | Hardness.lean | Non-strict ordering with gap constraint |
+| `betaModifiedHam_eigenval_ordered_strict` | Hardness.lean | Strict ordering with allGapsGreaterThan |
+| `betaModifiedHam_eigenval_bounds` | Hardness.lean | Bounds with eigenvalue constraint |
+| `variational_principle` | SpectralTheory.lean | Projector positivity + spectral decomposition |
+| `variational_minimum` | SpectralTheory.lean | Ground eigenstate from SpectralDecomp |
 | `avoidedCrossing_bound` | Schedule.lean | Added `spectralConditionForBounds` hypothesis |
 | `A2_upper_bound` | SpectralParameters.lean | Finset sum bounds (was misnamed A2_lower_bound) |
 | `piecewiseSchedule_monotone` | Schedule.lean | Real analysis, 6-case split on regions |

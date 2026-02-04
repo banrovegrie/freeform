@@ -629,6 +629,26 @@ structure A1ExactComputer where
   exact : ∀ (n M : Nat) (es : EigenStructure n M) (hM : M > 0),
     compute n M es hM = A1 es hM
 
+/-! ## Helper lemmas for beta-modified Hamiltonian -/
+
+/-- For k in Fin (2*M), k.val / 2 < M always holds. -/
+private lemma div2_lt_of_fin_2M' {M : Nat} (k : Fin (2 * M)) : k.val / 2 < M := by
+  have hk := k.isLt
+  exact Nat.div_lt_of_lt_mul hk
+
+/-- Helper: if i/2 = j/2 and i < j (as Nat), then i is even and j = i + 1. -/
+private lemma same_div2_implies_consec' {i j : Nat} (h_div : i / 2 = j / 2) (h_lt : i < j) :
+    i % 2 = 0 ∧ j = i + 1 := by
+  have hi_mod := Nat.div_add_mod i 2
+  have hj_mod := Nat.div_add_mod j 2
+  have hi_rem : i % 2 < 2 := Nat.mod_lt i (by norm_num)
+  have hj_rem : j % 2 < 2 := Nat.mod_lt j (by norm_num)
+  constructor
+  · by_contra h
+    have : i % 2 = 1 := by omega
+    omega
+  · omega
+
 /-- Eigenvalue ordering in beta-modified Hamiltonian.
 
     With the beta-dependent construction, eigenvalues are:
@@ -639,8 +659,8 @@ structure A1ExactComputer where
     - Across levels k < k': Need E_k + beta/2 <= E_{k+1}, i.e., beta/2 <= gap
 
     NOTE: The gap constraint `allGapsAtLeast es (beta/2)` IS needed for cross-level
-    transitions (E_{2k+1} to E_{2(k+1)}). The original docstring was incorrect. -/
-axiom betaModifiedHam_eigenval_ordered {n M : Nat} (es : EigenStructure n M)
+    transitions (E_{2k+1} to E_{2(k+1)}). -/
+theorem betaModifiedHam_eigenval_ordered {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2)
     (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
     (hgap : allGapsAtLeast es (beta / 2)) :
@@ -650,7 +670,50 @@ axiom betaModifiedHam_eigenval_ordered {n M : Nat} (es : EigenStructure n M)
        if hI : origI < M then es.eigenvalues ⟨origI, hI⟩ + if isUpperI then beta/2 else 0 else 1) <=
       (let origJ := j.val / 2
        let isUpperJ := j.val % 2 = 1
-       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1)
+       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1) := by
+  intro i j hij
+  have horigI : i.val / 2 < M := div2_lt_of_fin_2M' i
+  have horigJ : j.val / 2 < M := div2_lt_of_fin_2M' j
+  simp only [horigI, horigJ, dite_true]
+  by_cases hEqOrig : i.val / 2 = j.val / 2
+  · -- Same original level
+    obtain ⟨hi_even, _⟩ := same_div2_implies_consec' hEqOrig hij
+    have hj_odd : j.val % 2 = 1 := by omega
+    have hi_not_odd : ¬(i.val % 2 = 1) := by omega
+    have hSameOrig : es.eigenvalues ⟨i.val / 2, horigI⟩ = es.eigenvalues ⟨j.val / 2, horigJ⟩ := by
+      congr 1; exact Fin.ext hEqOrig
+    simp only [hi_not_odd, hj_odd, ite_false, ite_true, add_zero]
+    rw [hSameOrig]
+    linarith [hbeta.1]
+  · -- Different original levels
+    have hOrigLt : i.val / 2 < j.val / 2 := by
+      have h1 : i.val / 2 ≤ j.val / 2 := Nat.div_le_div_right (le_of_lt hij)
+      omega
+    -- Use allGapsAtLeast to show E_origI + beta/2 <= E_origJ
+    have hGapBound : es.eigenvalues ⟨j.val / 2, horigJ⟩ - es.eigenvalues ⟨i.val / 2, horigI⟩ >= beta / 2 := by
+      have hk : i.val / 2 + 1 < M := by omega
+      have hConsecGap := hgap (i.val / 2) hk
+      simp only [consecutiveGap] at hConsecGap
+      have hEleTrans : es.eigenvalues ⟨i.val / 2 + 1, hk⟩ <= es.eigenvalues ⟨j.val / 2, horigJ⟩ := by
+        by_cases hEq : i.val / 2 + 1 = j.val / 2
+        · simp only [hEq]; exact le_refl _
+        · have hLt : i.val / 2 + 1 < j.val / 2 := by omega
+          exact le_of_lt (es.eigenval_ordered ⟨i.val / 2 + 1, hk⟩ ⟨j.val / 2, horigJ⟩ hLt)
+      linarith
+    -- Now show E_origI + (shift) <= E_origJ + (shift') where shift <= beta/2 + shift'
+    split_ifs with hiUpper hjUpper
+    · -- Both upper: E_origI + beta/2 <= E_origJ + beta/2
+      linarith
+    · -- i upper, j lower: E_origI + beta/2 <= E_origJ (follows from gap bound)
+      simp only [add_zero]
+      linarith
+    · -- i lower, j upper: E_origI <= E_origJ + beta/2
+      simp only [add_zero]
+      have hElt := es.eigenval_ordered ⟨i.val / 2, horigI⟩ ⟨j.val / 2, horigJ⟩ hOrigLt
+      linarith [hbeta.1]
+    · -- Both lower: E_origI <= E_origJ
+      simp only [add_zero]
+      exact le_of_lt (es.eigenval_ordered ⟨i.val / 2, horigI⟩ ⟨j.val / 2, horigJ⟩ hOrigLt)
 
 /-- Strict eigenvalue ordering in beta-modified Hamiltonian.
 
@@ -663,7 +726,7 @@ axiom betaModifiedHam_eigenval_ordered {n M : Nat} (es : EigenStructure n M)
     not `allGapsAtLeast` or just `spectralGapDiag`.
     Using only the first gap would fail when higher gaps are smaller.
     For typical problem Hamiltonians, all gaps scale similarly with n. -/
-axiom betaModifiedHam_eigenval_ordered_strict {n M : Nat} (es : EigenStructure n M)
+theorem betaModifiedHam_eigenval_ordered_strict {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2)
     (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
     (hgap : allGapsGreaterThan es (beta / 2)) :
@@ -673,15 +736,62 @@ axiom betaModifiedHam_eigenval_ordered_strict {n M : Nat} (es : EigenStructure n
        if hI : origI < M then es.eigenvalues ⟨origI, hI⟩ + if isUpperI then beta/2 else 0 else 1) <
       (let origJ := j.val / 2
        let isUpperJ := j.val % 2 = 1
-       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1)
+       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1) := by
+  intro i j hij
+  have horigI : i.val / 2 < M := div2_lt_of_fin_2M' i
+  have horigJ : j.val / 2 < M := div2_lt_of_fin_2M' j
+  simp only [horigI, horigJ, dite_true]
+  by_cases hEqOrig : i.val / 2 = j.val / 2
+  · -- Same original level: i even, j odd, so E_i < E_i + beta/2
+    obtain ⟨hi_even, _⟩ := same_div2_implies_consec' hEqOrig hij
+    have hj_odd : j.val % 2 = 1 := by omega
+    have hi_not_odd : ¬(i.val % 2 = 1) := by omega
+    have hSameOrig : es.eigenvalues ⟨i.val / 2, horigI⟩ = es.eigenvalues ⟨j.val / 2, horigJ⟩ := by
+      congr 1; exact Fin.ext hEqOrig
+    simp only [hi_not_odd, hj_odd, ite_false, ite_true, add_zero]
+    rw [hSameOrig]
+    linarith [hbeta.1]
+  · -- Different original levels: use allGapsGreaterThan to show E_origI + beta/2 < E_origJ
+    have hOrigLt : i.val / 2 < j.val / 2 := by
+      have h1 : i.val / 2 ≤ j.val / 2 := Nat.div_le_div_right (le_of_lt hij)
+      omega
+    -- With allGapsGreaterThan (strict), we have consecutive gap > beta/2
+    -- Therefore E_origJ - E_origI >= consecutive gap > beta/2
+    have hGapBound : es.eigenvalues ⟨j.val / 2, horigJ⟩ - es.eigenvalues ⟨i.val / 2, horigI⟩ > beta / 2 := by
+      have hk : i.val / 2 + 1 < M := by omega
+      have hConsecGap := hgap (i.val / 2) hk
+      simp only [consecutiveGap] at hConsecGap
+      have hEleTrans : es.eigenvalues ⟨i.val / 2 + 1, hk⟩ <= es.eigenvalues ⟨j.val / 2, horigJ⟩ := by
+        by_cases hEq : i.val / 2 + 1 = j.val / 2
+        · simp only [hEq]; exact le_refl _
+        · have hLt : i.val / 2 + 1 < j.val / 2 := by omega
+          exact le_of_lt (es.eigenval_ordered ⟨i.val / 2 + 1, hk⟩ ⟨j.val / 2, horigJ⟩ hLt)
+      linarith
+    -- Now show E_origI + (shift) < E_origJ where shift <= beta/2
+    split_ifs with hiUpper hjUpper
+    · -- Both upper: E_origI + beta/2 < E_origJ + beta/2
+      linarith
+    · -- i upper, j lower: E_origI + beta/2 < E_origJ (follows from strict gap bound)
+      simp only [add_zero]
+      linarith
+    · -- i lower, j upper: E_origI < E_origJ + beta/2
+      simp only [add_zero]
+      have hElt := es.eigenval_ordered ⟨i.val / 2, horigI⟩ ⟨j.val / 2, horigJ⟩ hOrigLt
+      linarith [hbeta.1]
+    · -- Both lower: E_origI < E_origJ
+      simp only [add_zero]
+      exact es.eigenval_ordered ⟨i.val / 2, horigI⟩ ⟨j.val / 2, horigJ⟩ hOrigLt
 
-/-- Axiom for eigenvalue bounds in beta-modified Hamiltonian.
+/-- Eigenvalue bounds in beta-modified Hamiltonian.
 
     The eigenvalues E_{2k} = E_k and E_{2k+1} = E_k + beta/2 must remain in [0, 1].
     This requires the original eigenvalues to satisfy E_k <= 1 - beta/2, which
-    the construction ensures by choosing beta appropriately. -/
-axiom betaModifiedHam_eigenval_bounds {n M : Nat} (es : EigenStructure n M)
-    (beta : Real) (hbeta : 0 < beta ∧ beta < 1) (hM : M > 0) :
+    the construction ensures by choosing beta appropriately.
+
+    The hypothesis `hEigBound` explicitly requires this condition. -/
+theorem betaModifiedHam_eigenval_bounds {n M : Nat} (es : EigenStructure n M)
+    (beta : Real) (hbeta : 0 < beta ∧ beta < 1) (hM : M > 0)
+    (hEigBound : ∀ k : Fin M, es.eigenvalues k <= 1 - beta / 2) :
     ∀ k : Fin (2 * M),
       let origIdx := k.val / 2
       let isUpperLevel := k.val % 2 = 1
@@ -690,12 +800,22 @@ axiom betaModifiedHam_eigenval_bounds {n M : Nat} (es : EigenStructure n M)
             else 1) ∧
       (if hOrig : origIdx < M then
          es.eigenvalues ⟨origIdx, hOrig⟩ + if isUpperLevel then beta / 2 else 0
-       else 1) <= 1
-
-/-- For k in Fin (2*M), k.val / 2 < M always holds. -/
-private lemma div2_lt_of_fin_2M {M : Nat} (k : Fin (2 * M)) : k.val / 2 < M := by
-  have hk := k.isLt
-  exact Nat.div_lt_of_lt_mul hk
+       else 1) <= 1 := by
+  intro k
+  have horigK : k.val / 2 < M := div2_lt_of_fin_2M' k
+  simp only [horigK, dite_true]
+  constructor
+  · -- Lower bound: E_origK + (0 or beta/2) >= 0
+    have hE_nonneg := (es.eigenval_bounds ⟨k.val / 2, horigK⟩).1
+    split_ifs <;> linarith [hbeta.1]
+  · -- Upper bound: E_origK + (0 or beta/2) <= 1
+    have hE_bound := hEigBound ⟨k.val / 2, horigK⟩
+    split_ifs with h
+    · -- Upper level: E_origK + beta/2 <= 1 (follows from hEigBound)
+      linarith
+    · -- Lower level: E_origK + 0 <= 1
+      have hE_le_one := (es.eigenval_bounds ⟨k.val / 2, horigK⟩).2
+      linarith
 
 /-- The degeneracy sum in the beta-modified Hamiltonian equals the new Hilbert space dimension.
 
@@ -708,15 +828,15 @@ theorem betaModifiedHam_deg_sum {n M : Nat} (es : EigenStructure n M) (hM : M > 
   -- Step 1: Simplify away the dite (the else branch is never taken)
   have hSimp : ∀ k : Fin (2 * M), (let origIdx := k.val / 2
        if hOrig : origIdx < M then es.degeneracies ⟨origIdx, hOrig⟩ else 1) =
-       es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M k⟩ := by
+       es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M' k⟩ := by
     intro k
-    simp only [div2_lt_of_fin_2M k, dite_true]
+    simp only [div2_lt_of_fin_2M' k, dite_true]
   conv_lhs => arg 2; ext k; rw [hSimp k]
   -- Step 2: Show sum = 2 * (sum of original degeneracies)
   rw [qubitDim_succ]
   -- Step 3: Reindex the sum - each degeneracy d_i appears twice (even and odd indices)
   have hSum : Finset.sum Finset.univ (fun k : Fin (2 * M) =>
-        es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M k⟩) =
+        es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M' k⟩) =
       2 * Finset.sum Finset.univ es.degeneracies := by
     -- Split Fin (2*M) into evens and odds
     have hSplit : (Finset.univ : Finset (Fin (2 * M))) =
@@ -735,7 +855,7 @@ theorem betaModifiedHam_deg_sum {n M : Nat} (es : EigenStructure n M) (hM : M > 
     rw [hSplit, Finset.sum_union hDisj, Finset.mul_sum]
     -- Sum over evens: each even k = 2i maps to i with d_{k/2} = d_i
     have hEvenSum : Finset.sum (Finset.filter (fun k : Fin (2 * M) => k.val % 2 = 0) Finset.univ)
-        (fun k => es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M k⟩) =
+        (fun k => es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M' k⟩) =
         Finset.sum Finset.univ es.degeneracies := by
       symm
       apply Finset.sum_nbij (fun i : Fin M => (⟨2 * i.val, by omega⟩ : Fin (2 * M)))
@@ -744,7 +864,7 @@ theorem betaModifiedHam_deg_sum {n M : Nat} (es : EigenStructure n M) (hM : M > 
       · intro i j _ _ h; simp only [Fin.mk.injEq] at h; ext; omega
       · intro k hk
         simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe, Finset.mem_univ, true_and] at hk
-        refine ⟨⟨k.val / 2, div2_lt_of_fin_2M k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
+        refine ⟨⟨k.val / 2, div2_lt_of_fin_2M' k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
         ext; simp only [Fin.val_mk]
         have hkrec : k.val = 2 * (k.val / 2) + k.val % 2 := (Nat.div_add_mod k.val 2).symm
         omega
@@ -752,7 +872,7 @@ theorem betaModifiedHam_deg_sum {n M : Nat} (es : EigenStructure n M) (hM : M > 
         exact (Nat.mul_div_cancel_left i.val (by norm_num : 0 < 2)).symm
     -- Sum over odds: each odd k = 2i+1 maps to i with d_{k/2} = d_i
     have hOddSum : Finset.sum (Finset.filter (fun k : Fin (2 * M) => k.val % 2 = 1) Finset.univ)
-        (fun k => es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M k⟩) =
+        (fun k => es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M' k⟩) =
         Finset.sum Finset.univ es.degeneracies := by
       symm
       apply Finset.sum_nbij (fun i : Fin M => (⟨2 * i.val + 1, by omega⟩ : Fin (2 * M)))
@@ -760,7 +880,7 @@ theorem betaModifiedHam_deg_sum {n M : Nat} (es : EigenStructure n M) (hM : M > 
       · intro i j _ _ h; simp only [Fin.mk.injEq] at h; ext; omega
       · intro k hk
         simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe, Finset.mem_univ, true_and] at hk
-        refine ⟨⟨k.val / 2, div2_lt_of_fin_2M k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
+        refine ⟨⟨k.val / 2, div2_lt_of_fin_2M' k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
         ext; simp only [Fin.val_mk]
         have hkrec : k.val = 2 * (k.val / 2) + k.val % 2 := (Nat.div_add_mod k.val 2).symm
         omega
@@ -811,7 +931,7 @@ theorem betaModifiedHam_deg_count {n M : Nat} (es : EigenStructure n M) (hM : M 
       (Finset.filter (fun z : Fin (qubitDim (n + 1)) =>
         betaModifiedHam_assignment es hM z = k) Finset.univ).card := by
   intro k
-  have horigK : k.val / 2 < M := div2_lt_of_fin_2M k
+  have horigK : k.val / 2 < M := div2_lt_of_fin_2M' k
   simp only [horigK, dite_true]
   let orig : Fin M := ⟨k.val / 2, horigK⟩
   let spin := k.val % 2
@@ -882,10 +1002,13 @@ theorem betaModifiedHam_deg_count {n M : Nat} (es : EigenStructure n M) (hM : M 
     The original constraint (just spectralGapDiag) was insufficient when higher gaps
     are smaller than the first gap.
 
+    Also requires hEigBound : all eigenvalues <= 1 - beta/2 for upper bounds.
+
     Reference: Section 2.3 of the paper, Lemma 2.7. -/
 noncomputable def betaModifiedHamiltonian {n M : Nat} (es : EigenStructure n M)
     (beta : Real) (hbeta : 0 < beta ∧ beta < 1) (hM : M >= 2)
-    (hgap : allGapsGreaterThan es (beta / 2)) : EigenStructure (n + 1) (2 * M) := {
+    (hgap : allGapsGreaterThan es (beta / 2))
+    (hEigBound : ∀ k : Fin M, es.eigenvalues k <= 1 - beta / 2) : EigenStructure (n + 1) (2 * M) := {
   -- Eigenvalues: E_{2k} = E_k, E_{2k+1} = E_k + beta/2
   -- Index k maps to original index k/2, with k%2 determining the beta shift
   eigenvalues := fun k =>
@@ -902,10 +1025,7 @@ noncomputable def betaModifiedHamiltonian {n M : Nat} (es : EigenStructure n M)
   assignment := betaModifiedHam_assignment es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   eigenval_bounds := by
     intro k
-    -- The eigenvalue bounds for the beta-modified Hamiltonian require careful analysis.
-    -- We axiomatize this since the proof depends on the specific eigenstructure
-    -- and the choice of beta relative to the spectral gap.
-    exact betaModifiedHam_eigenval_bounds es beta hbeta (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) k
+    exact betaModifiedHam_eigenval_bounds es beta hbeta (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) hEigBound k
   eigenval_ordered := fun i j hij => by
     exact betaModifiedHam_eigenval_ordered_strict es hM beta hbeta hgap i j hij
   ground_energy_zero := by
@@ -948,10 +1068,11 @@ axiom A1_polynomial_in_beta {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) 
     ∃ (p : Polynomial Real),
       p.natDegree = M - 1 ∧
       -- The polynomial evaluated at beta equals A_1 of the beta-modified Hamiltonian
-      -- (for beta values satisfying the gap constraint)
+      -- (for beta values satisfying the gap and eigenvalue bound constraints)
       (∀ (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
-         (hgap : allGapsGreaterThan es (beta / 2)),
-        let esBeta := betaModifiedHamiltonian es beta hbeta hM hgap
+         (hgap : allGapsGreaterThan es (beta / 2))
+         (hEigBound : ∀ k : Fin M, es.eigenvalues k <= 1 - beta / 2),
+        let esBeta := betaModifiedHamiltonian es beta hbeta hM hgap hEigBound
         let hM2 : 2 * M > 0 := Nat.mul_pos (by norm_num : 0 < 2) (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
         Polynomial.eval beta p = A1 esBeta hM2) ∧
       -- Coefficients encode the degeneracies
@@ -1012,17 +1133,18 @@ axiom mainResult3 (computer : A1ExactComputer) :
       let es := threeSATToHamiltonian f hf hallpop
       let M := threeSATNumLevels f
       let hM2 : M >= 2 := threeSATNumLevels_ge_two f hclauses
-      -- For ANY choice of M distinct beta values satisfying the gap constraint
+      -- For ANY choice of M distinct beta values satisfying the gap and eigenvalue bound constraints
       ∀ (betaValues : Fin M -> Real)
         (hdistinct : ∀ i j, i ≠ j -> betaValues i ≠ betaValues j)
         (hbounds : ∀ i, 0 < betaValues i ∧ betaValues i < 1)
-        (hgaps : ∀ i, allGapsGreaterThan es (betaValues i / 2)),
+        (hgaps : ∀ i, allGapsGreaterThan es (betaValues i / 2))
+        (hEigBounds : ∀ i k, es.eigenvalues k <= 1 - betaValues i / 2),
         -- The ground state degeneracy (at index 0) equals satisfying count
         -- This follows from: d_0 = countAssignmentsWithKUnsatisfied f 0
         --                       = numSatisfyingAssignments f
         let A1Values := fun i =>
           computer.compute (f.numVars + 1) (2 * M)
-            (betaModifiedHamiltonian es (betaValues i) (hbounds i) hM2 (hgaps i))
+            (betaModifiedHamiltonian es (betaValues i) (hbounds i) hM2 (hgaps i) (hEigBounds i))
             (Nat.mul_pos (by norm_num : 0 < 2) (Nat.lt_of_lt_of_le Nat.zero_lt_two hM2))
         -- Lagrange interpolation gives unique polynomial through these points
         ∃ (p : Polynomial Real),
@@ -1056,10 +1178,11 @@ axiom mainResult3_robust :
           ∀ (betaValues : Fin (3 * M) -> Real)
             (hdistinct : ∀ i j, i ≠ j -> betaValues i ≠ betaValues j)
             (hbounds : ∀ i, 0 < betaValues i ∧ betaValues i < 1)
-            (hgaps : ∀ i, allGapsGreaterThan es (betaValues i / 2)),
+            (hgaps : ∀ i, allGapsGreaterThan es (betaValues i / 2))
+            (hEigBounds : ∀ i k, es.eigenvalues k <= 1 - betaValues i / 2),
             extractDegeneracy (fun i =>
               approx.approximate (f.numVars + 1) (2 * M)
-                (betaModifiedHamiltonian es (betaValues i) (hbounds i) hM2 (hgaps i))
+                (betaModifiedHamiltonian es (betaValues i) (hbounds i) hM2 (hgaps i) (hEigBounds i))
                 (Nat.mul_pos (by norm_num : 0 < 2) (Nat.lt_of_lt_of_le Nat.zero_lt_two hM2))) =
             numSatisfyingAssignments f
 

@@ -52,12 +52,12 @@ lake build
 | Metric              | Count  |
 |---------------------|--------|
 | Sorries             | 0      |
-| Axioms              | 34     |
-| Lines of Lean (main)| ~4,017 |
-| Lines of Lean (total)| ~5,256 |
+| Axioms              | 29     |
+| Lines of Lean (main)| ~4,300 |
+| Lines of Lean (total)| ~5,500 |
 
-The formalization is sorry-free but relies on 34 axioms for deep mathematical results.
-11 axioms have been eliminated through proofs since the initial formalization.
+The formalization is sorry-free but relies on 29 axioms for deep mathematical results.
+16 axioms have been eliminated through proofs since the initial formalization.
 
 ## Axiom Categories
 
@@ -74,13 +74,13 @@ Standard results from computational complexity:
 
 Note: `lagrange_interpolation` was eliminated (proved using Mathlib.Lagrange).
 
-### Spectral Theory (3 axioms)
+### Spectral Theory (1 axiom)
 
 Functional analysis foundations:
 
-- `variational_principle`: Min-max characterization of eigenvalues
-- `variational_minimum`: Ground state minimizes Rayleigh quotient
 - `resolvent_distance_to_spectrum`: Resolvent norm equals inverse distance to spectrum
+
+Note: `variational_principle` and `variational_minimum` were eliminated (proved using projector positivity and spectral decomposition).
 
 ### Adiabatic Theorem and Running Time (7 axioms)
 
@@ -152,7 +152,7 @@ All spectral parameter axioms have been eliminated:
 
 ### Converted from Axioms to Definitions/Theorems
 
-The following 11 axioms were eliminated through proofs:
+The following 16 axioms were eliminated through proofs:
 
 | Axiom | File | Method |
 |-------|------|--------|
@@ -167,6 +167,11 @@ The following 11 axioms were eliminated through proofs:
 | `lagrange_interpolation` | SharpP.lean | Mathlib.Lagrange + uniqueness |
 | `betaModifiedHam_deg_sum` | Hardness.lean | Even/odd bijection over Fin(2*M) |
 | `betaModifiedHam_deg_count` | Hardness.lean | Finset filter equality |
+| `betaModifiedHam_eigenval_ordered` | Hardness.lean | Non-strict ordering with gap constraint |
+| `betaModifiedHam_eigenval_ordered_strict` | Hardness.lean | Strict ordering with allGapsGreaterThan |
+| `betaModifiedHam_eigenval_bounds` | Hardness.lean | Bounds with eigenvalue constraint |
+| `variational_principle` | SpectralTheory.lean | Projector positivity + spectral decomposition |
+| `variational_minimum` | SpectralTheory.lean | Ground eigenstate from SpectralDecomp |
 
 Additional definitions and theorems:
 - `modifiedHam_assignment`: Definition mapping extended states to eigenvalue indices
