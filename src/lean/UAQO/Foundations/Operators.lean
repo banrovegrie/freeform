@@ -28,6 +28,12 @@ postfix:max "†" => dagger
 /-- An operator is Hermitian if A = A† -/
 def IsHermitian {N : Nat} (A : Operator N) : Prop := A = A†
 
+/-- Our IsHermitian is equivalent to mathlib's Matrix.IsHermitian -/
+lemma isHermitian_iff_matrix {N : Nat} (A : Operator N) :
+    IsHermitian A ↔ Matrix.IsHermitian A := by
+  simp only [IsHermitian, dagger, Matrix.IsHermitian]
+  constructor <;> intro h <;> exact h.symm
+
 /-- An operator is unitary if A†A = AA† = I -/
 def IsUnitary {N : Nat} (A : Operator N) : Prop :=
   A† * A = identityOp N ∧ A * A† = identityOp N

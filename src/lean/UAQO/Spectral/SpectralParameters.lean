@@ -57,6 +57,43 @@ theorem A1_partial_eq_A1 {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
     A1_partial es.toPartial hM = A1 es hM := by
   simp only [A1_partial, A1, spectralParam, EigenStructure.toPartial, pow_one]
 
+/-! ## The function f(x) for #P-hardness -/
+
+/-- The function f(x) = (1/2^n) * sum_k d_k/(Delta_k + x/2) for #P-hardness.
+
+    PAPER REFERENCE: Eq. 14, line 898 in the paper.
+
+    This function arises from the beta-modified Hamiltonian H'(x) where:
+    - Eigenvalues are E_{2k} = E_k and E_{2k+1} = E_k + x/2
+    - f(x) relates to A_1(H'(x)) via a product with the denominator polynomial
+
+    Key property: f(x) is a rational function whose numerator P(x) has degree M-1.
+    The coefficients of P encode the degeneracies d_k, enabling extraction via
+    Lagrange interpolation. -/
+noncomputable def sharpPFunction {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (x : Real) : Real :=
+  let E0 := es.eigenvalues ⟨0, hM⟩
+  let N := qubitDim n
+  (1 / N) * Finset.sum Finset.univ (fun k : Fin M =>
+    (es.degeneracies k : Real) / (es.eigenvalues k - E0 + x / 2))
+
+/-- The denominator polynomial: prod_k (Delta_k + x/2).
+
+    When multiplied by f(x), this yields a polynomial P(x) of degree M-1
+    whose coefficients encode the degeneracies. -/
+noncomputable def sharpPDenominator {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (x : Real) : Real :=
+  let E0 := es.eigenvalues ⟨0, hM⟩
+  Finset.prod Finset.univ (fun k : Fin M => es.eigenvalues k - E0 + x / 2)
+
+/-- The numerator polynomial P(x) = prod_k(Delta_k + x/2) * f(x).
+
+    This polynomial has degree M-1 and its evaluations at -2*Delta_k
+    (appropriately scaled) yield the degeneracies d_k. -/
+noncomputable def sharpPNumerator {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (x : Real) : Real :=
+  sharpPDenominator es hM x * sharpPFunction es hM x
+
 /-! ## Key properties of spectral parameters -/
 
 /-- A_p is positive for p ≥ 1 when M ≥ 2 -/

@@ -35,7 +35,20 @@ grep -rn '^---$\|^***$\|^___$' src/*.md
 
 **Exception:** YAML frontmatter delimiters at file start are acceptable.
 
-### 3. LaTeX Basics
+### 3. Math Delimiters in Markdown
+
+Mathematical expressions in `.md` files must be wrapped in `$...$` (inline) or `$$...$$` (display).
+
+**Common violations:**
+- `H(s) = (1-s)H_0 + sH_P` -> `$H(s) = (1-s)H_0 + sH_P$`
+- `O(sqrt(N))` -> `$O(\sqrt{N})$`
+- `A_1/(A_1+1)` -> `$A_1/(A_1+1)$`
+
+**Why:** Renders properly in LaTeX-aware markdown viewers. Plain text math is ambiguous (is `H_0` a subscript or literal underscore?).
+
+**Exception:** Simple variable names in prose context (e.g., "the parameter n") may remain undelimited.
+
+### 4. LaTeX Basics
 
 - Delimiter balance
 - Bare `_` outside math mode -> use `\_` or `$H_0$`
@@ -50,7 +63,8 @@ grep -rn '^---$\|^***$\|^___$' src/*.md
 Read the file and scan for:
 1. Non-ASCII bytes (report character and suggested replacement)
 2. Horizontal rule lines (report line number)
-3. LaTeX issues (report line and specific problem)
+3. Undelimited math expressions in markdown (report line and expression)
+4. LaTeX issues (report line and specific problem)
 
 ## Output Format
 
@@ -60,6 +74,7 @@ PASS: No formatting issues
 FAIL: Formatting issues found
   - file.md:42: non-ASCII curly quote " -> use "
   - file.md:87: horizontal rule --- -> use heading or remove
+  - file.md:57: undelimited math "H(s) = (1-s)H_0" -> wrap in $...$
   - file.tex:103: bare underscore H_0 -> use $H_0$
   - file.tex:156: unbalanced $ delimiter
 ```

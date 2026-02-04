@@ -55,7 +55,40 @@ noncomputable def totalTimeThreeParts {n M : Nat} (es : EigenStructure n M)
 
 /-! ## Piecewise schedule construction -/
 
-/-- Axiom: Piecewise linear schedules are monotonically increasing.
+/-- The avoided crossing window is positive (follows from spectral parameters).
+
+    Proof: avoidedCrossingWindow = 2 / (A₁ + 1)² * √(d₀ A₂ / N)
+    All factors are positive:
+    - 2 > 0
+    - (A₁ + 1)² > 0 since A₁ > 0
+    - d₀ > 0 (ground state has positive degeneracy)
+    - A₂ > 0 (spectral parameter positivity)
+    - N > 0 (Hilbert space dimension) -/
+theorem avoidedCrossingWindow_pos {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    avoidedCrossingWindow es hM > 0 := by
+  simp only [avoidedCrossingWindow]
+  have hA1pos : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 1 (by norm_num)
+  have hA2pos : A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 2 (by norm_num)
+  have hd0pos : (es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ : Real) > 0 :=
+    Nat.cast_pos.mpr (es.deg_positive _)
+  have hNpos : (qubitDim n : Real) > 0 :=
+    Nat.cast_pos.mpr (Nat.pow_pos (by norm_num : 0 < 2))
+  have hA1plus1_pos : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) + 1 > 0 := by linarith
+  apply mul_pos
+  · apply div_pos (by norm_num : (2 : Real) > 0)
+    apply pow_pos hA1plus1_pos
+  · apply Real.sqrt_pos.mpr
+    apply div_pos (mul_pos hd0pos hA2pos) hNpos
+
+/-- The avoided crossing window is within bounds: δ < s* and s* + δ < 1 -/
+axiom avoidedCrossing_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+    let deltaS := avoidedCrossingWindow es hM
+    deltaS < sStar ∧ sStar + deltaS < 1
+
+/-- Piecewise linear schedules are monotonically increasing.
     Each segment has positive slope:
     - Left region: slope = (s* - δ) / T_left > 0
     - Crossing region: slope = 2δ / T_cross > 0

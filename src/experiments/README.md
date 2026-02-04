@@ -16,19 +16,19 @@ Each experiment lives in a numbered directory `0x_name/` with standardized conte
 
 ```
 0x_experiment_name/
-├── main.md              # Overview: problem, conjectures, status, references
-├── proof.md             # Full mathematical proof (the main deliverable)
-├── lib/                 # Supporting code (Python, numerical experiments)
-│   ├── *.py
-│   └── requirements.txt
-├── lean/                # Formal verification (Lean 4 + Mathlib)
-│   ├── lakefile.lean
-│   ├── lean-toolchain
-│   └── ExperimentName/
-│       ├── Basic.lean
-│       └── *.lean
-└── notes/               # Working notes, literature, scratchpad
-    └── *.md
++-- main.md              # Overview: problem, conjectures, status, references
++-- proof.md             # Full mathematical proof (the main deliverable)
++-- lib/                 # Supporting code (Python, numerical experiments)
+|   +-- *.py
+|   +-- requirements.txt
++-- lean/                # Formal verification (Lean 4 + Mathlib)
+|   +-- lakefile.lean
+|   +-- lean-toolchain
+|   +-- ExperimentName/
+|       +-- Basic.lean
+|       +-- *.lean
++-- notes/               # Working notes, literature, scratchpad
+    +-- *.md
 ```
 
 **File purposes**:
@@ -52,17 +52,22 @@ When an experiment matures sufficiently, extract the relevant content into the a
 
 ## Current Experiments
 
-| ID | Name | Status | Description |
-|----|------|--------|-------------|
-| 01 | precision_gap | Archived | Subsumed by 07 |
-| 02 | robust_schedules | Complete | Hedging theorem: error ratio (u_R - u_L). Lean formalized. |
-| 03 | structured_tractability | Archived | Refined as 08 |
-| 04 | separation_theorem | Complete | Gap-uninformed separation theorem. Lean formalized. |
-| 05 | adaptive_schedules | Complete | Adaptive AQO with O(n) measurements achieves T = O(T_inf). |
-| 06 | measure_condition | Complete | T = Theta(1/Delta_*^{3-2/alpha}) where alpha is gap flatness. Lean formalized. |
-| 07 | partial_information | Complete | Interpolation theorem. Lean verified. |
-| 08 | structured_tractability_v2 | Proposed | Find problem classes with tractable A_1. |
-| 10 | information_theoretic | Proposed | Fundamental limits beyond adiabatic framework. |
+### Complete
+
+| ID | Name | Key Result |
+|----|------|------------|
+| 02 | robust_schedules | Hedging over $[u_L, u_R]$ achieves error ratio $(u_R - u_L)$. Constant-factor approximation with bounded uncertainty. Lean formalized. |
+| 04 | separation_theorem | Gap-uninformed fixed schedules require $\Omega(2^{n/2})$ overhead. Lean formalized. |
+| 05 | adaptive_schedules | Adaptive AQO with $\Theta(n)$ measurements achieves $T = O(T_{\inf})$. Circumvents classical hardness. |
+| 06 | measure_condition | $T = \Theta(1/\Delta_*^{3-2/\alpha})$ where $\alpha$ is gap flatness. Dichotomy conjecture is FALSE - scaling forms a spectrum. Lean formalized. |
+| 07 | partial_information | $T(\varepsilon) = T_{\inf} \cdot \Theta(\max(1, \varepsilon/\delta_{A_1}))$. Linear interpolation, no thresholds. Lean verified. |
+
+### Proposed
+
+| ID | Name | Open Question |
+|----|------|---------------|
+| 08 | structured_tractability_v2 | Are there NP-hard problems with tractable $A_1$? |
+| 10 | information_theoretic | Is the adiabatic framework uniquely limited compared to circuit model? |
 
 
 ## Templates
@@ -103,6 +108,6 @@ Needs to be absolutely correct, robust and complete.
 
 These papers form the basis for all experiments:
 
-1. Original paper (`paper/`): A_1 NP-hard, optimal AQO runtime O(2^{n/2})
-2. Guo-An 2025 (`citations/`): Power-law schedules, measure condition, p=3/2 optimality
+1. Original paper (`paper/`): $A_1$ NP-hard, optimal AQO runtime $O(2^{n/2})$
+2. Guo-An 2025 (`citations/`): Power-law schedules, measure condition, $p=3/2$ optimality
 3. Other relevant papers (`references/`) that our original paper refers to

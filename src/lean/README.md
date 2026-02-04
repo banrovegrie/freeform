@@ -16,11 +16,14 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 UAQO/
     Foundations/
         Basic.lean              Qubit states, operators, norms
+        HilbertSpace.lean       Inner products, norms, mathlib bridges
         Operators.lean          Hermitian operators, resolvents
         SpectralTheory.lean     Eigenvalues, spectral decomposition
+        Qubit.lean              Qubit systems, tensor products
     Spectral/
-        SpectralParameters.lean A1, A2 parameters, avoided crossings
-        GapBounds.lean          Gap bounds in different regions
+        DiagonalHamiltonian.lean  Diagonal Hamiltonians, eigenstructure
+        SpectralParameters.lean   A1, A2 parameters, avoided crossings
+        GapBounds.lean            Gap bounds in different regions
     Adiabatic/
         Hamiltonian.lean        Time-dependent Hamiltonians, interpolation
         Schedule.lean           Local schedules, piecewise construction
@@ -49,24 +52,26 @@ lake build
 | Metric        | Count |
 |---------------|-------|
 | Sorries       | 0     |
-| Axioms        | 40    |
-| Lines of Lean | ~2000 |
+| Axioms        | 48    |
+| Lines of Lean | ~2400 |
 
-The formalization is sorry-free but relies on 40 axioms for deep mathematical results.
+The formalization is sorry-free but relies on 48 axioms for deep mathematical results.
 
 ## Axiom Categories
 
-### Complexity Theory (7 axioms)
+### Complexity Theory Foundations (7 axioms)
 
 Standard results from computational complexity:
 
+- `threeSAT_in_NP`: 3-SAT is in NP
 - `threeSAT_NP_complete`: Cook-Levin theorem
+- `sharpThreeSAT_in_SharpP`: #3-SAT is in #P
 - `sharpThreeSAT_complete`: #3-SAT is #P-complete
 - `sharpP_solves_NP`: #P oracle solves NP
 - `lagrange_interpolation`: Polynomial interpolation uniqueness
 - `degeneracy_sharpP_hard`: Computing degeneracies is #P-hard
 
-### Spectral Theory (5 axioms)
+### Spectral Theory (3 axioms)
 
 Functional analysis foundations:
 
@@ -74,42 +79,87 @@ Functional analysis foundations:
 - `variational_minimum`: Ground state minimizes Rayleigh quotient
 - `resolvent_distance_to_spectrum`: Resolvent norm equals inverse distance to spectrum
 
-### Adiabatic Theorem (6 axioms)
+### Adiabatic Theorem (5 axioms)
 
 Quantum adiabatic evolution:
 
 - `adiabaticTheorem`: Adiabatic approximation with gap-dependent error
 - `eigenpath_traversal`: Ground state tracking under slow evolution
 - `mainResult1`: Running time $T = O(1/\Delta)$
+- `runningTime_ising_bound`: Running time for Ising problems
 - `runningTime_matches_lower_bound`: Optimality of the bound
 - `measurement_yields_groundstate`: Final measurement success probability
+- `lowerBound_unstructuredSearch`: Query complexity lower bound
 
-### Gap Bounds (6 axioms)
+### Gap Bounds (9 axioms)
 
 Spectral gap analysis:
 
 - `eigenvalue_condition`: Eigenvalue structure in interpolation
 - `groundEnergy_variational_bound`: Ground energy bounds
 - `firstExcited_lower_bound`: First excited state bounds
-- `gap_bound_left_axiom`, `gap_bound_right_axiom`: Region-specific gap bounds
+- `gap_bound_left_axiom`: Gap bound left of avoided crossing
+- `gap_at_avoided_crossing_axiom`: Gap at avoided crossing
+- `gap_bound_right_axiom`: Gap bound right of avoided crossing
+- `gap_bound_all_s_axiom`: Combined gap bound
+- `gap_minimum_at_crossing_axiom`: Gap minimum location
 - `shermanMorrison_resolvent`: Sherman-Morrison for resolvents
 
-### Hardness Constructions (15 axioms)
+### Hardness Constructions (19 axioms)
 
 Modified Hamiltonian properties for reductions:
 
-- `modifiedHam_*`: Properties of alpha-modified Hamiltonians
-- `betaModifiedHam_*`: Properties of beta-modified Hamiltonians
+**Alpha-modified Hamiltonians (2):**
+- `modifiedHam_deg_sum`: Degeneracy sum after modification
+- `modifiedHam_deg_count`: Degeneracy count consistency
+
+**Beta-modified Hamiltonians (5):**
+- `betaModifiedHam_eigenval_ordered`: Non-strict eigenvalue ordering
+- `betaModifiedHam_eigenval_ordered_strict`: Strict eigenvalue ordering
+- `betaModifiedHam_eigenval_bounds`: Eigenvalue bounds
+- `betaModifiedHam_deg_sum`: Degeneracy sum
+- `betaModifiedHam_deg_count`: Degeneracy count consistency
+
+**3-SAT Encoding (3):**
+- `threeSATWellFormed_numVars`: Well-formed formulas have variables
+- `threeSATDegPositive_ground`: Satisfiable formulas have positive ground degeneracy
+- `threeSAT_groundEnergy_iff_sat`: Ground energy characterizes satisfiability
+
+**A1 Properties (2):**
 - `A1_modification_formula`: How $A_1$ transforms under modification
 - `A1_polynomial_in_beta`: $A_1$ as polynomial in beta parameter
+
+**Main Hardness Results (5):**
 - `mainResult2`: NP-hardness of approximating $A_1$
-- `exact_A1_is_sharpP_hard`: #P-hardness of exact $A_1$
+- `A1_approx_implies_P_eq_NP`: Polynomial-time A1 approximation implies P=NP
+- `mainResult3`: #P-hardness via polynomial interpolation
+- `mainResult3_robust`: Robustness to exponential errors
+- `exact_A1_is_sharpP_hard`: Exact A1 is #P-hard
+- `approx_A1_sharpP_hard`: Approximate A1 is #P-hard
 
-### Schedule Construction (1 axiom)
+### Schedule Construction (3 axioms)
 
+- `avoidedCrossingWindow_pos`: Avoided crossing window is positive
+- `avoidedCrossing_bound`: Avoided crossing window within bounds
 - `piecewiseSchedule_monotone`: Monotonicity of piecewise linear schedules
 
-## Key Definitions
+### Spectral Parameters (1 axiom)
+
+- `A2_lower_bound`: Lower bound on A2 in terms of spectral gap
+
+## Key Definitions and Theorems
+
+### Converted from Axioms to Definitions/Theorems
+
+The following were previously axioms and are now proven or defined:
+
+- `modifiedHam_assignment`: Definition mapping extended states to eigenvalue indices
+- `modifiedHam_eigenval_ordered`: Theorem proving eigenvalue ordering
+- `threeSATAssignment`: Definition based on unsatisfied clause count
+- `threeSATDegCount`: Theorem relating degeneracy to assignment filter
+- `threeSATDegSum`: Theorem that degeneracies partition the Hilbert space
+- `threeSATDegSum_total`: Corollary of threeSATDegSum
+- `betaModifiedHam_assignment`: Definition for beta-modified construction
 
 ### EigenStructure
 
@@ -129,60 +179,34 @@ structure EigenStructure (n M : Nat) where
 ### Spectral Parameters
 
 ```lean
--- A1: First spectral parameter (appears in gap bounds)
+-- A1: First spectral parameter (determines avoided crossing position)
 noncomputable def A1 (es : EigenStructure n M) (hM : M > 0) : Real :=
-  sum over k of (es.degeneracies k) * (1 - es.eigenvalues k)
+  (1/N) * sum_{k>=1} d_k / (E_k - E_0)
 
--- A2: Second spectral parameter
+-- A2: Second spectral parameter (appears in minimum gap)
 noncomputable def A2 (es : EigenStructure n M) (hM : M > 0) : Real :=
-  sum over k of (es.degeneracies k) * (1 - es.eigenvalues k)^2
-```
-
-### Spectral Condition
-
-```lean
--- The spectral condition required for optimal AQO
-def spectralCondition (es : EigenStructure n M) (hM : M >= 2) (c : Real) : Prop :=
-  let A1_val := A1 es hM
-  let A2_val := A2 es hM
-  A2_val >= c * A1_val^2
-```
-
-## Verified Theorems
-
-The test file `UAQO/Test/Verify.lean` confirms these key results type-check:
-
-```lean
-#check @resolvent_distance_to_spectrum
--- forall {N : Nat} (A : Operator N) (gamma : Complex), IsHermitian A ->
---   Matrix.det ((gamma * I_N) - A) != 0 -> exists d > 0, norm(R_A(gamma)) = 1 / d
-
-#check Complexity.threeSAT_NP_complete
--- Complexity.IsNPComplete Complexity.ThreeSAT
-
-#check Complexity.sharpThreeSAT_complete
--- Complexity.IsSharpPComplete Complexity.SharpThreeSAT
+  (1/N) * sum_{k>=1} d_k / (E_k - E_0)^2
 ```
 
 ## Design Decisions
 
-1. Diagonal Hamiltonians: The formalization focuses on diagonal Hamiltonians in the computational basis, which is the setting of the paper. General Hamiltonians would require significantly more infrastructure.
+1. **Diagonal Hamiltonians**: The formalization focuses on diagonal Hamiltonians in the computational basis, which is the setting of the paper.
 
-2. EigenStructure abstraction: Rather than working with explicit matrix representations, we abstract to eigenvalue/degeneracy data. This captures the essential spectral information needed for the analysis.
+2. **EigenStructure abstraction**: Rather than working with explicit matrix representations, we abstract to eigenvalue/degeneracy data. This captures the essential spectral information needed for the analysis.
 
-3. Axiom boundary: Deep results (adiabatic theorem, Cook-Levin, spectral theory) are axiomatized. This is standard practice; these would each require major independent formalization efforts.
+3. **Axiom boundary**: Deep results (adiabatic theorem, Cook-Levin, spectral theory) are axiomatized. This is standard practice; these would each require major independent formalization efforts.
 
-4. Real vs Complex: Eigenvalues are Real (Hermitian operators have real spectrum). State vectors use Complex coefficients where needed.
+4. **Mathlib integration**: Bridge lemmas connect our definitions to mathlib's inner product spaces and hermitian matrices, enabling future proof development.
 
 ## Future Work
 
-To reduce the axiom count, priority targets would be:
+To further reduce the axiom count, priority targets would be:
 
-1. Structural axioms (modifiedHam_*, betaModifiedHam_*): These involve finite arithmetic and set counting; tedious but tractable.
+1. **Combinatorial axioms** (betaModifiedHam_deg_sum, betaModifiedHam_deg_count): Finite arithmetic proofs.
 
-2. Gap bounds: Paper-specific calculations that could be verified with careful real analysis.
+2. **Gap bounds**: Paper-specific calculations that could be verified with careful real analysis.
 
-3. Spectral theory: Extending mathlib's spectral theory for finite-dimensional Hermitian matrices.
+3. **Spectral theory**: Extending mathlib's spectral theory for finite-dimensional Hermitian matrices.
 
 The complexity theory axioms (Cook-Levin, #P-completeness) and adiabatic theorem would require major independent projects.
 

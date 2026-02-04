@@ -70,6 +70,55 @@ lemma sum_mul_star_self_eq_normSquared {N : Nat} (v : Fin N → Complex) :
     rw [Complex.mul_conj]
   rw [← Complex.ofReal_sum]
 
+/-! ## Mathlib bridge lemmas -/
+
+/-- Inner product with self equals normSquared -/
+lemma innerProd_self_eq_normSquared {N : Nat} (v : Fin N → Complex) :
+    (innerProd v v).re = normSquared v := by
+  simp only [innerProd, normSquared, conj_eq_star, star_eq_starRingEnd]
+  conv_lhs =>
+    arg 1
+    arg 2
+    ext i
+    rw [← Complex.normSq_eq_conj_mul_self]
+  rw [← Complex.ofReal_sum, Complex.ofReal_re]
+
+/-- normSquared is non-negative (alternate form) -/
+lemma normSquared_nonneg' {N : Nat} (v : Fin N → Complex) : 0 ≤ normSquared v :=
+  normSquared_nonneg v
+
+/-- normSquared equals zero iff all components are zero -/
+lemma normSquared_eq_zero_iff {N : Nat} (v : Fin N → Complex) :
+    normSquared v = 0 ↔ ∀ i, v i = 0 := by
+  constructor
+  · intro h i
+    have hnn : ∀ j ∈ Finset.univ, Complex.normSq (v j) ≥ 0 := fun j _ => Complex.normSq_nonneg (v j)
+    have hsum := (Finset.sum_eq_zero_iff_of_nonneg hnn).mp
+    simp only [normSquared] at h
+    have hi := hsum h i (Finset.mem_univ i)
+    exact Complex.normSq_eq_zero.mp hi
+  · intro h
+    simp only [normSquared]
+    apply Finset.sum_eq_zero
+    intro i _
+    simp [h i]
+
+/-- normSquared is positive iff some component is nonzero -/
+lemma normSquared_pos_iff {N : Nat} (v : Fin N → Complex) :
+    normSquared v > 0 ↔ ∃ i, v i ≠ 0 := by
+  constructor
+  · intro hpos
+    by_contra hall
+    push_neg at hall
+    have heq : normSquared v = 0 := normSquared_eq_zero_iff v |>.mpr hall
+    linarith
+  · intro ⟨i, hi⟩
+    by_contra hle
+    push_neg at hle
+    have heq : normSquared v = 0 := le_antisymm hle (normSquared_nonneg v)
+    have hall := normSquared_eq_zero_iff v |>.mp heq
+    exact hi (hall i)
+
 /-- Bra-ket notation: |v⟩ is a ket (column vector) -/
 abbrev Ket (N : Nat) := Fin N -> Complex
 
