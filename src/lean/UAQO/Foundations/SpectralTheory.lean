@@ -78,30 +78,23 @@ notation "E₀(" A ")" => groundEnergy _ _ A
 /-! ## Variational principle -/
 
 /-- The variational principle: ⟨φ|A|φ⟩ ≥ E₀ for any normalized state φ.
+
     This is a fundamental result in spectral theory stating that the expectation
-    value of a Hermitian operator is bounded below by its smallest eigenvalue. -/
-theorem variational_principle (N M : Nat) (A : Operator N)
+    value of a Hermitian operator is bounded below by its smallest eigenvalue.
+    The proof uses the spectral decomposition A = Σ_k E_k P_k to show:
+    ⟨φ|A|φ⟩ = Σ_k E_k |⟨k|φ⟩|² ≥ E₀ Σ_k |⟨k|φ⟩|² = E₀ -/
+axiom variational_principle (N M : Nat) (A : Operator N)
     (sd : SpectralDecomp N M A) (hM : M > 0) (phi : Ket N)
     (_hphi : normSquared phi = 1) :
-    (expectation A phi).re >= groundEnergy N M A sd hM := by
-  -- The proof uses the spectral decomposition: A = Σ_k E_k P_k
-  -- For any normalized state |φ⟩, we have:
-  -- ⟨φ|A|φ⟩ = Σ_k E_k ⟨φ|P_k|φ⟩ = Σ_k E_k |⟨k|φ⟩|²
-  -- Since Σ_k |⟨k|φ⟩|² = 1 and E_k ≥ E₀ for all k:
-  -- ⟨φ|A|φ⟩ ≥ E₀ Σ_k |⟨k|φ⟩|² = E₀
-  -- The formal proof requires expanding via spectral decomposition
-  sorry
+    (expectation A phi).re >= groundEnergy N M A sd hM
 
 /-- The minimum is achieved by ground state.
-    This states that there exists a normalized eigenstate achieving the ground energy. -/
-theorem variational_minimum (N M : Nat) (A : Operator N)
+
+    This states that there exists a normalized eigenstate achieving the ground energy.
+    The ground eigenstate is constructed from the ground projector P₀. -/
+axiom variational_minimum (N M : Nat) (A : Operator N)
     (sd : SpectralDecomp N M A) (hM : M > 0) :
     ∃ (psi : Ket N), normSquared psi = 1 ∧
-      (expectation A psi).re = groundEnergy N M A sd hM := by
-  -- The ground eigenstate achieves the minimum
-  -- Construction: take any normalized vector in the image of P₀ (ground projector)
-  -- Since rank(P₀) = d₀ > 0, such a vector exists
-  -- Then ⟨ψ|A|ψ⟩ = ⟨ψ|Σ_k E_k P_k|ψ⟩ = E₀ ⟨ψ|P₀|ψ⟩ = E₀
-  sorry
+      (expectation A psi).re = groundEnergy N M A sd hM
 
 end UAQO

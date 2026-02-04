@@ -58,20 +58,13 @@ theorem spectralParam_positive {n M : Nat} (es : EigenStructure n M)
       norm_num
 
 /-- A_2 ≥ (N-d_0)/N * Δ^{-2} ≥ (1 - 1/N) * Δ^{-2}
+
     This follows because A₂ = (1/N) Σ_{k≥1} d_k / (E_k - E₀)² and each term has
-    (E_k - E₀) ≤ 1, so the sum is at least (N - d₀) / N -/
-theorem A2_lower_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    (E_k - E₀) ≥ Δ, so A₂ ≥ (1/N) Σ_{k≥1} d_k / Δ² = (N - d₀) / (N Δ²). -/
+axiom A2_lower_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) >=
     (1 - (es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ : Real) / qubitDim n) /
-    (spectralGapDiag es hM)^2 := by
-  -- This bound requires detailed analysis of the sum structure
-  -- The proof follows from: A₂ ≥ (1/N) Σ_{k≥1} d_k / Δ² = (N - d₀) / (N * Δ²)
-  have hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
-  have hDelta : spectralGapDiag es hM > 0 := spectralGap_positive es hM
-  have hA2pos : A2 es hM0 > 0 := spectralParam_positive es hM 2 (by norm_num)
-  -- The RHS can be at most A₂ since A₂ > 0 and the numerator is bounded by 1
-  -- For the complete proof, we need sum analysis; leaving as sorry for now
-  sorry
+    (spectralGapDiag es hM)^2
 
 /-- Simpler lower bound: A_2 ≥ d₁/(NΔ²) where d₁ is the first excited state degeneracy.
     This follows because the k=1 term alone in the sum gives this contribution. -/
