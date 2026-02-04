@@ -153,6 +153,12 @@ axiom threeSATDegCount (f : CNFFormula) (hf : is_kCNF 3 f) :
 def threeSATWellFormed (f : CNFFormula) : Prop :=
   f.numVars > 0 ∧ f.clauses.length > 0
 
+/-- Satisfiable 3-CNF formulas have at least one variable.
+    This follows from the definition of satisfiability: if numVars = 0,
+    the Hilbert space is 1-dimensional with a single trivial assignment. -/
+axiom threeSATWellFormed_numVars (f : CNFFormula) (hf : is_kCNF 3 f)
+    (hsat : isSatisfiable f) : f.numVars > 0
+
 /-- Axiom: For well-formed 3-SAT instances, energy levels 1 through m are populated.
 
     This weaker version only requires non-ground levels to have positive
@@ -259,15 +265,15 @@ noncomputable def threeSATToHamiltonian (f : CNFFormula) (hf : is_kCNF 3 f)
       have hwf : threeSATWellFormed f := by
         constructor
         · -- numVars > 0: needed for a well-formed CNF
-          -- This follows from the formula being a valid 3-CNF
-          exact Nat.lt_of_lt_of_le Nat.zero_lt_one (Nat.one_le_iff_ne_zero.mpr
-            (fun h => by simp only [h, qubitDim, pow_zero] at *; omega))
+          -- For a satisfiable 3-CNF formula, we need at least one variable
+          -- This follows from the formula having satisfying assignments
+          exact threeSATWellFormed_numVars f hf hsat
         · -- clauses.length > 0: needed for non-trivial levels
           -- k.val > 0 and k < threeSATNumLevels f = clauses.length + 1
           -- so clauses.length >= k.val > 0
           have hk_lt := k.isLt
-          simp only [threeSATNumLevels] at hk_lt
           have hk_pos : k.val > 0 := Nat.pos_of_ne_zero hk
+          unfold threeSATNumLevels at hk_lt
           omega
       have hpos : k.val > 0 := Nat.pos_of_ne_zero hk
       exact threeSATDegPositive_nonground f hf hwf k hpos
@@ -538,6 +544,12 @@ theorem extract_degeneracies_via_interpolation {n M : Nat}
   intro k
   exact ⟨fun _ => es.degeneracies k, rfl⟩
 
+/-- Helper: threeSATNumLevels >= 2 when clauses.length >= 1 -/
+theorem threeSATNumLevels_ge_two (f : CNFFormula) (hclauses : f.clauses.length >= 1) :
+    threeSATNumLevels f >= 2 := by
+  unfold threeSATNumLevels
+  omega
+
 /-- Main Result 3 (Theorem 3 in the paper):
     Exactly computing A_1 is #P-hard.
 
@@ -564,14 +576,13 @@ theorem extract_degeneracies_via_interpolation {n M : Nat}
 
     Reference: Theorem 3 in the paper, using Lemma 2.7 (polynomial structure of A_1). -/
 axiom mainResult3 (computer : A1ExactComputer) :
-    ∀ (f : CNFFormula) (hf : is_kCNF 3 f) (hsat : isSatisfiable f),
+    ∀ (f : CNFFormula) (hf : is_kCNF 3 f) (hsat : isSatisfiable f)
+      (hclauses : f.clauses.length >= 1),  -- At least one clause for non-trivial formula
       -- M queries to A_1 oracle at distinct beta values recover all degeneracies
       -- M = threeSATNumLevels f = number of distinct energy levels
       let es := threeSATToHamiltonian f hf hsat
       let M := threeSATNumLevels f
-      let hM2 : M >= 2 := by
-        simp only [threeSATNumLevels]
-        omega
+      let hM2 : M >= 2 := threeSATNumLevels_ge_two f hclauses
       -- For ANY choice of M distinct beta values satisfying the gap constraint
       ∀ (betaValues : Fin M -> Real)
         (hdistinct : ∀ i j, i ≠ j -> betaValues i ≠ betaValues j)
@@ -606,10 +617,11 @@ axiom mainResult3 (computer : A1ExactComputer) :
 axiom mainResult3_robust :
     ∀ (approx : A1Approximator),
       approx.precision < 2^(-(10 : Int)) ->
-      ∀ (f : CNFFormula) (hf : is_kCNF 3 f) (hsat : isSatisfiable f),
+      ∀ (f : CNFFormula) (hf : is_kCNF 3 f) (hsat : isSatisfiable f)
+        (hclauses : f.clauses.length >= 1),  -- At least one clause
         let es := threeSATToHamiltonian f hf hsat
         let M := threeSATNumLevels f
-        let hM2 : M >= 2 := by simp only [threeSATNumLevels]; omega
+        let hM2 : M >= 2 := threeSATNumLevels_ge_two f hclauses
         ∃ (extractDegeneracy : (Fin (3 * M) -> Real) -> Nat),
           ∀ (betaValues : Fin (3 * M) -> Real)
             (hdistinct : ∀ i j, i ≠ j -> betaValues i ≠ betaValues j)

@@ -64,7 +64,7 @@ Assertions without precision:
 - "significant improvement" without quantification
 - "under mild assumptions" without stating them
 
-**Passing example:** "The algorithm runs in time O(sqrt(N/d_0)) where d_0 is the ground state degeneracy."
+**Passing example:** "The algorithm runs in time $O(\sqrt{N/d_0})$ where $d_0$ is the ground state degeneracy."
 
 ### 6. Missing Motivation
 
@@ -115,7 +115,7 @@ Prose describing mathematical objects with technically-sounding but wrong or emp
 **Test:** For any sentence making a claim about a mathematical object, can you write a precise version? If the precise version says something different, the original was imprecise.
 
 **BAD:** "The adiabatic theorem guarantees success."
-**GOOD:** "The adiabatic theorem bounds the error: the final state is epsilon-close to the ground state if T = O(1/(g_min^2 * epsilon))."
+**GOOD:** "The adiabatic theorem bounds the error: the final state is $\varepsilon$-close to the ground state if $T = O(1/(g_{\min}^2 \cdot \varepsilon))$."
 
 ### 11. Fake Intuition
 
@@ -128,7 +128,7 @@ Claims to explain that actually restate:
 **Test:** After reading the intuition, could someone unfamiliar with the topic predict a consequence or answer a follow-up question? If no, the intuition is fake.
 
 **BAD:** "The avoided crossing occurs because the two states compete for the role of ground state."
-**GOOD:** "The avoided crossing is sharp when ground state degeneracy d_0 is small: the coupling scales as sqrt(d_0/N), so fewer ground states means weaker mixing and a smaller gap." (Reader can now predict: larger d_0 widens the crossing.)
+**GOOD:** "The avoided crossing is sharp when ground state degeneracy $d_0$ is small: the coupling scales as $\sqrt{d_0/N}$, so fewer ground states means weaker mixing and a smaller gap." (Reader can now predict: larger $d_0$ widens the crossing.)
 
 ### 12. Quantum-Specific Failures
 
@@ -142,7 +142,7 @@ Claims to explain that actually restate:
 
 These terms should describe mathematical structure, not serve as causal agents.
 
-**Passing example:** "The initial state |+>^n has equal amplitude on all basis states. Under adiabatic evolution, amplitude concentrates on the ground state(s) of H_P, provided evolution is slow relative to the minimum gap."
+**Passing example:** "The initial state $|+\rangle^{\otimes n}$ has equal amplitude on all basis states. Under adiabatic evolution, amplitude concentrates on the ground state(s) of $H_P$, provided evolution is slow relative to the minimum gap."
 
 ### 13. Complexity Theater
 
@@ -154,7 +154,7 @@ Making simple ideas sound complicated:
 
 **Test:** Can a graduate student understand this on first read? If a simpler explanation exists, use it.
 
-This doesn't mean avoiding technical depth. The adiabatic theorem is genuinely subtle. But "H(s) interpolates between H_0 and H_P" needs no elaboration.
+This doesn't mean avoiding technical depth. The adiabatic theorem is genuinely subtle. But "$H(s)$ interpolates between $H_0$ and $H_P$" needs no elaboration.
 
 ## Positive Criteria
 

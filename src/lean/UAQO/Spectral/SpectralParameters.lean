@@ -55,7 +55,7 @@ noncomputable def spectralParam_partial {n M : Nat} (pes : PartialEigenStructure
 /-- A1_partial agrees with A1 when all degeneracies are positive -/
 theorem A1_partial_eq_A1 {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
     A1_partial es.toPartial hM = A1 es hM := by
-  simp only [A1_partial, A1, spectralParam, EigenStructure.toPartial]
+  simp only [A1_partial, A1, spectralParam, EigenStructure.toPartial, pow_one]
 
 /-! ## Key properties of spectral parameters -/
 

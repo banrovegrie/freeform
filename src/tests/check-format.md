@@ -11,11 +11,11 @@ Catch formatting issues in `.md` and `.tex` files before they become problems. T
 All characters must be in ASCII range (0-127).
 
 **Common violations:**
-- Curly quotes: `"` `"` `'` `'` -> use `"` and `'`
-- Em/en dashes: `—` `–` -> use `---` or `--`
-- Accented letters: `e` -> use `\'e` in LaTeX
-- Math symbols outside LaTeX: `×` `÷` `≤` `≥` -> use `\times`, `\leq` etc.
-- Greek letters: `alpha` -> use `$\alpha$`
+- Curly quotes: U+201C, U+201D, U+2018, U+2019 -> use ASCII `"` and `'`
+- Em/en dashes: U+2014, U+2013 -> use `---` or `--`
+- Accented letters: e.g. e with acute (U+00E9) -> use `\'e` in LaTeX
+- Math symbols outside LaTeX: multiplication (U+00D7), division (U+00F7), inequality symbols -> use `\times`, `\leq` etc.
+- Greek letters: e.g. alpha (U+03B1) -> use `$\alpha$`
 
 **Manual check:**
 ```bash
