@@ -21,15 +21,15 @@ theorem satisfies_iff_countUnsatisfied_zero_proof (f : CNFFormula) (z : Fin (2^f
   constructor
   · -- Forward: satisfies → count = 0
     intro h
-    rw [List.length_eq_zero, List.filter_eq_nil_iff]
+    rw [List.length_eq_zero_iff, List.filter_eq_nil_iff]
     intro c hc
-    have heval := List.all_iff_forall.mp h c hc
+    have heval := List.all_eq_true.mp h c hc
     simp only [Bool.not_eq_true]
     exact Bool.eq_false_iff.mpr (Bool.not_not.mp (Bool.not_eq_false.mpr heval))
   · -- Backward: count = 0 → satisfies
     intro h
-    rw [List.length_eq_zero, List.filter_eq_nil_iff] at h
-    rw [List.all_iff_forall]
+    rw [List.length_eq_zero_iff, List.filter_eq_nil_iff] at h
+    rw [List.all_eq_true]
     intro c hc
     specialize h c hc
     simp only [Bool.not_eq_true] at h
