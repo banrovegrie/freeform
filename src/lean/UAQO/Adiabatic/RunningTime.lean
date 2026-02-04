@@ -23,6 +23,30 @@ noncomputable def runningTime {n M : Nat} (es : EigenStructure n M)
   let N := qubitDim n
   (1 / epsilon) * (Real.sqrt A2_val / (A1_val^2 * Delta^2)) * Real.sqrt (N / d0)
 
+/-- The running time is positive -/
+theorem runningTime_pos {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (epsilon : Real) (heps : epsilon > 0) :
+    runningTime es hM epsilon heps > 0 := by
+  simp only [runningTime]
+  have hA1 : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 1 (by norm_num)
+  have hA2 : A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 2 (by norm_num)
+  have hDelta : spectralGapDiag es hM > 0 := spectralGap_positive es hM
+  have hd0 : (es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ : Real) > 0 :=
+    Nat.cast_pos.mpr (es.deg_positive ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩)
+  have hN : (qubitDim n : Real) > 0 :=
+    Nat.cast_pos.mpr (Nat.pow_pos (by norm_num : 0 < 2))
+  apply mul_pos
+  apply mul_pos
+  · apply div_pos one_pos heps
+  · apply div_pos
+    · exact Real.sqrt_pos.mpr hA2
+    · apply mul_pos
+      · apply pow_pos hA1
+      · apply pow_pos hDelta
+  · exact Real.sqrt_pos.mpr (div_pos hN hd0)
+
 /-! ## Main Result 1: Running time of AQO -/
 
 /-- Main Result 1 (Theorem 1 in the paper):
@@ -34,7 +58,7 @@ theorem mainResult1 {n M : Nat} (es : EigenStructure n M)
     (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1) :
     let T := runningTime es hM epsilon heps.1
     let d0 := es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-    ∃ (evol : SchrodingerEvolution n T (by sorry)),
+    ∃ (evol : SchrodingerEvolution n T (runningTime_pos es hM epsilon heps.1)),
       let finalState := evol.psi T
       let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
       normSquared (fun i => finalState i - groundSym i) <= epsilon := by
@@ -56,7 +80,18 @@ theorem runningTime_ising {n M : Nat} (es : EigenStructure n M)
     ∃ (polyFactor : Nat -> Real),
       (∃ deg, ∀ m, polyFactor m <= m^deg) ∧
       T <= polyFactor n * Real.sqrt (N / d0) / epsilon := by
-  sorry
+  -- For Ising Hamiltonians, the polynomial factor combines all the bounds
+  rcases hIsing with ⟨p, hDelta⟩
+  rcases hA1bound with ⟨q, hA1⟩
+  rcases hA2bound with ⟨r, hA2⟩
+  use fun m => m^(r + 4*q + 4*p)
+  constructor
+  · use r + 4*q + 4*p
+    intro m
+    exact le_refl _
+  · -- The running time bound follows from the definitions
+    -- This is a complex algebraic manipulation of the bounds
+    sorry
 
 /-! ## Matching the lower bound -/
 
@@ -81,6 +116,8 @@ theorem runningTime_matches_lower_bound {n M : Nat} (es : EigenStructure n M)
       (∀ m, polylog m <= (Real.log m)^10) ∧
       c₁ * Real.sqrt ((qubitDim n : Real) / d0) <= T ∧
       T <= c₂ * polylog n * Real.sqrt ((qubitDim n : Real) / d0) / epsilon := by
+  -- For now, provide a weak lower bound witness
+  -- The actual proof requires detailed analysis of the running time formula
   sorry
 
 /-! ## The final state is the symmetric ground state -/

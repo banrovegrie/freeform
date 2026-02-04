@@ -74,10 +74,12 @@ noncomputable def buildAdiabaticHam {n M : Nat} (es : EigenStructure n M)
     TimeDependentHam n T hT where
   ham := fun t =>
     let s_t := sched.s t
-    -- s(t) ∈ [0,1] follows from schedule_in_range, but we need domain info
-    -- For well-typed definition, use sorry for now (requires domain hypothesis)
-    adiabaticHam es s_t ⟨by sorry, by sorry⟩
-  domain := fun t => ⟨by sorry, by sorry⟩
+    -- Note: proper bound requires t ∈ [0,T]; we use Classical.choose for any t
+    if ht : 0 <= t ∧ t <= T then
+      adiabaticHam es s_t (schedule_in_range sched t ht)
+    else
+      adiabaticHam es 0 ⟨le_refl 0, by norm_num⟩
+  domain := fun _ => ⟨by sorry, by sorry⟩  -- Domain constraint requires context
 
 /-! ## Properties at s = 0 and s = 1 -/
 
@@ -85,8 +87,13 @@ noncomputable def buildAdiabaticHam {n M : Nat} (es : EigenStructure n M)
 theorem initial_groundstate {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
     let H0 := adiabaticHam es 0 ⟨le_refl 0, by norm_num⟩
     applyOp H0 (equalSuperpositionN n) = (-1 : Complex) • equalSuperpositionN n := by
-  simp [adiabaticHam, applyOp]
-  sorry
+  -- H(0) = -(1-0) * projector + 0 * Hz = -projector
+  simp only [adiabaticHam]
+  rw [show (-(1 - (0 : Real)) : Complex) = (-1 : Complex) by norm_num]
+  rw [show ((0 : Real) : Complex) = (0 : Complex) by norm_num]
+  rw [applyOp_add, applyOp_smul, applyOp_smul]
+  rw [applyOp_projector_self _ (equalSuperpositionN_normalized n)]
+  simp only [zero_smul, add_zero]
 
 /-- At s = 1, the ground state is |0⟩_sym (symmetric ground state) with energy E₀ = 0 -/
 theorem final_groundstate {n M : Nat} (es : EigenStructure n M) (hM : M > 0)
@@ -94,8 +101,13 @@ theorem final_groundstate {n M : Nat} (es : EigenStructure n M) (hM : M > 0)
     let H1 := adiabaticHam es 1 ⟨by norm_num, le_refl 1⟩
     let groundSym := symmetricState es ⟨0, hM⟩
     applyOp H1 groundSym = (0 : Complex) • groundSym := by
-  simp [adiabaticHam, applyOp]
-  sorry
+  -- H(1) = -(1-1) * projector + 1 * Hz = Hz
+  simp only [adiabaticHam, zero_smul]
+  rw [show (-(1 - (1 : Real)) : Complex) = (0 : Complex) by norm_num]
+  rw [show ((1 : Real) : Complex) = (1 : Complex) by norm_num]
+  rw [applyOp_add, applyOp_smul, applyOp_smul]
+  simp only [zero_smul, zero_add, one_smul]
+  rw [applyOp_diagonalHam_symmetricGround es hM hGround]
 
 /-! ## The instantaneous eigenstates -/
 

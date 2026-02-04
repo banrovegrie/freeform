@@ -16,11 +16,12 @@ Each experiment lives in a numbered directory `0x_name/` with standardized conte
 
 ```
 0x_experiment_name/
-├── main.md              # Problem statement, conjectures, results
+├── main.md              # Overview: problem, conjectures, status, references
+├── proof.md             # Full mathematical proof (the main deliverable)
 ├── lib/                 # Supporting code (Python, numerical experiments)
 │   ├── *.py
 │   └── requirements.txt
-├── lean/                # Formal proofs (Lean 4 + Mathlib)
+├── lean/                # Formal verification (Lean 4 + Mathlib)
 │   ├── lakefile.lean
 │   ├── lean-toolchain
 │   └── ExperimentName/
@@ -30,11 +31,12 @@ Each experiment lives in a numbered directory `0x_name/` with standardized conte
     └── *.md
 ```
 
-Not all experiments need all components. Use what is appropriate:
-- `main.md` is always required
-- `lib/` for numerical validation or computational experiments
-- `lean/` for formal verification of theorems
-- `notes/` for literature surveys, failed attempts, working notes
+**File purposes**:
+- `main.md`: Overview - problem statement, conjectures, approach, status, references. Navigable summary.
+- `proof.md`: The actual work - full theorems with complete proofs. This becomes the thesis chapter.
+- `lib/`: Numerical validation, computational experiments, figures
+- `lean/`: End-to-end complete formal verification (optional)
+- `notes/`: Literature surveys, failed attempts, scratchpad, intermediate drafts
 
 
 ## Guidelines
@@ -64,9 +66,9 @@ When an experiment matures sufficiently, extract the relevant content into the a
 | 10 | information_theoretic | Proposed | Limits beyond adiabatic framework |
 
 
-## Research Thread Template
+## Templates
 
-When starting a new experiment, create `main.md` with:
+### main.md (Overview)
 
 ```markdown
 # [Experiment Name]
@@ -75,35 +77,28 @@ When starting a new experiment, create `main.md` with:
 What question are we trying to answer?
 
 ## Why Novel
-- What existing work is related?
-- What gap does this fill?
+What existing work is related? What gap does this fill?
 
 ## Conjectures
-State precise mathematical claims.
+State precise mathematical claims to prove/disprove.
 
 ## Approach
-How do we plan to prove/disprove the conjectures?
-
-## Results
-- CONJECTURE: [unproven claim]
-- THEOREM: [proven claim with proof sketch]
-- EMPIRICAL: [numerical observation]
+Strategy for attacking the problem.
 
 ## Status
-Current state of the experiment.
+Current state: Proposed / Exploratory / Complete
 
 ## References
 Related papers and prior work.
 ```
 
+### proof.md (The Work)
 
-## Lifecycle
+No template. Write the mathematics as it develops. The structure emerges from the content.
 
-1. **Proposed**: Idea identified, main.md created with problem statement
-2. **Exploratory**: Actively investigating, may have partial results
-3. **Complete**: Main results proven/validated, ready for thesis integration
-4. **Archived**: Moved to archive/ (either succeeded and integrated, or documented failure)
+This is the main deliverable - what eventually becomes a thesis chapter.
 
+Needs to be absolutely correct, robust and complete.
 
 ## References
 

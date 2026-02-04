@@ -89,6 +89,9 @@ theorem variational_minimum (N M : Nat) (A : Operator N)
     (sd : SpectralDecomp N M A) (hM : M > 0) :
     ∃ (psi : Ket N), normSquared psi = 1 ∧
       (expectation A psi).re = groundEnergy N M A sd hM := by
-  sorry -- Requires eigenstate construction
+  -- The ground eigenstate achieves the minimum
+  -- We construct a normalized state in the ground eigenspace
+  -- For now, this requires extracting an eigenvector from the projector
+  sorry
 
 end UAQO

@@ -65,6 +65,18 @@ noncomputable def EigenStructure.toHamiltonian {n M : Nat}
   energy := fun z => es.eigenvalues (es.assignment z)
   energy_bounds := fun z => es.eigenval_bounds (es.assignment z)
 
+/-- Applying a diagonal Hamiltonian multiplies each component by its energy -/
+lemma applyOp_diagonalHam {n : Nat} (H : DiagonalHamiltonian n) (v : NQubitState n) :
+    applyOp H.toOperator v = fun i => (H.energy i : Complex) * v i := by
+  funext i
+  simp only [applyOp, DiagonalHamiltonian.toOperator]
+  rw [Finset.sum_eq_single i]
+  · simp only [Matrix.diagonal_apply_eq, mul_comm]
+  · intro j _ hji
+    simp only [Matrix.diagonal_apply_ne _ hji.symm, zero_mul]
+  · intro h
+    exact absurd (Finset.mem_univ i) h
+
 /-! ## Sets of basis states with same eigenvalue -/
 
 /-- The set Ω_k of basis states with eigenvalue E_k -/
@@ -113,6 +125,19 @@ theorem symmetricState_normalized {n M : Nat} (es : EigenStructure n M) (k : Fin
   have hd : (es.degeneracies k : Real) > 0 := Nat.cast_pos.mpr (es.deg_positive k)
   simp only [nsmul_eq_mul]
   field_simp
+
+/-- Applying Hz to the symmetric ground state when E₀ = 0 -/
+lemma applyOp_diagonalHam_symmetricGround {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (hE0 : es.eigenvalues ⟨0, hM⟩ = 0) :
+    applyOp es.toHamiltonian.toOperator (symmetricState es ⟨0, hM⟩) = 0 := by
+  rw [applyOp_diagonalHam]
+  funext i
+  simp only [EigenStructure.toHamiltonian, symmetricState, Pi.zero_apply]
+  by_cases h : es.assignment i = ⟨0, hM⟩
+  · -- In ground eigenspace: energy is E₀ = 0
+    simp only [h, ↓reduceIte, hE0, Complex.ofReal_zero, zero_mul]
+  · -- Not in ground eigenspace: amplitude is 0
+    simp only [h, ↓reduceIte, mul_zero]
 
 /-! ## Spectral gap -/
 

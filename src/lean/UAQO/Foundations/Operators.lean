@@ -99,6 +99,16 @@ lemma applyOp_smul {N : Nat} (c : Complex) (A : Operator N) (v : Ket N) :
   simp [Matrix.smul_apply]
   ring
 
+/-- Applying the sum of operators -/
+lemma applyOp_add {N : Nat} (A B : Operator N) (v : Ket N) :
+    applyOp (A + B) v = applyOp A v + applyOp B v := by
+  funext i
+  simp only [applyOp, Pi.add_apply, Matrix.add_apply]
+  rw [← Finset.sum_add_distrib]
+  congr 1
+  ext j
+  ring
+
 /-- Applying a projector to its defining state -/
 lemma applyOp_projector_self {N : Nat} (v : Ket N) (hv : normSquared v = 1) :
     applyOp (projectorOnState v) v = v := by

@@ -29,7 +29,7 @@ structure A1Approximator where
 
 /-- Construction: Modify a 3-SAT Hamiltonian by adding an extra spin -/
 noncomputable def modifiedHamiltonian {n M : Nat} (es : EigenStructure n M)
-    (alpha : Real) (hM : M > 0) : EigenStructure (n + 1) (M + 1) := {
+    (alpha : Real) (halpha : 0 <= alpha ∧ alpha <= 1) (hM : M > 0) : EigenStructure (n + 1) (M + 1) := {
   eigenvalues := fun k =>
     if h : k.val < M then es.eigenvalues ⟨k.val, h⟩
     else alpha  -- New eigenvalue for the added spin
@@ -37,19 +37,37 @@ noncomputable def modifiedHamiltonian {n M : Nat} (es : EigenStructure n M)
     if h : k.val < M then es.degeneracies ⟨k.val, h⟩
     else 1  -- Single state at the new level
   assignment := fun _ => ⟨0, Nat.lt_of_lt_of_le hM (Nat.le_add_right M 1)⟩
-  eigenval_bounds := by sorry
-  eigenval_ordered := by sorry
-  ground_energy_zero := by sorry
-  deg_positive := by sorry
-  deg_sum := by sorry
-  deg_count := by sorry
+  eigenval_bounds := by
+    intro k
+    by_cases h : k.val < M
+    · simp only [h, dite_true]
+      exact es.eigenval_bounds ⟨k.val, h⟩
+    · simp only [h, dite_false]
+      exact halpha
+  eigenval_ordered := by sorry  -- Requires alpha > all original eigenvalues
+  ground_energy_zero := by
+    intro hM'
+    simp only
+    have h : (0 : Nat) < M := hM
+    simp only [h, dite_true]
+    exact es.ground_energy_zero hM
+  deg_positive := by
+    intro k
+    by_cases h : k.val < M
+    · simp only [h, dite_true]
+      exact es.deg_positive ⟨k.val, h⟩
+    · simp only [h, dite_false]
+      norm_num
+  deg_sum := by sorry  -- Requires careful counting
+  deg_count := by sorry  -- Requires careful counting
 }
 
 /-- Key lemma: A_1 changes predictably when we modify the Hamiltonian -/
 theorem A1_modification_formula {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (alpha : Real) (halpha : alpha > 0) :
+    (hM : M >= 2) (alpha : Real) (halpha : 0 < alpha ∧ alpha <= 1) :
     let hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
-    let es' := modifiedHamiltonian es alpha hM0
+    let halpha_bounds : 0 <= alpha ∧ alpha <= 1 := And.intro (le_of_lt halpha.1) halpha.2
+    let es' := modifiedHamiltonian es alpha halpha_bounds hM0
     let A1_old := A1 es hM0
     let hM1 : M + 1 > 0 := Nat.succ_pos M
     let A1_new := A1 es' hM1

@@ -134,6 +134,23 @@ noncomputable def minimumGap {n M : Nat} (es : EigenStructure n M)
 
 notation "g_min" => minimumGap
 
+/-- The minimum gap is positive -/
+theorem minimumGap_pos {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    minimumGap es hM > 0 := by
+  simp only [minimumGap]
+  have hA1pos : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 1 (by norm_num)
+  have hA2pos : A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) > 0 :=
+    spectralParam_positive es hM 2 (by norm_num)
+  have hd0pos : (es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ : Real) > 0 :=
+    Nat.cast_pos.mpr (es.deg_positive _)
+  have hNpos : (qubitDim n : Real) > 0 :=
+    Nat.cast_pos.mpr (Nat.pow_pos (by norm_num : 0 < 2))
+  have hA1plus1_pos : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) + 1 > 0 := by linarith
+  apply mul_pos
+  · exact div_pos (mul_pos (by norm_num : (2 : Real) > 0) hA1pos) hA1plus1_pos
+  · exact Real.sqrt_pos.mpr (div_pos hd0pos (mul_pos hA2pos hNpos))
+
 /-- The minimum gap scales as √(d_0/N) -/
 theorem minimumGap_scaling {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     ∃ (c : Real), c > 0 ∧

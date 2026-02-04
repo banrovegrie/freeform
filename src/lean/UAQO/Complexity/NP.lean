@@ -33,19 +33,9 @@ def ThreeSAT : DecisionProblem where
 
 /-- 3-SAT is in NP (existence of verifier) -/
 theorem threeSAT_in_NP : InNP ThreeSAT := by
-  use {
-    verify := fun _ _ => sorry  -- Actual verification logic would decode and check
-    cert_bound := by
-      use 1
-      intro x cert _
-      sorry
-    sound := by
-      intro x cert h
-      sorry
-    complete := by
-      intro x hx
-      sorry
-  }
+  -- The verifier for 3-SAT exists but requires full encoding/decoding infrastructure
+  -- This is a standard result in complexity theory
+  sorry
 
 /-! ## NP-hardness -/
 
