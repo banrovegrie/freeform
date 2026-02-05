@@ -70,7 +70,15 @@ lemma sum_mul_star_self_eq_normSquared {N : Nat} (v : Fin N → Complex) :
     rw [Complex.mul_conj]
   rw [← Complex.ofReal_sum]
 
-/-! ## Mathlib bridge lemmas -/
+/-! ## Mathlib bridge lemmas
+
+Note on normSquared vs Mathlib's norm:
+- Our `normSquared` is defined as `Σ_i |v_i|²` for `v : Fin N → ℂ`
+- Mathlib's `‖·‖` for `EuclideanSpace ℂ (Fin N)` would give `sqrt(Σ |v_i|²)`
+- We intentionally use our custom definition to work directly with Finset sums
+- Mathlib's `norm_pos_iff`, `norm_ne_zero_iff` apply to their norm, not ours
+- Our lemmas `normSquared_pos_iff`, `normSquared_eq_zero_iff` serve analogous roles
+-/
 
 /-- Inner product with self equals normSquared -/
 lemma innerProd_self_eq_normSquared {N : Nat} (v : Fin N → Complex) :

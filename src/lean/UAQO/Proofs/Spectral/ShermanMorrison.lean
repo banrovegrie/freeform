@@ -40,29 +40,9 @@ theorem shermanMorrison_resolvent_proof {n : Nat} (A : NQubitOperator n)
     resolvent (A + outerProd u v) gamma =
     resolvent A gamma +
     (1 / (1 - innerProd v (applyOp (resolvent A gamma) u))) •
-    outerProd (applyOp (resolvent A gamma) u) (applyOp ((resolvent A gamma)†) v) := by
-  -- The proof proceeds by verification:
-  -- Show (B - uv†) * (proposed RHS) = I where B = γI - A
-  --
-  -- Let R = B⁻¹ = resolvent A gamma
-  -- RHS = R + α • outerProd(Ru, R†v) where α = 1/(1 - ⟨v|Ru⟩)
-  --
-  -- (B - uv†)(R + α|Ru⟩⟨R†v|) = BR + αB|Ru⟩⟨R†v| - uv†R - αuv†|Ru⟩⟨R†v|
-  --                           = I + α|u⟩⟨R†v| - |u⟩⟨R†v| - α⟨v|Ru⟩|u⟩⟨R†v|
-  --                           [using BR = I, uv†R = |u⟩⟨v|R = |u⟩⟨R†v|]
-  --                           = I + (α - 1 - α⟨v|Ru⟩)|u⟩⟨R†v|
-  --                           = I + (α(1 - ⟨v|Ru⟩) - 1)|u⟩⟨R†v|
-  --                           = I + (1 - 1)|u⟩⟨R†v|  [since α = 1/(1 - ⟨v|Ru⟩)]
-  --                           = I ✓
-  --
-  -- The full formal proof requires:
-  -- 1. Matrix multiplication associativity lemmas
-  -- 2. Resolvent inverse property: B * R = I
-  -- 3. outerProd manipulation lemmas
-  -- 4. Scalar distribution lemmas
-  --
-  -- For now, we leave this as sorry since the algebraic verification
-  -- while straightforward is tedious in Lean.
-  sorry
+    outerProd (applyOp (resolvent A gamma) u) (applyOp ((resolvent A gamma)†) v) :=
+  -- The full proof is in GapBounds.lean as `shermanMorrison_resolvent`
+  -- This file references it directly since GapBounds is imported.
+  shermanMorrison_resolvent A u v gamma hInv hDenom
 
 end UAQO.Proofs.Spectral

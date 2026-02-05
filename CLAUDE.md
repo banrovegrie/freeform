@@ -11,8 +11,6 @@ The thesis should be the best single source for understanding its subject. A rea
 - Novel enough to unify background and reveal new directions.
 - Honest about what is achieved and what remains open.
 
-Good work follows a cycle: study, think, act, reflect, iterate. Acting means writing, proving, experimenting. Reflecting means analyzing results and verifying claims. Maintain a plan that tracks what worked, what failed, and what to try next. Progress often comes from questioning earlier decisions and understanding why something was or was not done. Build taste and intuition through rigor and strong trial and error, not through shortcuts. To do something new: one must know the foundations intimately, yet be brave enough to take risks. Keep pushing much further in ideas and execution.
-
 ## Repository Structure and Access
 
 For use in `src/` (main thesis work):
@@ -83,16 +81,21 @@ All important content lives in `src/`.
 - No non-ASCII characters in the codebase.
 - Everything should be aligned well.
 - All math in `.tex` or `.md` should follow right LaTeX conventions and delimiters.
+- Avoid using too much of `---` in text and only if absolutely necessary.
 
 ### Taste and Style
 
-Good technical writing makes the reader feel that each idea arrives exactly when needed. Before any definition appears, the reader already wants it. Before any theorem is stated, the reader understands what gap it fills. This is achieved by genuinely building the intellectual tension that makes each concept necessary. It is a conversation we have with the reader, trying to nourish them with perspective.
+Before writing a chapter, identify its spine: the few questions that determine order. Write one page naming the tension, the main results with hypotheses, one sentence per chapter. Build a skeleton: each chapter's question, the definitions it needs, the theorems, the lemmas.
 
-The writing should make the reader care about the question before answering it. It should state results with precision: explicit bounds, clear dependencies, honest limitations. It should guide the reader through unfamiliar territory with patience, using concrete examples that recur and accumulate meaning. These qualities must be embodied, not named. The reader should never see the scaffolding. Phrases like "from a philosophical standpoint" or "to provide intuition" reveal technique rather than executing it. Good craft is invisible: the reader experiences clarity without noticing method.
+Before introducing any concept, build the tension that makes it necessary. The reader should want the definition before it appears, understand what gap a theorem fills before it is stated. Only introduce a definition when current language is insufficient. Use it immediately.
 
-When writing with AI assistance, there is a specific danger. LLMs are trained on text that fills space rather than carrying meaning. The output tends toward vague generalities, hedged claims, and filler sentences unless actively counteracted. Every sentence must earn its place. If a sentence can be removed without information loss, remove it.
+Exposition needs two passes. First explain plainly: what the statement means, what the parameters control, what the theorem enables. Then state and prove. State proof strategy upfront. Decompose into lemmas matching logical moves, not algebraic accidents. State results with explicit bounds, clear dependencies, honest limitations. Use concrete examples that recur and accumulate meaning.
 
-The thesis concerns adiabatic quantum optimization. Use consistent notation throughout. Import mathematical statements directly from the published paper where possible. Notation and mathematical details are where LLMs fail most invisibly. A human expert would catch errors here.
+Do not signal technique. Never write "to provide intuition" or "from a philosophical standpoint". Just provide the intuition, just make the philosophical point. Do not announce what you are doing. Do it.
+
+Revise in passes: structure, clarity, precision, style. Write out of order, for example, introduction last. Test each section: what can the reader do after reading this that they could not do before? If the answer is nothing, delete it.
+
+LLMs are trained on text that fills space. Output tends toward vague generalities, hedged claims, and filler. Every sentence must carry information. If a sentence can be removed without information loss, remove it. Use theorem skeletons and claims paired with proofs. Demand lifted statements from sources, not invention. Require explicit assumptions and named failure modes. Import mathematical statements directly from the published paper where possible. Notation and mathematical details are where LLMs fail most invisibly. A human expert would catch errors here. You may outsource production. You cannot outsource judgment.
 
 For detailed analysis of specific authors and their patterns, see `taste/README.md`.
 

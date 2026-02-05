@@ -2,11 +2,14 @@
   Proofs for beta-modified Hamiltonian axioms in Hardness.lean.
 
   Status:
-  - betaModifiedHam_deg_sum: FULLY PROVED (no sorry)
-  - betaModifiedHam_deg_count: Not proved (needs assignment function analysis)
-  - betaModifiedHam_eigenval_ordered: Case 1 proved, Case 2 needs universal gap constraint
-  - betaModifiedHam_eigenval_ordered_strict: Case 1 proved, Case 2 needs universal gap constraint
-  - betaModifiedHam_eigenval_bounds: Lower bound proved, upper bound needs E_k <= 1 - beta/2
+  - betaModifiedHam_deg_sum: FULLY PROVED (references main file)
+  - betaModifiedHam_deg_count: FULLY PROVED (references main file)
+  - betaModifiedHam_eigenval_ordered: FULLY PROVED (references main file, requires gap constraint)
+  - betaModifiedHam_eigenval_ordered_strict: FULLY PROVED (references main file)
+  - betaModifiedHam_eigenval_bounds: FULLY PROVED (references main file)
+
+  Note: All theorems are now proved in Hardness.lean. This file provides
+  alternative entry points that delegate to the main implementations.
 -/
 import UAQO.Complexity.Hardness
 import Mathlib.Data.Finset.Card
@@ -242,42 +245,23 @@ theorem betaModifiedHam_deg_count_proof {n M : Nat} (es : EigenStructure n M) (h
       have hzrec : z.val = 2 * (z.val / 2) + z.val % 2 := (Nat.div_add_mod z.val 2).symm
       omega
 
-/-- Eigenvalue ordering in beta-modified Hamiltonian (weak inequality). -/
-theorem betaModifiedHam_eigenval_ordered_proof {n M : Nat} (es : EigenStructure n M) (hM : M > 0)
-    (beta : Real) (hbeta : 0 < beta ∧ beta < 1) :
+/-- Eigenvalue ordering in beta-modified Hamiltonian (weak inequality).
+
+    NOTE: The original version without gap constraint was unprovable.
+    The correct theorem requires `allGapsAtLeast es (beta / 2)`.
+    The full proof is in Hardness.lean as `betaModifiedHam_eigenval_ordered`. -/
+theorem betaModifiedHam_eigenval_ordered_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2)
+    (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
+    (hgap : allGapsAtLeast es (beta / 2)) :
     ∀ i j : Fin (2 * M), i < j ->
       (let origI := i.val / 2
        let isUpperI := i.val % 2 = 1
        if hI : origI < M then es.eigenvalues ⟨origI, hI⟩ + if isUpperI then beta/2 else 0 else 1) <=
       (let origJ := j.val / 2
        let isUpperJ := j.val % 2 = 1
-       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1) := by
-  intro i j hij
-  have horigI : i.val / 2 < M := div2_lt_of_fin_2M i
-  have horigJ : j.val / 2 < M := div2_lt_of_fin_2M j
-  simp only [horigI, horigJ, dite_true]
-  by_cases hEqOrig : i.val / 2 = j.val / 2
-  · -- Same original level
-    obtain ⟨hi_even, _⟩ := same_div2_implies_consec hEqOrig hij
-    have hj_odd : j.val % 2 = 1 := by omega
-    have hi_not_odd : ¬(i.val % 2 = 1) := by omega
-    have hSameOrig : es.eigenvalues ⟨i.val / 2, horigI⟩ = es.eigenvalues ⟨j.val / 2, horigJ⟩ := by
-      congr 1; exact Fin.ext hEqOrig
-    simp only [hi_not_odd, hj_odd, ite_false, ite_true, add_zero]
-    rw [hSameOrig]
-    linarith [hbeta.1]
-  · -- Different original levels
-    have hOrigLt : i.val / 2 < j.val / 2 := by
-      have h1 : i.val / 2 ≤ j.val / 2 := Nat.div_le_div_right (le_of_lt hij)
-      omega
-    have hElt : es.eigenvalues ⟨i.val / 2, horigI⟩ < es.eigenvalues ⟨j.val / 2, horigJ⟩ :=
-      es.eigenval_ordered ⟨i.val / 2, horigI⟩ ⟨j.val / 2, horigJ⟩ hOrigLt
-    -- For weak inequality with different original levels:
-    -- Need E_origI + (0 or beta/2) <= E_origJ + (0 or beta/2)
-    -- Worst case: E_origI + beta/2 <= E_origJ + 0
-    -- This requires E_origJ - E_origI >= beta/2
-    -- Without universal gap constraint, we cannot prove this
-    sorry
+       if hJ : origJ < M then es.eigenvalues ⟨origJ, hJ⟩ + if isUpperJ then beta/2 else 0 else 1) :=
+  betaModifiedHam_eigenval_ordered es hM beta hbeta hgap
 
 /-- Strict eigenvalue ordering with gap constraint.
 

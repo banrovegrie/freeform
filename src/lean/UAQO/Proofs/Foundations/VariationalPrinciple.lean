@@ -32,19 +32,16 @@ open UAQO
 theorem variational_principle_proof (N M : Nat) (A : Operator N)
     (sd : SpectralDecomp N M A) (hM : M > 0) (phi : Ket N)
     (hphi : normSquared phi = 1) :
-    (expectation A phi).re >= groundEnergy N M A sd hM := by
-  -- The full proof requires projector positivity infrastructure.
-  -- Key steps outlined in file header.
-  sorry
+    (expectation A phi).re >= groundEnergy N M A sd hM :=
+  -- The full proof is in SpectralTheory.lean as `variational_principle`
+  variational_principle N M A sd hM phi hphi
 
 /-- The minimum is achieved by the ground state. -/
 theorem variational_minimum_proof (N M : Nat) (A : Operator N)
     (sd : SpectralDecomp N M A) (hM : M > 0) :
     ∃ (psi : Ket N), normSquared psi = 1 ∧
-      (expectation A psi).re = groundEnergy N M A sd hM := by
-  -- The minimum is achieved by any normalized vector in the ground state eigenspace.
-  -- Existence follows from the fact that each eigenspace has positive dimension
-  -- (degeneracies k > 0 required, or extract from projector_rank).
-  sorry
+      (expectation A psi).re = groundEnergy N M A sd hM :=
+  -- The full proof is in SpectralTheory.lean as `variational_minimum`
+  variational_minimum N M A sd hM
 
 end UAQO.Proofs.Foundations

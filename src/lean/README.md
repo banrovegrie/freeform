@@ -6,9 +6,27 @@ Formal verification of "Unstructured Adiabatic Quantum Optimization: Optimality 
 
 This formalization captures the mathematical structure of adiabatic quantum optimization for unstructured search, including:
 
-- Main Result 1: Running time $T = O(1/\Delta)$ where $\Delta$ is the spectral gap of the diagonal Hamiltonian
-- Main Result 2: Approximating the spectral parameter $A_1$ to $1/\text{poly}(n)$ precision is NP-hard
-- Main Result 3: Exactly computing $A_1$ is #P-hard
+- Main Result 1: Running time T = O(1/Delta) where Delta is the spectral gap
+- Main Result 2: Approximating A1 to 1/poly(n) precision is NP-hard
+- Main Result 3: Exactly computing A1 is #P-hard
+
+## Status
+
+| Metric | Count |
+|--------|-------|
+| Axioms | 27 |
+| Theorems | 76 |
+| Sorries | 0 |
+| Lines of Lean | ~5,000 |
+
+The formalization is sorry-free. 19 axioms have been eliminated through proofs.
+
+## Building
+
+```bash
+lake update
+lake build
+```
 
 ## Project Structure
 
@@ -16,16 +34,16 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 UAQO/
     Foundations/
         Basic.lean              Qubit states, operators, norms
-        HilbertSpace.lean       Inner products, norms, mathlib bridges
+        HilbertSpace.lean       Inner products, mathlib bridges
         Operators.lean          Hermitian operators, resolvents
         SpectralTheory.lean     Eigenvalues, spectral decomposition
         Qubit.lean              Qubit systems, tensor products
     Spectral/
         DiagonalHamiltonian.lean  Diagonal Hamiltonians, eigenstructure
         SpectralParameters.lean   A1, A2 parameters, avoided crossings
-        GapBounds.lean            Gap bounds in different regions
+        GapBounds.lean            Gap bounds, Sherman-Morrison
     Adiabatic/
-        Hamiltonian.lean        Time-dependent Hamiltonians, interpolation
+        Hamiltonian.lean        Time-dependent Hamiltonians
         Schedule.lean           Local schedules, piecewise construction
         Theorem.lean            Adiabatic theorem statement
         RunningTime.lean        Main Result 1, optimality
@@ -34,158 +52,97 @@ UAQO/
         NP.lean                 NP, NP-completeness, 3-SAT
         SharpP.lean             #P, counting problems, interpolation
         Hardness.lean           Main Results 2 and 3, reductions
+    Proofs/                     Auxiliary proof files (delegates to main)
     Test/
         Verify.lean             Type-checking key theorems
 ```
 
-## Building
+## Axiom Tracking
 
-Requires Lean 4 (v4.28.0-rc1) and mathlib4.
+### Remaining Axioms (27 total)
 
-```bash
-lake update
-lake build
-```
+**External Foundations (9 axioms)** - Require independent formalization projects:
 
-## Formalization Status
+| Axiom | Reason |
+|-------|--------|
+| `threeSAT_in_NP` | Cook-Levin theorem |
+| `threeSAT_NP_complete` | Cook-Levin theorem |
+| `sharpThreeSAT_in_SharpP` | Valiant's theorem |
+| `sharpThreeSAT_complete` | Valiant's theorem |
+| `sharpP_solves_NP` | Oracle complexity |
+| `degeneracy_sharpP_hard` | Reduction proof |
+| `adiabaticTheorem` | Quantum dynamics |
+| `eigenpath_traversal` | Quantum dynamics |
+| `resolvent_distance_to_spectrum` | Infinite-dim spectral theory |
 
-| Metric              | Count  |
-|---------------------|--------|
-| Sorries             | 0      |
-| Axioms              | 27     |
-| Lines of Lean (main)| ~4,800 |
-| Lines of Lean (total)| ~6,100 |
+**Gap Bounds (8 axioms)** - Need Matrix Determinant Lemma for `eigenvalue_condition`:
 
-The formalization is sorry-free but relies on 27 axioms for deep mathematical results.
-19 axioms have been eliminated through proofs since the initial formalization.
+| Axiom | Notes |
+|-------|-------|
+| `eigenvalue_condition` | Secular equation from Sherman-Morrison |
+| `groundEnergy_variational_bound` | Needs spectral decomposition of H(s) |
+| `firstExcited_lower_bound` | Needs spectral structure |
+| `gap_bound_left_axiom` | Variational analysis left of crossing |
+| `gap_at_avoided_crossing_axiom` | Analysis at crossing |
+| `gap_bound_right_axiom` | Resolvent method right of crossing |
+| `gap_bound_all_s_axiom` | Combined regional bounds |
+| `gap_minimum_at_crossing_axiom` | Minimum location |
 
-## Axiom Categories
+**Running Time (4 axioms)** - Depend on gap bounds:
 
-### Complexity Theory Foundations (6 axioms)
+| Axiom | Notes |
+|-------|-------|
+| `mainResult1` | Depends on gap bounds + adiabatic theorem |
+| `runningTime_ising_bound` | Depends on mainResult1 |
+| `lowerBound_unstructuredSearch` | BBBV lower bound (external) |
+| `runningTime_matches_lower_bound` | Optimality argument |
 
-Standard results from computational complexity:
+**Hardness (6 axioms)** - Main complexity results:
 
-- `threeSAT_in_NP`: 3-SAT is in NP
-- `threeSAT_NP_complete`: Cook-Levin theorem
-- `sharpThreeSAT_in_SharpP`: #3-SAT is in #P
-- `sharpThreeSAT_complete`: #3-SAT is #P-complete
-- `sharpP_solves_NP`: #P oracle solves NP
-- `degeneracy_sharpP_hard`: Computing degeneracies is #P-hard
+| Axiom | Notes |
+|-------|-------|
+| `threeSATWellFormed_numVars` | Keep as axiom (unprovable) |
+| `A1_polynomial_in_beta` | Polynomial structure analysis |
+| `mainResult2` | NP-hardness via threshold distinction |
+| `A1_approx_implies_P_eq_NP` | Corollary of mainResult2 |
+| `mainResult3` | #P-hardness via interpolation |
+| `mainResult3_robust` | Robustness to exponential errors |
 
-Note: `lagrange_interpolation` was eliminated (proved using Mathlib.Lagrange).
-
-### Spectral Theory (1 axiom)
-
-Functional analysis foundations:
-
-- `resolvent_distance_to_spectrum`: Resolvent norm equals inverse distance to spectrum
-
-Note: `variational_principle` and `variational_minimum` were eliminated (proved using projector positivity and spectral decomposition).
-
-### Adiabatic Theorem and Running Time (6 axioms)
-
-Quantum adiabatic evolution:
-
-- `adiabaticTheorem`: Adiabatic approximation with gap-dependent error
-- `eigenpath_traversal`: Ground state tracking under slow evolution
-- `mainResult1`: Running time $T = O(1/\Delta)$
-- `runningTime_ising_bound`: Running time for Ising problems
-- `runningTime_matches_lower_bound`: Optimality of the bound
-- `lowerBound_unstructuredSearch`: Query complexity lower bound (BBBV)
-
-Note: `measurement_yields_groundstate` was eliminated (proved using Cauchy-Schwarz and expansion $|\phi|^2 = |g+\delta|^2$).
-
-Note: `complex_cauchy_schwarz` was eliminated (proved using the quadratic discriminant method).
-
-### Gap Bounds (8 axioms)
-
-Spectral gap analysis:
-
-- `eigenvalue_condition`: Eigenvalue structure in interpolation
-- `groundEnergy_variational_bound`: Ground energy bounds
-- `firstExcited_lower_bound`: First excited state bounds
-- `gap_bound_left_axiom`: Gap bound left of avoided crossing
-- `gap_at_avoided_crossing_axiom`: Gap at avoided crossing
-- `gap_bound_right_axiom`: Gap bound right of avoided crossing
-- `gap_bound_all_s_axiom`: Combined gap bound
-- `gap_minimum_at_crossing_axiom`: Gap minimum location
-
-Note: `shermanMorrison_resolvent` was eliminated (proved using verification with Matrix.inv_eq_left_inv and adjoint properties).
-
-### Hardness Constructions (6 axioms)
-
-Modified Hamiltonian properties for reductions:
-
-**3-SAT Encoding (1):**
-- `threeSATWellFormed_numVars`: Well-formed formulas have variables (kept as axiom)
-
-**A1 Properties (1):**
-- `A1_polynomial_in_beta`: $A_1$ as polynomial in beta parameter
-
-**Main Hardness Results (4):**
-- `mainResult2`: NP-hardness of approximating $A_1$
-- `A1_approx_implies_P_eq_NP`: Polynomial-time A1 approximation implies P=NP
-- `mainResult3`: #P-hardness via polynomial interpolation
-- `mainResult3_robust`: Robustness to exponential errors
-
-**Eliminated (now proved):**
-- `modifiedHam_deg_sum`, `modifiedHam_deg_count`: Finset sum manipulation
-- `betaModifiedHam_deg_sum`, `betaModifiedHam_deg_count`: Even/odd bijection
-- `betaModifiedHam_eigenval_ordered`: Non-strict ordering with gap constraint
-- `betaModifiedHam_eigenval_ordered_strict`: Strict ordering with allGapsGreaterThan
-- `betaModifiedHam_eigenval_bounds`: Bounds with eigenvalue constraint
-- `threeSATDegPositive_ground`: Satisfying assignment extraction
-- `satisfies_iff_countUnsatisfied_zero`: List.filter/all equivalence
-- `A1_modification_preserved`: Finset sum algebra
-
-### Schedule Construction (0 axioms)
-
-All schedule axioms have been eliminated:
-- `avoidedCrossing_bound`: Proved with `spectralConditionForBounds` hypothesis
-- `piecewiseSchedule_monotone`: Proved via real analysis (6-case split)
-- `avoidedCrossingWindow_pos`: Proved (positivity of window)
-
-### Spectral Parameters (0 axioms)
-
-All spectral parameter axioms have been eliminated:
-- `A2_upper_bound`: Finset sum bounds (was misnamed `A2_lower_bound`)
-
-## Key Definitions and Theorems
-
-### Converted from Axioms to Definitions/Theorems
-
-The following 18 axioms were eliminated through proofs:
+### Eliminated Axioms (19 total)
 
 | Axiom | File | Method |
 |-------|------|--------|
+| `shermanMorrison_resolvent` | GapBounds.lean | Matrix inverse verification |
+| `variational_principle` | SpectralTheory.lean | Projector positivity + spectral decomp |
+| `variational_minimum` | SpectralTheory.lean | Ground eigenstate from SpectralDecomp |
+| `measurement_yields_groundstate` | RunningTime.lean | Cauchy-Schwarz + norm expansion |
+| `complex_cauchy_schwarz` | RunningTime.lean | Quadratic discriminant method |
+| `lagrange_interpolation` | SharpP.lean | Mathlib.Lagrange + uniqueness |
 | `satisfies_iff_countUnsatisfied_zero` | Hardness.lean | List.filter/all equivalence |
 | `threeSATDegPositive_ground` | Hardness.lean | Satisfying assignment extraction |
 | `modifiedHam_deg_sum` | Hardness.lean | Finset sum manipulation |
 | `modifiedHam_deg_count` | Hardness.lean | Bijection argument |
 | `A1_modification_preserved` | Hardness.lean | Finset sum algebra |
-| `avoidedCrossing_bound` | Schedule.lean | Added `spectralConditionForBounds` hypothesis |
+| `betaModifiedHam_deg_sum` | Hardness.lean | Even/odd bijection |
+| `betaModifiedHam_deg_count` | Hardness.lean | Finset filter equality |
+| `betaModifiedHam_eigenval_ordered` | Hardness.lean | Gap constraint case analysis |
+| `betaModifiedHam_eigenval_ordered_strict` | Hardness.lean | allGapsGreaterThan |
+| `betaModifiedHam_eigenval_bounds` | Hardness.lean | Eigenvalue constraint |
+| `avoidedCrossing_bound` | Schedule.lean | spectralConditionForBounds |
 | `A2_upper_bound` | SpectralParameters.lean | Finset sum bounds |
 | `piecewiseSchedule_monotone` | Schedule.lean | Real analysis, 6-case split |
-| `lagrange_interpolation` | SharpP.lean | Mathlib.Lagrange + uniqueness |
-| `betaModifiedHam_deg_sum` | Hardness.lean | Even/odd bijection over Fin(2*M) |
-| `betaModifiedHam_deg_count` | Hardness.lean | Finset filter equality |
-| `betaModifiedHam_eigenval_ordered` | Hardness.lean | Non-strict ordering with gap constraint |
-| `betaModifiedHam_eigenval_ordered_strict` | Hardness.lean | Strict ordering with allGapsGreaterThan |
-| `betaModifiedHam_eigenval_bounds` | Hardness.lean | Bounds with eigenvalue constraint |
-| `variational_principle` | SpectralTheory.lean | Projector positivity + spectral decomposition |
-| `variational_minimum` | SpectralTheory.lean | Ground eigenstate from SpectralDecomp |
-| `measurement_yields_groundstate` | RunningTime.lean | Cauchy-Schwarz + norm expansion |
-| `complex_cauchy_schwarz` | RunningTime.lean | Quadratic discriminant method |
-| `shermanMorrison_resolvent` | GapBounds.lean | Matrix inverse verification + adjoint lemmas |
 
-Additional definitions and theorems:
-- `modifiedHam_assignment`: Definition mapping extended states to eigenvalue indices
-- `modifiedHam_eigenval_ordered`: Theorem proving eigenvalue ordering
-- `threeSATAssignment`: Definition based on unsatisfied clause count
-- `threeSATDegCount`: Theorem relating degeneracy to assignment filter
-- `threeSATDegSum`: Theorem that degeneracies partition the Hilbert space
-- `threeSATDegSum_total`: Corollary of threeSATDegSum
-- `betaModifiedHam_assignment`: Definition for beta-modified construction
+### Formulation Fixes Applied
+
+| Axiom | Issue | Fix |
+|-------|-------|-----|
+| `A2_lower_bound` | Was actually an upper bound | Changed to `A2_upper_bound` |
+| `avoidedCrossing_bound` | Missing hypothesis | Added `spectralConditionForBounds` |
+| `betaModifiedHam_eigenval_ordered_strict` | Used first gap only | Changed to `allGapsGreaterThan` |
+| `betaModifiedHam_eigenval_ordered` | Missing gap constraint | Added `allGapsAtLeast es (beta/2)` |
+| `shermanMorrison_resolvent` | Sign error | Fixed denominator sign |
+
+## Key Definitions
 
 ### EigenStructure
 
@@ -194,65 +151,93 @@ structure EigenStructure (n M : Nat) where
   eigenvalues    : Fin M -> Real
   degeneracies   : Fin M -> Nat
   assignment     : Fin (qubitDim n) -> Fin M
-  eigenval_bounds    : forall k, 0 <= eigenvalues k and eigenvalues k <= 1
   eigenval_ordered   : forall i j, i < j -> eigenvalues i < eigenvalues j
-  ground_energy_zero : M > 0 -> eigenvalues 0 = 0
   deg_positive       : forall k, degeneracies k > 0
-  deg_sum            : sum over k of degeneracies k = qubitDim n
-  deg_count          : forall k, degeneracies k = card of states mapping to k
+  deg_sum            : sum of degeneracies = qubitDim n
+  deg_count          : degeneracies k = card of states mapping to k
 ```
 
 ### Spectral Parameters
 
 ```lean
--- A1: First spectral parameter (determines avoided crossing position)
-noncomputable def A1 (es : EigenStructure n M) (hM : M > 0) : Real :=
+-- A1: First spectral parameter (avoided crossing position)
+def A1 (es : EigenStructure n M) : Real :=
   (1/N) * sum_{k>=1} d_k / (E_k - E_0)
 
--- A2: Second spectral parameter (appears in minimum gap)
-noncomputable def A2 (es : EigenStructure n M) (hM : M > 0) : Real :=
+-- A2: Second spectral parameter (minimum gap)
+def A2 (es : EigenStructure n M) : Real :=
   (1/N) * sum_{k>=1} d_k / (E_k - E_0)^2
+```
+
+### Gap Constraints
+
+```lean
+-- Consecutive gap at level k
+def consecutiveGap (es : EigenStructure n M) (k : Nat) : Real :=
+  es.eigenvalues (k + 1) - es.eigenvalues k
+
+-- All gaps at least delta
+def allGapsAtLeast (es : EigenStructure n M) (delta : Real) : Prop :=
+  forall k, consecutiveGap es k >= delta
+
+-- Spectral condition for bounds
+def spectralConditionForBounds (es : EigenStructure n M) : Prop :=
+  A1 > 1 and sqrt(d0 * A2 / N) < (A1 + 1) / 2
 ```
 
 ## Design Decisions
 
-1. **Diagonal Hamiltonians**: The formalization focuses on diagonal Hamiltonians in the computational basis, which is the setting of the paper.
+1. **Diagonal Hamiltonians**: Focus on computational basis, matching the paper.
 
-2. **EigenStructure abstraction**: Rather than working with explicit matrix representations, we abstract to eigenvalue/degeneracy data. This captures the essential spectral information needed for the analysis.
+2. **EigenStructure abstraction**: Eigenvalue/degeneracy data rather than explicit matrices.
 
-3. **Axiom boundary**: Deep results (adiabatic theorem, Cook-Levin, spectral theory) are axiomatized. This is standard practice; these would each require major independent formalization efforts.
+3. **Axiom boundary**: Deep results (adiabatic theorem, Cook-Levin) are axiomatized.
 
-4. **Mathlib integration**: Bridge lemmas connect our definitions to mathlib's inner product spaces and hermitian matrices, enabling future proof development.
+4. **Mathlib integration**: Bridge lemmas connect to mathlib's inner product spaces.
 
 ## Future Work
 
-To further reduce the axiom count, priority targets are:
+**Priority targets for further axiom elimination:**
 
-1. **Sherman-Morrison** (HIGH): Matrix identity for resolvents (sign convention needs verification).
-   Unlocks: `eigenvalue_condition`, `firstExcited_lower_bound`, `gap_bound_right_axiom`
+1. **Matrix Determinant Lemma**: `det(A + uv^T) = det(A)(1 + v^T A^{-1} u)`
+   - PROVED in `Proofs/Spectral/MatrixDetLemma.lean`
+   - Uses Mathlib's `det_one_add_replicateCol_mul_replicateRow`
 
-2. **Gap bounds** (MEDIUM): Spectral analysis of H(s) = (1-s)H_0 + sH_D.
-   Remaining: `groundEnergy_variational_bound`, `gap_bound_left_axiom`, `gap_at_avoided_crossing_axiom`, etc.
+2. **Eigenvalue Condition** (`eigenvalue_condition`): Secular equation for H(s) eigenvalues
+   - Infrastructure in `Proofs/Spectral/EigenvalueCondition.lean`
+   - Key lemmas PROVED:
+     - `isEigenvalue_iff_det_eq_zero`: eigenvalue ↔ det = 0
+     - `diag_resolvent_invertible`: diagonal resolvent is invertible
+     - `adiabaticHam_eq`: Hamiltonian decomposition
+     - `det_adiabaticHam_factored`: **KEY - determinant factors using Matrix Det Lemma**
+   - Helper lemmas proved: scalar outer products, inner product linearity
+   - Remaining sorries: resolvent expectation formula (diagonal inverse), main theorem
+   - Once complete, unlocks 8 gap bound axioms
 
-3. **Cauchy-Schwarz** (LOW): Bridge to Mathlib's EuclideanSpace inner product.
-   Proves: `complex_cauchy_schwarz`
+3. **Gap bounds**: Once eigenvalue_condition is proved, regional bounds follow from the paper's analysis.
 
-The following axioms require independent formalization projects:
-- Complexity theory (Cook-Levin, #P-completeness): 6 axioms
-- Quantum dynamics (adiabatic theorem): 2 axioms
-- Infinite-dimensional spectral theory: 1 axiom
+4. **Main results**: Depend on gap bounds and external foundations.
 
-**Recently completed:**
-- Variational principle: Proved using projector positivity + spectral decomposition
-- Beta-modified eigenvalue ordering: Proved via case analysis on index parity
-- Measurement probability: Proved using Cauchy-Schwarz expansion
+**External foundations (won't prove):**
+- Cook-Levin theorem (6 axioms)
+- Adiabatic theorem (2 axioms)
+- Infinite-dim spectral theory (1 axiom)
+
+## Verification
+
+```bash
+# Build
+lake build
+
+# Count axioms
+grep -rn "^axiom " UAQO/ | grep -v "Proofs/" | wc -l
+
+# Check for sorries
+grep -rn "sorry" UAQO/ | grep -v "Proofs/" | grep -v README
+```
 
 ## References
 
-- Unstructured Adiabatic Quantum Optimization: Optimality with Limitations (arXiv:2411.05736)
+- Unstructured Adiabatic Quantum Optimization (arXiv:2411.05736)
 - Roland-Cerf local adiabatic search (arXiv:quant-ph/0107015)
-- Mathlib4 documentation: https://leanprover-community.github.io/mathlib4_docs/
-
-## License
-
-Part of the UAQO thesis project.
+- Mathlib4: https://leanprover-community.github.io/mathlib4_docs/

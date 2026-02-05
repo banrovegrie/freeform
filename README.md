@@ -130,3 +130,37 @@ Here, we will be extending the work based on our `src/experiments/`.
 | 10.2 What this changes | How to interpret AQO claims, and what "speedup" means when precision is a resource |
 | 10.3 Lean status (optional) | What has been formalized, what assumptions remain |
 | 10.4 Open problems | Structured instances, noise models, intermediate precision regimes, new schedule primitives |
+
+## On Writing
+
+One must imagine the writer at work. The cycle is always the same: study, think, act, reflect, begin again. There are no shortcuts. To do something new, one must know the old intimately, and then be willing to betray it.
+
+Writing is the act that makes the rest visible. A proof in a notebook changes nothing. A proof that others can follow changes the field. Good writing is about holding a conversation with the readers and nourishing them with perspective. The conversation is the questions they actually have. The nourishment is how your answers rearrange what they see.
+
+A thesis is not a diary of labor. It is an experience designed to end in understanding. When it works, the reader finishes able to predict what happens when parameters shift, what breaks when assumptions weaken, where the real obstacles hide. This is the only honest measure: not what the writer did, but what the reader can now do.
+
+Every thesis needs a spine --- a few questions that determine the order of everything else. Without this, you default to chronology or taxonomy: locally readable, globally dead. The difference between a thesis and a stack of results is the spine.
+
+Before writing anything, write one page. Name the tension: what you want to prove and what obstructs you. State what is fixed and what you control. State the main results with explicit hypotheses. Say what changes because they hold. One sentence per chapter, naming its question. If you cannot write this page, the thesis does not exist yet. Writing the page forces the decision.
+
+Then say the rules. What you will and will not do. Where you are headed. Readers who see the destination read proofs differently --- they allocate attention, forgive necessary detours, and recognize when you are stalling.
+
+Build a skeleton before prose. Each chapter's question. The definitions its claims require. The theorems with hypotheses. The lemmas each theorem needs. Unused background means the story wandered.
+
+Definitions come from failure. You try to state your goal and find the language insufficient. You introduce the smallest concept that clears the obstruction. Use it immediately. A definition that sits unused for pages arrived too early.
+
+Exposition needs two passes. First explain plainly: what the statement means, what the parameters control, what the theorem lets you do that you could not do before. Then state and prove. The plain pass cannot be vague. Readers should be able to predict the scaling before seeing algebra.
+
+A proof is not scratchwork but a guided path. State the strategy upfront. Decompose into lemmas matching logical moves, not algebraic accidents. Mark where the key inequalities enter. After proving, say what you actually used. Readers learn structure by seeing which assumptions bear weight.
+
+Clarity is correctness. Ambiguous prose plants false theorems in the reader's mind. Short sentences. Write for intelligence that is not inside your head. A paragraph requiring rereading is not deep; it is unfinished. Rewriting is thinking.
+
+Revise in passes. Structure: align the order of sections with the order of dependencies. Clarity: each paragraph advances the argument. Precision: replace vague words with explicit conditions. Style: cut scaffolding. If a sentence does no work, delete it.
+
+Write out of order. Begin where you are surest. Introduction last. Written early, it promises what later chapters may not deliver.
+
+Sometimes the spine does not hold. The proof stays broken. The theorem you wanted is false. This is not failure of effort but discovery of terrain. Document what you learned. The thesis that honestly maps a dead end serves the field better than the thesis that pretends the path was always clear.
+
+Agents generate fast and err without grounding. They simulate understanding without possessing it. Asking for pages and hoping they are true is the fastest way to destroy a thesis. Give them artifacts: the one-page story, a theorem skeleton, claims paired with proofs. Feed sources and demand lifted statements, not invention. Require explicit assumptions, named failure modes, forward references. Reject "it is known" without pointers. You may outsource production. You cannot outsource judgment.
+
+The only question that matters is what the reader can do afterward that they could not do before. When you doubt a section, ask this. If the answer is nothing, delete it. What remains after the cutting is the work. The cycle begins again.
