@@ -26,18 +26,19 @@ The chapters should be written in this order:
 5 -> 6 -> 7 -> 8 -> 9 -> 4 -> 3 -> 2 -> 10 -> 1 -> 11
 ```
 
-**Why this order:**
+Why this order?
 
-1. **Core chapters first (5-8):** These are the heart of the thesis, directly exposing the published paper's main results. Chapter 5 sets up AQO, Chapter 6 does spectral analysis, Chapter 7 derives the optimal runtime, Chapter 8 proves hardness. Writing these first ensures the technical spine is solid before anything else.
+1. Core chapters first (5-8): These are the heart of the thesis, directly exposing the published paper's main results. Chapter 5 sets up AQO, Chapter 6 does spectral analysis, Chapter 7 derives the optimal runtime, Chapter 8 proves hardness. Writing these first ensures the technical spine is solid before anything else.
 
-2. **Extensions next (9):** Chapter 9 contains original contributions (separation theorem, partial information, robust/adaptive schedules). It builds directly on Chapters 5-8 and should be written while that content is fresh.
+2. Extensions next (9): Chapter 9 contains original contributions (separation theorem, partial information, robust/adaptive schedules). It builds directly on Chapters 5-8 and should be written while that content is fresh.
 
-3. **Background backward (4-3-2):** Background chapters are written after the core to ensure they define exactly what is needed and nothing more. Writing them backward (from AQC to QC to Physics) ensures each chapter prepares precisely for what follows. Avoids over-explaining or under-explaining.
+3. Background backward (4-3-2): Background chapters are written after the core to ensure they define exactly what is needed and nothing more. Writing them backward (from AQC to QC to Physics) ensures each chapter prepares precisely for what follows. Avoids over-explaining or under-explaining.
 
-4. **Formalization (10):** Documents the Lean proofs. Best written after all mathematical content is stable, so the formalization section accurately reflects what was proven.
+4. Formalization (10): Documents the Lean proofs. Best written after all mathematical content is stable, so the formalization section accurately reflects what was proven.
 
-5. **Framing last (1, 11):** Introduction and Conclusion are written last because they must reflect actual content. The Introduction previews results that exist; the Conclusion summarizes what was achieved. Writing them early leads to promises the thesis doesn't keep.
+5. Framing last (1, 11): Introduction and Conclusion are written last because they must reflect actual content. The Introduction previews results that exist; the Conclusion summarizes what was achieved. Writing them early leads to promises the thesis doesn't keep.
 
+**NOTE**: The following chapter sketches attempt at structuring the thesis but are not final and feel free to edit them or build the chapters irrespective of them.
 
 ### Chapter 1: Introduction
 
