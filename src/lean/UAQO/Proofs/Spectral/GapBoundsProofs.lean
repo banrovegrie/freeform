@@ -429,6 +429,20 @@ lemma weighted_sum_ge_min_times_sum {N : Nat} [NeZero N]
         intro k _
         exact mul_le_mul_of_nonneg_right (hmin k) (hws_nonneg k)
 
+/-- A weighted sum with non-negative weights is bounded above by max*sum.
+    If all weights are ≤ E_max and all coefficients are ≥ 0, then
+    Σ_k λ_k w_k ≤ E_max * Σ_k w_k -/
+lemma weighted_sum_le_max_times_sum {N : Nat} [NeZero N]
+    (lambdas : Fin N → ℝ) (weights : Fin N → ℝ) (E_max : ℝ)
+    (hws_nonneg : ∀ k, 0 ≤ weights k)
+    (hmax : ∀ k, lambdas k ≤ E_max) :
+    ∑ k, lambdas k * weights k ≤ E_max * (∑ k, weights k) := by
+  calc ∑ k, lambdas k * weights k ≤ ∑ k, E_max * weights k := by
+        apply Finset.sum_le_sum
+        intro k _
+        exact mul_le_mul_of_nonneg_right (hmax k) (hws_nonneg k)
+    _ = E_max * (∑ k, weights k) := by rw [Finset.mul_sum]
+
 /-- Inner product in EuclideanSpace equals star dotProduct.
     For v, w : EuclideanSpace ℂ (Fin N), inner v w = (star v.ofLp) ⬝ᵥ w.ofLp -/
 lemma euclideanSpace_inner_eq_star_dotProduct {N : Nat}
@@ -615,6 +629,49 @@ lemma max_eigenvalue_to_our {N : Nat} [NeZero N]
       exact hv_eq
   · exact hmax
 
+/-- The expectation of a Hermitian matrix is bounded above by the maximum eigenvalue.
+
+    This is the dual of expectation_ge_min_eigenvalue.
+    For the orthonormal eigenbasis {v_k} with eigenvalues {λ_k}, we expand
+    phi = Σ_k c_k v_k where c_k = ⟨v_k|phi⟩. Then:
+    ⟨phi|A|phi⟩ = Σ_k λ_k |c_k|² ≤ λ_max · Σ_k |c_k|² = λ_max · 1 = λ_max -/
+lemma expectation_le_max_eigenvalue {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A)
+    (phi : Fin N → ℂ) (hphi : normSquared phi = 1) :
+    ∃ E_max : ℝ, IsEigenvalue A E_max ∧ ((star phi) ⬝ᵥ (A *ᵥ phi)).re ≤ E_max := by
+  obtain ⟨E_max, hE_max, hmax⟩ := max_eigenvalue_to_our A hA
+  use E_max, hE_max
+
+  -- Use the spectral expansion: ⟨phi|A|phi⟩ = Σ_k λ_k |c_k|²
+  have hspec := spectral_expansion_quadratic_form A hA phi
+  rw [hspec]
+
+  -- Take the real part
+  have hre_eq : (∑ k : Fin N, (hA.eigenvalues k : ℂ) *
+      (Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi))).re =
+      ∑ k : Fin N, hA.eigenvalues k * Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi) := by
+    rw [Complex.re_sum]
+    apply Finset.sum_congr rfl
+    intro k _
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+
+  rw [hre_eq]
+
+  -- Use Parseval: Σ_k |c_k|² = 1 (since phi is normalized)
+  have hparseval := parseval_normSquared hA phi
+  rw [hphi] at hparseval
+
+  -- Apply weighted sum bound: Σ_k λ_k |c_k|² ≤ E_max * Σ_k |c_k|² = E_max * 1
+  have hbound := weighted_sum_le_max_times_sum
+    (fun k => hA.eigenvalues k)
+    (fun k => Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi))
+    E_max
+    (fun k => Complex.normSq_nonneg _)
+    hmax
+
+  simp only [hparseval, mul_one] at hbound
+  exact hbound
+
 /-- For a Hermitian matrix, if all eigenvalues are equal,
     then for any vector v, A v = c • v.
     This is a weaker form that we use to derive a contradiction. -/
@@ -660,6 +717,45 @@ lemma all_eigenvalues_equal_implies_scalar_action {N : Nat} [NeZero N]
   -- For real r acting on complex z: r • z = ↑r * z
   -- For complex z₁ acting on complex z₂: z₁ • z₂ = z₁ * z₂
   rw [Complex.real_smul, smul_eq_mul, smul_eq_mul]
+
+/-! ## E_max ≥ 0 helper lemma -/
+
+/-- For the adiabatic Hamiltonian, if E_max is the maximum eigenvalue and we have
+    a normalized state with non-negative expectation, then E_max ≥ 0.
+    This follows from the variational principle: E_max ≥ ⟨φ|H|φ⟩ for any normalized φ. -/
+lemma emax_nonneg_from_expectation {n M : Nat} (es : EigenStructure n M)
+    (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1)
+    (E_max : ℝ)
+    (hmax_bound : ∀ i : Fin (qubitDim n), (adiabaticHam_matrix_hermitian es s hs).eigenvalues i ≤ E_max)
+    (phi : NQubitState n) (hphi_norm : normSquared phi = 1)
+    (hphi_exp : (expectation (adiabaticHam es s hs) phi).re ≥ 0) :
+    E_max ≥ 0 := by
+  have hN : NeZero (qubitDim n) := ⟨Nat.pos_iff_ne_zero.mp (Nat.pow_pos (by norm_num : 0 < 2))⟩
+  have hHerm := adiabaticHam_matrix_hermitian es s hs
+  rw [expectation_eq_star_dotProduct_mulVec] at hphi_exp
+  calc E_max ≥ (star phi ⬝ᵥ (adiabaticHam es s hs) *ᵥ phi).re := by
+        have hspec := spectral_expansion_quadratic_form (adiabaticHam es s hs) hHerm phi
+        rw [hspec]
+        have hre_eq : (∑ k : Fin (qubitDim n), (hHerm.eigenvalues k : ℂ) *
+            (Complex.normSq ((star ⇑(hHerm.eigenvectorBasis k)) ⬝ᵥ phi))).re =
+            ∑ k : Fin (qubitDim n), hHerm.eigenvalues k *
+              Complex.normSq ((star ⇑(hHerm.eigenvectorBasis k)) ⬝ᵥ phi) := by
+          rw [Complex.re_sum]
+          apply Finset.sum_congr rfl
+          intro k _
+          simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+        rw [hre_eq]
+        have hparseval := parseval_normSquared hHerm phi
+        rw [hphi_norm] at hparseval
+        have hbound := weighted_sum_le_max_times_sum
+          (fun k => hHerm.eigenvalues k)
+          (fun k => Complex.normSq ((star ⇑(hHerm.eigenvectorBasis k)) ⬝ᵥ phi))
+          E_max
+          (fun k => Complex.normSq_nonneg _)
+          hmax_bound
+        simp only [hparseval, mul_one] at hbound
+        exact hbound
+    _ ≥ 0 := hphi_exp
 
 /-- The first excited state lower bound proof.
 
@@ -770,14 +866,51 @@ theorem firstExcited_lower_bound_proof {n M : Nat} (es : EigenStructure n M)
     -- H(s) acts as E_min • v for all v
     have hscalar_action := all_eigenvalues_equal_implies_scalar_action
       (adiabaticHam es s hs) hHerm E_min hall
-    -- Derive contradiction by considering specific vectors
-    -- For s = 0: H(0) ψ₀ = -ψ₀ (eigenvalue -1) and H(0) z = 0 for z ⊥ ψ₀ (eigenvalue 0)
-    -- These are different, so not scalar
-    -- For s = 1: H(1) = H_z has M ≥ 2 distinct eigenvalues
-    -- For 0 < s < 1: Similar argument
-    -- The key is that H(s) applied to different basis vectors gives different scaled results
-    -- This requires more detailed matrix element analysis
-    -- For now, leave as sorry - the structural argument is clear but formalization is tedious
+    -- Derive contradiction: If H(s)|z⟩ = E_min • |z⟩ for a basis state |z⟩,
+    -- then the coefficient of |z'⟩ (for z' ≠ z) in H(s)|z⟩ must be 0.
+    -- But H(s)|z⟩ = -(1-s)|ψ₀⟩⟨ψ₀|z⟩ + s·E_z|z⟩ = -(1-s)/√N · |ψ₀⟩ + s·E_z|z⟩
+    --            = -(1-s)/N · Σ|z'⟩ + s·E_z|z⟩
+    -- So the coefficient of |z'⟩ for z' ≠ z is -(1-s)/N ≠ 0 when s < 1.
+    -- This contradicts E_min • |z⟩ which has coefficient 0 for z' ≠ z.
+    -- We show this by cases: s < 1 (direct contradiction) or s = 1 (H_z has distinct eigenvalues)
+    -- Since M ≥ 2, we have at least 2 distinct eigenvalue levels in H_z.
+    -- For M ≥ 2 with Σ d_k = N and all d_k > 0, we need N ≥ 2.
+    have hN_ge_two : qubitDim n >= 2 := by
+      -- qubitDim n = 2^n
+      -- From M ≥ 2 and deg_sum: Σ d_k = 2^n with all d_k > 0, we get 2^n ≥ M ≥ 2
+      have hsum := es.deg_sum
+      -- hsum : Σ k, es.degeneracies k = qubitDim n
+      -- Need: Σ k ≥ M ≥ 2 (since each d_k ≥ 1)
+      have hpos : ∀ k, es.degeneracies k > 0 := es.deg_positive
+      have hdeg_ge_one : ∀ k, es.degeneracies k >= 1 := fun k => hpos k
+      -- Σ d_k ≥ M · 1 = M ≥ 2
+      have hcard : Finset.card (Finset.univ : Finset (Fin M)) = M := Finset.card_fin M
+      calc qubitDim n = ∑ k : Fin M, es.degeneracies k := hsum.symm
+        _ >= ∑ _k : Fin M, 1 := Finset.sum_le_sum (fun k _ => hdeg_ge_one k)
+        _ = Finset.card (Finset.univ : Finset (Fin M)) := by simp
+        _ = M := hcard
+        _ >= 2 := hM
+    -- With N ≥ 2, there exist at least 2 distinct basis states
+    -- Consider basis state |0⟩ and |1⟩
+    have h0_lt_N : 0 < qubitDim n := Nat.lt_of_lt_of_le (by norm_num : 0 < 2) hN_ge_two
+    have h1_lt_N : 1 < qubitDim n := Nat.lt_of_lt_of_le (by norm_num : 1 < 2) hN_ge_two
+    let z0 : Fin (qubitDim n) := ⟨0, h0_lt_N⟩
+    let z1 : Fin (qubitDim n) := ⟨1, h1_lt_N⟩
+    -- The computational basis state |z0⟩
+    let basisZ0 : NQubitState n := fun i => if i = z0 then 1 else 0
+    -- Apply the scalar action to basisZ0
+    have h_apply := hscalar_action basisZ0
+    -- H(s)|z0⟩ = E_min • |z0⟩
+    -- The coefficient at position z1 should be:
+    -- LHS: (H(s)|z0⟩)_{z1} = -(1-s)/N (from the |ψ₀⟩⟨ψ₀| term since z0 ≠ z1)
+    -- RHS: (E_min • |z0⟩)_{z1} = E_min • 0 = 0 (since z0 ≠ z1)
+    -- So -(1-s)/N = 0, which means s = 1
+    -- But at s = 1, H(1) = H_z is diagonal with M ≥ 2 distinct eigenvalues, not scalar.
+    -- For now, the detailed matrix element calculation is tedious to formalize.
+    -- We use the fact that adiabaticHam is NOT a scalar matrix by structural analysis.
+    -- The key insight is: the matrix has rank > 1 when N ≥ 2 and 0 < s < 1,
+    -- or is diagonal with distinct values when s = 1.
+    -- Leaving as sorry pending matrix element formalization.
     sorry
 
 end UAQO.Proofs.Spectral.GapBounds
