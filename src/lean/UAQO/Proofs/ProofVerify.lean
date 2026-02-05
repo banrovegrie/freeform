@@ -79,9 +79,9 @@ These appear to have bugs or are unprovable as stated:
 - `A2_lower_bound` (A2Bounds.lean) - bound direction reversed
 - `avoidedCrossing_bound`, `piecewiseSchedule_monotone` (ScheduleProperties.lean) - missing hypothesis
 
-## Fixed Formulation Issues
-- `threeSATWellFormed_numVars` (Hardness.lean) - FIXED: added precondition `f.clauses.length > 0`
-  (empty formula counterexample is now excluded by the precondition)
+## Removed Axioms
+- `threeSATWellFormed_numVars` - REMOVED: was unused and unprovable without well-formedness constraints
+  (CNFFormula.numVars is a field, not derived from clauses)
 
 ## External Foundations (9 axioms - kept as axioms)
 Standard complexity theory and physics axioms:
@@ -91,7 +91,7 @@ Standard complexity theory and physics axioms:
 - `adiabaticTheorem`, `eigenpath_traversal` (Quantum adiabatic theorem)
 - `resolvent_distance_to_spectrum` (Spectral theory)
 
-## Remaining Axioms (17 axioms needing proofs)
+## Remaining Axioms (16 axioms needing proofs)
 
 ### GapBounds.lean (7 axioms) - Require axiom-to-theorem conversion
 - `groundEnergy_variational_bound` - proof available in GapBoundsProofs.lean
@@ -108,13 +108,12 @@ Standard complexity theory and physics axioms:
 - `lowerBound_unstructuredSearch` - BBBV lower bound
 - `runningTime_matches_lower_bound` - optimality
 
-### Hardness.lean (6 axioms) - Complexity results
+### Hardness.lean (5 axioms) - Complexity results
 - `mainResult2` - NP-hardness of approximating A1
 - `A1_approx_implies_P_eq_NP` - P vs NP implication
 - `A1_polynomial_in_beta` - A1 is polynomial in β
 - `mainResult3` - #P-hardness of exact computation
 - `mainResult3_robust` - robustness to exponential errors
-- `threeSATWellFormed_numVars` - FIXED: precondition added (unused axiom)
 
 ## Bridge Files (no axioms eliminated, provide Mathlib connections)
 - `MatrixDetLemma.lean` - connects outerProd/innerProd to Mathlib equivalents

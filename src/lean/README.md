@@ -14,16 +14,18 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 
 | Metric | Count |
 |--------|-------|
-| Axioms | 26 |
-| Theorems | 76+ |
-| Sorries | 0 |
-| Lines of Lean | ~5,800 |
+| Axioms | 24 |
+| Theorems | 77+ |
+| Sorries | 1 |
+| Lines of Lean | ~5,900 |
 
-The formalization has 0 sorries. All proofs compile successfully.
+The formalization compiles successfully with 1 sorry in a helper lemma.
 9 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
-16 axioms remain for spectral gap bounds, running time, and complexity results.
-1 axiom (`adiabatic_emax_nonneg`) is a spectral bound that requires Mathlib's
-spectral theorem connection (IsEigenvalue ↔ hHerm.eigenvalues membership).
+15 axioms remain for spectral gap bounds, running time, and complexity results.
+
+**Recent Progress:**
+- `adiabatic_emax_nonneg` converted from axiom to theorem using variational principle
+  with orthogonal state (|0⟩-|1⟩)/√2. One sorry remains for the detailed matrix computation.
 
 24+ core theorems have been fully proved including:
 - Variational principle and spectral bounds (Parseval identity, weighted sum bounds)
@@ -31,9 +33,6 @@ spectral theorem connection (IsEigenvalue ↔ hHerm.eigenvalues membership).
 - Sherman-Morrison resolvent formula
 - Beta-modified Hamiltonian properties
 - Lagrange interpolation
-
-9 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
-15 axioms remain for spectral gap bounds and complexity results.
 
 ## Building
 
@@ -227,7 +226,14 @@ def spectralConditionForBounds (es : EigenStructure n M) : Prop :=
    - Key insight: non-degenerate eigenvalues (d_k=1) are NOT eigenvalues of H(s) for s>0
    - Uses Matrix Determinant Lemma + strict eigenvalue ordering from EigenStructure
 
-**Next targets for axiom elimination:**
+3. **Sherman-Morrison Resolvent**: FULLY PROVED in `Spectral/GapBounds.lean`
+   - Verified by matrix multiplication: shows (B - uv†)⁻¹ formula
+   - Key infrastructure for right-region gap bound
+
+4. **Removed unused axiom** `threeSATWellFormed_numVars`
+   - Was unprovable without additional well-formedness constraints
+
+**Next targets for axiom elimination (Gap Bounds):**
 
 1. **SpectralDecomp for Adiabatic Hamiltonian**
    - Construct spectral decomposition for H(s) = -(1-s)|psi0><psi0| + s*Hz

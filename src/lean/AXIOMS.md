@@ -1,6 +1,6 @@
 # UAQO Axiom Documentation
 
-This document catalogs all 26 axioms in the UAQO Lean formalization, organized by category with justifications for why each remains an axiom.
+This document catalogs all 25 axioms in the UAQO Lean formalization, organized by category with justifications for why each remains an axiom.
 
 ## Summary
 
@@ -9,10 +9,10 @@ This document catalogs all 26 axioms in the UAQO Lean formalization, organized b
 | External Foundations | 9 | Keep as axioms (standard results) |
 | Gap Bounds | 6 | Could be proved with more spectral theory |
 | Running Time | 4 | Depend on gap bounds + adiabatic theorem |
-| Hardness | 6 | Main complexity results |
+| Hardness | 5 | Main complexity results |
 | Spectral Theory | 1 | Requires infinite-dim functional analysis |
 
-Total: 26 axioms (including 1 in Proofs/)
+Total: 25 axioms (including 1 in Proofs/)
 
 ## External Foundations (9 axioms)
 
@@ -192,18 +192,11 @@ axiom runningTime_matches_lower_bound {n M : Nat} (es : EigenStructure n M)
 **Justification**: Optimality - upper bound matches BBBV lower bound.
 **Dependencies**: mainResult1, lowerBound_unstructuredSearch.
 
-## Hardness (6 axioms)
+## Hardness (5 axioms)
 
 Main complexity results of the paper.
 
 **File**: `UAQO/Complexity/Hardness.lean`
-
-```lean
-axiom threeSATWellFormed_numVars (f : CNFFormula) (hf : is_kCNF 3 f)
-    (hsat : isSatisfiable f) (hnonempty : f.clauses.length > 0) : f.numVars > 0
-```
-**Justification**: Well-formedness condition. Non-empty 3-CNF must have variables.
-**Note**: Currently unused. Added precondition `hnonempty` to fix formulation bug.
 
 ```lean
 axiom mainResult2 (approx : A1Approximator) :
@@ -274,19 +267,19 @@ axiom adiabatic_emax_nonneg {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
 10-13. Running time axioms - Chain from gap bounds + adiabatic theorem
 
 ### Require Complexity Infrastructure
-14-19. Hardness axioms - Need polynomial analysis, threshold arguments
+14-18. Hardness axioms - Need polynomial analysis, threshold arguments
 
 ### External (Keep as Axioms)
-20-26. Cook-Levin, Valiant, BBBV, adiabatic theorem - Standard results
+19-25. Cook-Levin, Valiant, BBBV, adiabatic theorem - Standard results
 
 ## Verification
 
 ```bash
 # Count axioms (excluding Proofs/)
-grep -rn "^axiom " UAQO/ | grep -v "Proofs/" | wc -l  # 25
+grep -rn "^axiom " UAQO/ | grep -v "Proofs/" | wc -l  # 24
 
 # Count axioms in Proofs/
 grep -rn "^axiom " UAQO/Proofs/ | wc -l  # 1
 
-# Total: 26 axioms
+# Total: 25 axioms
 ```

@@ -366,18 +366,6 @@ def threeSATWellFormed (f : CNFFormula) : Prop :=
 def allLevelsPopulated (f : CNFFormula) : Prop :=
   ∀ k : Fin (threeSATNumLevels f), countAssignmentsWithKUnsatisfied f k.val > 0
 
-/-- Non-empty satisfiable 3-CNF formulas have at least one variable.
-
-    Precondition: f.clauses.length > 0 is required because an empty formula
-    (0 clauses, 0 variables) is a valid 3-CNF that is trivially satisfiable.
-
-    With the precondition, this follows from well-formedness: each clause has
-    at least one literal referencing a variable, so numVars > 0.
-
-    Note: This axiom is currently unused in the formalization. -/
-axiom threeSATWellFormed_numVars (f : CNFFormula) (hf : is_kCNF 3 f)
-    (hsat : isSatisfiable f) (hnonempty : f.clauses.length > 0) : f.numVars > 0
-
 /-- Total count equals Hilbert space dimension.
     This ensures the degeneracy distribution is a valid partition:
     sum_{k=0}^{m} d_k = 2^n -/

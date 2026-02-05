@@ -929,24 +929,330 @@ lemma adiabaticHam_off_diagonal_nonzero {n M : Nat} (es : EigenStructure n M)
     | inl h => exact h1ms_ne h
     | inr h => exact hN_ne (inv_eq_zero.mp h)
 
+/-! ## Orthogonal state for E_max ≥ 0 proof -/
+
+/-- State (|0⟩ - |1⟩)/√2 orthogonal to equal superposition -/
+noncomputable def orthogonalToEqualSuperposition (N : Nat) (hN : N ≥ 2) : Fin N → ℂ :=
+  fun i => if i.val = 0 then 1 / Real.sqrt 2
+           else if i.val = 1 then -1 / Real.sqrt 2
+           else 0
+
+/-- The orthogonal state is normalized -/
+lemma orthogonalToEqualSuperposition_normalized (N : Nat) (hN : N ≥ 2) :
+    normSquared (orthogonalToEqualSuperposition N hN) = 1 := by
+  have h0 : 0 < N := Nat.lt_of_lt_of_le (by norm_num) hN
+  have h1 : 1 < N := Nat.lt_of_lt_of_le (by norm_num) hN
+  unfold normSquared orthogonalToEqualSuperposition
+  have hsqrt : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num : (2 : ℝ) ≥ 0)
+  -- Sum = |1/√2|² + |-1/√2|² + 0 = 1/2 + 1/2 = 1
+  calc ∑ i : Fin N, Complex.normSq (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0)
+      = Complex.normSq ((1 : ℂ) / ↑(Real.sqrt 2)) + Complex.normSq ((-1 : ℂ) / ↑(Real.sqrt 2)) := by
+        have hf0 : ∑ i ∈ Finset.filter (fun i : Fin N => i.val = 0) Finset.univ,
+            Complex.normSq (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+              else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) =
+            Complex.normSq ((1 : ℂ) / ↑(Real.sqrt 2)) := by
+          have hset : Finset.filter (fun i : Fin N => i.val = 0) Finset.univ = {⟨0, h0⟩} := by
+            ext i; simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+            constructor
+            · intro h; exact Fin.ext h
+            · intro h; simp [h]
+          rw [hset, Finset.sum_singleton]; simp
+        have hf1 : ∑ i ∈ Finset.filter (fun i : Fin N => i.val = 1)
+            (Finset.filter (fun i : Fin N => ¬i.val = 0) Finset.univ),
+            Complex.normSq (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+              else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) =
+            Complex.normSq ((-1 : ℂ) / ↑(Real.sqrt 2)) := by
+          have hset : Finset.filter (fun i : Fin N => i.val = 1)
+              (Finset.filter (fun i : Fin N => ¬i.val = 0) Finset.univ) = {⟨1, h1⟩} := by
+            ext i; simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+            constructor
+            · intro ⟨_, h2⟩; exact Fin.ext h2
+            · intro h; simp [h]
+          rw [hset, Finset.sum_singleton]; simp
+        have hrest : ∑ i ∈ Finset.filter (fun i : Fin N => ¬i.val = 1)
+            (Finset.filter (fun i : Fin N => ¬i.val = 0) Finset.univ),
+            Complex.normSq (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+              else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) = 0 := by
+          apply Finset.sum_eq_zero; intro i hi
+          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi
+          simp only [hi.1, hi.2, ↓reduceIte, Complex.normSq_zero]
+        rw [← Finset.sum_filter_add_sum_filter_not (s := Finset.univ) (p := fun i => i.val = 0)]
+        rw [← Finset.sum_filter_add_sum_filter_not
+            (s := Finset.filter (fun i : Fin N => ¬i.val = 0) Finset.univ) (p := fun i => i.val = 1)]
+        rw [hf0, hf1, hrest, add_zero]
+    _ = 1/2 + 1/2 := by
+        congr 1
+        · rw [Complex.normSq_div, Complex.normSq_one, Complex.normSq_ofReal, hsqrt]
+        · rw [neg_div, Complex.normSq_neg, Complex.normSq_div, Complex.normSq_one,
+              Complex.normSq_ofReal, hsqrt]
+    _ = 1 := by ring
+
+/-- Expectation of H(s) on orthogonal state is non-negative.
+
+    For H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s*H_z and orthogonal state v = (|0⟩-|1⟩)/√2:
+    - Projector term: ⟨v|ψ₀⟩⟨ψ₀|v⟩ = 0 because v ⊥ ψ₀
+    - Diagonal term: s*⟨v|H_z|v⟩ = s*(1/2)*(E_0 + E_1) ≥ 0
+
+    This is a technical lemma used in the proof of adiabatic_emax_nonneg.
+    The proof involves matrix computations for the projector and diagonal Hamiltonian. -/
+lemma adiabaticHam_expectation_orthogonal_nonneg {n M : Nat} (es : EigenStructure n M)
+    (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1) (hN : qubitDim n ≥ 2) :
+    (expectation (adiabaticHam es s hs)
+      (orthogonalToEqualSuperposition (qubitDim n) hN)).re ≥ 0 := by
+  -- H(s) = -(1-s)*projector + s*H_z
+  -- For orthogonal state v: ⟨v|H(s)|v⟩ = 0 + s*⟨v|H_z|v⟩ ≥ 0
+  have h0 : 0 < qubitDim n := Nat.lt_of_lt_of_le (by norm_num) hN
+  have h1 : 1 < qubitDim n := Nat.lt_of_lt_of_le (by norm_num) hN
+  have hNeZero : NeZero (qubitDim n) := ⟨Nat.pos_iff_ne_zero.mp h0⟩
+  -- Show projector term vanishes due to orthogonality
+  have horth : innerProd (equalSuperposition (qubitDim n))
+      (orthogonalToEqualSuperposition (qubitDim n) hN) = 0 := by
+    simp only [innerProd, equalSuperposition, orthogonalToEqualSuperposition]
+    rw [← Finset.mul_sum]
+    suffices h : ∑ i : Fin (qubitDim n), (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+        else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) = 0 by
+      rw [h, mul_zero]
+    -- Sum = 1/√2 - 1/√2 + 0 = 0
+    -- Split into three disjoint sums: i=0, i=1, and rest
+    have h01_disjoint : Disjoint (Finset.filter (fun i : Fin (qubitDim n) => i.val = 0) Finset.univ)
+        (Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ) := by
+      rw [Finset.disjoint_filter]
+      intro i _ hi0 hi1
+      omega
+    -- Term for i = 0 contributes 1/√2
+    have hsum0 : ∑ i ∈ Finset.filter (fun i : Fin (qubitDim n) => i.val = 0) Finset.univ,
+        (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) = (1 : ℂ) / ↑(Real.sqrt 2) := by
+      have hsingleton : Finset.filter (fun i : Fin (qubitDim n) => i.val = 0) Finset.univ =
+          {⟨0, h0⟩} := by
+        ext i
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+        constructor
+        · intro hi; exact Fin.ext hi
+        · intro hi; simp [hi]
+      rw [hsingleton, Finset.sum_singleton]
+      simp only [Fin.val_mk, ↓reduceIte]
+    -- Term for i = 1 contributes -1/√2
+    have hsum1 : ∑ i ∈ Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ,
+        (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) = (-1 : ℂ) / ↑(Real.sqrt 2) := by
+      have hsingleton : Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ =
+          {⟨1, h1⟩} := by
+        ext i
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+        constructor
+        · intro hi; exact Fin.ext hi
+        · intro hi; simp [hi]
+      rw [hsingleton, Finset.sum_singleton]
+      simp only [Fin.val_mk, one_ne_zero, ↓reduceIte]
+    -- Rest contributes 0
+    have hsum_rest : ∑ i ∈ Finset.filter (fun i : Fin (qubitDim n) => i.val ≠ 0 ∧ i.val ≠ 1) Finset.univ,
+        (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) = 0 := by
+      apply Finset.sum_eq_zero
+      intro i hi
+      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi
+      simp [hi.1, hi.2]
+    -- Partition univ into three parts
+    have hpartition : Finset.univ = Finset.filter (fun i : Fin (qubitDim n) => i.val = 0) Finset.univ ∪
+        Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ ∪
+        Finset.filter (fun i : Fin (qubitDim n) => i.val ≠ 0 ∧ i.val ≠ 1) Finset.univ := by
+      ext i
+      simp only [Finset.mem_union, Finset.mem_filter, Finset.mem_univ, true_and, ne_eq]
+      constructor
+      · intro _
+        by_cases hi0 : i.val = 0
+        · left; left; exact hi0
+        · by_cases hi1 : i.val = 1
+          · left; right; exact hi1
+          · right; exact ⟨hi0, hi1⟩
+      · intro _; trivial
+    rw [hpartition]
+    have hdisjoint_01_rest : Disjoint
+        (Finset.filter (fun i : Fin (qubitDim n) => i.val = 0) Finset.univ ∪
+         Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ)
+        (Finset.filter (fun i : Fin (qubitDim n) => i.val ≠ 0 ∧ i.val ≠ 1) Finset.univ) := by
+      rw [Finset.disjoint_union_left]
+      constructor
+      · rw [Finset.disjoint_filter]; intro i _ hi0 ⟨hne0, _⟩; exact hne0 hi0
+      · rw [Finset.disjoint_filter]; intro i _ hi1 ⟨_, hne1⟩; exact hne1 hi1
+    rw [Finset.sum_union hdisjoint_01_rest, Finset.sum_union h01_disjoint]
+    rw [hsum0, hsum1, hsum_rest]
+    ring
+  -- For a projector, expectation with orthogonal state is zero
+  unfold adiabaticHam; simp only [equalSuperpositionN]
+  rw [expectation_add, expectation_smul, expectation_smul]
+  have hproj_zero : expectation (projectorOnState (equalSuperposition (qubitDim n)))
+      (orthogonalToEqualSuperposition (qubitDim n) hN) = 0 := by
+    -- ⟨v|π|v⟩ = |⟨ψ|v⟩|² = 0 since ⟨ψ|v⟩ = 0
+    simp only [expectation, projectorOnState, outerProd, applyOp, innerProd]
+    simp only [innerProd] at horth
+    -- The matrix-vector product factors as ψ_i * ⟨ψ|v⟩ = ψ_i * 0 = 0
+    have hfactor : ∀ i, ((Matrix.of fun i j => equalSuperposition (qubitDim n) i *
+        conj (equalSuperposition (qubitDim n) j)) *ᵥ
+        orthogonalToEqualSuperposition (qubitDim n) hN) i =
+        equalSuperposition (qubitDim n) i * 0 := by
+      intro i
+      simp only [Matrix.mulVec, Matrix.of_apply, dotProduct]
+      have hfact : ∀ x, equalSuperposition (qubitDim n) i *
+          conj (equalSuperposition (qubitDim n) x) *
+          orthogonalToEqualSuperposition (qubitDim n) hN x =
+          equalSuperposition (qubitDim n) i *
+          (conj (equalSuperposition (qubitDim n) x) *
+           orthogonalToEqualSuperposition (qubitDim n) hN x) := by
+        intro x; ring
+      simp only [hfact, ← Finset.mul_sum, horth, mul_zero]
+    -- Use hfactor to rewrite each term in the sum
+    have hsumzero : ∑ x, conj (orthogonalToEqualSuperposition (qubitDim n) hN x) *
+        ((Matrix.of fun i j => equalSuperposition (qubitDim n) i *
+          conj (equalSuperposition (qubitDim n) j)) *ᵥ
+          orthogonalToEqualSuperposition (qubitDim n) hN) x = 0 := by
+      have hterm : ∀ x, ((Matrix.of fun i j => equalSuperposition (qubitDim n) i *
+          conj (equalSuperposition (qubitDim n) j)) *ᵥ
+          orthogonalToEqualSuperposition (qubitDim n) hN) x = 0 := by
+        intro x
+        rw [hfactor x, mul_zero]
+      simp only [hterm, mul_zero, Finset.sum_const_zero]
+    exact hsumzero
+  rw [hproj_zero, mul_zero, zero_add]
+  simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+  apply mul_nonneg hs.1
+  -- Diagonal term: ⟨v|H_z|v⟩ = (1/2)*(E_0 + E_1) ≥ 0
+  have hE0 := (es.eigenval_bounds (es.assignment ⟨0, h0⟩)).1
+  have hE1 := (es.eigenval_bounds (es.assignment ⟨1, h1⟩)).1
+  rw [expectation_eq_star_dotProduct_mulVec]
+  simp only [EigenStructure.toHamiltonian, DiagonalHamiltonian.toOperator]
+  -- The sum is (1/2)*E_0 + (1/2)*E_1 + 0 ≥ 0
+  simp only [dotProduct, Pi.star_apply, Matrix.mulVec_diagonal]
+  -- Simplify: Σ conj(v_i) * E_i * v_i = Σ |v_i|² * E_i ≥ 0
+  -- For orthogonalToEqualSuperposition: only i=0,1 have nonzero components
+  -- Each contributes (1/2) * E_i, so sum = (1/2)*(E_0 + E_1) ≥ 0
+  -- We show this by proving the sum is non-negative directly
+  simp only [orthogonalToEqualSuperposition]
+  -- The sum is over all i, but only i=0,1 contribute
+  -- For i=0: star(1/√2) * E_0 * (1/√2) = (1/2) * E_0
+  -- For i=1: star(-1/√2) * E_1 * (-1/√2) = (1/2) * E_1
+  -- Other i: star(0) * E_i * 0 = 0
+  have hsqrt_pos : (0 : ℝ) < Real.sqrt 2 := Real.sqrt_pos.mpr (by norm_num)
+  have hsqrt2 : Real.sqrt 2 * Real.sqrt 2 = 2 := Real.mul_self_sqrt (by norm_num : (2 : ℝ) ≥ 0)
+  -- Convert star to Complex.conj which works on reals
+  have hconj_real : ∀ (r : ℝ), star (r : ℂ) = (r : ℂ) := fun r => Complex.conj_ofReal r
+  -- Each nonzero term gives |c|² * E_i which is non-negative
+  -- The sum of non-negative terms is non-negative
+  have hterm_nonneg : ∀ i : Fin (qubitDim n),
+      (star (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) *
+       ((es.eigenvalues (es.assignment i) : ℂ) *
+        (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+         else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0))).re ≥ 0 := by
+    intro i
+    by_cases hi0 : i.val = 0
+    · simp only [hi0, ↓reduceIte]
+      have hE := (es.eigenval_bounds (es.assignment i)).1
+      -- Use Complex.normSq_nonneg and the fact that the term equals |c|² * E
+      have hc : ((1 : ℂ) / ↑(Real.sqrt 2)).im = 0 := by simp
+      have hcstar : star ((1 : ℂ) / ↑(Real.sqrt 2)) = (1 : ℂ) / ↑(Real.sqrt 2) := by
+        simp only [Complex.star_def, map_div₀, map_one, Complex.conj_ofReal]
+      rw [hcstar]
+      -- (c * (E * c)).re = c.re * E * c.re for real c (c.im = 0)
+      have hprod_re : (((1 : ℂ) / ↑(Real.sqrt 2)) * (↑(es.eigenvalues (es.assignment i)) *
+          ((1 : ℂ) / ↑(Real.sqrt 2)))).re =
+          ((1 : ℂ) / ↑(Real.sqrt 2)).re * es.eigenvalues (es.assignment i) *
+          ((1 : ℂ) / ↑(Real.sqrt 2)).re := by
+        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, hc]
+        ring
+      rw [hprod_re]
+      have hcre : ((1 : ℂ) / ↑(Real.sqrt 2)).re = 1 / Real.sqrt 2 := by
+        simp only [Complex.div_ofReal_re, Complex.one_re]
+      rw [hcre]
+      have hsq : (1 / Real.sqrt 2) * es.eigenvalues (es.assignment i) * (1 / Real.sqrt 2) =
+          es.eigenvalues (es.assignment i) / 2 := by
+        have hsqrt_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt_pos
+        field_simp [hsqrt_ne]
+        rw [sq, hsqrt2]
+        ring
+      rw [hsq]
+      exact div_nonneg hE (by norm_num)
+    · by_cases hi1 : i.val = 1
+      · simp only [hi0, hi1, one_ne_zero, ↓reduceIte]
+        have hE := (es.eigenval_bounds (es.assignment i)).1
+        have hc : ((-1 : ℂ) / ↑(Real.sqrt 2)).im = 0 := by simp
+        have hcstar : star ((-1 : ℂ) / ↑(Real.sqrt 2)) = (-1 : ℂ) / ↑(Real.sqrt 2) := by
+          simp only [Complex.star_def, map_div₀, map_neg, map_one, Complex.conj_ofReal]
+        rw [hcstar]
+        have hprod_re : (((-1 : ℂ) / ↑(Real.sqrt 2)) * (↑(es.eigenvalues (es.assignment i)) *
+            ((-1 : ℂ) / ↑(Real.sqrt 2)))).re =
+            ((-1 : ℂ) / ↑(Real.sqrt 2)).re * es.eigenvalues (es.assignment i) *
+            ((-1 : ℂ) / ↑(Real.sqrt 2)).re := by
+          simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero, hc]
+          ring
+        rw [hprod_re]
+        have hcre : ((-1 : ℂ) / ↑(Real.sqrt 2)).re = -1 / Real.sqrt 2 := by
+          simp only [Complex.div_ofReal_re, Complex.neg_re, Complex.one_re]
+        rw [hcre]
+        have hsq : (-1 / Real.sqrt 2) * es.eigenvalues (es.assignment i) * (-1 / Real.sqrt 2) =
+            es.eigenvalues (es.assignment i) / 2 := by
+          have hsqrt_ne : Real.sqrt 2 ≠ 0 := ne_of_gt hsqrt_pos
+          field_simp [hsqrt_ne]
+          rw [sq, hsqrt2]
+          ring
+        rw [hsq]
+        exact div_nonneg hE (by norm_num)
+      · simp only [hi0, hi1, ↓reduceIte, star_zero, zero_mul, mul_zero, Complex.zero_re, le_refl]
+  -- Sum of non-negative reals is non-negative
+  have hsum_nonneg : (∑ i : Fin (qubitDim n), (star
+      (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+       else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0) *
+      ((es.eigenvalues (es.assignment i) : ℂ) *
+       (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
+        else if i.val = 1 then (-1 : ℂ) / ↑(Real.sqrt 2) else 0))).re) ≥ 0 := by
+    apply Finset.sum_nonneg
+    intro i _
+    exact hterm_nonneg i
+  rw [Complex.re_sum]
+  exact hsum_nonneg
+
 /-- The maximum eigenvalue of the adiabatic Hamiltonian is non-negative.
 
     For all s ∈ [0,1], E_max(H(s)) ≥ 0.
 
-    Proof outline:
-    - At s = 0: H(0) = -|ψ₀⟩⟨ψ₀| has eigenvalue 0 (with N-1 fold degeneracy).
-    - At s = 1: H(1) = H_z has non-negative eigenvalues.
-    - For 0 < s < 1: The state |0⟩ - |1⟩ (normalized) is orthogonal to ψ₀,
-      so its expectation value under H(s) equals s * ⟨H_z⟩ ≥ 0.
-      By variational principle, E_max ≥ this expectation ≥ 0.
+    Proof: Use the variational principle. For H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s*H_z,
+    consider the computational basis state |0⟩. Since it has non-zero overlap
+    with ψ₀, we compute ⟨0|H(s)|0⟩ = -(1-s)/N + s*E_{a(0)}.
+    For s near 1, this is non-negative since E_{a(0)} ≥ 0.
 
-    The formal proof requires connecting IsEigenvalue to hHerm.eigenvalues
-    via Mathlib's spectral theorem for Hermitian matrices. -/
-axiom adiabatic_emax_nonneg {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
+    More generally, we use that at least one eigenvalue is non-negative because:
+    - The diagonal part s*H_z contributes non-negative eigenvalues
+    - The projector part shifts eigenvalues, but at least one eigenvalue ≥ 0 -/
+theorem adiabatic_emax_nonneg {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
     (s : Real) (hs : 0 <= s ∧ s <= 1)
     (hHerm : (adiabaticHam es s hs).IsHermitian)
     (E_max : Real)
-    (hmax_bound : ∀ i : Fin (qubitDim n), hHerm.eigenvalues i ≤ E_max) : E_max ≥ 0
+    (hmax_bound : ∀ i : Fin (qubitDim n), hHerm.eigenvalues i ≤ E_max) : E_max ≥ 0 := by
+  -- Key insight: E_max is an upper bound on all eigenvalues.
+  -- We show that at least one eigenvalue is ≥ 0, hence E_max ≥ 0.
+  -- Use the trace: Tr(H(s)) = Σᵢ λᵢ where λᵢ are eigenvalues
+  -- For adiabatic Hamiltonian: Tr = -(1-s)*Tr(|ψ₀⟩⟨ψ₀|) + s*Tr(H_z)
+  --                          = -(1-s)*1 + s*Σ_z E_{a(z)}
+  -- Since N ≥ 2 and at least one eigenvalue is 0 (ground state), the sum of
+  -- eigenvalues can be analyzed. Even if Tr < 0, max eigenvalue can still be ≥ 0.
+  --
+  -- Alternative proof: Consider the orthogonal state (|0⟩-|1⟩)/√2 which has
+  -- expectation s*(1/2)*(E_{a(0)} + E_{a(1)}) ≥ 0. By variational principle,
+  -- max eigenvalue ≥ this expectation ≥ 0.
+  have hN_ge_two : qubitDim n >= 2 := by
+    have hsum := es.deg_sum
+    have hpos : ∀ k, es.degeneracies k > 0 := es.deg_positive
+    calc qubitDim n = ∑ k : Fin M, es.degeneracies k := hsum.symm
+      _ >= ∑ _k : Fin M, 1 := Finset.sum_le_sum (fun k _ => hpos k)
+      _ = M := by simp only [Finset.sum_const, Finset.card_fin, smul_eq_mul, mul_one]
+      _ >= 2 := hM
+  -- Use emax_nonneg_from_expectation with orthogonal state
+  exact emax_nonneg_from_expectation es s hs E_max hmax_bound
+    (orthogonalToEqualSuperposition (qubitDim n) hN_ge_two)
+    (orthogonalToEqualSuperposition_normalized (qubitDim n) hN_ge_two)
+    (adiabaticHam_expectation_orthogonal_nonneg es s hs hN_ge_two)
 
 /-- The first excited state lower bound proof.
 
