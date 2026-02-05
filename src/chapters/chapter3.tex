@@ -1,1 +1,265 @@
 % Chapter 3: Quantum Computation
+%
+% OVERVIEW: Establishes quantum mechanics and computation background.
+% Introduces Hilbert spaces, Hamiltonians, and the quantum speedup paradigm.
+%
+% NEEDS: Chapter 2 (Computation basics, complexity classes)
+%
+% FORWARD: Chapter 4 builds AQC on this foundation
+% FORWARD: Chapter 5 uses Hamiltonians, eigenvalues, spectral decomposition
+% FORWARD: Chapter 6 uses variational principle
+%
+% DEFINITIONS INTRODUCED: Hilbert space, qubit, Hamiltonian, eigenvalue,
+% eigenvector, spectral gap, unitary, measurement, BQP
+%
+% NOTE: Avoid re-defining terms in later chapters
+
+% =============================================================================
+% Section: Quantum Mechanics Essentials
+% =============================================================================
+% SOURCE: Standard QM texts (Sakurai, Nielsen-Chuang)
+%
+% - States: vectors in Hilbert space, superposition
+% - Measurement: Born rule, collapse, probabilistic outcomes
+% - Unitary evolution: Schrodinger equation, reversibility
+%
+% Key concepts for thesis:
+% - States are vectors |psi> in complex Hilbert space H
+% - Probabilities: |<phi|psi>|^2 (Born rule)
+% - Evolution: |psi(t)> = U(t)|psi(0)> where U is unitary
+%
+% TODO: Decide level of detail (physics vs CS audience)
+% TODO: Emphasize concepts used later, not full QM course
+%
+% REVIEWER: presentation_quality - Accessible to CS reader
+
+% =============================================================================
+% Section: Hilbert Spaces and the Computational Basis
+% =============================================================================
+% SOURCE: Nielsen-Chuang Chapter 2
+%
+% Definitions:
+% - Qubit: two-dimensional Hilbert space C^2, basis {|0>, |1|}
+% - n-qubit system: tensor product (C^2)^{tensor n} = C^{2^n}
+% - Computational basis: |x> for x in {0,1}^n, dimension N = 2^n
+%
+% Key properties:
+% - Inner product: <phi|psi> (complex number)
+% - Norm: ||psi||^2 = <psi|psi> = 1 for normalized states
+% - Superposition: |psi> = sum_x alpha_x |x>, sum|alpha_x|^2 = 1
+%
+% For thesis:
+% - N = 2^n is exponential in n (resource counting)
+% - Computational basis is where H_z is diagonal (Chapter 5)
+%
+% TODO: Define notation clearly (bra-ket)
+% TODO: Tensor product construction
+%
+% FORWARD: Chapter 5 uses N = 2^n, computational basis states
+
+% =============================================================================
+% Section: Hamiltonians as Energy
+% =============================================================================
+% SOURCE: Standard QM, Nielsen-Chuang
+%
+% Definitions:
+% - Hermitian operator: H = H^dagger (self-adjoint)
+% - Eigenvalues: real numbers E_k (energy levels)
+% - Eigenvectors: states |k> with H|k> = E_k|k>
+%
+% Spectral decomposition:
+% H = sum_k E_k |k><k| (for non-degenerate case)
+% H = sum_k E_k P_k where P_k projects onto E_k eigenspace (degenerate)
+%
+% Ground state:
+% - Lowest eigenvalue E_0, corresponding eigenstates
+% - For optimization: ground state encodes solution
+%
+% Spectral gap:
+% - Gap between ground and first excited: g = E_1 - E_0
+% - Central to adiabatic computation (Chapter 4)
+%
+% TODO: Handle degeneracy properly (d_k-fold degeneracy)
+% TODO: Emphasize spectral gap as key quantity
+%
+% NOTE: "Spectral gap" defined here; Chapter 4 discusses computational role
+%
+% FORWARD: Chapter 5 uses spectral decomposition of H_z
+% FORWARD: Chapters 5-6 analyze spectral gap of H(s)
+%
+% REVIEWER: technical_soundness - Definitions must be precise
+
+% =============================================================================
+% Section: Time Evolution
+% =============================================================================
+% SOURCE: Nielsen-Chuang Chapter 2
+%
+% Schrodinger equation (time-independent H):
+% i * d|psi>/dt = H|psi>
+%
+% Solution:
+% |psi(t)> = e^{-iHt}|psi(0)> = U(t)|psi(0)>
+%
+% where U(t) = e^{-iHt} is unitary (preserves norm).
+%
+% Time-dependent H(t):
+% - More complex: time-ordered exponential
+% - Adiabatic case: H(s) with s = s(t)
+% - Relevant for AQC (Chapter 4)
+%
+% TODO: Clarify units (hbar = 1 convention)
+% TODO: Time-dependent case for AQC
+%
+% FORWARD: Chapter 4 uses time-dependent H(s)
+%
+% REVIEWER: technical_soundness - Units and conventions
+
+% =============================================================================
+% Section: Why Quantum Helps
+% =============================================================================
+%
+% Quantum resources for computation:
+%
+% Superposition:
+% - Process many inputs "simultaneously"
+% - N = 2^n amplitudes in n qubits
+% - NOT parallel computation (amplitudes interfere)
+%
+% Interference:
+% - Amplitudes add (can cancel or reinforce)
+% - Algorithm design: amplify correct answers, cancel wrong
+% - Key to quantum speedups
+%
+% Tunneling (relevant for AQO):
+% - Quantum systems can traverse classically forbidden regions
+% - Potential escape from local minima
+% - Whether this helps for optimization is debated
+%
+% Entanglement:
+% - Correlations with no classical analog
+% - Resource for quantum protocols
+% - Less central to AQO (diagonal H_z has product ground states)
+%
+% TODO: Be honest about what is proven vs hoped
+% TODO: Tunneling claims are controversial for optimization
+%
+% REVIEWER: significance - Motivate quantum computation
+
+% =============================================================================
+% Section: Circuits and Query Complexity
+% =============================================================================
+% SOURCE: Nielsen-Chuang, Arora-Barak
+%
+% Gate model:
+% - Universal gate sets (H, T, CNOT)
+% - Circuit depth and width
+% - Polynomial circuits define BQP
+%
+% BQP (Bounded-error Quantum Polynomial time):
+% - Problems solvable by polynomial-time quantum circuits
+% - With probability >= 2/3
+% - Believed: P subset BQP subset PSPACE
+%
+% Oracle model:
+% - Black-box access to function f: {0,1}^n -> {0,1}
+% - Quantum oracle: |x,y> -> |x, y XOR f(x)>
+% - Query complexity: count oracle calls
+%
+% For thesis:
+% - Grover uses O(sqrt(N)) queries (optimal)
+% - AQO doesn't use explicit oracles, but H_z encodes f
+%
+% TODO: Define BQP precisely
+% TODO: Oracle vs non-oracle models
+%
+% FORWARD: Chapter 7/8 compare AQO to circuit model
+%
+% REVIEWER: literature - Standard definitions
+
+% =============================================================================
+% Section: Grover as Geometry
+% =============================================================================
+% SOURCE: Grover (1996), Nielsen-Chuang
+%
+% The search problem:
+% - Find marked item w among N items
+% - Oracle: f(x) = 1 if x = w, else 0
+%
+% Geometric picture:
+% - Two-dimensional subspace: span{|w>, |s>}
+%   where |s> = (1/sqrt(N)) sum_x |x> (uniform superposition)
+% - Grover iteration rotates in this plane
+% - Angle per iteration: theta = arcsin(1/sqrt(N)) ~ 1/sqrt(N)
+%
+% Runtime:
+% - Need pi/(4*theta) ~ sqrt(N) iterations to reach |w>
+% - O(sqrt(N)) queries to oracle
+%
+% Why geometric view matters:
+% - Makes optimality transparent
+% - Connects to AQO: same two-level structure (Chapter 5)
+%
+% TODO: Draw the rotation picture
+% TODO: Connect to Roland-Cerf (Chapter 4)
+%
+% FORWARD: Chapter 5: AQO has similar two-level structure near s*
+%
+% REVIEWER: presentation_quality - Geometry before algebra
+
+% =============================================================================
+% Section: Why Grover is Optimal
+% =============================================================================
+% SOURCE: Bennett-Bernstein-Brassard-Vazirani (1997)
+%
+% BBBV lower bound:
+% Any quantum algorithm needs Omega(sqrt(N)) queries to find marked item
+% (with constant probability).
+%
+% Proof idea:
+% - Query complexity limited by how fast amplitude can move to marked state
+% - Polynomial method: amplitude polynomial in query count
+% - Degree sqrt(N) needed to distinguish marked from unmarked
+%
+% Implication:
+% - Quadratic speedup is fundamental, not algorithmic accident
+% - Cannot do better than sqrt(N) for unstructured search
+% - AQO matching this is optimal (Chapter 7)
+%
+% TODO: Sketch proof or give intuition
+% TODO: Connect to runtime lower bounds for AQO
+%
+% FORWARD: Chapter 7: AQO achieves O~(sqrt(N/d_0)), matching lower bound
+%
+% REVIEWER: technical_soundness - Lower bound is important
+
+% =============================================================================
+% Section: The Decoherence Challenge
+% =============================================================================
+%
+% Practical issues:
+% - Maintaining quantum states is hard
+% - Environmental interaction causes decoherence
+% - Superposition degrades to classical mixture
+%
+% Error correction:
+% - Encode logical qubits in many physical qubits
+% - Detect and correct errors
+% - Threshold theorem: fault-tolerant quantum computation possible
+%
+% Why adiabatic methods might help:
+% - Energy gap provides natural protection
+% - Ground state is stable (cannot decay further)
+% - But: must maintain gap throughout evolution
+% - NOT a free lunch: gap can still be small
+%
+% For thesis:
+% - We assume ideal evolution (no noise)
+% - Noise analysis is beyond scope
+% - Focus is on computational complexity, not physics
+%
+% TODO: Be clear about assumptions
+% TODO: Note that decoherence is separate from computational hardness
+%
+% OPTION: Could expand or minimize depending on thesis scope
+%
+% REVIEWER: presentation_quality - Set expectations clearly

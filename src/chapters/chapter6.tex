@@ -1,1 +1,251 @@
 % Chapter 6: Spectral Analysis
+%
+% OVERVIEW: This chapter bounds g(s) across [0,1] using three-region analysis.
+% Central technical contribution: tight gap bounds enable runtime calculation.
+%
+% NEEDS: Chapter 5 (H(s), A_1, A_2, s*, delta_s, g_min definitions)
+% NEEDS: Chapter 3 (Variational principle, spectral decomposition)
+%
+% FORWARD: Chapter 7 integrates 1/g(s)^2 using these bounds
+% FORWARD: Chapter 9 uses gap profile for information-theoretic analysis
+
+% =============================================================================
+% Section: The Challenge
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 297, 488-492
+%
+% - Bound the gap g(s) = lambda_1(s) - lambda_0(s) for all s in [0,1]
+% - Gap determines adiabatic runtime (T ~ integral 1/g(s)^2 ds)
+% - Non-uniform: gap varies significantly across s
+% - Eigenvalue equation gives intervals but not tight bounds (line 492)
+% - Need lower bounds (for runtime upper bound)
+%
+% TODO: Motivate why bounding gap is hard (multiple crossings in upper states)
+% TODO: Reference Figure 1 (spectrum plot) to show complexity
+%
+% REVIEWER: presentation_quality - Set up the challenge before solutions
+
+% =============================================================================
+% Section: The Three-Region Strategy
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 314-319, 596-597
+%
+% Three regions with different techniques:
+% 1. Left: I_{s<-} = [0, s* - delta_s) - variational principle
+% 2. Window: I_{s*} = [s* - delta_s, s* + delta_s] - two-level approximation
+% 3. Right: I_{s->} = (s* + delta_s, 1] - resolvent method
+%
+% Key insight (line 596): gap in left/right regions exceeds gap in window
+% This confirms avoided crossing is localized in window
+%
+% TODO: Explain why different techniques for each region
+% TODO: Preview results before diving into proofs
+%
+% OPTION: Could present in order left->window->right or window first
+
+% =============================================================================
+% Section: Window Region - Gap Near Minimum
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 540-595 (Lemma, lem:spectral-gap-in-robustness-window)
+%
+% Main result: For s in I_{s*}, gap is Theta(g_min)
+%
+% Gap formula (line 543):
+% g(s) = s(A_1+1)/(A_2(1-s)) * sqrt((A_1/(A_1+1) - s)^2 + 4A_2*d_0/(N(A_1+1)^2)*(1-s)^2)
+%
+% Minimum at s = s* (line 545-548):
+% g_min >= (1-2*eta) * 2A_1/(1+A_1) * sqrt(d_0/(N*A_2))
+%
+% Upper bound (Lemma, lines 552-595):
+% g(s) <= kappa' * g_min, where kappa' = (1+2c)/(1-2c) * sqrt(1+(1-2c)^2)
+%
+% Derivation uses (lines 579-588):
+% - Spectral condition: (1/Delta)*sqrt(d_0/(A_2*N)) < c
+% - Bound: delta_s/(1-s*) <= 2c and delta_s/s* <= 2c
+%
+% TODO: Include proof or sketch key steps
+% TODO: Numerical value of kappa' for c=0.02
+%
+% REVIEWER: gap_bounds - CRITICAL: formula must match paper exactly
+% REVIEWER: technical_soundness - Proof uses spectral condition essentially
+
+% =============================================================================
+% Section: Left Region - Variational Bound
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 598-635 (Lemma, unnumbered)
+%
+% Main result (line 603): For s in I_{s<-}:
+% g(s) >= A_1(A_1+1)/A_2 * (s* - s)
+%
+% Strategy (lines 598, 607):
+% 1. Upper bound ground energy via variational principle
+% 2. Lower bound first excited energy by sE_0 (from eigenvalue eq.)
+% 3. Combine for gap lower bound
+%
+% Variational ansatz (line 610):
+% |phi> = 1/sqrt(A_2*N) * sum_{k=1}^{M-1} sqrt(d_k)/(E_k-E_0) |k>
+%
+% Calculation (lines 613-621):
+% lambda_0(s) <= <phi|H(s)|phi> = sE_0 + A_1/A_2 * (s-s*)/(1-s*)
+%
+% Lower bound on lambda_1(s) >= sE_0 (from Eq. summation-equality, line 622)
+%
+% Combining: g(s) >= A_1/A_2 * (s*-s)/(1-s*)
+%
+% Verification (lines 629-635): For s in I_{s<-}, gap > Theta(g_min)
+%
+% TODO: Why this particular ansatz? (encodes spectral structure)
+% TODO: Show calculation step by step
+% TODO: Connect to fact that ground state is close to |psi_0> early on
+%
+% REVIEWER: technical_soundness - Variational bound is tight (see Figure 2)
+
+% =============================================================================
+% Section: Right Region - Resolvent Method
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 637-648+ (Lemma, lemma:right-gap-lower-bound)
+%
+% Challenge (line 637): Spectrum more complicated, variational fails
+%
+% Main result (line 645): For s >= s*:
+% g(s) >= Delta/30 * (s-s_0)/(1-s_0)
+%
+% Parameters (lines 639-642):
+% - k = 1/4
+% - a = 4k^2 * Delta/3
+% - s_0 = s* - k*g_min*(1-s*)/(a - k*g_min)
+%
+% Strategy (lines 637, 650-658):
+% 1. Choose line gamma(s) = sE_0 + beta(s) between two lowest eigenvalues
+% 2. Gap >= 2/||R_{H(s)}(gamma)|| where R is resolvent
+% 3. Bound resolvent norm using Sherman-Morrison
+%
+% Resolvent definition (lines 184-189):
+% R_A(gamma) = (gamma*I - A)^{-1}
+% ||R_A(gamma)||^{-1} = distance from gamma to spectrum of A
+%
+% TODO: Include Sherman-Morrison calculation
+% TODO: Explain choice of parameters k, a
+% TODO: Why Delta/30 constant? (optimization over parameters)
+%
+% REVIEWER: technical_soundness - Most involved proof in this chapter
+
+% =============================================================================
+% Section: Sherman-Morrison Formula
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 191-195
+%
+% For invertible A and vectors |u>, |v> with 1 + <v|A^{-1}|u> != 0:
+% (A + |u><v|)^{-1} = A^{-1} - (A^{-1}|u><v|A^{-1})/(1 + <v|A^{-1}|u>)
+%
+% Application to H(s) (line 637):
+% - H(s) = sH_z - (1-s)|psi_0><psi_0| = A + |u><v| (rank-1 perturbation)
+% - A = sH_z, |u> = sqrt(1-s)|psi_0>, |v> = -sqrt(1-s)|psi_0>
+%
+% Why useful:
+% - Resolvent of H(s) expressible in terms of resolvent of sH_z
+% - Resolvent of sH_z is diagonal (easy to compute)
+% - Gives explicit formula for ||R_{H(s)}(gamma)||
+%
+% TODO: Derive the explicit resolvent bound
+% TODO: Show how triangle inequality is used (line 658)
+%
+% REVIEWER: technical_soundness - Key enabling technique for right region
+
+% =============================================================================
+% Section: The Minimum Gap Formula
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 545-548
+%
+% g_min = (2A_1/(A_1+1)) * sqrt(d_0/(N*A_2))
+%
+% Derivation:
+% - From two-level approximation near s*
+% - Gap formula evaluated at s = s* gives minimum
+% - Factor (1-2*eta) is approximation error (eta small)
+%
+% Interpretation:
+% - Numerator 2A_1/(A_1+1) = 2s*(1-s*) - product of crossing position factors
+% - sqrt(d_0/N) = relative measure of solutions (Grover-like)
+% - 1/sqrt(A_2) = correction from spectral structure
+%
+% Comparison to Grover (M=2, d_0=1):
+% - A_1 = A_2 = (N-1)/Delta, Delta = 1
+% - g_min = Theta(1/sqrt(N)) - matches Grover
+%
+% TODO: Work out Grover case explicitly
+% TODO: Show how d_0 > 1 increases gap (multiple solutions help)
+%
+% REVIEWER: gap_bounds - CRITICAL: central formula of the paper
+
+% =============================================================================
+% Section: Complete Gap Profile
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 596, 633-635, Figure 2
+%
+% Summary: g(s) for s in [0,1]
+%
+% Left region [0, s* - delta_s):
+%   g(s) >= A_1(A_1+1)/A_2 * (s* - s)
+%   Linear growth from 0 as s decreases from s*
+%
+% Window region [s* - delta_s, s* + delta_s]:
+%   g_min <= g(s) <= kappa' * g_min
+%   Approximately constant, minimum at s*
+%
+% Right region (s* + delta_s, 1]:
+%   g(s) >= Delta/30 * (s - s_0)/(1 - s_0)
+%   Linear growth toward Delta as s increases
+%
+% Piecewise behavior feeds into runtime integral (Chapter 7):
+% - Left/right: integral of 1/g^2 is O(log) - subdominant
+% - Window: integral of 1/g_min^2 * delta_s dominates
+%
+% TODO: Include sketch of gap profile (qualitative figure)
+% TODO: Reference Figure 2 from paper
+%
+% FORWARD: Chapter 7 uses this to compute T = integral_0^1 (1/g(s)^2) ds
+
+% =============================================================================
+% Section: When Do These Bounds Hold?
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 270-275, 282
+%
+% Spectral condition: (1/Delta)*sqrt(d_0/(A_2*N)) < c, c ~ 0.02
+%
+% Equivalently (line 282): Delta > (1/c)*sqrt(d_0/N)
+%
+% For Ising Hamiltonians (lines 284-288):
+% - Delta >= 1/poly(n) (energy levels are integers in bounded range)
+% - Condition satisfied for polynomial spectral gap
+%
+% What goes wrong without condition?
+% - delta_s/(1-s*) and delta_s/s* may not be small
+% - Window may overlap with other crossings
+% - Two-level approximation breaks down
+%
+% TODO: Explain failure mode more precisely
+% TODO: Give example where condition fails
+%
+% OPTION: Could move to Chapter 5 with setup
+%
+% REVIEWER: technical_soundness - Must state when results apply
+
+% =============================================================================
+% Section: Proof Verification Notes
+% =============================================================================
+%
+% Key formulas to verify against paper:
+% 1. g(s) formula in window (line 543) - matches
+% 2. g_min formula (line 548) - matches (up to 1-2*eta factor)
+% 3. Left bound (line 603) - matches
+% 4. Right bound (line 645) - matches
+% 5. Variational ansatz (line 610) - matches
+%
+% Lean formalization status:
+% - Gap bounds: formalized in src/lean/UAQO/Spectral/GapBounds.lean
+% - Sherman-Morrison: formalized with sign correction noted
+%
+% TODO: Check src/lean/ for any discovered issues
+%
+% REVIEWER: reproducibility - All bounds must be verifiable from paper

@@ -1,4 +1,9 @@
-import UAQO.Spectral.SpectralParameters
+import UAQO.Spectral.AdiabaticHamiltonian
+import UAQO.Proofs.Spectral.EigenvalueCondition
+import Mathlib.LinearAlgebra.Matrix.Hermitian
+import Mathlib.Analysis.Matrix.Spectrum
+import Mathlib.Analysis.InnerProductSpace.PiL2
+import Mathlib.Analysis.Complex.Basic
 
 /-!
 # Spectral Gap Bounds for the Adiabatic Hamiltonian
@@ -68,33 +73,37 @@ noncomputable def gapBoundRightExplicit (Delta gmin sStar s : Real) : Real :=
   let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
   (Delta / 30) * (s - s0) / (1 - s0)
 
-/-! ## Adiabatic Hamiltonian in symmetric subspace -/
-
-/-- The adiabatic Hamiltonian H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s H_z -/
-noncomputable def adiabaticHam {n M : Nat} (es : EigenStructure n M)
-    (s : Real) (hs : 0 <= s ∧ s <= 1) : NQubitOperator n :=
-  let psi0 := equalSuperpositionN n
-  let H0 := projectorOnState psi0
-  let Hz := es.toHamiltonian.toOperator
-  (-(1 - s) : Complex) • H0 + (s : Complex) • Hz
-
-notation "H(" s ")" => adiabaticHam _ s _
-
 /-- The eigenvalue condition for H(s): 1/(1-s) = (1/N) Σ_k d_k/(sE_k - λ)
 
     This is Lemma 2 in the paper. The eigenvalues of H(s) satisfy either:
-    (1) λ = sE_k for some k (eigenvalues from H_z), or
-    (2) The secular equation 1/(1-s) = (1/N) Σ_k d_k/(sE_k - λ)
+    (1) λ = sE_k for some degenerate level k (d_k > 1), or
+    (2) λ ≠ sE_k for all k, AND the secular equation 1/(1-s) = (1/N) Σ_k d_k/(sE_k - λ)
+
+    NOTE: Requires s > 0. For s = 0, H(0) = -|ψ₀⟩⟨ψ₀| has eigenvalue 0 regardless of
+    degeneracies, so the condition doesn't apply.
+
+    For non-degenerate levels (d_k = 1), the eigenvalue s·E_k is NOT an eigenvalue
+    of H(s) because the only eigenvector |z⟩ satisfies ⟨ψ₀|z⟩ = 1/√N ≠ 0, so the projector
+    term doesn't vanish. Only degenerate levels have eigenvectors orthogonal to |ψ₀⟩.
+
+    The non-collision condition (∀ k, λ ≠ s·E_k) in case (2) ensures the secular equation
+    is well-defined (no division by zero). At collision points λ = s·E_k, the only
+    eigenvalues come from degenerate levels (case 1).
 
     This characterizes all eigenvalues of the adiabatic Hamiltonian H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + sH_z.
-    The proof follows from the Sherman-Morrison formula applied to the rank-1 perturbation. -/
-axiom eigenvalue_condition {n M : Nat} (es : EigenStructure n M)
-    (_hM : M > 0) (s : Real) (_hs : 0 <= s ∧ s < 1) (_lambda : Real) :
-    IsEigenvalue (adiabaticHam es s ⟨_hs.1, le_of_lt _hs.2⟩) _lambda ↔
-    (∃ z, _lambda = s * es.eigenvalues (es.assignment z)) ∨
-     (1 / (1 - s) = (1 / qubitDim n) *
+    The proof follows from the Sherman-Morrison formula applied to the rank-1 perturbation.
+
+    FULLY PROVED using Matrix Determinant Lemma and spectral analysis. -/
+theorem eigenvalue_condition {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (s : Real) (hs : 0 < s ∧ s < 1) (lambda : Real) :
+    IsEigenvalue (adiabaticHam es s ⟨le_of_lt hs.1, le_of_lt hs.2⟩) lambda ↔
+    (∃ z, lambda = s * es.eigenvalues (es.assignment z) ∧
+          es.degeneracies (es.assignment z) > 1) ∨
+     ((∀ k : Fin M, lambda ≠ s * es.eigenvalues k) ∧
+      1 / (1 - s) = (1 / qubitDim n) *
        Finset.sum Finset.univ (fun k =>
-         (es.degeneracies k : Real) / (s * es.eigenvalues k - _lambda)))
+         (es.degeneracies k : Real) / (s * es.eigenvalues k - lambda))) :=
+  Proofs.Spectral.eigenvalue_condition_proof es hM s hs lambda
 
 /-! ## Three regions of s -/
 
@@ -114,22 +123,251 @@ def rightRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) :
   avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) +
     avoidedCrossingWindow es hM < s ∧ s <= 1
 
+/-! ## Variational Principle Infrastructure
+
+These lemmas prove the variational bound: E₀ ≤ ⟨φ|H|φ⟩ for normalized |φ⟩.
+The proof uses Mathlib's spectral theorem for finite-dimensional Hermitian matrices. -/
+
+section VariationalPrinciple
+open Matrix
+
+/-- applyOp equals mulVec (matrix-vector multiplication) -/
+private lemma applyOp_eq_mulVec' {N : Nat} (A : Operator N) (v : Ket N) :
+    A ⬝ v = A *ᵥ v := by
+  unfold applyOp mulVec dotProduct; rfl
+
+/-- Dagger distributes over addition -/
+private lemma dagger_add' {N : Nat} (A B : Operator N) : (A + B)† = A† + B† :=
+  Matrix.conjTranspose_add A B
+
+/-- Dagger of scalar multiple -/
+private lemma dagger_smul' {N : Nat} (c : ℂ) (A : Operator N) : (c • A)† = (starRingEnd ℂ c) • A† :=
+  Matrix.conjTranspose_smul c A
+
+/-- Sum of Hermitian operators is Hermitian -/
+private lemma isHermitian_add' {N : Nat} (A B : Operator N)
+    (hA : IsHermitian A) (hB : IsHermitian B) : IsHermitian (A + B) := by
+  unfold IsHermitian at *; rw [dagger_add']; conv_lhs => rw [hA, hB]
+
+/-- Real scalar multiple of Hermitian is Hermitian -/
+private lemma isHermitian_smul_real' {N : Nat} (r : ℝ) (A : Operator N)
+    (hA : IsHermitian A) : IsHermitian ((r : ℂ) • A) := by
+  unfold IsHermitian at *
+  rw [dagger_smul']
+  simp only [Complex.conj_ofReal]
+  conv_lhs => rw [hA]
+
+/-- Diagonal Hamiltonian is Hermitian -/
+private lemma diagonalHam_hermitian' {n M : Nat} (es : EigenStructure n M) :
+    IsHermitian es.toHamiltonian.toOperator := by
+  unfold IsHermitian dagger
+  ext i j
+  simp only [Matrix.conjTranspose_apply, EigenStructure.toHamiltonian,
+             DiagonalHamiltonian.toOperator, Matrix.diagonal_apply]
+  by_cases h : i = j
+  · subst h; simp only [↓reduceIte]; rw [Complex.star_def, Complex.conj_ofReal]
+  · have hji : j ≠ i := fun hji => h hji.symm; simp only [h, hji, ↓reduceIte, star_zero]
+
+/-- The adiabatic Hamiltonian H(s) is Hermitian -/
+theorem adiabaticHam_hermitian {n M : Nat} (es : EigenStructure n M)
+    (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1) : IsHermitian (adiabaticHam es s hs) := by
+  unfold adiabaticHam
+  have hH0 : IsHermitian (projectorOnState (equalSuperpositionN n)) := projectorOnState_hermitian _
+  have hHz : IsHermitian es.toHamiltonian.toOperator := diagonalHam_hermitian' es
+  have h1 : IsHermitian ((-(1 - s) : ℂ) • projectorOnState (equalSuperpositionN n)) := by
+    have hr : (-(1 - s) : ℂ) = ((-(1 - s)) : ℝ) := by simp
+    rw [hr]; exact isHermitian_smul_real' _ _ hH0
+  have h2 : IsHermitian ((s : ℂ) • es.toHamiltonian.toOperator) := isHermitian_smul_real' s _ hHz
+  exact isHermitian_add' _ _ h1 h2
+
+/-- Convert our IsHermitian to Mathlib's Matrix.IsHermitian -/
+lemma adiabaticHam_matrix_hermitian {n M : Nat} (es : EigenStructure n M)
+    (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1) : Matrix.IsHermitian (adiabaticHam es s hs) := by
+  rw [← isHermitian_iff_matrix]; exact adiabaticHam_hermitian es s hs
+
+/-- Minimum eigenvalue of Hermitian matrix exists -/
+private lemma min_eigenvalue_of_hermitian' {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A) :
+    ∃ (E_min : ℝ), ∃ (v : Fin N → ℂ), v ≠ 0 ∧ A *ᵥ v = (E_min : ℂ) • v ∧
+      ∀ i : Fin N, E_min ≤ hA.eigenvalues i := by
+  let eigenval_set := Finset.image hA.eigenvalues Finset.univ
+  have hne : eigenval_set.Nonempty := by simp only [eigenval_set, Finset.image_nonempty, Finset.univ_nonempty]
+  let E_min := eigenval_set.min' hne
+  have hE_in : E_min ∈ eigenval_set := Finset.min'_mem eigenval_set hne
+  simp only [eigenval_set, Finset.mem_image, Finset.mem_univ, true_and] at hE_in
+  obtain ⟨idx, hidx⟩ := hE_in
+  use E_min, ⇑(hA.eigenvectorBasis idx)
+  refine ⟨?_, ?_, ?_⟩
+  · have hne := hA.eigenvectorBasis.orthonormal.ne_zero idx
+    intro hzero; apply hne; ext i; exact congrFun hzero i
+  · rw [← hidx]; exact hA.mulVec_eigenvectorBasis idx
+  · intro i; exact Finset.min'_le eigenval_set (hA.eigenvalues i) (by simp [eigenval_set])
+
+/-- Convert minimum eigenvalue to IsEigenvalue -/
+private lemma min_eigenvalue_to_our' {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A) :
+    ∃ (E_min : ℝ), IsEigenvalue A E_min ∧ ∀ i : Fin N, E_min ≤ hA.eigenvalues i := by
+  obtain ⟨E_min, v, hv_ne, hv_eq, hmin⟩ := min_eigenvalue_of_hermitian' A hA
+  use E_min
+  constructor
+  · use v
+    constructor
+    · rw [normSquared_pos_iff]; by_contra hall; push_neg at hall
+      apply hv_ne; funext i; exact hall i
+    · rw [applyOp_eq_mulVec']; exact hv_eq
+  · exact hmin
+
+/-- Expectation in terms of dotProduct -/
+private lemma expectation_eq_star_dotProduct_mulVec' {N : Nat} (A : Matrix (Fin N) (Fin N) ℂ) (v : Fin N → ℂ) :
+    expectation A v = (star v) ⬝ᵥ (A *ᵥ v) := by
+  unfold expectation innerProd applyOp dotProduct
+  simp only [mulVec, dotProduct, Pi.star_apply]
+  apply Finset.sum_congr rfl
+  intro i _
+  rfl
+
+/-- Squared norm equals normSq -/
+private lemma complex_norm_sq_eq_normSq' (z : ℂ) : ‖z‖^2 = Complex.normSq z :=
+  (Complex.normSq_eq_norm_sq z).symm
+
+/-- EuclideanSpace norm squared equals normSquared -/
+private lemma euclideanSpace_norm_sq_eq_normSquared' {N : Nat}
+    (phi : EuclideanSpace ℂ (Fin N)) : ‖phi‖^2 = normSquared (WithLp.ofLp phi) := by
+  simp only [EuclideanSpace.norm_eq]
+  rw [Real.sq_sqrt]
+  · simp only [normSquared]; apply Finset.sum_congr rfl
+    intro i _; rw [complex_norm_sq_eq_normSq']
+  · apply Finset.sum_nonneg; intro i _; exact sq_nonneg _
+
+/-- Spectral expansion: phi* A phi = Σ_k λ_k |c_k|² -/
+private lemma spectral_expansion_quadratic_form' {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A) (phi : Fin N → ℂ) :
+    (star phi) ⬝ᵥ (A *ᵥ phi) =
+      ∑ k : Fin N, (hA.eigenvalues k : ℂ) * (Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi)) := by
+  let E := EuclideanSpace ℂ (Fin N)
+  let b := hA.eigenvectorBasis
+  let phi_E : E := WithLp.toLp 2 phi
+  have hexp : phi_E = ∑ k : Fin N, @inner ℂ E _ (b k) phi_E • b k := (b.sum_repr' phi_E).symm
+  have heig : ∀ k, A *ᵥ ⇑(b k) = (hA.eigenvalues k : ℂ) • ⇑(b k) := fun k => hA.mulVec_eigenvectorBasis k
+  let c : Fin N → ℂ := fun k => @inner ℂ E _ (b k) phi_E
+  have c_eq_dot' : ∀ k, c k = (star ⇑(b k)) ⬝ᵥ phi := by
+    intro k
+    have h := EuclideanSpace.inner_eq_star_dotProduct (b k) phi_E
+    simp only [phi_E, WithLp.ofLp_toLp] at h
+    simp only [dotProduct] at h ⊢
+    simp only [c]
+    conv_lhs => rw [h]
+    apply Finset.sum_congr rfl; intro i _; exact mul_comm _ _
+  have rhs_eq : ∑ k : Fin N, (hA.eigenvalues k : ℂ) * Complex.normSq ((star ⇑(b k)) ⬝ᵥ phi) =
+      ∑ k : Fin N, (hA.eigenvalues k : ℂ) * Complex.normSq (c k) := by
+    apply Finset.sum_congr rfl; intro k _; rw [← c_eq_dot' k]
+  rw [rhs_eq]
+  have hphi_sum : phi = ∑ k : Fin N, c k • ⇑(b k) := by
+    conv_lhs => rw [show phi = WithLp.ofLp phi_E from rfl]
+    rw [hexp]; simp only [WithLp.ofLp_sum]
+    apply Finset.sum_congr rfl; intro k _; simp only [c, WithLp.ofLp_smul]
+  have hAphi_sum : A *ᵥ phi = ∑ k : Fin N, (c k * (hA.eigenvalues k : ℂ)) • ⇑(b k) := by
+    rw [hphi_sum, Matrix.mulVec_sum]
+    apply Finset.sum_congr rfl; intro k _
+    rw [Matrix.mulVec_smul, heig k, smul_smul]
+  rw [hAphi_sum, dotProduct_sum]
+  apply Finset.sum_congr rfl; intro k _
+  rw [dotProduct_smul, smul_eq_mul]
+  have hconj : (star phi) ⬝ᵥ ⇑(b k) = starRingEnd ℂ (c k) := by
+    rw [c_eq_dot' k]
+    simp only [dotProduct, Pi.star_apply]
+    rw [map_sum]; apply Finset.sum_congr rfl; intro i _
+    simp only [starRingEnd_apply, star_mul', star_star]; ring
+  rw [hconj, Complex.normSq_eq_conj_mul_self]; ring
+
+/-- Parseval identity: Σ_k |c_k|² = ‖phi‖² -/
+private lemma parseval_normSquared' {N : Nat} [NeZero N]
+    {A : Matrix (Fin N) (Fin N) ℂ} (hA : Matrix.IsHermitian A) (phi : Fin N → ℂ) :
+    ∑ k : Fin N, Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi) = normSquared phi := by
+  let phi_E : EuclideanSpace ℂ (Fin N) := WithLp.toLp 2 phi
+  let b := hA.eigenvectorBasis
+  have hparseval := b.sum_sq_norm_inner_right (𝕜 := ℂ) phi_E
+  have hsum_eq : ∑ k : Fin N, ‖@inner ℂ (EuclideanSpace ℂ (Fin N)) _ (b k) phi_E‖^2 =
+      ∑ k : Fin N, Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi) := by
+    apply Finset.sum_congr rfl; intro k _
+    rw [complex_norm_sq_eq_normSq']
+    have h := EuclideanSpace.inner_eq_star_dotProduct (b k) phi_E
+    simp only [phi_E, WithLp.ofLp_toLp] at h
+    simp only [dotProduct] at h
+    congr 1
+    rw [h]; apply Finset.sum_congr rfl; intro i _; ring
+  have hnorm_eq : ‖phi_E‖^2 = normSquared phi := euclideanSpace_norm_sq_eq_normSquared' phi_E
+  rw [← hsum_eq, hparseval, hnorm_eq]
+
+/-- Weighted sum bound: Σ_k λ_k w_k ≥ λ_min * Σ_k w_k -/
+private lemma weighted_sum_ge_min_times_sum' {N : Nat} [NeZero N]
+    (lambdas : Fin N → ℝ) (weights : Fin N → ℝ) (E_min : ℝ)
+    (hws_nonneg : ∀ k, 0 ≤ weights k) (hmin : ∀ k, E_min ≤ lambdas k) :
+    E_min * (∑ k, weights k) ≤ ∑ k, lambdas k * weights k := by
+  calc E_min * (∑ k, weights k) = ∑ k, E_min * weights k := by rw [Finset.mul_sum]
+    _ ≤ ∑ k, lambdas k * weights k := by
+        apply Finset.sum_le_sum; intro k _
+        exact mul_le_mul_of_nonneg_right (hmin k) (hws_nonneg k)
+
+/-- Expectation bounded below by minimum eigenvalue -/
+private lemma expectation_ge_min_eigenvalue' {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A)
+    (phi : Fin N → ℂ) (hphi : normSquared phi = 1) :
+    ∃ E_min : ℝ, IsEigenvalue A E_min ∧ E_min ≤ ((star phi) ⬝ᵥ (A *ᵥ phi)).re := by
+  obtain ⟨E_min, hE_min, hmin⟩ := min_eigenvalue_to_our' A hA
+  use E_min, hE_min
+  have hspec := spectral_expansion_quadratic_form' A hA phi
+  rw [hspec]
+  have hre_eq : (∑ k : Fin N, (hA.eigenvalues k : ℂ) *
+      (Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi))).re =
+      ∑ k : Fin N, hA.eigenvalues k * Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi) := by
+    rw [Complex.re_sum]; apply Finset.sum_congr rfl; intro k _
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
+  rw [hre_eq]
+  have hparseval := parseval_normSquared' hA phi
+  rw [hphi] at hparseval
+  have hbound := weighted_sum_ge_min_times_sum'
+    (fun k => hA.eigenvalues k)
+    (fun k => Complex.normSq ((star ⇑(hA.eigenvectorBasis k)) ⬝ᵥ phi))
+    E_min (fun k => Complex.normSq_nonneg _) hmin
+  simp only [hparseval, mul_one] at hbound
+  exact hbound
+
+end VariationalPrinciple
+
 /-! ## Gap bounds to the LEFT of avoided crossing -/
 
 /-- The ground energy of H(s) is bounded above by the variational ansatz.
 
     Upper bound: E₀(s) ≤ ⟨φ|H(s)|φ⟩ for any normalized state |φ⟩.
-    This follows from the variational principle for Hermitian operators. -/
-axiom groundEnergy_variational_bound {n M : Nat} (es : EigenStructure n M)
+    This follows from the variational principle for Hermitian operators.
+
+    FULLY PROVED using Mathlib's spectral theorem for Hermitian matrices. -/
+theorem groundEnergy_variational_bound {n M : Nat} (es : EigenStructure n M)
     (_hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
-    (phi : NQubitState n) (_hphi : normSquared phi = 1) :
+    (phi : NQubitState n) (hphi : normSquared phi = 1) :
     ∃ (E0 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
-      E0 <= (expectation (adiabaticHam es s hs) phi).re
+      E0 <= (expectation (adiabaticHam es s hs) phi).re := by
+  have hHerm := adiabaticHam_matrix_hermitian es s hs
+  have hN : NeZero (qubitDim n) := ⟨Nat.pos_iff_ne_zero.mp (Nat.pow_pos (by norm_num : 0 < 2))⟩
+  obtain ⟨E_min, hE_min, hbound⟩ := @expectation_ge_min_eigenvalue' (qubitDim n) hN
+    (adiabaticHam es s hs) hHerm phi hphi
+  use E_min, hE_min
+  rw [expectation_eq_star_dotProduct_mulVec']
+  exact hbound
 
 /-- Lower bound on first excited state: λ₁(s) ≥ s E₀.
 
     This establishes that the first excited state energy is bounded below,
-    and that there exists a gap between ground and first excited states. -/
+    and that there exists a gap between ground and first excited states.
+
+    The proof requires showing:
+    1. H(s) has at least 2 distinct eigenvalues (it's not a scalar matrix)
+    2. The maximum eigenvalue is ≥ s·E₀^diag = 0
+
+    These follow from the non-trivial structure of the adiabatic Hamiltonian
+    H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s·H_z which combines a rank-1 projector with
+    a diagonal Hamiltonian having M ≥ 2 distinct eigenvalue levels. -/
 axiom firstExcited_lower_bound {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1) :
     ∃ (E1 : Real), IsEigenvalue (adiabaticHam es s hs) E1 ∧

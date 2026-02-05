@@ -1,1 +1,210 @@
 % Chapter 1: Introduction
+%
+% OVERVIEW: Sets up the thesis problem, states main results upfront,
+% and provides roadmap. Written last to reflect actual content.
+%
+% DEPENDS ON: Knowing content of all other chapters
+%
+% NOTE: Introduction should create tension, state results, provide map
+
+% =============================================================================
+% Section: The Puzzle
+% =============================================================================
+%
+% Ground states as computational answers:
+% - Physical systems naturally seek low-energy configurations
+% - Encode computational problem in Hamiltonian H
+% - Ground state of H encodes solution
+% - "Let nature compute" - attractive idea
+%
+% The question:
+% - Can physical systems solve hard problems efficiently?
+% - Specifically: can quantum systems beat classical for optimization?
+%
+% TODO: Build tension before resolution
+% TODO: Don't answer too quickly - let reader want the answer
+%
+% REVIEWER: presentation_quality - Hook the reader
+
+% =============================================================================
+% Section: Unstructured Search as Canonical Target
+% =============================================================================
+%
+% The search problem:
+% - Find marked item among N items
+% - No structure to exploit (oracle model)
+%
+% Classical: O(N) queries required
+% - Must check every item in worst case
+%
+% Quantum: O(sqrt(N)) queries via Grover
+% - Quadratic speedup is provably optimal (BBBV)
+% - Cannot do better for unstructured search
+%
+% Why this is the right benchmark:
+% - Clean problem with clear lower bound
+% - Speedup is quadratic, not exponential
+% - Achieved by circuit model (Grover)
+% - Question: can AQO match this?
+%
+% TODO: Frame Grover as the benchmark to beat/match
+%
+% FORWARD: Chapters 3 (Grover), 7 (AQO matches it)
+
+% =============================================================================
+% Section: Adiabatic Quantum Optimization
+% =============================================================================
+%
+% AQC idea:
+% - Encode problem in Hamiltonian H_z
+% - Start with easy Hamiltonian H_0 (known ground state)
+% - Interpolate: H(s) = (1-s)H_0 + sH_z
+% - Evolve slowly: system stays in ground state
+%
+% AQO = AQC with restrictions:
+% - H_z is diagonal (classical energies)
+% - H_0 is projector onto uniform superposition
+% - Only schedule s(t) is adjustable
+% - More constrained than general AQC
+%
+% The appeal:
+% - "Nature computes for you"
+% - No explicit gate sequences
+% - Potentially robust to some noise
+%
+% The catch (preview):
+% - Schedule requires knowledge of spectral gap
+% - Gap information is computationally expensive
+%
+% TODO: Make AQO appealing before showing limitations
+%
+% FORWARD: Chapter 4 (AQC), Chapter 5 (AQO setup)
+
+% =============================================================================
+% Section: The Trilogy - Main Results Frontloaded
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex Theorems 1-3
+%
+% The three main results (one paragraph summary):
+%
+% (i) Optimality exists:
+% Runtime T = O~(sqrt(N/d_0)) for AQO
+% Matches Grover lower bound (up to polylog factors)
+% SOURCE: Theorem 1, Chapter 7
+%
+% (ii) Computing schedule parameters is NP-hard:
+% Estimating A_1 to 1/poly(n) precision reduces 3-SAT
+% Only two oracle calls needed
+% SOURCE: Theorem 2, Chapter 8
+%
+% (iii) Exact parameter values are #P-hard:
+% Computing A_1 exactly enables extracting all degeneracies
+% Polynomial interpolation attack
+% SOURCE: Theorem 3, Chapter 8
+%
+% The tension:
+% - Optimal speedup exists (theoretically)
+% - But achieving it requires solving NP-hard problem first
+% - "Optimality with limitations"
+%
+% TODO: State results crisply without full detail
+% TODO: Create tension: optimality exists but is contingent
+%
+% REVIEWER: significance - This is the paper's contribution
+
+% =============================================================================
+% Section: The Central Question
+% =============================================================================
+%
+% When does "nature computes for you" actually work?
+%
+% The naive view:
+% - Set up Hamiltonian, wait, measure
+% - Nature does the optimization
+% - No algorithm design needed
+%
+% The reality:
+% - Must choose schedule s(t)
+% - Optimal schedule requires gap information
+% - Gap information is NP-hard to compute
+%
+% Reframing the question:
+% - Not "can AQO achieve speedup?" (yes, in principle)
+% - But "when is the gap information tractable?"
+% - Information as the bottleneck, not computation
+%
+% This thesis:
+% - Proves the optimality/hardness results (Chapters 5-8)
+% - Characterizes the information-runtime tradeoff (Chapter 9)
+% - Provides machine-checked verification (Chapter 10)
+%
+% TODO: Frame as information question
+% TODO: Set up Chapter 9 extensions
+%
+% FORWARD: Chapter 9 (information gap)
+
+% =============================================================================
+% Section: Thesis Contributions
+% =============================================================================
+%
+% What this thesis contributes:
+%
+% 1. Exposition of the published work:
+%    - Deep explanation of paper results (Chapters 5-8)
+%    - More pedagogical than original paper
+%    - Connects to broader context
+%
+% 2. Original extensions (Chapter 9):
+%    - Separation theorem: informed vs uninformed
+%    - Partial information tradeoff
+%    - Measure condition and scaling spectrum
+%    - Robust and adaptive schedules
+%
+% 3. Formalization (Chapter 10):
+%    - Lean 4 verification of results
+%    - Machine-checked proofs
+%    - Errors discovered and fixed
+%
+% The goal:
+% - Best single source for understanding this topic
+% - Clear enough to teach
+% - Rigorous enough to build on
+%
+% TODO: Be honest about what is exposition vs original
+%
+% REVIEWER: originality - Clear about contributions
+
+% =============================================================================
+% Section: Chapter Overview and Reading Paths
+% =============================================================================
+%
+% Chapter structure:
+%
+% Background (can skim if familiar):
+% - Chapter 2: Physics and Computation - first principles
+% - Chapter 3: Quantum Computation - QM, Hilbert spaces, Grover
+% - Chapter 4: Adiabatic Quantum Computation - AQC framework
+%
+% Core paper results (essential):
+% - Chapter 5: Adiabatic Quantum Optimization - AQO setup, spectral parameters
+% - Chapter 6: Spectral Analysis - gap bounds in three regions
+% - Chapter 7: Optimal Schedule - runtime derivation, Grover matching
+% - Chapter 8: Hardness of Optimality - NP-hard, #P-hard results
+%
+% Extensions (original contributions):
+% - Chapter 9: Information Gap - information-runtime tradeoffs
+%
+% Verification:
+% - Chapter 10: Formalization - Lean proofs, errors caught
+%
+% Conclusion:
+% - Chapter 11: Summary, open problems, future directions
+%
+% Reading paths:
+% - QC expert: skim 2-3, read 4-11
+% - Complexity theorist: read 2-8, skim 9-10
+% - Full reading: 1-11 in order
+%
+% TODO: Match paths to reader backgrounds
+%
+% REVIEWER: presentation_quality - Roadmap helps navigation

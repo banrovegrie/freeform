@@ -5,7 +5,7 @@
   either λ = s·E_k for some k, or the secular equation holds:
   1/(1-s) = (1/N) Σ_k d_k/(s·E_k - λ)
 -/
-import UAQO.Spectral.GapBounds
+import UAQO.Spectral.AdiabaticHamiltonian
 import UAQO.Proofs.Spectral.MatrixDetLemma
 import Mathlib.LinearAlgebra.Matrix.Charpoly.Basic
 import Mathlib.Algebra.Group.Pi.Units
@@ -415,13 +415,23 @@ theorem det_adiabaticHam_factored {n M : Nat} (es : EigenStructure n M)
 /-- The eigenvalue condition for H(s).
 
     λ is an eigenvalue of H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s·H_z iff
-    either (1) λ = s·E_k for some k, or (2) the secular equation holds:
-    1/(1-s) = (1/N) Σ_k d_k/(s·E_k - λ) -/
+    either (1) λ = s·E_k for some degenerate level k (d_k > 1), or
+    (2) λ ≠ s·E_k for all k, AND the secular equation: 1/(1-s) = (1/N) Σ_k d_k/(s·E_k - λ)
+
+    NOTE: Requires s > 0. For s = 0, H(0) = -|ψ₀⟩⟨ψ₀| has eigenvalue 0 regardless
+    of degeneracies.
+
+    For non-degenerate levels (d_k = 1), s·E_k is NOT an eigenvalue because the
+    only eigenvector |z⟩ satisfies ⟨ψ₀|z⟩ = 1/√N ≠ 0.
+
+    The non-collision condition ensures the secular equation is well-defined. -/
 theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
-    (hM : M > 0) (s : Real) (hs : 0 <= s ∧ s < 1) (lambda : Real) :
-    IsEigenvalue (adiabaticHam es s ⟨hs.1, le_of_lt hs.2⟩) lambda ↔
-    (∃ z, lambda = s * es.eigenvalues (es.assignment z)) ∨
-     (1 / (1 - s) = (1 / qubitDim n) *
+    (hM : M > 0) (s : Real) (hs : 0 < s ∧ s < 1) (lambda : Real) :
+    IsEigenvalue (adiabaticHam es s ⟨le_of_lt hs.1, le_of_lt hs.2⟩) lambda ↔
+    (∃ z, lambda = s * es.eigenvalues (es.assignment z) ∧
+          es.degeneracies (es.assignment z) > 1) ∨
+     ((∀ k : Fin M, lambda ≠ s * es.eigenvalues k) ∧
+      1 / (1 - s) = (1 / qubitDim n) *
        Finset.sum Finset.univ (fun k =>
          (es.degeneracies k : Real) / (s * es.eigenvalues k - lambda))) := by
   -- The proof connects eigenvalues to determinants, then uses det_adiabaticHam_factored
@@ -438,12 +448,299 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
     -- Case split: either λ = s·E_k for some k, or the secular equation holds
     by_cases hcase : ∃ k : Fin M, lambda = s * es.eigenvalues k
     · -- Case 1: λ = s·E_k for some k
-      left
+      -- We must also prove d_k > 1, otherwise λ can't be an eigenvalue
       obtain ⟨k, hk⟩ := hcase
+      -- First prove d_k > 1 using the fact that λ is an eigenvalue
+      -- Key insight: If λ is eigenvalue with λ = s·E_k, eigenvector must be
+      -- orthogonal to |ψ₀⟩, which requires d_k > 1.
+      have hdeg_gt1 : es.degeneracies k > 1 := by
+        by_contra hdeg_le1
+        push_neg at hdeg_le1
+        -- d_k ≤ 1, but d_k > 0 (es.deg_positive), so d_k = 1
+        have hdeg := es.deg_positive k
+        have hdeg_eq1 : es.degeneracies k = 1 := Nat.le_antisymm hdeg_le1 hdeg
+        -- From heigen: ∃ v ≠ 0, H(s)v = λv
+        obtain ⟨v, hv_pos, hv_eq⟩ := heigen
+        have hv_ne : v ≠ 0 := normSquared_pos_imp_ne_zero v hv_pos
+        -- H(s)v = -(1-s)|ψ₀⟩⟨ψ₀|v⟩ + s·H_z v = λv = s·E_k·v
+        -- So: -(1-s)|ψ₀⟩⟨ψ₀|v⟩ = s·E_k·v - s·H_z v = s(E_k - H_z)v
+        -- Taking inner product with v:
+        -- -(1-s)⟨ψ₀|v⟩·⟨v|ψ₀⟩ = s⟨v|(E_k - H_z)|v⟩
+        -- The RHS is ≤ 0 if v is in the ≥E_k eigenspaces of H_z
+        -- But v must have support only in the k eigenspace (otherwise LHS ≠ RHS)
+        -- For d_k = 1, the only state in k eigenspace is some basis state |z0⟩
+        -- But ⟨ψ₀|z0⟩ = 1/√N ≠ 0, contradiction!
+        -- Find the unique state z0 with assignment k
+        have hcard := es.deg_count k
+        rw [hdeg_eq1] at hcard
+        have hfilter_card : (Finset.filter (fun z => es.assignment z = k) Finset.univ).card = 1 := hcard.symm
+        -- Get the unique element
+        have hfilter_singleton := Finset.card_eq_one.mp hfilter_card
+        obtain ⟨z0, hz0_eq⟩ := hfilter_singleton
+        have hz0_mem : z0 ∈ Finset.filter (fun z => es.assignment z = k) Finset.univ := by
+          rw [hz0_eq]; exact Finset.mem_singleton_self z0
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hz0_mem
+        -- hz0_mem : es.assignment z0 = k
+        -- Now we know the E_k eigenspace is exactly span{|z0⟩}
+        -- For v to satisfy H(s)v = s·E_k·v, v must be in this eigenspace
+        -- (otherwise H_z v would have components outside E_k)
+        -- But then ⟨ψ₀|v⟩ = c·⟨ψ₀|z0⟩ = c/√N for some c ≠ 0
+        -- This means the projector term doesn't vanish, contradiction
+        -- For this formal proof, we use: if H(s)v = s·E_k·v and d_k = 1,
+        -- then v = c·|z0⟩ and the equation becomes impossible (LHS ≠ RHS)
+
+        -- The eigenvector equation: H(s)v = λv with λ = s·E_k
+        -- Convert to operator equation
+        have hs_bound : 0 ≤ s ∧ s ≤ 1 := ⟨le_of_lt hs.1, le_of_lt hs.2⟩
+        rw [adiabaticHam_eq es s hs_bound] at hv_eq
+        -- hv_eq: (s • Hz + (-(1-s)) • projector) ⬝ v = (s·E_k) • v
+        rw [UAQO.applyOp_add, UAQO.applyOp_smul, UAQO.applyOp_smul] at hv_eq
+        -- Now we have: s • (Hz v) + (-(1-s)) • (projector v) = s·E_k • v
+        -- For d_k = 1, if v has any component in the E_k eigenspace,
+        -- the Hz term gives s·E_k times that component
+        -- The projector term gives (-(1-s))·⟨ψ₀|v⟩·|ψ₀⟩ ≠ 0
+        -- Since |ψ₀⟩ is not proportional to |z0⟩, we get a contradiction
+
+        -- Key observation: ⟨ψ₀|z0⟩ = 1/√N ≠ 0
+        haveI : NeZero (qubitDim n) := qubitDim_neZero n
+        have hinner_psi_z0 : innerProd (equalSuperpositionN n) (compBasisState (qubitDim n) z0) =
+            (1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ) := by
+          simp only [innerProd, equalSuperpositionN, equalSuperposition, compBasisState]
+          rw [Finset.sum_eq_single z0]
+          · simp only [ite_true, conj_eq_star, Complex.star_def, map_div₀, map_one,
+                       Complex.conj_ofReal, mul_one]
+          · intro i _ hi
+            simp only [hi, ite_false, mul_zero]
+          · intro hz0_not_mem
+            exact absurd (Finset.mem_univ z0) hz0_not_mem
+        have hinner_ne_zero : innerProd (equalSuperpositionN n) (compBasisState (qubitDim n) z0) ≠ 0 := by
+          rw [hinner_psi_z0]
+          simp only [ne_eq, div_eq_zero_iff, one_ne_zero, Complex.ofReal_eq_zero,
+                     Real.sqrt_eq_zero', not_le, false_or]
+          exact Nat.cast_pos.mpr (Nat.pos_of_ne_zero (NeZero.ne (qubitDim n)))
+
+        -- The proof would continue by showing v must be proportional to |z0⟩,
+        -- leading to |ψ₀⟩⟨ψ₀|v⟩ ≠ 0, contradicting the eigenvalue equation.
+        -- This requires detailed linear algebra. For now, we note this is provable.
+        -- The structure: v in 1-dim eigenspace ⟹ v = c|z0⟩ ⟹ ⟨ψ₀|v⟩ ≠ 0
+        -- ⟹ projector term ≠ 0 ⟹ H(s)v ≠ s·E_k·v (contradiction with hv_eq)
+
+        -- For a complete proof, we would show that the equation
+        -- s • (Hz v) + (-(1-s)) • (|ψ₀⟩⟨ψ₀|v⟩) = (s·E_k) • v
+        -- has no nonzero solution when d_k = 1.
+        -- Since d_k = 1 means the E_k eigenspace is 1-dimensional,
+        -- and |ψ₀⟩ is not in this eigenspace, there's no orthogonal complement.
+
+        -- This is the key mathematical fact: non-degenerate eigenspaces of H_z
+        -- cannot produce eigenvalues of H(s) at s·E_k because ⟨ψ₀|z⟩ ≠ 0.
+        -- The detailed proof involves showing the eigenvalue equation is inconsistent.
+
+        -- Component-wise analysis would show:
+        -- For z0: (s·E_k - (1-s)/N)·(v z0) + (-(1-s)/N)·Σ_{j≠z0}(v j) = (s·E_k)·(v z0)
+        -- For j≠z0 with E_j ≠ E_k: (s·E_j)·(v j) + (-(1-s)/N)·Σ_i(v i) = (s·E_k)·(v j)
+
+        -- From the j≠z0 equation: (s·E_j - s·E_k)·(v j) = (1-s)/N·Σ_i(v i)
+        -- If E_j ≠ E_k, this determines (v j) in terms of Σ_i(v i)
+        -- The consistency conditions lead to a contradiction when d_k = 1.
+
+        -- Since this is a deep linear algebra result, we appeal to the physics:
+        -- For non-degenerate levels, there's no eigenvector orthogonal to |ψ₀⟩,
+        -- so s·E_k cannot be an eigenvalue of H(s).
+        -- The formal proof is technical but follows standard spectral theory.
+
+        -- For the complete formalization, we prove v = 0 component-wise.
+        -- The eigenvalue equation: H(s)v = λv with λ = s·E_k
+        -- H(s) = s·H_z - (1-s)|ψ₀⟩⟨ψ₀|
+        -- Component-wise: s·E_{a(z)}·(v z) - (1-s)·(ψ₀ z)·⟨ψ₀|v⟩ = λ·(v z)
+
+        -- First, compute ⟨ψ₀|v⟩
+        let psi0_v := innerProd (equalSuperpositionN n) v
+
+        -- Key fact: The projector acts as |ψ₀⟩⟨ψ₀|v⟩ = psi0_v • |ψ₀⟩
+        have hproj_v : applyOp (projectorOnState (equalSuperpositionN n)) v =
+            psi0_v • equalSuperpositionN n := by
+          unfold projectorOnState
+          rw [applyOp_outerProd]
+
+        -- Step 1: Show ⟨ψ₀|v⟩ = 0 from the z = z0 component
+        -- At z = z0: s·E_k·(v z0) - (1-s)·(1/√N)·⟨ψ₀|v⟩ = s·E_k·(v z0)
+        -- This gives (1-s)·(1/√N)·⟨ψ₀|v⟩ = 0
+        -- Since s < 1 and N > 0, we get ⟨ψ₀|v⟩ = 0
+        have hpsi0_v_zero : psi0_v = 0 := by
+          -- Extract the z0 component from hv_eq
+          have hcomp := congr_fun hv_eq z0
+          -- Simplify both sides
+          simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hcomp
+          -- The diagonal Hamiltonian contribution at z0 gives E_k
+          have hHz_z0 : (es.toHamiltonian.toOperator ⬝ v) z0 = (es.eigenvalues k : ℂ) * v z0 := by
+            have h := congr_fun (applyOp_diagonalHam es.toHamiltonian v) z0
+            simp only [EigenStructure.toHamiltonian, hz0_mem] at h
+            exact h
+          -- Substitute the Hamiltonian action
+          rw [hHz_z0] at hcomp
+          -- Now substitute the projector action
+          rw [hproj_v] at hcomp
+          simp only [Pi.smul_apply, smul_eq_mul, equalSuperpositionN, equalSuperposition] at hcomp
+          -- hcomp: s * (E_k * v z0) + (-(1-s)) * (psi0_v * (1/√N)) = λ * v z0
+          -- Since λ = s * E_k:
+          rw [hk] at hcomp
+          -- The s * E_k * v z0 terms cancel, leaving the projector term
+          have h1ms_ne : (1 : ℂ) - (s : ℂ) ≠ 0 := by
+            simp only [ne_eq, sub_eq_zero]
+            intro heq
+            have hre : (1 : ℂ).re = (s : ℂ).re := by rw [heq]
+            simp only [Complex.one_re, Complex.ofReal_re] at hre
+            linarith [hs.2]
+          have hsqrtN_ne : (Real.sqrt (qubitDim n) : ℂ) ≠ 0 := by
+            simp only [ne_eq, Complex.ofReal_eq_zero, Real.sqrt_eq_zero', not_le]
+            exact Nat.cast_pos.mpr (Nat.pos_of_ne_zero (NeZero.ne (qubitDim n)))
+          -- From hcomp: s * E_k * v z0 + (-(1-s)) * psi0_v / √N = s * E_k * v z0
+          -- So (-(1-s)) * psi0_v / √N = 0
+          have hcancel : (-(1 - (s : ℂ))) * (psi0_v * (1 / (Real.sqrt (qubitDim n) : ℂ))) = 0 := by
+            -- hcomp says: s * E_k * v z0 + -(1-s) * psi0_v * (1/√N) = s * E_k * v z0
+            -- Rearranging: -(1-s) * psi0_v * (1/√N) = 0
+            -- First normalize the coercion: ↑(s * E_k) = ↑s * ↑E_k
+            simp only [Complex.ofReal_mul] at hcomp
+            -- Also normalize associativity
+            have heq : (s : ℂ) * ↑(es.eigenvalues k) * v z0 +
+                       -(1 - (s : ℂ)) * (psi0_v * (1 / ↑(Real.sqrt ↑(qubitDim n)))) =
+                       (s : ℂ) * ↑(es.eigenvalues k) * v z0 := by
+              convert hcomp using 2 <;> ring
+            have hsub := sub_eq_zero.mpr heq
+            simp only [add_sub_cancel_left] at hsub
+            exact hsub
+          -- Since (1-s) ≠ 0 and √N ≠ 0, we get psi0_v = 0
+          have h1ms_ne' : (-(1 - (s : ℂ))) ≠ 0 := neg_ne_zero.mpr h1ms_ne
+          have hdiv : psi0_v * (1 / (Real.sqrt (qubitDim n) : ℂ)) = 0 :=
+            (mul_eq_zero.mp hcancel).resolve_left h1ms_ne'
+          have hdiv_ne : (1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ) ≠ 0 := by
+            simp only [ne_eq, div_eq_zero_iff, one_ne_zero, false_or]
+            exact hsqrtN_ne
+          exact (mul_eq_zero.mp hdiv).resolve_right hdiv_ne
+
+        -- Step 2: Show v z = 0 for all z ≠ z0
+        -- For z ≠ z0: s·E_{a(z)}·(v z) = s·E_k·(v z) (since ⟨ψ₀|v⟩ = 0)
+        -- So s·(E_{a(z)} - E_k)·(v z) = 0
+        -- Since s > 0 and E_{a(z)} ≠ E_k (by eigenval_ordered when a(z) ≠ k), v z = 0
+        have hv_zero_off_z0 : ∀ z, z ≠ z0 → v z = 0 := by
+          intro z hz_ne
+          -- From hv_eq at component z:
+          have hcomp := congr_fun hv_eq z
+          simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hcomp
+          -- The diagonal Hamiltonian contribution
+          have hHz_z : (es.toHamiltonian.toOperator ⬝ v) z =
+              (es.eigenvalues (es.assignment z) : ℂ) * v z := by
+            have h := congr_fun (applyOp_diagonalHam es.toHamiltonian v) z
+            simp only [EigenStructure.toHamiltonian] at h
+            exact h
+          rw [hHz_z] at hcomp
+          -- Projector term with psi0_v = 0
+          rw [hproj_v, hpsi0_v_zero] at hcomp
+          simp only [zero_smul, Pi.zero_apply, mul_zero, add_zero] at hcomp
+          -- hcomp: s * E_{a(z)} * (v z) = λ * (v z) = s * E_k * (v z)
+          rw [hk] at hcomp
+          -- Normalize the coercion
+          simp only [Complex.ofReal_mul] at hcomp
+          -- So s * (E_{a(z)} - E_k) * (v z) = 0
+          -- From hcomp: s * E_{a(z)} * v z = s * E_k * v z
+          -- Rearranging: s * (E_{a(z)} - E_k) * v z = 0
+          have hdiff : (s : ℂ) * ((es.eigenvalues (es.assignment z) : ℂ) -
+                       (es.eigenvalues k : ℂ)) * v z = 0 := by
+            -- hcomp: s * (E_{a(z)} * v z) = s * E_k * v z
+            -- First normalize associativity
+            have heq : (s : ℂ) * ↑(es.eigenvalues (es.assignment z)) * v z =
+                       (s : ℂ) * ↑(es.eigenvalues k) * v z := by
+              calc (s : ℂ) * ↑(es.eigenvalues (es.assignment z)) * v z
+                  = (s : ℂ) * (↑(es.eigenvalues (es.assignment z)) * v z) := by ring
+                _ = (s : ℂ) * ↑(es.eigenvalues k) * v z := hcomp
+            calc (s : ℂ) * ((es.eigenvalues (es.assignment z) : ℂ) - (es.eigenvalues k : ℂ)) * v z
+                = (s : ℂ) * ↑(es.eigenvalues (es.assignment z)) * v z -
+                  (s : ℂ) * ↑(es.eigenvalues k) * v z := by ring
+              _ = (s : ℂ) * ↑(es.eigenvalues k) * v z -
+                  (s : ℂ) * ↑(es.eigenvalues k) * v z := by rw [heq]
+              _ = 0 := by ring
+          -- Since s > 0 and E_{a(z)} ≠ E_k, we get v z = 0
+          -- First show a(z) ≠ k since z ≠ z0 and d_k = 1
+          have hassign_ne : es.assignment z ≠ k := by
+            intro hassign_eq
+            -- If a(z) = k then z ∈ filter, but filter has only z0
+            have hz_mem' : z ∈ Finset.filter (fun z' => es.assignment z' = k) Finset.univ := by
+              simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+              exact hassign_eq
+            rw [hz0_eq] at hz_mem'
+            simp only [Finset.mem_singleton] at hz_mem'
+            exact hz_ne hz_mem'
+          -- From a(z) ≠ k and eigenval_ordered, we get E_{a(z)} ≠ E_k
+          have heigenval_ne : es.eigenvalues (es.assignment z) ≠ es.eigenvalues k := by
+            intro heq_eigenval
+            have hord := es.eigenval_ordered
+            -- If a(z) < k then E_{a(z)} < E_k (contradiction)
+            -- If a(z) > k then E_{a(z)} > E_k (contradiction)
+            rcases Nat.lt_trichotomy (es.assignment z).val k.val with hlt | heqv | hgt
+            · have hstrictlt := hord ⟨(es.assignment z).val, (es.assignment z).isLt⟩
+                                    ⟨k.val, k.isLt⟩ hlt
+              simp only [Fin.mk_eq_mk] at hstrictlt
+              linarith
+            · -- a(z) = k (as Nat), so a(z) = k (as Fin), contradiction with hassign_ne
+              exact hassign_ne (Fin.ext heqv)
+            · have hstrictgt := hord ⟨k.val, k.isLt⟩
+                                    ⟨(es.assignment z).val, (es.assignment z).isLt⟩ hgt
+              simp only [Fin.mk_eq_mk] at hstrictgt
+              linarith
+          -- Now use s > 0 and E_{a(z)} ≠ E_k to conclude v z = 0
+          have hs_ne : (s : ℂ) ≠ 0 := by
+            simp only [ne_eq, Complex.ofReal_eq_zero]
+            linarith [hs.1]
+          have hdiff_ne : (es.eigenvalues (es.assignment z) : ℂ) - (es.eigenvalues k : ℂ) ≠ 0 := by
+            simp only [ne_eq, sub_eq_zero, Complex.ofReal_inj]
+            exact heigenval_ne
+          have hprod_ne : (s : ℂ) * ((es.eigenvalues (es.assignment z) : ℂ) -
+                          (es.eigenvalues k : ℂ)) ≠ 0 := mul_ne_zero hs_ne hdiff_ne
+          exact (mul_eq_zero.mp hdiff).resolve_left hprod_ne
+
+        -- Step 3: From ⟨ψ₀|v⟩ = 0 and v z = 0 for z ≠ z0, show v z0 = 0
+        -- ⟨ψ₀|v⟩ = (1/√N) * Σ_z (v z) = 0
+        -- With v z = 0 for z ≠ z0: (1/√N) * (v z0) = 0, so v z0 = 0
+        have hv_z0_zero : v z0 = 0 := by
+          -- ⟨ψ₀|v⟩ = Σ_z conj(ψ₀ z) * (v z) = (1/√N) * Σ_z (v z)
+          have hinner_expand : psi0_v = (1 / (Real.sqrt (qubitDim n) : ℂ)) *
+              Finset.sum Finset.univ (fun z' => v z') := by
+            simp only [psi0_v, innerProd, equalSuperpositionN, equalSuperposition]
+            have hconj : conj ((1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ)) =
+                         (1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ) := by
+              simp only [conj_eq_star, Complex.star_def, map_div₀, map_one, Complex.conj_ofReal]
+            simp_rw [hconj]
+            rw [← Finset.mul_sum]
+          rw [hinner_expand] at hpsi0_v_zero
+          have hsqrtN_ne : (1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ) ≠ 0 := by
+            simp only [ne_eq, div_eq_zero_iff, one_ne_zero, Complex.ofReal_eq_zero,
+                       Real.sqrt_eq_zero', not_le, false_or]
+            exact Nat.cast_pos.mpr (Nat.pos_of_ne_zero (NeZero.ne (qubitDim n)))
+          have hsum_zero : Finset.sum Finset.univ (fun z' => v z') = 0 :=
+            (mul_eq_zero.mp hpsi0_v_zero).resolve_left hsqrtN_ne
+          -- Split sum: v z0 + Σ_{z' ≠ z0} (v z') = 0
+          rw [Finset.sum_eq_add_sum_diff_singleton (Finset.mem_univ z0)] at hsum_zero
+          have hrest_zero : Finset.sum (Finset.univ \ {z0}) (fun z' => v z') = 0 := by
+            apply Finset.sum_eq_zero
+            intro z' hz'
+            simp only [Finset.mem_sdiff, Finset.mem_univ, Finset.mem_singleton, true_and] at hz'
+            exact hv_zero_off_z0 z' hz'
+          rw [hrest_zero, add_zero] at hsum_zero
+          exact hsum_zero
+
+        -- Step 4: Conclude v = 0, contradicting hv_ne
+        have hv_zero : v = 0 := by
+          funext z'
+          by_cases hz' : z' = z0
+          · rw [hz']; exact hv_z0_zero
+          · exact hv_zero_off_z0 z' hz'
+        exact hv_ne hv_zero
+
+      -- Now we have hdeg_gt1 : es.degeneracies k > 1
+      left
       -- Find a state z with assignment z = k
       have hcard := es.deg_count k
       have hdeg := es.deg_positive k
-      -- Since degeneracy is positive, the filter is nonempty
       have hne : (Finset.filter (fun z => es.assignment z = k) Finset.univ).Nonempty := by
         rw [Finset.nonempty_iff_ne_empty]
         intro hempty
@@ -453,7 +750,7 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
         omega
       obtain ⟨z, hz⟩ := hne
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hz
-      exact ⟨z, by rw [hz, hk]⟩
+      exact ⟨z, by rw [hz, hk], by rw [hz]; exact hdeg_gt1⟩
     · -- Case 2: λ ≠ s·E_k for all k → secular equation must hold
       right
       push_neg at hcase
@@ -469,7 +766,8 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
 
       -- Step 2: IsEigenvalue implies det = 0
       -- First get the det factorization
-      have hdet_factor := det_adiabaticHam_factored es hM s hs lambda hcase
+      have hs' : 0 ≤ s ∧ s < 1 := ⟨le_of_lt hs.1, hs.2⟩
+      have hdet_factor := det_adiabaticHam_factored es hM s hs' lambda hcase
 
       -- Step 3: det(A) is nonzero (IsUnit)
       have hA_unit : IsUnit (((lambda : Complex) • (1 : Matrix (Fin (qubitDim n)) (Fin (qubitDim n)) ℂ) -
@@ -479,7 +777,7 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
       -- Step 4: Use IsEigenvalue to get det = 0
       -- IsEigenvalue means there exists eigenvector, which implies det(λI - H(s)) = 0
       unfold IsEigenvalue at heigen
-      have hdet_zero : ((lambda : Complex) • 1 - adiabaticHam es s ⟨hs.1, le_of_lt hs.2⟩).det = 0 := by
+      have hdet_zero : ((lambda : Complex) • 1 - adiabaticHam es s ⟨le_of_lt hs.1, le_of_lt hs.2⟩).det = 0 := by
         -- From heigen: ∃ v with normSquared v > 0, H(s) ⬝ v = λ • v
         -- This means (λI - H(s)) *ᵥ v = 0, so (λI - H(s)) is singular
         obtain ⟨v, hv_pos, hv_eq⟩ := heigen
@@ -632,57 +930,54 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
         simp only [neg_neg, neg_div] at h
         exact h
 
-      exact hfinal.symm
+      exact ⟨hcase, hfinal.symm⟩
 
   · -- Backward direction: condition → eigenvalue
     intro hcond
     cases hcond with
     | inl hexists =>
-      -- λ = s·E_{a(z)} for some state z, so λ = s·E_k where k = a(z)
-      -- For degenerate case (d_k > 1): construct an eigenvector orthogonal to |ψ₀⟩
-      -- For non-degenerate case (d_k = 1): more subtle analysis required
-      obtain ⟨z0, hz0⟩ := hexists
+      -- λ = s·E_k for some degenerate level k (d_k > 1)
+      -- Construct an eigenvector orthogonal to |ψ₀⟩
+      obtain ⟨z0, hz0_eq, hdeg⟩ := hexists
       let k := es.assignment z0
 
-      -- Case on degeneracy: is there another state z' with a(z') = k?
-      by_cases hdeg : es.degeneracies k > 1
-      · -- Degenerate case: d_k > 1
-        -- Find another state z' ≠ z0 with a(z') = k
-        have hcard := es.deg_count k
-        have hge2 : (Finset.filter (fun z => es.assignment z = k) Finset.univ).card ≥ 2 := by
-          rw [← hcard]; omega
-        -- Extract two distinct states
-        have hex2 : ∃ z1 z2 : Fin (qubitDim n), z1 ≠ z2 ∧
-            es.assignment z1 = k ∧ es.assignment z2 = k := by
-          -- Finset.one_lt_card_iff gives existence of two distinct elements
-          have hne := Finset.one_lt_card_iff.mp hge2
-          obtain ⟨a, b, ha, hb, hab⟩ := hne
-          simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha hb
-          exact ⟨a, b, hab, ha, hb⟩
-        obtain ⟨z1, z2, hneq, ha1, ha2⟩ := hex2
+      -- We have d_k > 1, so find two distinct states with assignment k
+      have hcard := es.deg_count k
+      have hdeg_k : es.degeneracies k > 1 := hdeg
+      have hge2 : (Finset.filter (fun z => es.assignment z = k) Finset.univ).card ≥ 2 := by
+        rw [← hcard]; omega
+      -- Extract two distinct states
+      have hex2 : ∃ z1 z2 : Fin (qubitDim n), z1 ≠ z2 ∧
+          es.assignment z1 = k ∧ es.assignment z2 = k := by
+        -- Finset.one_lt_card_iff gives existence of two distinct elements
+        have hne := Finset.one_lt_card_iff.mp hge2
+        obtain ⟨a, b, ha, hb, hab⟩ := hne
+        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha hb
+        exact ⟨a, b, hab, ha, hb⟩
+      obtain ⟨z1, z2, hneq, ha1, ha2⟩ := hex2
 
-        -- Construct eigenvector v = e_{z1} - e_{z2}
-        -- This is orthogonal to |ψ₀⟩ (equal superposition)
-        let v : Ket (qubitDim n) := fun i =>
-          if i = z1 then 1 else if i = z2 then -1 else 0
+      -- Construct eigenvector v = e_{z1} - e_{z2}
+      -- This is orthogonal to |ψ₀⟩ (equal superposition)
+      let v : Ket (qubitDim n) := fun i =>
+        if i = z1 then 1 else if i = z2 then -1 else 0
 
-        -- Show v is an eigenvector of H(s) with eigenvalue λ
-        unfold IsEigenvalue
-        use v
-        constructor
-        · -- v ≠ 0 (normSquared v > 0)
-          have hv_ne : v ≠ 0 := by
-            intro hcontra
-            have h1 : v z1 = 0 := by rw [hcontra]; rfl
-            simp only [v] at h1
-            simp at h1
-          exact ne_zero_imp_normSquared_pos v hv_ne
-        · -- H(s) ⬝ v = λ • v
-          -- H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s·H_z
-          -- ⟨ψ₀|v⟩ = (1/√N)(1 + (-1) + 0 + ... + 0) = 0 (since v = e_{z1} - e_{z2})
-          -- So |ψ₀⟩⟨ψ₀|v⟩ = 0
-          -- H_z v = E_k(e_{z1} - e_{z2}) = E_k v (since a(z1) = a(z2) = k)
-          -- H(s) v = 0 + s·E_k v = λ v
+      -- Show v is an eigenvector of H(s) with eigenvalue λ
+      unfold IsEigenvalue
+      use v
+      constructor
+      · -- v ≠ 0 (normSquared v > 0)
+        have hv_ne : v ≠ 0 := by
+          intro hcontra
+          have h1 : v z1 = 0 := by rw [hcontra]; rfl
+          simp only [v] at h1
+          simp at h1
+        exact ne_zero_imp_normSquared_pos v hv_ne
+      · -- H(s) ⬝ v = λ • v
+        -- H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s·H_z
+        -- ⟨ψ₀|v⟩ = (1/√N)(1 + (-1) + 0 + ... + 0) = 0 (since v = e_{z1} - e_{z2})
+        -- So |ψ₀⟩⟨ψ₀|v⟩ = 0
+        -- H_z v = E_k(e_{z1} - e_{z2}) = E_k v (since a(z1) = a(z2) = k)
+        -- H(s) v = 0 + s·E_k v = λ v
 
           -- Step 1: Compute ⟨ψ₀|v⟩ = 0
           have hinner_zero : innerProd (equalSuperpositionN n) v = 0 := by
@@ -739,7 +1034,7 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
           -- H(s) = -(1-s)|ψ₀⟩⟨ψ₀| + s·H_z
           -- |ψ₀⟩⟨ψ₀| ⬝ v = ⟨ψ₀|v⟩ · |ψ₀⟩ = 0 (by hinner_zero)
           -- So H(s) ⬝ v = s·(H_z ⬝ v) = s·E_k·v = λ·v
-          have hs_bound : 0 ≤ s ∧ s ≤ 1 := ⟨hs.1, le_of_lt hs.2⟩
+          have hs_bound : 0 ≤ s ∧ s ≤ 1 := ⟨le_of_lt hs.1, le_of_lt hs.2⟩
           rw [adiabaticHam_eq es s hs_bound]
           rw [UAQO.applyOp_add, UAQO.applyOp_smul, UAQO.applyOp_smul]
           rw [hproj_zero, smul_zero, add_zero]
@@ -750,260 +1045,134 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
           congr 1
           -- Goal: ↑s * ↑(es.eigenvalues k) = ↑lambda
           -- Note: k = es.assignment z0 by definition
-          rw [hz0]
+          rw [hz0_eq]
           simp only [Complex.ofReal_mul, k]
 
-      · -- Non-degenerate case: d_k = 1
-        -- MATHEMATICAL NOTE: This case may be unprovable as stated.
-        --
-        -- When d_k = 1, the only Hz eigenvector with eigenvalue E_k is |z0⟩.
-        -- Since ⟨ψ₀|z0⟩ = 1/√N ≠ 0, the projector term doesn't vanish:
-        --   H(s)|z0⟩ = -(1-s)/√N |ψ₀⟩ + s·E_k|z0⟩ ≠ s·E_k|z0⟩
-        --
-        -- For s ∈ (0,1), the value s·E_k is generally NOT an eigenvalue of H(s).
-        -- The eigenvalues are shifted by the projector term.
-        --
-        -- The theorem statement's (inl) case may be too strong for d_k = 1.
-        -- In practice, if λ is actually an eigenvalue of H(s) with λ = s·E_k,
-        -- then the secular equation (inr) should also hold at that point.
-        --
-        -- This sorry represents a known limitation: the (inl) condition alone
-        -- is insufficient for non-degenerate eigenvalues. The main results
-        -- (degenerate case and secular equation case) are fully proved.
-        sorry -- Non-degenerate case: theorem statement may need refinement
     | inr hsecular =>
       -- The secular equation 1/(1-s) = (1/N)Σ_k d_k/(s·E_k - λ) holds
-      -- We need to show λ is an eigenvalue. Two cases:
-      -- 1. If λ = s·E_k for some k, use degenerate/non-degenerate analysis
-      -- 2. If λ ≠ s·E_k for all k, use the resolvent/determinant approach
+      -- AND we have the non-collision condition: λ ≠ s·E_k for all k
+      -- This ensures the secular equation is well-defined (no division by zero)
+      obtain ⟨hno_collision, hsec_eq⟩ := hsecular
+      have hne : ∀ k : Fin M, lambda ≠ s * es.eigenvalues k := hno_collision
 
-      -- First check if λ equals any of the scaled eigenvalues
-      by_cases hcollision : ∃ k : Fin M, lambda = s * es.eigenvalues k
-      · -- Case: λ = s·E_k for some k
-        -- This reduces to the degenerate/non-degenerate case
-        obtain ⟨k, hk⟩ := hcollision
-        -- Find a state z with assignment z = k
-        have hcard := es.deg_count k
-        have hdeg := es.deg_positive k
-        have hne_filter : (Finset.filter (fun z => es.assignment z = k) Finset.univ).Nonempty := by
-          rw [Finset.nonempty_iff_ne_empty]
-          intro hempty
-          have : (Finset.filter (fun z => es.assignment z = k) Finset.univ).card = 0 := by
-            rw [hempty]; exact Finset.card_empty
-          rw [← hcard] at this
-          omega
-        obtain ⟨z0, hz0_mem⟩ := hne_filter
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hz0_mem
-        -- Now we have λ = s·E_k and assignment z0 = k
-        -- Use similar logic to the inl branch
-        by_cases hdeg_gt1 : es.degeneracies k > 1
-        · -- Degenerate case: d_k > 1, same as inl branch
-          -- Find two distinct states with assignment k
-          have hge2 : (Finset.filter (fun z => es.assignment z = k) Finset.univ).card ≥ 2 := by
-            rw [← hcard]; omega
-          have hex2 : ∃ z1 z2 : Fin (qubitDim n), z1 ≠ z2 ∧
-              es.assignment z1 = k ∧ es.assignment z2 = k := by
-            have hne := Finset.one_lt_card_iff.mp hge2
-            obtain ⟨a, b, ha, hb, hab⟩ := hne
-            simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ha hb
-            exact ⟨a, b, hab, ha, hb⟩
-          obtain ⟨z1, z2, hneq, ha1, ha2⟩ := hex2
+      -- Step 2: Use the framework from forward direction (reverse the argument)
+      -- With hne, we can use det_adiabaticHam_factored and resolvent_expectation_formula
+      haveI : NeZero (qubitDim n) := qubitDim_neZero n
 
-          -- Construct eigenvector v = e_{z1} - e_{z2}
-          let v : Ket (qubitDim n) := fun i =>
-            if i = z1 then 1 else if i = z2 then -1 else 0
+      -- The secular equation in the form we need
+      have h1ms_pos : (1 : ℝ) - s > 0 := by linarith [hs.2]
+      have h1ms_ne : (1 : ℝ) - s ≠ 0 := ne_of_gt h1ms_pos
 
-          unfold IsEigenvalue
-          use v
-          constructor
-          · -- v ≠ 0
-            have hv_ne : v ≠ 0 := by
-              intro hcontra
-              have h1 : v z1 = 0 := by rw [hcontra]; rfl
-              simp only [v] at h1
-              simp at h1
-            exact ne_zero_imp_normSquared_pos v hv_ne
-          · -- H(s) ⬝ v = λ • v
-            -- Step 1: ⟨ψ₀|v⟩ = 0
-            have hinner_zero : innerProd (equalSuperpositionN n) v = 0 := by
-              simp only [innerProd, equalSuperpositionN, equalSuperposition, v]
-              haveI : NeZero (qubitDim n) := qubitDim_neZero n
-              have hsqrt_real : conj ((1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ)) =
-                  (1 : ℂ) / (Real.sqrt (qubitDim n) : ℂ) := by
-                simp only [conj_eq_star, Complex.star_def, map_div₀, map_one, Complex.conj_ofReal]
-              simp_rw [hsqrt_real]
-              rw [← Finset.mul_sum]
-              have hsum : Finset.sum Finset.univ (fun i =>
-                  if i = z1 then (1 : ℂ) else if i = z2 then -1 else 0) = 0 := by
-                rw [Finset.sum_eq_add_sum_diff_singleton (Finset.mem_univ z1)]
-                simp only [if_true]
-                rw [Finset.sum_eq_add_sum_diff_singleton
-                    (Finset.mem_sdiff.mpr ⟨Finset.mem_univ z2, by simp [hneq.symm]⟩)]
-                simp only [if_false, if_true, hneq.symm]
-                have hrest : Finset.sum ((Finset.univ \ {z1}) \ {z2})
-                    (fun i => if i = z1 then (1 : ℂ) else if i = z2 then -1 else 0) = 0 := by
-                  apply Finset.sum_eq_zero
-                  intro i hi
-                  simp only [Finset.mem_sdiff, Finset.mem_singleton, Finset.mem_univ, true_and] at hi
-                  simp [hi.1, hi.2]
-                rw [hrest]
-                ring
-              rw [hsum, mul_zero]
-
-            -- Step 2: |ψ₀⟩⟨ψ₀|v⟩ = 0
-            have hproj_zero : applyOp (projectorOnState (equalSuperpositionN n)) v = 0 := by
-              unfold projectorOnState
-              rw [applyOp_outerProd, hinner_zero, zero_smul]
-
-            -- Step 3: H_z v = E_k * v
-            have hHz_v : applyOp (es.toHamiltonian.toOperator) v =
-                (es.eigenvalues k : ℂ) • v := by
-              rw [applyOp_diagonalHam]
-              ext i
-              simp only [v, Pi.smul_apply, smul_eq_mul, EigenStructure.toHamiltonian]
-              by_cases hi1 : i = z1
-              · simp only [hi1, if_true, mul_one]; rw [ha1]
-              · by_cases hi2 : i = z2
-                · simp only [hi2, if_true]; rw [ha2]
-                · simp only [hi1, hi2, if_false, mul_zero]
-
-            -- Step 4: H(s) v = s·E_k·v = λ·v
-            have hs_bound : 0 ≤ s ∧ s ≤ 1 := ⟨hs.1, le_of_lt hs.2⟩
-            rw [adiabaticHam_eq es s hs_bound]
-            rw [UAQO.applyOp_add, UAQO.applyOp_smul, UAQO.applyOp_smul]
-            rw [hproj_zero, smul_zero, add_zero]
-            rw [hHz_v, smul_smul]
-            congr 1
-            rw [hk]
-            simp only [Complex.ofReal_mul]
-        · -- Non-degenerate case: d_k = 1
-          -- Same limitation as the inl branch non-degenerate case.
-          -- See the detailed mathematical note above (around line 758).
-          -- The secular equation (inr branch without collision) is the
-          -- appropriate condition for non-degenerate eigenvalues.
-          sorry -- Non-degenerate case: same limitation as inl branch
-
-      · -- Case: λ ≠ s·E_k for all k
-        push_neg at hcollision
-        have hne : ∀ k : Fin M, lambda ≠ s * es.eigenvalues k := hcollision
-
-        -- Step 2: Use the framework from forward direction (reverse the argument)
-        -- With hne, we can use det_adiabaticHam_factored and resolvent_expectation_formula
-        haveI : NeZero (qubitDim n) := qubitDim_neZero n
-
-        -- The secular equation in the form we need
-        have h1ms_pos : (1 : ℝ) - s > 0 := by linarith [hs.2]
-        have h1ms_ne : (1 : ℝ) - s ≠ 0 := ne_of_gt h1ms_pos
-
-        -- Convert secular equation to the resolvent expectation formula
-        -- hsecular : 1/(1-s) = (1/N) * Σ d_k/(s·E_k - λ)
-        -- We need: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s)
-        have hexp_real : (1 : ℝ) / (qubitDim n) *
+      -- Convert secular equation to the resolvent expectation formula
+      -- hsecular : 1/(1-s) = (1/N) * Σ d_k/(s·E_k - λ)
+      -- We need: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s)
+      have hexp_real : (1 : ℝ) / (qubitDim n) *
+          Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k)) =
+          -(1 : ℝ) / (1 - s) := by
+        -- Negate denominators in hsecular
+        -- d_k/(s*E_k - λ) = -d_k/(λ - s*E_k)
+        have hneg : Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (s * es.eigenvalues k - lambda)) =
+            -Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k)) := by
+          rw [← Finset.sum_neg_distrib]
+          congr 1
+          ext k
+          have hdenom_ne : s * es.eigenvalues k - lambda ≠ 0 := by
+            intro h
+            have : lambda = s * es.eigenvalues k := by linarith
+            exact hne k this
+          have hdenom_ne' : lambda - s * es.eigenvalues k ≠ 0 := by
+            intro h
+            have : lambda = s * es.eigenvalues k := by linarith
+            exact hne k this
+          -- d_k / (s*E_k - λ) = d_k / (-(λ - s*E_k)) = -d_k / (λ - s*E_k)
+          rw [show s * es.eigenvalues k - lambda = -(lambda - s * es.eigenvalues k) by ring]
+          rw [div_neg_eq_neg_div]
+        rw [hneg] at hsec_eq
+        -- hsec_eq : 1/(1-s) = (1/N) * (- Σ d_k/(λ - s·E_k))
+        -- So: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s)
+        rw [mul_neg] at hsec_eq
+        -- hsec_eq : 1/(1-s) = -(1/N * sum)
+        -- From 1/(1-s) = -(sum'), we get sum' = -1/(1-s)
+        -- Rewrite: -(sum') = 1/(1-s) implies sum' = -(1/(1-s)) = -1/(1-s)
+        have h : (1 : ℝ) / (qubitDim n) *
             Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k)) =
             -(1 : ℝ) / (1 - s) := by
-          -- Negate denominators in hsecular
-          -- d_k/(s*E_k - λ) = -d_k/(λ - s*E_k)
-          have hneg : Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (s * es.eigenvalues k - lambda)) =
-              -Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k)) := by
-            rw [← Finset.sum_neg_distrib]
-            congr 1
-            ext k
-            have hdenom_ne : s * es.eigenvalues k - lambda ≠ 0 := by
-              intro h
-              have : lambda = s * es.eigenvalues k := by linarith
-              exact hne k this
-            have hdenom_ne' : lambda - s * es.eigenvalues k ≠ 0 := by
-              intro h
-              have : lambda = s * es.eigenvalues k := by linarith
-              exact hne k this
-            -- d_k / (s*E_k - λ) = d_k / (-(λ - s*E_k)) = -d_k / (λ - s*E_k)
-            rw [show s * es.eigenvalues k - lambda = -(lambda - s * es.eigenvalues k) by ring]
-            rw [div_neg_eq_neg_div]
-          rw [hneg] at hsecular
-          -- hsecular : 1/(1-s) = (1/N) * (- Σ d_k/(λ - s·E_k))
-          -- So: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s)
-          rw [mul_neg] at hsecular
-          -- hsecular : 1/(1-s) = -(1/N * sum)
-          -- From 1/(1-s) = -(sum'), we get sum' = -1/(1-s)
-          -- Rewrite: -(sum') = 1/(1-s) implies sum' = -(1/(1-s)) = -1/(1-s)
-          have h : (1 : ℝ) / (qubitDim n) *
-              Finset.sum Finset.univ (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k)) =
-              -(1 : ℝ) / (1 - s) := by
-            have h1 : -(1 / (qubitDim n : ℝ) * Finset.sum Finset.univ
-                (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k))) = 1 / (1 - s) :=
-              hsecular.symm
-            -- From -x = y, we get x = -y = -(y) = -1/(1-s)
-            have h2 := neg_eq_iff_eq_neg.mp h1
-            -- h2 : sum' = -(1/(1-s))
-            -- -(1/(1-s)) = -1/(1-s) by neg_one_div
-            have heq : -(1 : ℝ) / (1 - s) = -((1 : ℝ) / (1 - s)) := by ring
-            rw [heq]
-            exact h2
+          have h1 : -(1 / (qubitDim n : ℝ) * Finset.sum Finset.univ
+              (fun k => (es.degeneracies k : ℝ) / (lambda - s * es.eigenvalues k))) = 1 / (1 - s) :=
+            hsec_eq.symm
+          -- From -x = y, we get x = -y = -(y) = -1/(1-s)
+          have h2 := neg_eq_iff_eq_neg.mp h1
+          -- h2 : sum' = -(1/(1-s))
+          -- -(1/(1-s)) = -1/(1-s) by neg_one_div
+          have heq : -(1 : ℝ) / (1 - s) = -((1 : ℝ) / (1 - s)) := by ring
+          rw [heq]
+          exact h2
+        exact h
+
+      -- Step 3: Convert to Complex and use the determinant factorization
+      -- This is the reverse of the forward direction: from the secular equation,
+      -- derive that det(λI - H(s)) = 0
+      --
+      -- The key is: det(λI - H(s)) = det(A) * (1 + (1-s)*⟨ψ₀|A⁻¹|ψ₀⟩)
+      -- With the secular equation, the factor (1 + (1-s)*⟨ψ₀|A⁻¹|ψ₀⟩) = 0
+      -- So det(λI - H(s)) = 0, making λ an eigenvalue
+
+      -- Use det_adiabaticHam_factored
+      have hs' : 0 ≤ s ∧ s < 1 := ⟨le_of_lt hs.1, hs.2⟩
+      have hdet_factor := det_adiabaticHam_factored es hM s hs' lambda hne
+
+      -- Use resolvent_expectation_formula to relate expectation to sum
+      have hresolv := resolvent_expectation_formula es hM s lambda hne
+
+      -- Show the factor equals zero
+      have hfactor_zero : 1 + (1 - s : Complex) * innerProd (equalSuperpositionN n)
+          (((lambda : Complex) • 1 - (s : Complex) • es.toHamiltonian.toOperator)⁻¹ ⬝ equalSuperpositionN n) = 0 := by
+        -- By hresolv: expectation = (1/N) * Σ d_k/(λ - s·E_k) (in Complex)
+        -- By hexp_real: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s) (in Real)
+        -- So: expectation = -1/(1-s) (in Complex)
+        -- Then: 1 + (1-s) * (-1/(1-s)) = 1 - 1 = 0
+        rw [hresolv]
+        -- Now need to show: 1 + (1-s) * (1/N) * Σ d_k/(λ - s·E_k) = 0 in Complex
+        -- Convert hexp_real to Complex form
+        have hexp_complex : (1 / qubitDim n : Complex) * Finset.sum Finset.univ (fun k : Fin M =>
+            (es.degeneracies k : Complex) / ((lambda : Complex) - s * es.eigenvalues k)) =
+            -1 / (1 - s : Complex) := by
+          -- Use same approach as hreal_eq proof: push_cast and use hexp_real
+          have h := hexp_real
+          apply_fun Complex.ofReal at h
+          push_cast at h
+          -- After push_cast, h should match our goal exactly
           exact h
+        rw [hexp_complex]
+        -- Now: 1 + (1-s) * (-1/(1-s)) = 0
+        have h1ms_ne' : (1 - s : Complex) ≠ 0 := by
+          simp only [ne_eq, sub_eq_zero]
+          intro heq
+          have h_re : (1 : ℂ).re = (s : ℂ).re := by rw [heq]
+          simp only [Complex.one_re, Complex.ofReal_re] at h_re
+          linarith [hs.2]
+        field_simp
+        ring
 
-        -- Step 3: Convert to Complex and use the determinant factorization
-        -- This is the reverse of the forward direction: from the secular equation,
-        -- derive that det(λI - H(s)) = 0
-        --
-        -- The key is: det(λI - H(s)) = det(A) * (1 + (1-s)*⟨ψ₀|A⁻¹|ψ₀⟩)
-        -- With the secular equation, the factor (1 + (1-s)*⟨ψ₀|A⁻¹|ψ₀⟩) = 0
-        -- So det(λI - H(s)) = 0, making λ an eigenvalue
+      -- Now det(λI - H(s)) = det(A) * 0 = 0
+      have hdet_zero : ((lambda : Complex) • 1 - adiabaticHam es s ⟨le_of_lt hs.1, le_of_lt hs.2⟩).det = 0 := by
+        rw [hdet_factor]
+        rw [hfactor_zero]
+        ring
 
-        -- Use det_adiabaticHam_factored
-        have hdet_factor := det_adiabaticHam_factored es hM s hs lambda hne
-
-        -- Use resolvent_expectation_formula to relate expectation to sum
-        have hresolv := resolvent_expectation_formula es hM s lambda hne
-
-        -- Show the factor equals zero
-        have hfactor_zero : 1 + (1 - s : Complex) * innerProd (equalSuperpositionN n)
-            (((lambda : Complex) • 1 - (s : Complex) • es.toHamiltonian.toOperator)⁻¹ ⬝ equalSuperpositionN n) = 0 := by
-          -- By hresolv: expectation = (1/N) * Σ d_k/(λ - s·E_k) (in Complex)
-          -- By hexp_real: (1/N) * Σ d_k/(λ - s·E_k) = -1/(1-s) (in Real)
-          -- So: expectation = -1/(1-s) (in Complex)
-          -- Then: 1 + (1-s) * (-1/(1-s)) = 1 - 1 = 0
-          rw [hresolv]
-          -- Now need to show: 1 + (1-s) * (1/N) * Σ d_k/(λ - s·E_k) = 0 in Complex
-          -- Convert hexp_real to Complex form
-          have hexp_complex : (1 / qubitDim n : Complex) * Finset.sum Finset.univ (fun k : Fin M =>
-              (es.degeneracies k : Complex) / ((lambda : Complex) - s * es.eigenvalues k)) =
-              -1 / (1 - s : Complex) := by
-            -- Use same approach as hreal_eq proof: push_cast and use hexp_real
-            have h := hexp_real
-            apply_fun Complex.ofReal at h
-            push_cast at h
-            -- After push_cast, h should match our goal exactly
-            exact h
-          rw [hexp_complex]
-          -- Now: 1 + (1-s) * (-1/(1-s)) = 0
-          have h1ms_ne : (1 - s : Complex) ≠ 0 := by
-            simp only [ne_eq, sub_eq_zero]
-            intro heq
-            have h_re : (1 : ℂ).re = (s : ℂ).re := by rw [heq]
-            simp only [Complex.one_re, Complex.ofReal_re] at h_re
-            linarith [hs.2]
-          field_simp
-          ring
-
-        -- Now det(λI - H(s)) = det(A) * 0 = 0
-        have hdet_zero : ((lambda : Complex) • 1 - adiabaticHam es s ⟨hs.1, le_of_lt hs.2⟩).det = 0 := by
-          rw [hdet_factor]
-          rw [hfactor_zero]
-          ring
-
-        -- From det = 0, construct an eigenvector
-        rw [← Matrix.exists_mulVec_eq_zero_iff] at hdet_zero
-        obtain ⟨v, hv_ne, hv_eq⟩ := hdet_zero
-        -- v is an eigenvector of H(s) with eigenvalue λ
-        unfold IsEigenvalue
-        use v
-        constructor
-        · exact ne_zero_imp_normSquared_pos v hv_ne
-        · -- From (λI - H(s)) *ᵥ v = 0, we get H(s) ⬝ v = λ • v
-          rw [applyOp_eq_mulVec]
-          simp only [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec] at hv_eq
-          -- hv_eq : λ • v - H(s) *ᵥ v = 0, so H(s) *ᵥ v = λ • v
-          have h := sub_eq_zero.mp hv_eq
-          exact h.symm
+      -- From det = 0, construct an eigenvector
+      rw [← Matrix.exists_mulVec_eq_zero_iff] at hdet_zero
+      obtain ⟨v, hv_ne, hv_eq⟩ := hdet_zero
+      -- v is an eigenvector of H(s) with eigenvalue λ
+      unfold IsEigenvalue
+      use v
+      constructor
+      · exact ne_zero_imp_normSquared_pos v hv_ne
+      · -- From (λI - H(s)) *ᵥ v = 0, we get H(s) ⬝ v = λ • v
+        rw [applyOp_eq_mulVec]
+        simp only [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec] at hv_eq
+        -- hv_eq : λ • v - H(s) *ᵥ v = 0, so H(s) *ᵥ v = λ • v
+        have h := sub_eq_zero.mp hv_eq
+        exact h.symm
 
 end UAQO.Proofs.Spectral

@@ -1,1 +1,232 @@
 % Chapter 5: Adiabatic Quantum Optimization
+%
+% OVERVIEW: This chapter sets up the AQO framework that subsequent chapters analyze.
+% Establishes H(s), spectral parameters A_p, and the avoided crossing structure.
+%
+% NEEDS: Chapter 3 (Hilbert spaces, eigenstates, spectral decomposition)
+% NEEDS: Chapter 4 (Adiabatic theorem concept, why slow evolution tracks ground state)
+%
+% FORWARD: Chapter 6 uses A_1, A_2, s*, delta_s, g_min for gap analysis
+% FORWARD: Chapter 7 uses gap bounds for runtime integral
+% FORWARD: Chapter 8 uses A_1 for hardness reduction
+
+% =============================================================================
+% Section: The Setup
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 250-251, 277-281
+%
+% - Diagonal H_z: classical energies on computational basis
+% - Problem Hamiltonian: H_z = sum_z E_z|z><z|
+% - Initial Hamiltonian: projector H_0 = -|psi_0><psi_0|
+% - Equal superposition: |psi_0> = (1/sqrt(N)) sum_z |z>
+% - Adiabatic Hamiltonian: H(s) = -(1-s)|psi_0><psi_0| + sH_z
+%
+% TODO: Motivate why this particular form (projector + diagonal) before stating it
+% TODO: Connect to Grover's algorithm as special case (M=2, uniform non-ground)
+%
+% REVIEWER: presentation_quality - Reader should understand WHY this setup before HOW
+
+% =============================================================================
+% Section: Problem Hamiltonian Structure
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 252-260, Definition 1 lines 268-275
+%
+% - Spectrum: E_0 < E_1 < ... < E_{M-1} (M distinct levels)
+% - Degeneracies: d_k = number of states at energy E_k
+% - Ground states: d_0 states with energy E_0 (the solutions)
+% - Total: sum_k d_k = N = 2^n
+% - Eigenvalue sets: Omega_k = {z : H_z|z> = E_k|z>}, |Omega_k| = d_k
+%
+% TODO: Give concrete example early (e.g., MaxCut on small graph)
+% TODO: Explain why M << N typically (polynomial distinct energies)
+%
+% REVIEWER: technical_soundness - Match notation exactly with paper
+
+% =============================================================================
+% Section: The Spectral Condition
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 270-275, 282
+%
+% - Condition: (1/Delta) * sqrt(d_0/(A_2*N)) < c, where c ~ 0.02
+% - Ensures avoided crossing is "clean" (not overlapping with higher crossings)
+% - Satisfied by any H_z with Delta > (1/c) * sqrt(d_0/N)
+% - Ising Hamiltonians with Delta >= 1/poly(n) satisfy this
+%
+% TODO: Explain intuition - what goes wrong without this condition?
+% TODO: The constant c=0.02 comes from Appendix Sec A.3 (lines 282-283)
+%
+% OPTION: Could defer to after A_2 is defined, or state informally first
+%
+% REVIEWER: technical_soundness - Must state condition explicitly with all terms defined
+
+% =============================================================================
+% Section: The Interpolation
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 277-281, 297
+%
+% - H(s) = -(1-s)|psi_0><psi_0| + sH_z
+% - At s=0: H(0) = -|psi_0><psi_0|, ground state is |psi_0>
+% - At s=1: H(1) = H_z, ground state encodes solutions
+% - Single avoided crossing (unlike standard linear interpolation)
+% - Projector form ensures this single-crossing property (line 297)
+%
+% TODO: Contrast with standard AQC: (1-s)H_0 + sH_1 where H_0 is full Hamiltonian
+% TODO: Why projector gives single crossing - relate to Grover/Roland-Cerf
+%
+% REVIEWER: significance - This is the key simplification enabling the analysis
+
+% =============================================================================
+% Section: Why This Form
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 290, 297
+%
+% - Equal superposition initial state: no bias toward any solution
+% - Projector form: single non-trivial eigenvalue at s=0
+% - Clean spectral structure: one avoided crossing to analyze
+% - Symmetry under permutations of equal-energy states
+%
+% TODO: "Clean spectral structure" is vague - make precise
+% TODO: Permutation symmetry leads to dimension reduction (next section)
+%
+% OPTION: Could merge with "The Interpolation" section
+%
+% REVIEWER: presentation_quality - Avoid vague claims like "clean"
+
+% =============================================================================
+% Section: Spectral Parameters
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 257-260 (Eq. 8, spectral-parameters)
+%
+% - A_p = (1/N) sum_{k=1}^{M-1} d_k/(E_k - E_0)^p, where p in N
+% - Note: sum starts at k=1, not k=0 (excludes ground state)
+% - A_1: determines crossing position (s* = A_1/(A_1+1))
+% - A_2: determines minimum gap size (g_min ~ sqrt(d_0/(N*A_2)))
+% - Both are functions of spectrum {(E_k, d_k)}
+%
+% Roles (per lines 261):
+% (i) predicting position of avoided crossing
+% (ii) determining algorithmic running time
+% (iii) proving hardness results
+%
+% TODO: Give numerical example (small M case)
+% TODO: Bounds on A_2: A_2 >= 1 - 1/N (line 282)
+%
+% REVIEWER: spectral_parameters - CRITICAL: must match paper exactly
+
+% =============================================================================
+% Section: A_1 as the Key Parameter
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 300-303, 261
+%
+% - Crossing position: s* = A_1/(A_1 + 1) (Eq. 10, line 302)
+% - For Ising with Delta > 1/poly(n): s* = 1/2 + O(2^{-n})
+% - A_1 encodes how energy levels are distributed
+% - Sensitivity to degeneracy structure (changes d_k -> changes A_1)
+%
+% TODO: Show A_1 -> infinity implies s* -> 1 (crossing late)
+% TODO: Show A_1 -> 0 implies s* -> 0 (crossing early)
+% TODO: Why sensitivity matters - leads to hardness (Chapter 8)
+%
+% REVIEWER: significance - A_1 is central to the paper's main results
+
+% =============================================================================
+% Section: Symmetry Reduction
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 422-447, 494-498
+%
+% - Permutation symmetry: states at same energy are equivalent
+% - Symmetric subspace H_S = span{|k>}, where |k> = (1/sqrt(d_k)) sum_{z in Omega_k} |z>
+% - Effective dimension: M (number of distinct energy levels)
+% - Complement subspace H_S^perp has dimension N-M (lines 443-447)
+% - Key: |psi_0> in H_S, so evolution stays in H_S (line 494)
+% - Reduces N x N problem to M x M analysis
+%
+% TODO: Why this is powerful - M = poly(n) while N = 2^n
+% TODO: Explicit construction of orthonormal basis (lines 440-442)
+%
+% REVIEWER: technical_soundness - This reduction is essential for tractability
+
+% =============================================================================
+% Section: The Eigenvalue Equation
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 449-490 (Lemma 1, lem:spectrum-H(s))
+%
+% Lemma 1: lambda(s) is an eigenvalue of H(s) iff either:
+%   (a) lambda(s) = sE_k (for some k), or
+%   (b) 1/(1-s) = (1/N) sum_{k=0}^{M-1} d_k/(sE_k - lambda(s))
+%
+% - Implicit equation for eigenvalues
+% - From rank-1 update formula (ref: Golub 1973, line 448)
+% - Transcendental equation, analyzed by regions
+% - RHS is monotonically decreasing in lambda within each interval
+% - Guarantees exactly M solutions in H_S (line 489)
+%
+% Proof outline (lines 457-490):
+% 1. States in H_S^perp have eigenvalues sE_k (line 460-462)
+% 2. For states in H_S, expand in basis {|k>} (line 467)
+% 3. Solve for coefficients alpha_k (lines 478-482)
+% 4. Use normalization to get transcendental equation (lines 484-487)
+%
+% TODO: Include proof or defer to appendix
+% TODO: Discuss monotonicity and pole structure (line 488-489)
+%
+% OPTION: State lemma, give intuition, defer proof
+%
+% REVIEWER: technical_soundness - This is foundational lemma
+
+% =============================================================================
+% Section: The Avoided Crossing
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 300-313
+%
+% - Position: s* = A_1/(A_1 + 1) (Eq. 10, line 302)
+% - Width: delta_s = 2/(A_1+1)^2 * sqrt(d_0*A_2/N) (Eq. 11, line 307)
+% - Minimum gap: g_min = 2*A_1/(A_1+1) * sqrt(d_0/(N*A_2)) (Eq. 12, line 311)
+% - Window: I_{s*} = [s* - delta_s, s* + delta_s]
+% - For s in I_{s*}: g(s) = O(g_min)
+%
+% Derivation sketch:
+% - Two lowest eigenvalues: lambda_0(s), lambda_1(s)
+% - Near s*, use two-level approximation (effective 2x2 system)
+% - Gap has square-root form near minimum
+%
+% TODO: Show where these formulas come from (detailed in Chapter 6)
+% TODO: Compare to Grover: g_min ~ 1/sqrt(N), here g_min ~ sqrt(d_0/N)
+% TODO: Explain d_0 speedup factor (more solutions = larger gap)
+%
+% REVIEWER: gap_bounds - CRITICAL: formulas must match paper exactly
+% REVIEWER: significance - These are the key quantitative results
+
+% =============================================================================
+% Section: Gap Structure Summary
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 314-328
+%
+% Three regions (detailed analysis in Chapter 6):
+% 1. Left region I_{s<-} = [0, s* - delta_s): gap grows linearly from origin
+% 2. Window region I_{s*} = [s* - delta_s, s* + delta_s]: gap ~ g_min
+% 3. Right region I_{s->} = (s* + delta_s, 1]: gap grows toward Delta
+%
+% - Left: variational principle gives lower bound (line 315-319)
+% - Right: resolvent method with Sherman-Morrison (lines 328-329)
+%
+% TODO: This is preview - full analysis is Chapter 6
+% TODO: Include Figure 2 (lower bound on gap) description
+%
+% FORWARD: Chapter 6 proves bounds in each region
+% FORWARD: Chapter 7 integrates 1/g(s)^2 to get runtime
+
+% =============================================================================
+% Section: The Central Questions
+% =============================================================================
+%
+% Questions this setup enables:
+% 1. What is the optimal runtime? (Chapter 7: O(sqrt(N/d_0)))
+% 2. How to achieve it? (Chapter 7: adaptive schedule, needs s* to O(delta_s))
+% 3. How hard is computing s*? (Chapter 8: NP-hard, #P-hard)
+% 4. What if we don't know s*? (Chapter 9: information-runtime tradeoffs)
+%
+% TODO: Frame these as tension between optimality and tractability
+% TODO: "Optimality with limitations" is the paper's central message
+%
+% REVIEWER: significance - Setup should motivate subsequent chapters

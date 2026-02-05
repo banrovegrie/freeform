@@ -1,1 +1,256 @@
 % Chapter 2: Physics and Computation
+%
+% OVERVIEW: First-principles foundation connecting physics to computation.
+% Builds intuition before formalism. Sets stage for quantum computation.
+%
+% FORWARD: Chapter 3 (Quantum computation specifics)
+% FORWARD: Chapter 4 (AQC as physics-computation bridge)
+% FORWARD: Chapter 8 (NP, #P complexity classes for hardness)
+%
+% DEFINITIONS INTRODUCED: P, NP, NP-complete, NP-hard, #P, reduction
+%
+% NOTE: This chapter is conceptual; formal definitions in later chapters
+
+% =============================================================================
+% Section: Reality
+% =============================================================================
+%
+% Setting the stage philosophically (brief):
+%
+% - Ontology: what exists (states, transformations, observables)
+% - Epistemology: what we can know and predict
+% - Mathematics as language: not reality, but model of reality
+%
+% For thesis:
+% - Physics provides substrate for computation
+% - Computation provides tools to analyze physics
+% - The interaction is the subject
+%
+% TODO: Keep brief - this is not a philosophy thesis
+% TODO: Set tone for mathematical rigor without losing intuition
+%
+% OPTION: Could be very brief or omitted
+%
+% REVIEWER: presentation_quality - Don't overdo philosophy
+
+% =============================================================================
+% Section: Physics
+% =============================================================================
+%
+% Three pillars (brief overview):
+%
+% Classical mechanics:
+% - Hamiltonian formulation: H(q,p) determines evolution
+% - Phase space: state is (position, momentum)
+% - Determinism: state at t=0 determines all future
+%
+% Statistical mechanics:
+% - Entropy: measure of disorder/uncertainty
+% - Equilibrium: systems tend toward low energy
+% - Connection to optimization: finding ground state
+%
+% Quantum mechanics (preview - full treatment in Chapter 3):
+% - Hilbert space: states are vectors
+% - Unitarity: evolution preserves probability
+% - Measurement: probabilistic collapse
+%
+% For thesis:
+% - Hamiltonian formulation connects to quantum mechanics
+% - Ground state as optimization target
+% - Quantum mechanics enables new computational approaches
+%
+% TODO: Balance breadth vs depth
+% TODO: Foreshadow quantum advantage
+%
+% FORWARD: Chapter 3 develops quantum mechanics fully
+
+% =============================================================================
+% Section: Computation
+% =============================================================================
+% SOURCE: Arora-Barak, Sipser
+%
+% What is computation?
+% - Turing machines: formal model of computation
+% - Church-Turing thesis: all "reasonable" models equivalent
+% - Universality: single machine can simulate any other
+%
+% Computability:
+% - Decidable vs undecidable problems
+% - Halting problem: no algorithm can decide if programs halt
+% - Limits of computation
+%
+% Complexity (key definitions for thesis):
+%
+% P: Problems solvable in polynomial time (efficient)
+% - Time O(n^k) for some constant k
+% - Considered "tractable"
+%
+% NP: Problems with efficiently verifiable solutions
+% - Given solution, can check in polynomial time
+% - Finding solution may be hard
+%
+% NP-complete: Hardest problems in NP
+% - All NP problems reduce to them
+% - If any NP-complete in P, then P = NP
+% - Examples: SAT, 3-SAT, MAX-CUT
+%
+% NP-hard: At least as hard as NP-complete
+% - May not be in NP (decision vs optimization)
+%
+% TODO: Define reduction precisely
+% TODO: SAT and 3-SAT as canonical examples (used in Chapter 8)
+%
+% FORWARD: Chapter 8 uses NP-hardness for A_1 estimation
+%
+% REVIEWER: technical_soundness - Standard definitions
+
+% =============================================================================
+% Section: The #P Complexity Class
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex lines 208-209, Valiant (1979)
+%
+% #P: Counting problems
+% - Instead of "does solution exist?" (NP), ask "how many?"
+% - Example: #SAT counts satisfying assignments
+%
+% #P-complete:
+% - Hardest counting problems
+% - At least as hard as any NP problem
+% - #SAT is #P-complete
+%
+% Relation to thesis (Chapter 8):
+% - Extracting degeneracy d_0 = counting ground states
+% - For SAT Hamiltonian: d_0 = number of satisfying assignments
+% - Computing A_1 exactly is #P-hard
+%
+% TODO: Define formally
+% TODO: Explain why counting is harder than decision
+%
+% FORWARD: Chapter 8 uses #P-hardness for exact A_1
+%
+% REVIEWER: technical_soundness - Definition needed for hardness
+
+% =============================================================================
+% Section: Linearity and Its Limits
+% =============================================================================
+%
+% Why linearity is powerful:
+% - Superposition principle: solutions combine
+% - Linear systems tractable: eigenvalue analysis, closed forms
+% - Perturbation theory: small changes give small effects
+%
+% Quantum mechanics is exactly linear:
+% - Schrodinger equation is linear in |psi>
+% - Superposition of solutions is solution
+% - Why quantum computing works differently from classical
+%
+% Nonlinearity and hardness:
+% - Classical chaos: small changes amplify
+% - Phase transitions: qualitative changes at critical points
+% - Computational hardness often tied to nonlinear dynamics
+%
+% For thesis:
+% - H(s) is linear in |psi>, but ground state changes nonlinearly in s
+% - Avoided crossing is nonlinear phenomenon
+% - Gap behavior determines computational complexity
+%
+% TODO: Connect linearity of QM to computational structure
+% TODO: Preview gap as source of nonlinearity
+%
+% FORWARD: Chapter 5-6: gap analysis shows nonlinear behavior
+
+% =============================================================================
+% Section: Adiabaticity
+% =============================================================================
+% SOURCE: Physics textbooks, Griffiths QM
+%
+% Thermodynamic adiabatic:
+% - Slow, reversible process
+% - No heat exchange with environment
+% - System stays in equilibrium
+%
+% Quantum adiabatic:
+% - Slow evolution of Hamiltonian H(t)
+% - System stays in instantaneous ground state
+% - Key condition: "slow" means d/dt << gap^2
+%
+% The energy gap as key parameter:
+% - Large gap: can evolve faster
+% - Small gap: must evolve slower
+% - Gap determines required time
+%
+% Landau-Zener transitions (preview):
+% - What happens when you go too fast
+% - Probability of jumping to excited state
+% - Exponential suppression requires slowness ~ 1/gap^2
+%
+% TODO: Distinguish thermodynamic vs quantum adiabatic
+% TODO: Give intuition for gap-slowness relationship
+%
+% FORWARD: Chapter 4 formalizes adiabatic theorem
+%
+% REVIEWER: presentation_quality - Physical intuition first
+
+% =============================================================================
+% Section: Energy Landscapes and Optimization
+% =============================================================================
+%
+% Ground states as optimization solutions:
+% - Minimize H means minimize energy
+% - Ground state = optimal solution
+% - Natural for optimization problems
+%
+% Complex landscapes:
+% - Spin glasses: many local minima, frustration
+% - NP-hard problems have rugged landscapes
+% - Classical methods get stuck
+%
+% Classical optimization methods:
+% - Simulated annealing: random thermal fluctuations
+% - Gradient descent: follow local slope
+% - Limitations: local minima, exponential time for hard instances
+%
+% Quantum approach (preview):
+% - Quantum tunneling through barriers
+% - Adiabatic evolution tracks global minimum
+% - But: gap determines speed, small gap = slow
+%
+% For thesis:
+% - AQO finds ground state of diagonal H_z
+% - Question: how fast compared to classical?
+% - Answer: Grover speedup, but with caveats (Chapters 7-8)
+%
+% TODO: Connect to specific problems (SAT, MAX-CUT)
+% TODO: Be honest about what quantum helps with
+%
+% FORWARD: Chapter 5 formalizes AQO setup
+
+% =============================================================================
+% Section: Bridge to Quantum Computation
+% =============================================================================
+%
+% Quantum speedup sources:
+% - Superposition: many states at once
+% - Interference: amplify correct, cancel wrong
+% - Entanglement: non-classical correlations
+%
+% BQP and quantum complexity (preview):
+% - BQP: problems solvable efficiently on quantum computers
+% - Relationship to classical classes: P, NP, PSPACE
+% - Quantum advantage for some problems
+%
+% Adiabatic quantum computation (preview):
+% - Encode problem in Hamiltonian
+% - Evolve slowly from easy to hard
+% - Gap determines runtime
+%
+% Central question of thesis:
+% - Can AQO achieve provable speedup for unstructured search?
+% - Answer: Yes, but with information requirements
+%
+% TODO: Foreshadow the main results
+% TODO: Set expectations for Chapters 4-9
+%
+% FORWARD: Chapters 3-4 develop quantum computation and AQC
+%
+% REVIEWER: significance - Connect to thesis contribution

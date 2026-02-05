@@ -1,1 +1,261 @@
 % Chapter 4: Adiabatic Quantum Computation
+%
+% OVERVIEW: This chapter introduces AQC and sets up the framework for AQO.
+% Bridges from general quantum computation to the specific AQO setting.
+%
+% NEEDS: Chapter 3 (Hamiltonians, eigenvalues, time evolution, Grover)
+% NEEDS: Chapter 2 (Complexity classes, optimization)
+%
+% FORWARD: Chapter 5 specializes to AQO with diagonal H_z
+% FORWARD: Chapter 7 uses Roland-Cerf construction for schedule
+%
+% DEFINITIONS INTRODUCED: adiabatic theorem, spectral gap (as computational resource),
+% avoided crossing, local schedule
+%
+% NOTE: "spectral gap" as energy difference is in Chapter 3;
+% here we emphasize it as computational bottleneck
+
+% =============================================================================
+% Section: Physical Motivation
+% =============================================================================
+% SOURCE: Standard quantum mechanics texts (Sakurai, Griffiths)
+%
+% - Adiabatic theorem: slow evolution stays in ground state
+% - The gap determines how slow is slow enough
+% - Physical intuition: system tracks changing potential
+% - Analogy: pendulum length changed slowly vs quickly
+%
+% TODO: Give concrete physical example (magnetic field rotation)
+% TODO: Distinguish "adiabatic" in quantum vs thermodynamic sense
+%
+% REVIEWER: presentation_quality - Physical intuition before formalism
+
+% =============================================================================
+% Section: The Computational Idea
+% =============================================================================
+% SOURCE: Farhi et al. (2001) original AQC proposal
+%
+% - Encode problem in Hamiltonian H_z: ground state is solution
+% - Start with easy Hamiltonian H_0: known ground state
+% - Interpolate: H(s) = (1-s)H_0 + sH_z for s in [0,1]
+% - Read answer: measure at s=1
+%
+% This is general AQC setup. Chapter 5 specializes:
+% - H_0 = -|psi_0><psi_0| (projector)
+% - H_z diagonal in computational basis
+%
+% TODO: Explain encoding of optimization problems (MAX-SAT, etc.)
+% TODO: Why this is natural for optimization
+%
+% FORWARD: Chapter 5 uses H(s) = -(1-s)|psi_0><psi_0| + sH_z
+
+% =============================================================================
+% Section: The Adiabatic Theorem
+% =============================================================================
+% SOURCE: Born-Fock (1928), Kato (1950), Jansen-Ruskai-Seiler (2007)
+%
+% Statement: If evolution is slow enough, stay in instantaneous ground state.
+%
+% Quantitative form (Jansen-Ruskai-Seiler):
+% Error <= C * max_s |dH/ds| / min_s g(s)^2
+%
+% where g(s) = lambda_1(s) - lambda_0(s) is the spectral gap.
+%
+% Implications:
+% - Runtime scales as inverse gap squared for worst case
+% - Gap minimum dominates: T ~ 1/g_min^2
+%
+% Note: Chapter 7 uses refined version with local schedule
+%
+% TODO: State theorem precisely with all conditions
+% TODO: Distinguish from original adiabatic theorem (qualitative)
+% TODO: Reference Cunningham et al. for phase randomization extension
+%
+% FORWARD: Chapter 7 uses this for runtime derivation
+%
+% REVIEWER: technical_soundness - Must state conditions carefully
+
+% =============================================================================
+% Section: The Spectral Gap as Central Bridge
+% =============================================================================
+%
+% The gap connects physics to complexity:
+%
+% Physics perspective:
+% - Large gap: robust ground state, fast evolution
+% - Small gap: fragile ground state, slow evolution required
+%
+% Computational perspective:
+% - Large gap: easy computation
+% - Small gap: hard computation (or at least slow)
+%
+% The gap as bottleneck:
+% - Runtime ~ 1/g_min^2 (from adiabatic theorem)
+% - Small gap => exponential time
+% - QMA-hardness comes from estimating gap (Kitaev's local Hamiltonian)
+%
+% TODO: Connect to QMA and local Hamiltonian problem
+% TODO: Gap as "complexity witness"
+%
+% FORWARD: Chapters 5-6 analyze gap structure for AQO
+%
+% REVIEWER: significance - Gap is the central object of the thesis
+
+% =============================================================================
+% Section: Avoided Crossings
+% =============================================================================
+% SOURCE: Landau (1932), Zener (1932)
+%
+% Definition: Point where energy levels approach but don't cross
+% (eigenvalues would cross for some parameter but repel due to coupling)
+%
+% Landau-Zener formula:
+% Transition probability P ~ exp(-pi * g_min^2 / (2 * v))
+% where v = d(E_1 - E_0)/dt at crossing
+%
+% Implications:
+% - Must slow down near crossings
+% - Gap minimum typically occurs at avoided crossing
+% - Single avoided crossing simplifies analysis (AQO case)
+%
+% TODO: Derive Landau-Zener or give intuition
+% TODO: Explain why eigenvalues repel (non-crossing theorem)
+%
+% FORWARD: Chapter 5: AQO has single avoided crossing at s*
+% FORWARD: Chapter 6: Gap bounds in three regions around crossing
+%
+% REVIEWER: presentation_quality - Intuition before formula
+
+% =============================================================================
+% Section: Schedules
+% =============================================================================
+%
+% Linear schedule: s(t) = t/T
+% - Simple but not optimal
+% - Spends equal time everywhere
+% - Wastes time where gap is large
+%
+% Adaptive schedule: ds/dt proportional to g(s)^2
+% - Slow where gap is small
+% - Fast where gap is large
+% - Concentrates time at bottleneck
+%
+% Gap-aware vs gap-unaware:
+% - Gap-aware: knows g(s), can adapt
+% - Gap-unaware: must work for all instances
+%
+% TODO: Compare runtimes for linear vs adaptive
+% TODO: Set up the gap-uninformed problem (Chapter 9)
+%
+% FORWARD: Chapter 7 constructs optimal schedule
+% FORWARD: Chapter 9 analyzes gap-uninformed case
+
+% =============================================================================
+% Section: Roland-Cerf Construction
+% =============================================================================
+% SOURCE: Roland-Cerf (2002)
+%
+% The first AQC algorithm achieving Grover speedup:
+%
+% Setup:
+% - H_0 = -|s><s| where |s> = uniform superposition
+% - H_z = I - |w><w| where |w> is marked state
+% - Single marked item among N (Grover problem)
+%
+% Key insight: Slow down only where gap is small
+% - Gap minimum ~ 1/sqrt(N) at s* ~ 1/2
+% - Adapt schedule: ds/dt ~ g(s)^2
+%
+% Result: T = O(sqrt(N)), matching circuit Grover
+%
+% Why this matters for thesis:
+% - Shows AQO can match Grover
+% - Chapter 5 generalizes to arbitrary diagonal H_z
+% - Same idea, more complex spectrum
+%
+% TODO: Present Roland-Cerf as special case of AQO
+% TODO: Emphasize single avoided crossing structure
+%
+% FORWARD: Chapter 5 generalizes this construction
+%
+% REVIEWER: significance - Foundation for Chapter 5
+
+% =============================================================================
+% Section: Universality
+% =============================================================================
+% SOURCE: Aharonov et al. (2007)
+%
+% AQC is computationally equivalent to circuit model:
+% - Any BQP problem solvable by AQC
+% - Any AQC computation simulable by circuits
+% - Polynomial overhead in both directions
+%
+% Implications:
+% - AQC is universal for quantum computation
+% - No fundamental power difference from circuits
+% - BUT: different resource requirements, different optimizations
+%
+% TODO: Cite Aharonov et al. properly
+% TODO: Explain polynomial equivalence briefly
+%
+% OPTION: Could be brief or detailed depending on thesis scope
+%
+% REVIEWER: literature - Must cite universality result
+
+% =============================================================================
+% Section: Why AQO is More Restricted
+% =============================================================================
+% SOURCE: paper/v3-quantum.tex context
+%
+% AQO vs general AQC:
+%
+% AQO restrictions:
+% - H_z is diagonal in computational basis: H_z = sum_x f(x)|x><x|
+% - No entanglement in H_z (classical energies)
+% - H_0 is projector: H_0 = -|psi_0><psi_0|
+% - Only schedule s(t) is adjustable
+%
+% General AQC:
+% - H_z can be any Hamiltonian
+% - Can have entangled ground states
+% - H_0 can be any Hamiltonian with known ground state
+%
+% Why study AQO?
+% - Natural for combinatorial optimization (SAT, MAX-CUT, etc.)
+% - Simpler spectral structure (single avoided crossing)
+% - Clean analysis possible
+% - Still captures essence of adiabatic speedup question
+%
+% TODO: Explain diagonal H_z constraint
+% TODO: List problems encodable in AQO (Chapter 2/8 connection)
+%
+% FORWARD: Chapter 5 formalizes this setup
+
+% =============================================================================
+% Section: The No-Free-Lunch Reality
+% =============================================================================
+%
+% Common misconception: "Just let nature compute, no algorithm needed"
+%
+% Reality:
+% - Slowness is fundamental: gap determines runtime
+% - Cannot just "run slow" uniformly - exponential overhead
+% - Optimal schedule requires gap information
+% - Gap information is computationally expensive (NP-hard, Chapter 8)
+%
+% The tension:
+% - AQO can achieve Grover speedup (Chapter 7)
+% - BUT: achieving it requires solving hard problem first (Chapter 8)
+% - "Optimality with limitations"
+%
+% Preview of main results:
+% 1. Optimal runtime T = O~(sqrt(N/d_0)) (Chapter 7)
+% 2. Achieving it requires A_1 to exponential precision (Chapter 7)
+% 3. Computing A_1 is NP-hard (Chapter 8)
+%
+% TODO: Frame the central tension
+% TODO: Set up expectations for Chapters 5-9
+%
+% FORWARD: Chapters 5-9 resolve this tension
+%
+% REVIEWER: significance - Sets up the thesis problem
