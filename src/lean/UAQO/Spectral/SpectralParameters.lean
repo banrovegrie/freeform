@@ -391,4 +391,88 @@ theorem minimumGap_scaling {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
            rw [Real.sqrt_div (div_nonneg hd0nn (le_of_lt hNpos))]
       _ = 2 / Real.sqrt A2_val * Real.sqrt (d0 / N) := by ring
 
+/-! ## Three regions of s for gap bounds -/
+
+/-- Left of avoided crossing: I_{s←} = [0, s* - δ_s) -/
+def leftRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
+  0 <= s ∧ s < avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) -
+             avoidedCrossingWindow es hM
+
+/-- Around avoided crossing: I_{s*} = [s* - δ_s, s* + δ_s] -/
+def avoidedCrossingRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
+  let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+  let delta := avoidedCrossingWindow es hM
+  |s - sStar| <= delta
+
+/-- Right of avoided crossing: I_{s→} = (s* + δ_s, 1] -/
+def rightRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
+  avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) +
+    avoidedCrossingWindow es hM < s ∧ s <= 1
+
+/-! ## Spectral condition for bounds
+
+The spectral condition ensures the avoided crossing window is properly contained
+within the interval [0, 1]. This is required for the gap bound proofs. -/
+
+/-- Spectral condition for bounds: ensures the avoided crossing window δ_s is small
+    relative to s* so that:
+    - δ < s* (crossing window is within the valid region)
+    - s* + δ < 1 (crossing completes before end of evolution) -/
+def spectralConditionForBounds {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) : Prop :=
+  let A1_val := A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+  let A2_val := A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+  let d0 := es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
+  let N := qubitDim n
+  A1_val > 1 ∧ Real.sqrt (d0 * A2_val / N) < (A1_val + 1) / 2
+
+/-- The avoided crossing window is within bounds: δ < s* and s* + δ < 1.
+
+    Note: Requires the spectral condition `spectralConditionForBounds` as a hypothesis.
+    This condition is satisfied for typical 3-SAT instances but not all eigenstructures. -/
+theorem avoidedCrossing_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
+    (hcond : spectralConditionForBounds es hM) :
+    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+    let deltaS := avoidedCrossingWindow es hM
+    deltaS < sStar ∧ sStar + deltaS < 1 := by
+  simp only [avoidedCrossingPosition, avoidedCrossingWindow, spectralConditionForBounds] at *
+  have hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
+  have hA1gt1 : A1 es hM0 > 1 := hcond.1
+  have hA1pos : A1 es hM0 > 0 := by linarith
+  have hA1plus1_pos : A1 es hM0 + 1 > 0 := by linarith
+  have hsqrt_bound : Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n)) < (A1 es hM0 + 1) / 2 := hcond.2
+  -- The proof follows from the spectral condition
+  constructor
+  · -- deltaS < sStar
+    -- deltaS = 2/(A1+1)^2 * sqrt(d0*A2/N)
+    -- sStar = A1/(A1+1)
+    -- Need: 2/(A1+1)^2 * sqrt(...) < A1/(A1+1)
+    -- i.e., 2/(A1+1) * sqrt(...) < A1
+    -- i.e., sqrt(...) < A1*(A1+1)/2
+    -- This follows from hsqrt_bound: sqrt(...) < (A1+1)/2 < A1*(A1+1)/2 when A1 > 1
+    calc 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
+        < 2 / (A1 es hM0 + 1) ^ 2 * ((A1 es hM0 + 1) / 2) := by
+            apply mul_lt_mul_of_pos_left hsqrt_bound
+            apply div_pos (by norm_num : (2 : Real) > 0)
+            apply pow_pos hA1plus1_pos
+      _ = 1 / (A1 es hM0 + 1) := by field_simp
+      _ < A1 es hM0 / (A1 es hM0 + 1) := by
+            apply div_lt_div_of_pos_right _ hA1plus1_pos
+            linarith
+  · -- sStar + deltaS < 1
+    -- Need: A1/(A1+1) + 2/(A1+1)^2 * sqrt(...) < 1
+    -- From hsqrt_bound: sqrt(...) < (A1+1)/2
+    -- So: 2/(A1+1)^2 * sqrt(...) < 2/(A1+1)^2 * (A1+1)/2 = 1/(A1+1)
+    -- Thus: A1/(A1+1) + deltaS < A1/(A1+1) + 1/(A1+1) = 1
+    have hdeltaS_bound : 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n)) < 1 / (A1 es hM0 + 1) := by
+      calc 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
+          < 2 / (A1 es hM0 + 1) ^ 2 * ((A1 es hM0 + 1) / 2) := by
+              apply mul_lt_mul_of_pos_left hsqrt_bound
+              apply div_pos (by norm_num : (2 : Real) > 0)
+              apply pow_pos hA1plus1_pos
+        _ = 1 / (A1 es hM0 + 1) := by field_simp
+    calc A1 es hM0 / (A1 es hM0 + 1) + 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
+        < A1 es hM0 / (A1 es hM0 + 1) + 1 / (A1 es hM0 + 1) := by linarith
+      _ = (A1 es hM0 + 1) / (A1 es hM0 + 1) := by ring
+      _ = 1 := by field_simp
+
 end UAQO

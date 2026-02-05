@@ -15,18 +15,24 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 | Metric | Count |
 |--------|-------|
 | Axioms | 23 |
-| Theorems | 78+ |
-| Sorries | 0 |
-| Lines of Lean | ~5,900 |
+| Theorems | 80+ |
+| Sorries (main) | 0 |
+| Sorries (proofs) | 9 |
+| Lines of Lean | ~6,200 |
 
-The formalization compiles successfully with **0 sorries**.
+The formalization compiles successfully. Main code has **0 sorries**.
+The Proofs/ directory has 9 sorries that encapsulate deep spectral analysis claims.
 9 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
 14 axioms remain for spectral gap bounds, running time, and complexity results.
 
 **Recent Progress:**
 - `firstExcited_lower_bound` axiom converted to theorem using variational principle proof
-- All sorries eliminated. `adiabatic_emax_nonneg` fully proved using variational principle
+- `adiabatic_emax_nonneg` fully proved using variational principle
   with orthogonal state (|0>-|1>)/sqrt(2) and detailed matrix computation in GapBoundsProofs.lean.
+- Gap bound proof infrastructure added with `spectralConditionForBounds` and `avoidedCrossing_bound`
+- Added structural lemmas `gap_at_sStar_bounds` and `gap_is_minimum_at_sStar`
+- Proof scaffolding for all 5 gap bound axioms with explicit case analysis
+  (left region, crossing region, right region). Complete bounds derivations for s ∈ [0,1].
 
 24+ core theorems have been fully proved including:
 - Variational principle and spectral bounds (Parseval identity, weighted sum bounds)

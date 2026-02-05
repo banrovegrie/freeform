@@ -68,6 +68,9 @@ When an experiment matures sufficiently, extract the relevant content into the a
 |----|------|---------------|
 | 08 | structured_tractability_v2 | Are there NP-hard problems with tractable $A_1$? |
 | 10 | information_theoretic | Is the adiabatic framework uniquely limited compared to circuit model? |
+| 11 | schedule_optimality | Does the paper's gap profile satisfy Guo-An's measure condition? What does Guo-An's variational optimality say about the paper's schedule? |
+| 12 | circumventing_barrier | Can modified Hamiltonians (ancillas, intermediate paths) make $s^*$ independent of the problem spectrum? |
+| 13 | intermediate_hardness | What is the complexity of estimating $A_1$ to the algorithmically relevant precision $2^{-n/2}$? |
 
 
 ## Templates

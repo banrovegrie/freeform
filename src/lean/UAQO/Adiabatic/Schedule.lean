@@ -82,75 +82,7 @@ theorem avoidedCrossingWindow_pos {n M : Nat} (es : EigenStructure n M) (hM : M 
   · apply Real.sqrt_pos.mpr
     apply div_pos (mul_pos hd0pos hA2pos) hNpos
 
-/-- The spectral condition required for the avoided crossing bounds.
-
-    This condition ensures that the avoided crossing window δ is small enough
-    relative to the avoided crossing position s*. It holds for "typical" 3-SAT
-    instances but is not a general property of all eigenstructures.
-
-    Specifically:
-    1. A1 > 1 (strong spectral parameter, holds for unstructured search: A1 ≈ √N)
-    2. sqrt(d0 * A2 / N) < (A1 + 1) / 2
-
-    This implies both:
-    - δ < s* (crossing window is within the valid region)
-    - s* + δ < 1 (crossing completes before end of evolution) -/
-def spectralConditionForBounds {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) : Prop :=
-  let A1_val := A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-  let A2_val := A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-  let d0 := es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-  let N := qubitDim n
-  A1_val > 1 ∧ Real.sqrt (d0 * A2_val / N) < (A1_val + 1) / 2
-
-/-- The avoided crossing window is within bounds: δ < s* and s* + δ < 1.
-
-    Note: Requires the spectral condition `spectralConditionForBounds` as a hypothesis.
-    This condition is satisfied for typical 3-SAT instances but not all eigenstructures. -/
-theorem avoidedCrossing_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
-    (hcond : spectralConditionForBounds es hM) :
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let deltaS := avoidedCrossingWindow es hM
-    deltaS < sStar ∧ sStar + deltaS < 1 := by
-  simp only [avoidedCrossingPosition, avoidedCrossingWindow, spectralConditionForBounds] at *
-  have hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
-  have hA1gt1 : A1 es hM0 > 1 := hcond.1
-  have hA1pos : A1 es hM0 > 0 := by linarith
-  have hA1plus1_pos : A1 es hM0 + 1 > 0 := by linarith
-  have hsqrt_bound : Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n)) < (A1 es hM0 + 1) / 2 := hcond.2
-  -- The proof follows from the spectral condition
-  constructor
-  · -- deltaS < sStar
-    -- deltaS = 2/(A1+1)^2 * sqrt(d0*A2/N)
-    -- sStar = A1/(A1+1)
-    -- Need: 2/(A1+1)^2 * sqrt(...) < A1/(A1+1)
-    -- i.e., 2/(A1+1) * sqrt(...) < A1
-    -- i.e., sqrt(...) < A1*(A1+1)/2
-    -- This follows from hsqrt_bound: sqrt(...) < (A1+1)/2 < A1*(A1+1)/2 when A1 > 1
-    calc 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
-        < 2 / (A1 es hM0 + 1) ^ 2 * ((A1 es hM0 + 1) / 2) := by
-            apply mul_lt_mul_of_pos_left hsqrt_bound
-            apply div_pos (by norm_num : (2 : Real) > 0)
-            apply pow_pos hA1plus1_pos
-      _ = 1 / (A1 es hM0 + 1) := by field_simp
-      _ < A1 es hM0 / (A1 es hM0 + 1) := by
-            apply div_lt_div_of_pos_right _ hA1plus1_pos
-            linarith
-  · -- sStar + deltaS < 1
-    -- Need: A1/(A1+1) + 2/(A1+1)^2 * sqrt(...) < 1
-    -- From hsqrt_bound: sqrt(...) < (A1+1)/2
-    -- So: 2/(A1+1)^2 * sqrt(...) < 2/(A1+1)^2 * (A1+1)/2 = 1/(A1+1)
-    -- Thus: A1/(A1+1) + deltaS < A1/(A1+1) + 1/(A1+1) = 1
-    have hdeltaS_bound : 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n)) < 1 / (A1 es hM0 + 1) := by
-      calc 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
-          < 2 / (A1 es hM0 + 1) ^ 2 * ((A1 es hM0 + 1) / 2) := by
-              apply mul_lt_mul_of_pos_left hsqrt_bound
-              apply div_pos (by norm_num : (2 : Real) > 0)
-              apply pow_pos hA1plus1_pos
-        _ = 1 / (A1 es hM0 + 1) := by field_simp
-    calc A1 es hM0 / (A1 es hM0 + 1) + 2 / (A1 es hM0 + 1) ^ 2 * Real.sqrt (↑(es.degeneracies ⟨0, hM0⟩) * A2 es hM0 / ↑(qubitDim n))
-        < A1 es hM0 / (A1 es hM0 + 1) + 1 / (A1 es hM0 + 1) := by linarith
-      _ = (A1 es hM0 + 1) / (A1 es hM0 + 1) := by ring
-      _ = 1 := by field_simp
+-- Note: spectralConditionForBounds and avoidedCrossing_bound are now in SpectralParameters.lean
 
 /-- Helper: Linear function with positive slope is strictly monotone -/
 private lemma linear_monotone (a b : Real) (ha : a > 0) (hb : b > 0) (t₁ t₂ : Real)

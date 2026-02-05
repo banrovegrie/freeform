@@ -50,7 +50,7 @@ To solve this optimization problem adiabatically, we interpolate between an init
 \label{eq:H0-def}
 H_0 = -\ket{\psi_0}\bra{\psi_0}, \qquad \ket{\psi_0} = \ket{+}^{\otimes n} = \frac{1}{\sqrt{N}} \sum_{z \in \{0,1\}^n} \ket{z}.
 \end{equation}
-The state $\ket{\psi_0}$ is an equal superposition over all computational basis states: it assigns equal amplitude to every configuration, introducing no bias toward any solution.
+Every computational basis state receives equal amplitude, so $\ket{\psi_0}$ introduces no bias toward any particular solution.
 
 The adiabatic Hamiltonian is the linear interpolation
 \begin{equation}
@@ -87,7 +87,7 @@ A_p = \frac{N - 1}{N} \approx 1 \quad \text{for all } p,
 \end{equation}
 since $E_1 - E_0 = 1$. The spectral parameters are trivial in this case, which is precisely why the Roland-Cerf analysis is simple.
 
-For a general Ising Hamiltonian with $\Delta \geq 1/\text{poly}(n)$ and $M \in \text{poly}(n)$, the parameters satisfy $A_1, A_2 \in [\Theta(1), O(\text{poly}(n))]$. The precise values depend on the degeneracy distribution.
+For a general Ising Hamiltonian with $\Delta \geq 1/\text{poly}(n)$ and $M \in \text{poly}(n)$, the bound $A_1 \leq (1-d_0/N)/\Delta$ gives $A_1 = O(\text{poly}(n))$, while $A_2 \geq 1 - d_0/N$ ensures $A_2 = \Theta(1)$ at minimum.
 
 The first two parameters play distinct roles that will become precise in subsequent sections. The parameter $A_1$ determines the position of the avoided crossing: $s^* = A_1/(A_1 + 1)$. The parameter $A_2$ enters the minimum spectral gap: $g_{\min} = \Theta(\sqrt{d_0/(N A_2)})$. Both appear in the runtime: $T = O((\sqrt{A_2}/A_1^2 \Delta^2) \sqrt{N/d_0})$.
 
@@ -96,13 +96,13 @@ Since every eigenvalue gap satisfies $E_k - E_0 \leq 1$ and the total excited de
 \label{eq:A2-lower-bound}
 A_2 \geq \frac{1}{N} \sum_{k=1}^{M-1} d_k = 1 - \frac{d_0}{N}.
 \end{equation}
-For $d_0 \ll N$ (few solutions), $A_2 \geq 1 - 1/N$ is close to $1$. Also, $A_1 \leq (1 - d_0/N)/\Delta$, since $(E_k - E_0)^{-1} \leq \Delta^{-1}$ for all $k \geq 1$.
+For $d_0 \ll N$ (few solutions), $A_2 \geq 1 - 1/N$ is close to $1$. Also, $A_1 \leq (1 - d_0/N)/\Delta$, since $(E_k - E_0)^{-1} \leq \Delta^{-1}$ for all $k \geq 1$. Since $E_k - E_0 \geq \Delta$ for all $k \geq 1$, termwise comparison gives $A_1 \geq A_2 \Delta$. Since $E_k - E_0 \leq 1$, we also have $A_1 \leq A_2$. Together: $A_2 \Delta \leq A_1 \leq A_2$.
 
 The behavior of the adiabatic Hamiltonian is well-controlled only when the avoided crossing region is narrow compared to the interval $[0, 1]$. This is ensured by a spectral condition on $H_z$.
 
 \begin{definition}[Spectral condition]
 \label{def:spectral-condition}
-The problem Hamiltonian $H_z$ satisfies the spectral condition if there exists a small positive constant $c \ll 1$ such that
+The problem Hamiltonian $H_z$ satisfies the spectral condition if there exists a constant $c \ll 1$ such that
 \begin{equation}
 \label{eq:spectral-condition}
 \frac{1}{\Delta} \sqrt{\frac{d_0}{A_2 N}} < c.
@@ -215,7 +215,7 @@ which is minimized at $s = 1/2$ exactly, giving $g_{\min} = 1/\sqrt{N}$. This is
 \section{The Avoided Crossing}
 \label{sec:avoided-crossing}
 
-The eigenvalue equation (Lemma \ref{lem:eigenvalue-equation}) characterizes the spectrum of $H(s)$ implicitly. We now extract explicit formulas for the crossing position, its width, and the minimum gap by analyzing the equation near the ground state energy. The key idea is a two-level approximation: near the crossing, the ground and first excited states behave like a two-level system, with the higher levels acting as a perturbation controlled by the spectral condition.
+The eigenvalue equation (Lemma \ref{lem:eigenvalue-equation}) characterizes the spectrum of $H(s)$ implicitly. We now extract explicit formulas for the crossing position, its width, and the minimum gap by analyzing the equation near the ground state energy. Near the crossing, the ground and first excited states behave like a two-level system, with the higher levels acting as a perturbation controlled by the spectral condition.
 
 The two lowest eigenvalues have the form $\lambda(s) = s E_0 + \delta(s)$, where $\delta(s)$ is a correction to the trivial energy $s E_0$. Substituting into Eq.~\eqref{eq:eigenvalue-equation} \cite{golub1973modified}:
 \begin{equation}
@@ -231,12 +231,14 @@ Truncating at the $A_2$ term and rearranging Eq.~\eqref{eq:delta-equation} gives
 \label{eq:delta-pm-formula}
 \delta_0^\pm(s) = \frac{s(A_1 + 1)}{2 A_2 (1 - s)} \left[ \left(s - s^*\right) \pm \sqrt{\left(s^* - s\right)^2 + \frac{4 A_2 d_0}{N (A_1 + 1)^2}(1 - s)^2} \right],
 \end{equation}
-where
+Here $\delta_0^+(s) > 0$ corresponds to the first excited state and $\delta_0^-(s) < 0$ to the ground state: the superscript indicates the sign of the correction relative to $sE_0$. The crossing position is
 \begin{equation}
 \label{eq:s-star-def}
 s^* = \frac{A_1}{A_1 + 1}.
 \end{equation}
 The quantity $s^*$ is the position of the avoided crossing. It is entirely determined by $A_1$, and hence by the degeneracy-weighted inverse gaps of the problem Hamiltonian. For the Ising Hamiltonian with $\Delta \geq 1/\text{poly}(n)$, we have $A_1 \geq \Theta(1)$, so $s^*$ is bounded away from both $0$ and $1$. In the limit $A_1 \to \infty$ (many levels near the ground state), $s^* \to 1$; when $A_1$ is small, $s^*$ is closer to $0$.
+
+The crossing position marks a balance in the eigenvalue equation: $A_1/s^* = 1/(1 - s^*)$, where the left side is the aggregate spectral pull of the excited levels toward $sE_0$ and the right side is the projector strength. At $s = s^*$, the linear coefficient in the quadratic for $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) vanishes, and the two roots $\delta_0^\pm$ are symmetric about zero. The gap is determined entirely by the constant term $d_0/N$: the ground-state degeneracy is what opens the minimum gap.
 
 The truncation is an approximation. The actual roots $\delta_\pm(s)$ of the full equation differ from $\delta_0^\pm(s)$ by a relative error controlled by the spectral condition. The following result, whose proof uses the intermediate value theorem on the full equation after bounding the remainder using $A_3$ and the spectral condition, makes this precise \cite{braida2024unstructured, chakraborty2020optimality}.
 
@@ -353,14 +355,14 @@ The proof, detailed in Chapter 6, uses the variational principle: an explicit an
 \label{eq:variational-ansatz}
 \ket{\phi} = \frac{1}{\sqrt{A_2 N}} \sum_{k=1}^{M-1} \frac{\sqrt{d_k}}{E_k - E_0} \ket{k},
 \end{equation}
-which concentrates amplitude on levels close to the ground energy, yielding a tight upper bound on $\lambda_0(s)$.
+which concentrates amplitude on levels close to the ground energy, yielding a tight upper bound on $\lambda_0(s)$. A second route uses concavity: since $\lambda_0(s) = \min_{\ket{\psi}} \bra{\psi} H(s) \ket{\psi}$ is the pointwise minimum of functions linear in $s$, it is concave. The tangent to a concave function lies above it, so the tangent to $\lambda_0$ at $s^*$ gives a linear upper bound that, combined with $\lambda_1(s) \geq s E_0$, reproduces Eq.~\eqref{eq:gap-left-bound}. Chapter~6 develops both approaches.
 
 \begin{lemma}[Gap to the right of the crossing]
 \label{lem:gap-right-preview}
-Let $\mu = 1/4$, $a = 4\mu^2 \Delta/3$, and
+Let $k = 1/4$, $a = 4k^2 \Delta/3$, and
 \begin{equation}
 \label{eq:s0-def}
-s_0 = s^* - \frac{\mu \, g_{\min}(1 - s^*)}{a - \mu \, g_{\min}}.
+s_0 = s^* - \frac{k \, g_{\min}(1 - s^*)}{a - k \, g_{\min}}.
 \end{equation}
 Then for all $s \geq s^*$, the spectral gap of $H(s)$ satisfies
 \begin{equation}
@@ -369,13 +371,13 @@ g(s) \geq \frac{\Delta}{30} \cdot \frac{s - s_0}{1 - s_0}.
 \end{equation}
 \end{lemma}
 
-This bound is linear in $s - s_0$, with a slope proportional to $\Delta$. The proof, also in Chapter 6, uses the resolvent method: a line $\gamma(s) = s E_0 + \beta(s)$ is placed between the two lowest eigenvalues, and the Sherman-Morrison formula \cite{sherman_morrison} bounds the resolvent norm $\lVert R_{H(s)}(\gamma) \rVert$, giving $g(s) \geq 2/\lVert R_{H(s)}(\gamma) \rVert$. The constants $\mu = 1/4$ and $a = 4\mu^2\Delta/3$ are tuned to make the resulting function $f(s)$ monotonically decreasing on $[s^*, 1]$, yielding the clean bound $\Delta/30$.
+This bound is linear in $s - s_0$, with a slope proportional to $\Delta$. The proof, also in Chapter 6, uses the resolvent method: a line $\gamma(s) = s E_0 + \beta(s)$ is placed between the two lowest eigenvalues, and the Sherman-Morrison formula \cite{sherman_morrison} bounds the resolvent norm $\lVert R_{H(s)}(\gamma) \rVert$, giving $g(s) \geq 2/\lVert R_{H(s)}(\gamma) \rVert$. The constants $k = 1/4$ and $a = 4k^2\Delta/3$ are tuned to make the resulting function $f(s)$ monotonically decreasing on $[s^*, 1]$, yielding the clean bound $\Delta/30$.
 
 Both bounds exceed $g_{\min}$ at the window boundary. At $s = s^* - \delta_s$ (left boundary), the left bound gives
 \begin{equation}
 g(s^* - \delta_s) \geq \frac{A_1(A_1+1)}{A_2} \cdot \delta_s = \frac{2A_1}{A_1 + 1}\sqrt{\frac{d_0}{N A_2}} = \hat{g},
 \end{equation}
-which satisfies $\hat{g} \geq g_{\min}/(1 - 2\eta)$ by Eq.~\eqref{eq:gmin-formula}. At $s = s^*$ (right boundary start), $\beta(s^*) \geq \mu g_{\min}$, so $g(s^*) \geq 2\mu g_{\min}/(1 + f(s^*)) = O(g_{\min})$ since $f(s^*) = \Theta(1)$. The gap profile is therefore continuous across region boundaries: it dips to $g_{\min}$ at $s^*$ and rises linearly on both sides.
+which satisfies $\hat{g} \geq g_{\min}/(1 - 2\eta)$ by Eq.~\eqref{eq:gmin-formula}. At $s = s^*$ (right boundary start), $\beta(s^*) \geq k\, g_{\min}$, so $g(s^*) \geq 2k\, g_{\min}/(1 + f(s^*)) = O(g_{\min})$ since $f(s^*) = \Theta(1)$. The gap profile is therefore continuous across region boundaries: it dips to $g_{\min}$ at $s^*$ and rises linearly on both sides.
 
 The complete gap profile feeds directly into the runtime calculation. The optimal local adaptive schedule has $ds/dt \propto g(s)^2$: the evolution slows quadratically as the gap decreases. The total runtime is
 \begin{equation}

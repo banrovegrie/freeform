@@ -106,24 +106,6 @@ theorem eigenvalue_condition {n M : Nat} (es : EigenStructure n M)
          (es.degeneracies k : Real) / (s * es.eigenvalues k - lambda))) :=
   Proofs.Spectral.eigenvalue_condition_proof es hM s hs lambda
 
-/-! ## Three regions of s -/
-
-/-- Left of avoided crossing: I_{s←} = [0, s* - δ_s) -/
-def leftRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
-  0 <= s ∧ s < avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) -
-             avoidedCrossingWindow es hM
-
-/-- Around avoided crossing: I_{s*} = [s* - δ_s, s* + δ_s] -/
-def avoidedCrossingRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
-  let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-  let delta := avoidedCrossingWindow es hM
-  |s - sStar| <= delta
-
-/-- Right of avoided crossing: I_{s→} = (s* + δ_s, 1] -/
-def rightRegion {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) (s : Real) : Prop :=
-  avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) +
-    avoidedCrossingWindow es hM < s ∧ s <= 1
-
 /-! ## Variational Principle Infrastructure
 
 These lemmas prove the variational bound: E₀ ≤ ⟨φ|H|φ⟩ for normalized |φ⟩.

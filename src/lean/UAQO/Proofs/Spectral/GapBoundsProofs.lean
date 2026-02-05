@@ -1,7 +1,7 @@
 /-
   Proofs for gap bound axioms in GapBounds.lean.
 
-  Key results FULLY PROVED (0 sorry):
+  Key results FULLY PROVED:
   - adiabaticHam_hermitian: H(s) is Hermitian
   - diagonalHam_hermitian: diagonal Hamiltonian is Hermitian
   - expectation_hermitian_real: expectation of Hermitian has real value
@@ -12,8 +12,25 @@
   - weighted_sum_ge_min_times_sum: convex combination bound (FULL PROOF)
   - expectation_ge_min_eigenvalue: expectation ≥ min eigenvalue (FULL PROOF)
   - groundEnergy_variational_bound_proof: E0 ≤ ⟨phi|H|phi⟩ (FULL PROOF)
+  - firstExcited_lower_bound_proof: E1 exists with E0 < E1 (FULL PROOF)
+  - spectral_gap_exists: spectral gap exists for H(s) (FULL PROOF)
+  - minimumGap_positive: g_min > 0 (uses minimumGap_pos)
 
-  This file completes the variational principle foundation with 0 remaining sorries.
+  Gap bound proof scaffolding (9 sorries for core mathematical claims):
+  - gap_at_sStar_bounds: gap at s* is bounded by [g_min/2, 2*g_min] (1 sorry)
+  - gap_is_minimum_at_sStar: gap at s* is minimum over all s (1 sorry)
+  - gap_bound_left_proof: variational bound for s < s* - δ (1 sorry)
+  - gap_at_avoided_crossing_proof: bounds for |s - s*| <= δ (2 sorries)
+  - gap_bound_right_proof: resolvent bound for s > s* + δ (1 sorry)
+  - gap_bound_all_s_proof: combined bound g >= g_min/4 with case analysis (3 sorries)
+  - gap_minimum_at_crossing_proof: minimum occurs at s* (uses structural lemmas)
+
+  The sorries encapsulate the deep spectral analysis from the paper:
+  - Variational principle with trial state (Eq. 317) - left region
+  - Perturbation analysis at avoided crossing (Proposition 1) - crossing region
+  - Resolvent method with Sherman-Morrison (Lemma 5) - right region
+  - Connection between minimumGap formula and actual spectral gap
+  - These require spectral decomposition of H(s) and eigenvalue equation analysis.
 -/
 import UAQO.Spectral.AdiabaticHamiltonian
 import UAQO.Proofs.Spectral.EigenvalueCondition
@@ -1467,5 +1484,348 @@ theorem firstExcited_lower_bound_proof {n M : Nat} (es : EigenStructure n M)
         (adiabaticHam es s hs) (E_min : ℂ) hscalar_action i j hij
       -- Contradiction: hne says entry ≠ 0, hzero says it = 0
       exact hne hzero
+
+/-! ## Gap Bound Proofs
+
+These theorems provide proofs for the gap bound axioms in GapBounds.lean.
+The proofs use variational analysis, perturbation theory, and the resolvent method.
+-/
+
+/-- Helper: The spectral gap E1 - E0 exists and is positive for H(s) -/
+lemma spectral_gap_exists {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1) :
+    ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
+      IsEigenvalue (adiabaticHam es s hs) E1 ∧ E0 < E1 := by
+  -- Use firstExcited_lower_bound_proof
+  obtain ⟨E1, hE1_is, _, E0, hE0_is, hE0_lt_E1⟩ := firstExcited_lower_bound_proof es hM s hs
+  exact ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩
+
+/-- Helper: minimum gap is positive -/
+lemma minimumGap_positive {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    minimumGap es hM > 0 := minimumGap_pos es hM
+
+/-- Key structural lemma: The spectral gap at s* is bounded by the minimumGap formula.
+
+    PAPER REFERENCE: Proposition 1, Equation 311
+
+    The minimumGap formula g_min = 2A₁/(A₁+1)·√(d₀/(A₂N)) gives the gap at s*.
+    The bounds g_min/2 <= g(s*) <= 2·g_min hold for typical spectral conditions.
+
+    This is the core mathematical claim that connects the formula to the actual gap. -/
+lemma gap_at_sStar_bounds {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (gap : Real) (hgap_pos : gap > 0)
+    (hs_star : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es
+        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
+        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
+         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E0 ∧
+      IsEigenvalue (adiabaticHam es
+        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
+        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
+         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E1 ∧
+      E0 < E1 ∧ gap = E1 - E0) :
+    gap >= minimumGap es hM / 2 ∧ gap <= 2 * minimumGap es hM := by
+  -- The minimumGap formula gives the gap at s* by Equation 311.
+  -- This requires perturbation analysis of the eigenvalue equation.
+  -- The key insight is that near s*, the gap is dominated by the
+  -- avoided crossing and equals approximately the formula.
+  sorry
+
+/-- Key structural lemma: The gap at s* is the minimum over all s in [0,1].
+
+    For any s ∈ [0,1], the spectral gap g(s) >= g(s*).
+    This follows from the regional gap bounds:
+    - Left region: g(s) increases as s decreases from s*
+    - Right region: g(s) increases as s increases from s*
+    - Crossing region: g(s) >= g_min/2 -/
+lemma gap_is_minimum_at_sStar {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (gapAtStar : Real) (hgap_star_pos : gapAtStar > 0)
+    (hgap_star : gapAtStar >= minimumGap es hM / 2)
+    (s : Real) (hs : 0 <= s ∧ s <= 1)
+    (gap_s : Real) (hgap_s : ∃ (E0 E1 : Real),
+      IsEigenvalue (adiabaticHam es s hs) E0 ∧
+      IsEigenvalue (adiabaticHam es s hs) E1 ∧
+      E0 < E1 ∧ gap_s = E1 - E0) :
+    gap_s >= gapAtStar := by
+  -- The regional gap bounds show that the gap increases as we move away from s*.
+  -- This requires combining the left, crossing, and right regional bounds.
+  sorry
+
+/-- Proof of gap_bound_left_axiom.
+
+    For s in the left region [0, s* - δ_s), the spectral gap satisfies:
+    g(s) >= (A_1/A_2) * (s* - s) / (1 - s*)
+
+    The proof uses the variational principle with a specific trial state
+    constructed from the excited eigenstates of the diagonal Hamiltonian.
+
+    PAPER REFERENCE: Equation 317 / Section 2.2 -/
+theorem gap_bound_left_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
+    (hcond : spectralConditionForBounds es hM) :
+    ∃ (gap : Real), gap > 0 ∧
+    gap >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
+            A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
+           (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
+           (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) := by
+  -- Get bounds from spectral condition
+  have hbounds := avoidedCrossing_bound es hM hcond
+  have hsStar := avoidedCrossing_in_interval es hM
+  have hdelta_lt_sStar := hbounds.1
+  have hsStar_plus_delta_lt_1 := hbounds.2
+  -- Derive s ∈ [0, 1]
+  have hs_bounds : 0 <= s ∧ s <= 1 := by
+    constructor
+    · exact hs.1
+    · -- s < s* - δ_s < s* < 1
+      have h_lt := hs.2
+      -- hdelta_lt_sStar says δ_s < s*, so s* - δ_s > 0 and s* - δ_s < s*
+      have hdelta_pos : avoidedCrossingWindow es hM >= 0 := by
+        simp only [avoidedCrossingWindow]
+        apply mul_nonneg
+        · apply div_nonneg; norm_num; apply sq_nonneg
+        · apply Real.sqrt_nonneg
+      -- s < s* - δ_s and s* < 1, so s < 1
+      linarith [h_lt, hsStar.2, hdelta_lt_sStar, hdelta_pos]
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs_bounds
+  -- The gap E1 - E0 is positive
+  let gap := E1 - E0
+  have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
+  use gap
+  constructor
+  · exact hgap_pos
+  · -- The detailed variational bound (Eq. 317)
+    -- Key insight: In the left region, the eigenvalue gap is dominated by the
+    -- (1-s) term from the driver Hamiltonian. The variational principle with
+    -- trial state |φ⟩ = (1/√(A₂N)) Σ_{k≥1} √(d_k)/(E_k - E_0) |k⟩ gives the bound.
+    --
+    -- The formal proof requires:
+    -- 1. Construct the trial state from excited eigenstates
+    -- 2. Compute ⟨φ|H(s)|φ⟩ using the eigenvalue equation
+    -- 3. Apply variational principle to bound E_1
+    --
+    -- This captures the key mathematical content of Equation 317.
+    -- Full proof requires spectral decomposition infrastructure for H(s).
+    sorry
+
+/-- Proof of gap_at_avoided_crossing_axiom.
+
+    For s in the avoided crossing region |s - s*| <= δ_s, the gap satisfies:
+    g_min/2 <= g(s) <= 2 * g_min
+
+    The proof uses perturbation analysis near the crossing point.
+
+    PAPER REFERENCE: Proposition 1, Equation 311 / Section 2.2 -/
+theorem gap_at_avoided_crossing_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (hs : avoidedCrossingRegion es hM s)
+    (hcond : spectralConditionForBounds es hM) :
+    ∃ (gap : Real), gap > 0 ∧
+    gap >= minimumGap es hM / 2 ∧
+    gap <= 2 * minimumGap es hM := by
+  -- Get bounds from spectral condition
+  have hbounds := avoidedCrossing_bound es hM hcond
+  have hsStar := avoidedCrossing_in_interval es hM
+  have hdelta_lt_sStar := hbounds.1
+  have hsStar_plus_delta_lt_1 := hbounds.2
+  -- Derive s ∈ [0, 1] from avoidedCrossingRegion
+  have hs_bounds : 0 <= s ∧ s <= 1 := by
+    unfold avoidedCrossingRegion at hs
+    have hdelta_nonneg : avoidedCrossingWindow es hM >= 0 := by
+      simp only [avoidedCrossingWindow]
+      apply mul_nonneg
+      · apply div_nonneg; norm_num; apply sq_nonneg
+      · apply Real.sqrt_nonneg
+    rw [abs_le] at hs
+    -- hs.1 : -(δ_s) <= s - s*  i.e.  s* - δ_s <= s
+    -- hs.2 : s - s* <= δ_s     i.e.  s <= s* + δ_s
+    have hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
+    constructor
+    · -- s >= s* - δ_s >= 0 (from δ_s < s*)
+      have h1 : s >= avoidedCrossingPosition es hM0 - avoidedCrossingWindow es hM := by linarith [hs.1]
+      linarith [hdelta_lt_sStar, hsStar.1]
+    · -- s <= s* + δ_s <= 1 (from s* + δ_s < 1)
+      have h2 : s <= avoidedCrossingPosition es hM0 + avoidedCrossingWindow es hM := by linarith [hs.2]
+      linarith [hsStar_plus_delta_lt_1]
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs_bounds
+  let gap := E1 - E0
+  have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
+  have hgmin_pos := minimumGap_positive es hM
+  use gap
+  constructor
+  · exact hgap_pos
+  · constructor
+    · -- gap >= g_min/2 (Proposition 1)
+      -- The perturbation analysis shows that in the avoided crossing region,
+      -- the gap is approximately minimumGap, bounded below by g_min/2.
+      -- Key insight: The eigenvalue equation near s* gives a quadratic gap profile
+      -- with minimum value approximately g_min = 2A₁/(A₁+1)·√(d₀/(A₂N))
+      sorry
+    · -- gap <= 2 * g_min (Proposition 1)
+      -- The upper bound follows from the same perturbation analysis.
+      -- The gap profile is approximately parabolic near s*, bounded by 2·g_min.
+      sorry
+
+/-- Proof of gap_bound_right_axiom.
+
+    For s in the right region (s* + δ_s, 1], the gap satisfies:
+    g(s) >= (Δ/30) * (s - s_0) / (1 - s_0)
+
+    The proof uses the resolvent method with Sherman-Morrison formula.
+
+    PAPER REFERENCE: Lemma 5 / Section 2.2 -/
+theorem gap_bound_right_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
+    (hcond : spectralConditionForBounds es hM) :
+    let Delta := spectralGapDiag es hM
+    let k : Real := 1/4
+    let a := 4 * k^2 * Delta / 3
+    let gmin := minimumGap es hM
+    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
+    ∃ (gap : Real), gap > 0 ∧
+    gap >= (Delta / 30) * (s - s0) / (1 - s0) := by
+  -- Get bounds from spectral condition
+  have hbounds := avoidedCrossing_bound es hM hcond
+  have hsStar := avoidedCrossing_in_interval es hM
+  -- Derive s ∈ [0, 1]
+  have hs_bounds : 0 <= s ∧ s <= 1 := by
+    constructor
+    · -- s > s* + δ_s > 0
+      have hdelta_nonneg : avoidedCrossingWindow es hM >= 0 := by
+        simp only [avoidedCrossingWindow]
+        apply mul_nonneg
+        · apply div_nonneg; norm_num; apply sq_nonneg
+        · apply Real.sqrt_nonneg
+      linarith [hs.1, hsStar.1, hdelta_nonneg]
+    · exact hs.2
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs_bounds
+  let gap := E1 - E0
+  have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
+  use gap
+  constructor
+  · exact hgap_pos
+  · -- The resolvent method bound (Lemma 5)
+    -- The proof uses the Sherman-Morrison formula (already proved) to analyze
+    -- the resolvent (γI - H(s))⁻¹ along the line γ(s) = sE₀ + β(s).
+    --
+    -- Key steps:
+    -- 1. Write H(s) = H_z - (1-s)|ψ₀⟩⟨ψ₀| as rank-1 perturbation
+    -- 2. Apply Sherman-Morrison to bound the resolvent norm
+    -- 3. If resolvent norm is bounded, γ is not an eigenvalue
+    -- 4. This gives the gap bound via distance to spectrum
+    --
+    -- The constant Δ/30 comes from careful analysis of the resolvent bound.
+    sorry
+
+/-- Proof of gap_bound_all_s_axiom.
+
+    For all s ∈ [0, 1], the spectral gap satisfies:
+    g(s) >= g_min/4
+
+    This combines the three regional bounds (left, crossing, right).
+
+    PAPER REFERENCE: Section 2.2, combining Eq. 317, Prop. 1, Lemma 5 -/
+theorem gap_bound_all_s_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
+    (hcond : spectralConditionForBounds es hM) :
+    ∃ (gap : Real), gap > 0 ∧ gap >= minimumGap es hM / 4 := by
+  -- Get bounds for region classification
+  have hbounds := avoidedCrossing_bound es hM hcond
+  have hsStar := avoidedCrossing_in_interval es hM
+  let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+  let deltaS := avoidedCrossingWindow es hM
+  -- Get the spectral gap
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs
+  let gap := E1 - E0
+  have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
+  have hgmin_pos := minimumGap_positive es hM
+  use gap
+  constructor
+  · exact hgap_pos
+  · -- Case split on which region s is in
+    -- The three regions partition [0, 1]:
+    -- - Left: s < s* - δ
+    -- - Crossing: |s - s*| <= δ
+    -- - Right: s > s* + δ
+    by_cases h_left : s < sStar - deltaS
+    · -- LEFT REGION: s < s* - δ
+      -- Gap bound from variational principle (Eq. 317):
+      -- g(s) >= (A₁/A₂)(s* - s)/(1 - s*)
+      -- This is >= c₁·g_min for some c₁ > 1/4
+      -- The proof requires showing the variational bound implies g >= g_min/4
+      sorry
+    · -- Not in left region, so s >= s* - δ
+      by_cases h_right : s > sStar + deltaS
+      · -- RIGHT REGION: s > s* + δ
+        -- Gap bound from resolvent method (Lemma 5):
+        -- g(s) >= (Δ/30)(s - s₀)/(1 - s₀)
+        -- This is >= c₂·g_min for some c₂ > 1/4
+        -- The proof requires showing the resolvent bound implies g >= g_min/4
+        sorry
+      · -- CROSSING REGION: |s - s*| <= δ
+        -- In this region: g(s) >= g_min/2 > g_min/4
+        have h_crossing : avoidedCrossingRegion es hM s := by
+          unfold avoidedCrossingRegion
+          push_neg at h_left h_right
+          rw [abs_le]
+          constructor <;> linarith
+        -- Use gap_at_avoided_crossing_proof structure
+        have hgmin_pos := minimumGap_positive es hM
+        -- Gap >= g_min/2 >= g_min/4
+        -- This requires the perturbation analysis from Proposition 1
+        sorry
+
+/-- Proof of gap_minimum_at_crossing_axiom.
+
+    The spectral gap achieves its minimum near the avoided crossing.
+    At s = s*, the gap equals g_min (up to constants).
+    For all other s ∈ [0,1], the gap is at least as large.
+
+    PAPER REFERENCE: Section 2.2, structural analysis -/
+theorem gap_minimum_at_crossing_proof {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : spectralConditionForBounds es hM) :
+    ∃ (sMin : Real), 0 < sMin ∧ sMin < 1 ∧
+    avoidedCrossingRegion es hM sMin ∧
+    ∃ (gapAtMin : Real), gapAtMin > 0 ∧
+      gapAtMin >= minimumGap es hM / 2 ∧
+      gapAtMin <= 2 * minimumGap es hM ∧
+      ∀ (s : Real), (0 <= s ∧ s <= 1) ->
+        ∃ (gapS : Real), gapS >= gapAtMin := by
+  -- The minimum occurs at s = s* (avoided crossing position)
+  have hsStar := avoidedCrossing_in_interval es hM
+  let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
+  have hsStar_bounds : (0 : Real) <= sStar ∧ sStar <= 1 :=
+    ⟨le_of_lt hsStar.1, le_of_lt hsStar.2⟩
+  -- Get the gap at s*
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM sStar hsStar_bounds
+  let gapAtMin := E1 - E0
+  have hgap_pos : gapAtMin > 0 := sub_pos.mpr hE0_lt_E1
+  have hgmin_pos := minimumGap_positive es hM
+  -- s* is in the avoided crossing region (at the center)
+  have h_in_region : avoidedCrossingRegion es hM sStar := by
+    unfold avoidedCrossingRegion sStar
+    -- Goal: |s* - s*| <= δ_s, which is 0 <= δ_s
+    simp only [sub_self, abs_zero, avoidedCrossingWindow]
+    apply mul_nonneg
+    · apply div_nonneg; norm_num; apply sq_nonneg
+    · apply Real.sqrt_nonneg
+  -- Use gap_at_sStar_bounds for the first two goals
+  have hgap_bounds := gap_at_sStar_bounds es hM hcond gapAtMin hgap_pos
+    ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, rfl⟩
+  -- Construct the full witness
+  refine ⟨sStar, hsStar.1, hsStar.2, h_in_region, gapAtMin, hgap_pos, ?_, ?_, ?_⟩
+  · -- gapAtMin >= g_min/2
+    exact hgap_bounds.1
+  · -- gapAtMin <= 2 * g_min
+    exact hgap_bounds.2
+  · -- For all s ∈ [0,1], exists gap >= gapAtMin
+    intro s' hs'
+    -- Use spectral_gap_exists to get a gap at s'
+    obtain ⟨E0', E1', hE0'_is, hE1'_is, hE0'_lt_E1'⟩ := spectral_gap_exists es hM s' hs'
+    use E1' - E0'
+    -- Use gap_is_minimum_at_sStar
+    exact gap_is_minimum_at_sStar es hM hcond gapAtMin hgap_pos hgap_bounds.1 s' hs'
+      (E1' - E0') ⟨E0', E1', hE0'_is, hE1'_is, hE0'_lt_E1', rfl⟩
 
 end UAQO.Proofs.Spectral.GapBounds
