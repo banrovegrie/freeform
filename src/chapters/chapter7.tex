@@ -1,1 +1,317 @@
 % Chapter 7: Optimal Schedule
+% ASSUMES: Chapter 4 defines AQC, adiabatic theorem, spectral gap as
+%   computational resource, avoided crossings, local/adaptive schedules,
+%   Roland-Cerf construction.
+% ASSUMES: Chapter 5 defines H(s), H_z, H_0, |psi_0>, A_p, A_1, A_2,
+%   s^*, delta_s, g_min, hat{g}, the three regions, eigenvalue equation,
+%   spectral condition (Definition 5.x), grover-gap.
+% ASSUMES: Chapter 6 proves gap-left (Lemma 6.1), gap-right (Lemma 6.2),
+%   complete-profile (Theorem 6.x), f(s*) = 4, s_0 formula.
+
+The spectral gap of $H(s)$ is now bounded below across all of $[0,1]$: a piecewise linear profile (\autoref{thm:complete-profile}) that dips to $g_{\min}$ at the avoided crossing $s^*$ and rises linearly on both sides, with slope $A_1(A_1+1)/A_2$ on the left and $\Delta/30$ on the right. Chapter 5 observed that the runtime scales as $\int_0^1 g(s)^{-2}\,ds$ (Eq.~\eqref{eq:runtime-integral-preview}), with the crossing window dominating. This chapter derives the optimal schedule and the resulting runtime rigorously.
+
+The standard adiabatic theorem, applied with a constant evolution rate, gives a runtime proportional to $\int_0^1 g(s)^{-3}\,ds$. For the gap profile of \autoref{thm:complete-profile}, the window contributes $\delta_s/g_{\min}^3$, which for the running example ($M = 2$, $g_{\min} = 1/\sqrt{N}$) gives $T = O(N)$: no speedup over classical search. The remedy is a local adaptive schedule whose rate $K'(s)$ scales with the instantaneous gap, evolving rapidly where the gap is large and slowly near the crossing. This idea, originating with Roland and Cerf \cite{roland2004quantum} for the single-marked-item case and developed in the eigenpath traversal framework \cite{boixo2009eigenpath, cunningham2024eigenpath}, extends to general problem Hamiltonians through the adiabatic error bound of \cite{braida2024unstructured}. The resulting runtime is $T = O((\sqrt{A_2}/(A_1(A_1+1)\Delta^2))\sqrt{N/d_0}/\varepsilon)$, achieving the Grover speedup up to spectral factors.
+
+
+\section{The Adiabatic Error Bound}
+\label{sec:error-bound}
+
+The Schr\"odinger equation $i\,d\ket{\psi}/dt = H(s(t))\ket{\psi}$ governs the evolution of a quantum state under the time-dependent Hamiltonian $H(s)$, where $s: [0, T] \to [0, 1]$ parametrizes the interpolation and $T$ is the total evolution time. The density matrix formulation $d\rho/dt = -i[H, \rho]$ accommodates mixed states and simplifies the error analysis. Introduce a reparametrization $t = K(s)$, where $K: [0,1] \to \mathbb{R}^+$ is a differentiable, monotonically increasing function called the \emph{schedule}. The chain rule transforms the evolution equation to
+\begin{equation}
+\label{eq:reparametrized-evolution}
+\frac{d\rho}{ds} = -iK'(s)[H(s), \rho(s)],
+\end{equation}
+where $K'(s) = dK/ds > 0$ controls the instantaneous evolution rate. The total runtime is $T = K(1) = \int_0^1 K'(s)\,ds$. A large $K'(s)$ means slow evolution (long physical time per unit of $s$), allowing the state to track the ground state through a small-gap region. A small $K'(s)$ means fast evolution, appropriate where the gap is large and diabatic transitions are suppressed.
+
+The error of the adiabatic evolution is the probability that the final state does not lie in the ground space of $H(1)$:
+\begin{equation}
+\label{eq:error-def}
+\varepsilon = 1 - \mathrm{Tr}[P(1)\rho(1)],
+\end{equation}
+where $P(s)$ denotes the projector onto the ground eigenspace of $H(s)$ and $\rho(0) = P(0)$ (the system starts in the ground state of $H(0)$). The projector $P(s)$ and the ground energy $\lambda_0(s)$ are both functions of $s$, varying as the Hamiltonian interpolates from $H_0$ to $H_z$. The operator
+\begin{equation}
+\label{eq:pseudoinverse-def}
+(H(s) - \lambda_0(s))^+ = \sum_{j \geq 1} \frac{1}{\lambda_j(s) - \lambda_0(s)}\,\ket{\phi_j(s)}\bra{\phi_j(s)}
+\end{equation}
+is the pseudoinverse of $H(s) - \lambda_0(s)$: it acts as zero on the ground space and as $(\lambda_j - \lambda_0)^{-1}$ on the $j$-th excited eigenspace. Its operator norm is $1/g(s)$, so a small spectral gap amplifies the pseudoinverse.
+
+\begin{lemma}[Adiabatic error bound {\cite{braida2024unstructured, cunningham2024eigenpath}}]
+\label{lem:error-bound}
+Let $H(s)$ be a twice-differentiable path of Hamiltonians with a continuous ground energy $\lambda_0(s)$ and a spectral gap $g(s) > 0$ for all $s \in [0,1]$. Let $K: [0,1] \to \mathbb{R}^+$ be a schedule with absolutely continuous derivative $K'$. Then the evolution~\eqref{eq:reparametrized-evolution} starting from $\rho(0) = P(0)$ satisfies
+\begin{equation}
+\label{eq:error-bound}
+\varepsilon \leq \frac{1}{K'(1)}\left\lVert\left[P'(1),\, (H(1) - \lambda_0(1))^+\right]\right\rVert + \int_0^1 \frac{1}{K'}\left\lVert\left[P',\, (H - \lambda_0)^+\right]'\right\rVert ds + \int_0^1 \left|\left(\frac{1}{K'}\right)'\right|\left\lVert\left[P',\, (H - \lambda_0)^+\right]\right\rVert ds.
+\end{equation}
+\end{lemma}
+
+The proof proceeds by tracking the fidelity $\mathrm{Tr}[P(s)\rho(s)]$ as a function of $s$. Differentiating and using $HP = \lambda_0 P$ yields $d(\mathrm{Tr}[P\rho])/ds = i(K')^{-1}\mathrm{Tr}([P', (H-\lambda_0)^+]\rho')$. Integrating by parts transfers derivatives from $\rho$ onto the commutator $[P', (H-\lambda_0)^+]$ and the schedule factor $(K')^{-1}$, producing three terms. The boundary term at $s = 0$ vanishes because $\rho(0) = P(0)$ lies entirely in the ground space, and the commutator $[P', (H-\lambda_0)^+]$ maps the ground space to zero. Taking absolute values and bounding the trace by the operator norm gives~\eqref{eq:error-bound}. The full derivation appears in \cite{braida2024unstructured}.
+
+The error bound depends on $H(s)$ only through the commutator $[P', (H-\lambda_0)^+]$ and its derivative. The following bounds express these in terms of the Hamiltonian derivatives $H'$, $H''$ and the spectral gap $g$.
+
+\begin{lemma}[Projector derivative bounds {\cite{braida2024unstructured}}]
+\label{lem:derivative-bounds}
+Under the conditions of \autoref{lem:error-bound}:
+\begin{align}
+\label{eq:P-prime-bound}
+\lVert P'(s) \rVert &\leq \frac{2\lVert H'(s)\rVert}{g(s)}, \\
+\label{eq:commutator-bound}
+\left\lVert\left[P'(s),\, (H(s) - \lambda_0(s))^+\right]\right\rVert &\leq \frac{4\lVert H'(s)\rVert}{g(s)^2}, \\
+\label{eq:commutator-deriv-bound}
+\left\lVert\left[P'(s),\, (H(s) - \lambda_0(s))^+\right]'\right\rVert &\leq \frac{40\lVert H'(s)\rVert^2}{g(s)^3} + \frac{4\lVert H''(s)\rVert}{g(s)^2}.
+\end{align}
+\end{lemma}
+
+\begin{proof}[Proof of~\eqref{eq:P-prime-bound}]
+Let $\Gamma$ be a circle in the complex plane centered at $\lambda_0(s)$ with radius $g(s)/2$. The Riesz integral representation of the projector gives
+\begin{equation}
+P(s) = \frac{1}{2\pi i}\oint_\Gamma R_{H(s)}(z)\,dz,
+\end{equation}
+where $R_{H(s)}(z) = (zI - H(s))^{-1}$ is the resolvent. Differentiating with respect to $s$:
+\begin{equation}
+P'(s) = \frac{1}{2\pi i}\oint_\Gamma R_{H(s)}(z)\,H'(s)\,R_{H(s)}(z)\,dz,
+\end{equation}
+using the resolvent identity $R_H' = R_H H' R_H$. On the contour $\Gamma$, every point $z$ lies at distance exactly $g(s)/2$ from $\lambda_0(s)$ and at distance at least $g(s)/2$ from every other eigenvalue (since the nearest eigenvalue is $\lambda_1(s)$ at distance $g(s)$ from $\lambda_0(s)$). Therefore $\lVert R_{H(s)}(z) \rVert = 1/\mathrm{dist}(z, \sigma(H(s))) \leq 2/g(s)$ on $\Gamma$. Bounding the integral:
+\begin{equation}
+\lVert P'(s) \rVert \leq \frac{1}{2\pi}\oint_\Gamma \lVert R_H(z)\rVert \cdot \lVert H'(s)\rVert \cdot \lVert R_H(z)\rVert\,|dz| \leq \frac{1}{2\pi}\left(\frac{2}{g}\right)^2\lVert H'\rVert \cdot \pi g = \frac{2\lVert H'\rVert}{g}.
+\end{equation}
+\end{proof}
+
+Bound~\eqref{eq:commutator-bound} follows from~\eqref{eq:P-prime-bound}: the commutator satisfies $\lVert[P', (H-\lambda_0)^+]\rVert \leq 2\lVert P'\rVert \cdot \lVert(H-\lambda_0)^+\rVert \leq 2 \cdot 2\lVert H'\rVert/g \cdot 1/g = 4\lVert H'\rVert/g^2$. Bound~\eqref{eq:commutator-deriv-bound} requires additionally the pseudoinverse derivative formula $(H^+)' = -H^+ H' H^+ + P'H^+ + H^+P'$ and the second Riesz integral for $P''$; the details appear in \cite{braida2024unstructured}. The key structure is that every factor of $H'$ or $H''$ comes with an inverse power of $g$, reflecting the amplification of non-adiabatic transitions by a small spectral gap.
+
+Substituting the derivative bounds into the error bound~\eqref{eq:error-bound} with a constant schedule $K'(s) = T$ (so that $(1/K')' = 0$) gives the constant-rate baseline.
+
+\begin{theorem}[Constant-rate runtime]
+\label{thm:constant-rate}
+Under the conditions of \autoref{lem:error-bound}, a constant schedule $K'(s) = T$ achieves error at most $\varepsilon$ provided
+\begin{equation}
+\label{eq:constant-rate-formula}
+T \geq \frac{1}{\varepsilon}\left(\frac{4\lVert H'(1)\rVert}{g(1)^2} + \int_0^1 \frac{40\lVert H'(s)\rVert^2}{g(s)^3}\,ds + \int_0^1\frac{4\lVert H''(s)\rVert}{g(s)^2}\,ds\right).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+With constant $K'$, the third term in~\eqref{eq:error-bound} vanishes. Substituting bounds~\eqref{eq:commutator-bound} and~\eqref{eq:commutator-deriv-bound} into the remaining two terms:
+\begin{equation}
+\varepsilon \leq \frac{1}{T}\left(\frac{4\lVert H'(1)\rVert}{g(1)^2} + \int_0^1 \frac{40\lVert H'(s)\rVert^2}{g(s)^3}\,ds + \int_0^1\frac{4\lVert H''(s)\rVert}{g(s)^2}\,ds\right).
+\end{equation}
+Setting the right side equal to $\varepsilon$ and solving for $T$ gives~\eqref{eq:constant-rate-formula}.
+\end{proof}
+
+For the adiabatic Hamiltonian $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + sH_z$, the derivative $H'(s) = \ket{\psi_0}\bra{\psi_0} + H_z$ is constant with $\lVert H'\rVert = O(1)$, and $H''(s) = 0$. The dominant term in~\eqref{eq:constant-rate-formula} is $\int_0^1 g(s)^{-3}\,ds$. From the gap profile of \autoref{thm:complete-profile}, the crossing window contributes
+\begin{equation}
+\label{eq:constant-rate-window}
+\int_{s^*-\delta_s}^{s^*+\delta_s} g(s)^{-3}\,ds \geq \frac{2\delta_s}{g_{\min}^3} = \frac{2A_2}{A_1(A_1+1)}\cdot g_{\min}^{-2},
+\end{equation}
+using $\delta_s = A_2 g_{\min}/(A_1(A_1+1))$ from Eq.~\eqref{eq:gmin-deltas-relation}. This gives $T_{\mathrm{constant}} = O(\delta_s/(\varepsilon\, g_{\min}^3))$.
+
+For the running example ($M = 2$, $g_{\min} = 1/\sqrt{N}$), the exact gap $g(s) = \sqrt{(2s-1)^2 + 4s(1-s)/N}$ (Eq.~\eqref{eq:grover-gap}) satisfies $\int_0^1 g(s)^{-3}\,ds = O(N)$ since the integral is dominated by the $O(1/\sqrt{N})$ window where $g \approx 1/\sqrt{N}$. Therefore $T_{\mathrm{constant}} = O(N/\varepsilon)$, matching the classical search complexity. A constant-rate adiabatic schedule provides no quantum speedup. The algorithm wastes time far from the crossing, where the gap is $O(1)$ and fast evolution would suffice, while still moving too quickly near $s^*$ to maintain ground-state fidelity.
+
+
+\section{The Adaptive Schedule}
+\label{sec:adaptive-schedule}
+
+The constant schedule's failure stems from treating all values of $s$ equally. The error bound~\eqref{eq:error-bound} indicates a remedy: make $K'(s)$ large where $g(s)$ is large (slow evolution, low error contribution per unit of $s$) and small where $g(s)$ is small (fast physical evolution, but over a narrow interval of $s$). The natural ansatz is $K'(s)$ proportional to $1/g(s)^p$ for some parameter $p \geq 1$: the schedule slows by a factor of $g^{-p}$ near the gap minimum. The total runtime becomes $T \propto \int_0^1 g(s)^{-p}\,ds$, and the error terms involve $\int g^{q-3}\,ds$ for various $q$ depending on $p$.
+
+The parameter $p$ controls the trade-off between error reduction and runtime. Larger $p$ slows the schedule more aggressively near the crossing, reducing the error but increasing $T$ since more time is spent in the window. The optimal $p$ depends on the gap profile. For profiles where the gap decreases linearly to a minimum --- exactly the structure established by \autoref{thm:complete-profile} --- any $p \in (1, 2)$ balances the integrals. The specific choice affects only the constants, not the asymptotic scaling.
+
+The adaptive rate theorem, extending the eigenpath traversal framework of \cite{cunningham2024eigenpath} to the continuous-time setting, formalizes this trade-off.
+
+\begin{theorem}[Adaptive rate {\cite{braida2024unstructured}}]
+\label{thm:adaptive-rate}
+Let $H(s)$ satisfy the conditions of \autoref{lem:error-bound}, and let $g_0: [0,1] \to \mathbb{R}^+$ be an absolutely continuous function satisfying $g_0(s) \leq g(s)$ for all $s$. Suppose there exist $1 < p < 2$ and constants $B_1, B_2 \geq 1$ such that
+\begin{equation}
+\label{eq:B1-condition}
+\int_0^1 \frac{ds}{g_0(s)^p} \leq B_1\, g_{\min}^{1-p} \qquad \text{and} \qquad \int_0^1 \frac{ds}{g_0(s)^{3-p}} \leq B_2\, g_{\min}^{p-2}.
+\end{equation}
+Define
+\begin{equation}
+\label{eq:c-constant}
+c = \sup_{s \in [0,1]}\left(4\lVert H'(s)\rVert + 40\lVert H'(s)\rVert^2 B_2 + 4\lVert H''(s)\rVert + 6p\,|g_0'(s)|\,\lVert H'(s)\rVert\, B_2\right).
+\end{equation}
+Then the schedule
+\begin{equation}
+\label{eq:adaptive-schedule}
+K'(s) = \frac{1}{\varepsilon}\cdot\frac{c}{g_0(s)^p \cdot g_{\min}^{2-p}}
+\end{equation}
+achieves error at most $\varepsilon$, with total runtime
+\begin{equation}
+\label{eq:adaptive-runtime}
+T = \int_0^1 K'(s)\,ds \leq \frac{c\, B_1}{\varepsilon\, g_{\min}}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $\varepsilon_0$ denote the actual error. Substituting~\eqref{eq:adaptive-schedule} into the error bound~\eqref{eq:error-bound}: $(K')^{-1} = \varepsilon\, g_0^p\, g_{\min}^{2-p}/c$, and $|((K')^{-1})'| = (\varepsilon\, g_{\min}^{2-p}/c)\cdot p\, g_0^{p-1}\,|g_0'|$. The three terms become
+\begin{equation}
+\label{eq:adaptive-error-expanded}
+\varepsilon_0 \leq \frac{\varepsilon}{c}\, g_{\min}^{2-p}\left(g_0(1)^p\left\lVert\left[P'(1), (H(1)-\lambda_0(1))^+\right]\right\rVert + \int_0^1 g_0^p\left\lVert\left[P', (H-\lambda_0)^+\right]'\right\rVert ds + \int_0^1 p\, g_0^{p-1}|g_0'|\left\lVert\left[P', (H-\lambda_0)^+\right]\right\rVert ds\right).
+\end{equation}
+
+\textbf{Boundary term.} Using bound~\eqref{eq:commutator-bound} with $g_0 \leq g$:
+\begin{equation}
+g_{\min}^{2-p}\, g_0(1)^p \cdot \frac{4\lVert H'(1)\rVert}{g(1)^2} \leq 4\lVert H'(1)\rVert\, g_{\min}^{2-p}\, g_0(1)^{p-2} \leq 4\lVert H'\rVert,
+\end{equation}
+since $g_0 \geq g_{\min}$ and $p \leq 2$ imply $g_0^{p-2} \leq g_{\min}^{p-2}$.
+
+\textbf{Commutator derivative integral.} Using bound~\eqref{eq:commutator-deriv-bound} and splitting:
+\begin{align}
+g_{\min}^{2-p}\int_0^1 g_0^p \cdot \frac{40\lVert H'\rVert^2}{g^3}\,ds &\leq 40\lVert H'\rVert^2\, g_{\min}^{2-p}\int_0^1 \frac{ds}{g_0^{3-p}} \leq 40\lVert H'\rVert^2 B_2, \label{eq:proof-term-H-prime}
+\end{align}
+where $g_0^p/g^3 \leq g_0^p/g_0^3 = 1/g_0^{3-p}$ since $g_0 \leq g$, and the $B_2$ condition~\eqref{eq:B1-condition} absorbs $g_{\min}^{2-p}\cdot g_{\min}^{p-2} = 1$. Similarly, the $H''$ sub-term contributes
+\begin{equation}
+g_{\min}^{2-p}\int_0^1 g_0^p \cdot \frac{4\lVert H''\rVert}{g^2}\,ds \leq 4\lVert H''\rVert\, g_{\min}^{2-p}\int_0^1 \frac{ds}{g_0^{2-p}} \leq 4\lVert H''\rVert, \label{eq:proof-term-H-double-prime}
+\end{equation}
+since $\int g_0^{p-2}\,ds \leq g_{\min}^{p-2}$ (the integrand is at most $g_{\min}^{p-2}$).
+
+\textbf{Schedule variation integral.} Using bound~\eqref{eq:commutator-bound}:
+\begin{align}
+g_{\min}^{2-p}\int_0^1 p\, g_0^{p-1}|g_0'| \cdot \frac{4\lVert H'\rVert}{g^2}\,ds &\leq 4p\,\lVert H'\rVert\, g_{\min}^{2-p}\int_0^1 \frac{g_0^{p-1}\,|g_0'|}{g_0^2}\,ds \nonumber \\
+&= 4p\,\lVert H'\rVert\, g_{\min}^{2-p}\int_0^1 g_0^{p-3}\,|g_0'|\,ds. \label{eq:proof-schedule-variation}
+\end{align}
+For piecewise linear $g_0$, the derivative $|g_0'|$ is constant on each piece, so $\int g_0^{p-3}|g_0'|\,ds \leq \sup|g_0'|\cdot \int g_0^{p-3}\,ds \leq \sup|g_0'|\cdot B_2\, g_{\min}^{p-2}$. The resulting bound is $4p\,\sup|g_0'|\,\lVert H'\rVert\, B_2$. The constant $c$ in~\eqref{eq:c-constant} uses the factor $6p$ rather than $4p$, following the paper's convention \cite{braida2024unstructured}; this is a valid overestimate that simplifies the expression without affecting the asymptotic result.
+
+\textbf{Collecting.} Summing all contributions:
+\begin{equation}
+\varepsilon_0 \leq \frac{\varepsilon}{c}\left(4\lVert H'\rVert + 40\lVert H'\rVert^2 B_2 + 4\lVert H''\rVert + 6p\,|g_0'|\,\lVert H'\rVert\, B_2\right) \leq \frac{\varepsilon}{c}\cdot c = \varepsilon.
+\end{equation}
+
+\textbf{Runtime.} The total evolution time is
+\begin{equation}
+T = \int_0^1 K'\,ds = \frac{c}{\varepsilon}\, g_{\min}^{p-2}\int_0^1 \frac{ds}{g_0^p} \leq \frac{c}{\varepsilon}\, g_{\min}^{p-2}\cdot B_1\, g_{\min}^{1-p} = \frac{c\, B_1}{\varepsilon\, g_{\min}}. \qedhere
+\end{equation}
+\end{proof}
+
+The error has three contributions: a boundary term that depends on $g_0(1)$ and is $O(1)$; an integral that pairs $g_0^p$ from the schedule with $g^{-3}$ from the derivative bounds, producing $\int g_0^{p-3}\,ds$; and a schedule variation term from the non-constant $K'$. The parameter $p$ balances the two integrals: $B_1$ bounds $\int g_0^{-p}\,ds$ (the runtime cost), while $B_2$ bounds $\int g_0^{p-3}\,ds$ (the error cost). Their product with $g_{\min}^{-1}$ gives the final runtime.
+
+\begin{corollary}
+\label{cor:ideal-case}
+If $\int_0^1 g(s)^{-p}\,ds = O(g_{\min}^{1-p})$ for all $p > 1$, and $\lVert H'\rVert$, $\lVert H''\rVert$, $|\lambda_0'|$, $|g'|$ are all $O(1)$, then $T = O(1/(\varepsilon\, g_{\min}))$.
+\end{corollary}
+
+The runtime scales inversely with the minimum gap, which is optimal for quantum search \cite{farhi2008fail}. The running example satisfies these conditions.
+
+\begin{lemma}[Grover gap integral]
+\label{lem:grover-integral}
+For the exact gap $g(s) = \sqrt{(2s-1)^2 + 4s(1-s)/N}$ of the running example ($M = 2$, $d_0 = 1$, $d_1 = N-1$),
+\begin{equation}
+\label{eq:grover-integral-bound}
+\int_0^1 g(s)^{-p}\,ds = O\left(N^{(p-1)/2}\right) = O\left(g_{\min}^{1-p}\right) \qquad \text{for all } p > 1.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The gap is symmetric about $s = 1/2$ and achieves its minimum $g_{\min} = 1/\sqrt{N}$ there. Split the integral at $1/2 - 1/\sqrt{N}$. In the window $[1/2 - 1/\sqrt{N},\, 1/2]$, bound $g \geq g_{\min}$:
+\begin{equation}
+\int_{1/2-1/\sqrt{N}}^{1/2} g^{-p}\,ds \leq \frac{1}{\sqrt{N}}\cdot N^{p/2} = N^{(p-1)/2}.
+\end{equation}
+Outside the window, $g(s) \geq c|s - 1/2|$ for a constant $c > 0$ (the gap grows linearly away from the minimum). The change of variable $u = g(s)$, with $|ds/du| = O(1)$ since $|g'(s)| \leq 2$, gives
+\begin{equation}
+\int_0^{1/2-1/\sqrt{N}} g^{-p}\,ds \leq C\int_{1/\sqrt{N}}^{O(1)} u^{-p}\,du = O\left(N^{(p-1)/2}\right).
+\end{equation}
+Combining and using the symmetry about $1/2$ gives the result.
+\end{proof}
+
+The other conditions of \autoref{cor:ideal-case} are immediate: $\lVert H'\rVert = \lVert\ket{\psi_0}\bra{\psi_0} + H_z\rVert \leq 2$, $H'' = 0$, $|\lambda_0'| \leq \lVert H'\rVert \leq 2$ by the Hellmann-Feynman theorem, and $|g'(s)| \leq 2$ (from $|g'| = |4(1-1/N)(1/2 - s)/g| \leq 2$, since the numerator is at most $2g$). Therefore $T = O(\sqrt{N}/\varepsilon)$ for the running example with an adaptive schedule, compared to $T = O(N/\varepsilon)$ with a constant schedule. The adaptive schedule recovers the full Grover speedup.
+
+The schedule $K'(s) \propto 1/g(s)^p$ concentrates the evolution time near the crossing: at $s = 1/2$, where $g \approx 1/\sqrt{N}$, the schedule rate is $K' \propto N^{p/2}$, while far from $1/2$, where $g = O(1)$, it is $K' = O(1)$. The algorithm spends $O(\sqrt{N})$ physical time traversing the window and $O(1)$ time traversing the rest of $[0,1]$.
+
+
+\section{Runtime of Adiabatic Quantum Optimization}
+\label{sec:aqo-runtime}
+
+Applying \autoref{thm:adaptive-rate} to the adiabatic Hamiltonian $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + sH_z$ with the gap profile of \autoref{thm:complete-profile} requires three steps: construct a continuous lower bound $g_0(s)$ from the piecewise bounds, compute $B_1$ and $B_2$, and evaluate the constant $c$.
+
+The piecewise bounds of \autoref{thm:complete-profile} are valid in their respective regions but are not continuous at the boundaries $s^* - \delta_s$ and $s^*$: the left bound exceeds the window bound at $s^* - \delta_s$, and the right bound is smaller than $g_{\min}$ at $s^*$. The adaptive rate theorem requires $g_0$ to be absolutely continuous on $[0,1]$. Shrinking the left and window bounds by a constant factor $b$ makes all three pieces meet continuously at the boundaries.
+
+Define
+\begin{equation}
+\label{eq:g0-def}
+g_0(s) = \begin{cases}
+b\,\dfrac{A_1(A_1+1)}{A_2}\left(s^* - s\right), & s \in [0,\, s^* - \delta_s), \\[8pt]
+b\, g_{\min}, & s \in [s^* - \delta_s,\, s^*), \\[8pt]
+\dfrac{\Delta}{30}\cdot\dfrac{s - s_0}{1 - s_0}, & s \in [s^*,\, 1],
+\end{cases}
+\end{equation}
+where $s_0$ is given by Eq.~\eqref{eq:s0-definition} and the shrinking factor is
+\begin{equation}
+\label{eq:b-def}
+b = k\cdot\frac{2}{1 + f(s^*)} = \frac{1}{4}\cdot\frac{2}{1 + 4} = \frac{1}{10},
+\end{equation}
+using $k = 1/4$ and $f(s^*) = 4$ from Eq.~\eqref{eq:f-at-sstar}.
+
+Each piece of $g_0$ lies below the corresponding gap bound from \autoref{thm:complete-profile}: the left and window pieces are shrunk by $b = 1/10$, and the right piece equals the original bound. The function $g_0$ is continuous at both boundaries. At $s = s^* - \delta_s$, the left piece gives $b \cdot A_1(A_1+1)\delta_s/A_2$. Using $\delta_s = A_2 g_{\min}/(A_1(A_1+1))$ from Eq.~\eqref{eq:gmin-deltas-relation}, this equals $b\, g_{\min} = g_{\min}/10$, matching the window piece. At $s = s^*$, the window piece gives $b\, g_{\min} = g_{\min}/10$, and the right piece gives $(\Delta/30)(s^* - s_0)/(1-s_0)$. Using $s^* - s_0 = k\, g_{\min}(1-s^*)/(a - k\, g_{\min})$ and $1 - s_0 = (1-s^*)\cdot a/(a - k\, g_{\min})$ from Eq.~\eqref{eq:s0-definition}:
+\begin{equation}
+\frac{\Delta}{30}\cdot\frac{s^*-s_0}{1-s_0} = \frac{\Delta}{30}\cdot\frac{k\, g_{\min}}{a} = \frac{\Delta}{30}\cdot\frac{g_{\min}/4}{\Delta/12} = \frac{g_{\min}}{10},
+\end{equation}
+again matching the window piece. The parameters $b$, $k$, and $a$ are coupled precisely so that $g_0$ is continuous: the shrinking factor $b = 1/10$ absorbs both the ratio $k = 1/4$ from the right-side resolvent bound and the value $f(s^*) = 4$ from the monotonicity analysis of Chapter 6.
+
+The integral $\int_0^1 g_0^{-p}\,ds$ splits across the three regions. In the left region, $g_0(s) = b\, A_1(A_1+1)(s^*-s)/A_2$, so
+\begin{align}
+\int_0^{s^*-\delta_s} g_0^{-p}\,ds &= \left(\frac{A_2}{b\, A_1(A_1+1)}\right)^{\!p}\int_{\delta_s}^{s^*}\frac{du}{u^p} = \frac{1}{b^p}\left(\frac{A_2}{A_1(A_1+1)}\right)^{\!p}\cdot\frac{1}{(p-1)\,\delta_s^{p-1}} \nonumber \\
+&= \frac{1}{b^p(p-1)}\cdot\frac{A_2}{A_1(A_1+1)}\cdot g_{\min}^{1-p}, \label{eq:B1-left}
+\end{align}
+where the last step uses $\delta_s^{p-1} = (A_2 g_{\min}/(A_1(A_1+1)))^{p-1}$. In the window, $g_0 = b\, g_{\min}$ is constant:
+\begin{equation}
+\label{eq:B1-window}
+\int_{s^*-\delta_s}^{s^*} g_0^{-p}\,ds = \frac{\delta_s}{b^p\, g_{\min}^p} = \frac{1}{b^p}\cdot\frac{A_2}{A_1(A_1+1)}\cdot g_{\min}^{1-p}.
+\end{equation}
+Combining the left and window contributions with $b^{-p} = 10^p$: $(1/(p-1) + 1)/b^p = p \cdot 10^p/(p-1)$, giving $(p/(p-1))\cdot 10^p \cdot A_2/(A_1(A_1+1))\cdot g_{\min}^{1-p}$.
+
+In the right region, $g_0(s) = (\Delta/30)(s-s_0)/(1-s_0)$, so
+\begin{align}
+\int_{s^*}^1 g_0^{-p}\,ds &= \left(\frac{30(1-s_0)}{\Delta}\right)^{\!p}\int_{s^*-s_0}^{1-s_0}\frac{du}{u^p} = \left(\frac{30(1-s_0)}{\Delta}\right)^{\!p}\cdot\frac{1}{(p-1)(s^*-s_0)^{p-1}} \nonumber \\
+&= \frac{1}{p-1}\left(\frac{30}{\Delta}\right)^{\!p}\left(\frac{a}{k}\right)^{\!p-1}(1-s_0)\cdot g_{\min}^{1-p}, \label{eq:B1-right}
+\end{align}
+using $s^*-s_0 = k\, g_{\min}(1-s^*)/(a - k\, g_{\min})$ and $1 - s_0 = a(1-s^*)/(a-k\, g_{\min})$. With $a = (4/3)k^2\Delta$ and $k = 1/4$: $a/k = \Delta/3$, so $(30/\Delta)^p(\Delta/3)^{p-1} = 30^p/(3\Delta)$, and $(1-s_0) \leq 1/(1+A_1)$. The right contribution is $3\cdot 10^p/((p-1)\Delta(1+A_1))\cdot g_{\min}^{1-p}$.
+
+Since $\Delta A_2 \leq A_1$ (from $A_2 \leq A_1/\Delta$, which follows because $A_2 = (1/N)\sum d_k/(E_k-E_0)^2 \leq (1/\Delta)\cdot(1/N)\sum d_k/(E_k-E_0) = A_1/\Delta$), the left-plus-window term $A_2/(A_1(1+A_1)) \leq 1/(\Delta(1+A_1))$. Combining all three:
+\begin{equation}
+\label{eq:B1-result}
+\int_0^1 g_0^{-p}\,ds \leq \frac{(p+3)\cdot 10^p}{(p-1)(1+A_1)\Delta}\cdot g_{\min}^{1-p}, \qquad \text{so} \quad B_1 = O\!\left(\frac{1}{\Delta(1+A_1)}\right).
+\end{equation}
+
+The integral $\int_0^1 g_0^{p-3}\,ds$ has the same three-region structure, with the exponent $p$ replaced by $3-p$. Since $3-p \in (1,2)$, the integrals converge and evaluate by the same substitutions, giving
+\begin{equation}
+\label{eq:B2-result}
+B_2 = O\!\left(\frac{1}{\Delta(1+A_1)}\right).
+\end{equation}
+
+For the adiabatic Hamiltonian $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + sH_z$:
+\begin{equation}
+\lVert H'(s)\rVert = O(1), \qquad \lVert H''(s)\rVert = 0, \qquad |\lambda_0'(s)| = O(1),
+\end{equation}
+since $H'(s) = \ket{\psi_0}\bra{\psi_0} + H_z$ is constant and $\lambda_0'(s) = \bra{\phi_0(s)}H'(s)\ket{\phi_0(s)}$ is bounded by $\lVert H'\rVert$ via the Hellmann-Feynman theorem. The derivative $|g_0'(s)|$ is bounded on each piece: on the left, $|g_0'| = b\, A_1(A_1+1)/A_2$; in the window, $g_0' = 0$; on the right, $|g_0'| = \Delta/(30(1-s_0))$. For piecewise linear $g_0$, the product $|g_0'|\cdot B_2$ remains bounded because the integral $\int g_0^{p-3}|g_0'|\,ds = \int g_0^{p-3}\,dg_0 = O(g_{\min}^{p-2})$ by change of variable, independently of the slopes. Therefore
+\begin{equation}
+\label{eq:c-result}
+c = O(B_2).
+\end{equation}
+
+\begin{theorem}[Runtime of AQO --- Main Result 1 {\cite{braida2024unstructured}}]
+\label{thm:aqo-runtime}
+Let $H_z$ satisfy the spectral condition (Definition~\ref{def:spectral-condition}). For any $\varepsilon > 0$, the adaptive schedule~\eqref{eq:adaptive-schedule} with the gap lower bound~\eqref{eq:g0-def} prepares the ground state of $H_z$ with fidelity at least $1 - \varepsilon$ in time
+\begin{equation}
+\label{eq:main-runtime}
+T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{\sqrt{A_2}}{\Delta^2\, A_1(A_1+1)}\cdot\sqrt{\frac{N}{d_0}}\right).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+By \autoref{thm:adaptive-rate}, $T \leq c\, B_1/(\varepsilon\, g_{\min})$. Substituting $c = O(B_2)$, $B_1 = O(1/(\Delta(1+A_1)))$, $B_2 = O(1/(\Delta(1+A_1)))$, and $g_{\min} = (2A_1/(A_1+1))\sqrt{d_0/(NA_2)}$ from Eq.~\eqref{eq:gmin-formula}:
+\begin{equation}
+T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{B_1 B_2}{g_{\min}}\right) = O\!\left(\frac{1}{\varepsilon}\cdot\frac{1}{\Delta^2(1+A_1)^2}\cdot\frac{A_1+1}{2A_1}\sqrt{\frac{NA_2}{d_0}}\right) = O\!\left(\frac{1}{\varepsilon}\cdot\frac{\sqrt{A_2}}{\Delta^2\, A_1(A_1+1)}\cdot\sqrt{\frac{N}{d_0}}\right). \qedhere
+\end{equation}
+\end{proof}
+
+The runtime~\eqref{eq:main-runtime} decomposes into five factors. The dependence $1/\varepsilon$ is linear in the target precision: the adaptive schedule converts time directly into fidelity, unlike the standard adiabatic theorem where $T$ scales as $1/\varepsilon$ times a higher polynomial in $1/g_{\min}$. The factor $\sqrt{A_2}$ reflects the spectral spread: larger $A_2 = (1/N)\sum d_k/(E_k-E_0)^2$ means eigenvalues close to $E_0$ carry substantial degeneracy, sharpening the gap minimum and narrowing the crossing window. The denominator $A_1(A_1+1)$ captures the crossing position: larger $A_1$ pushes $s^*$ closer to $1$, steepening the gap's left arm and allowing faster traversal. The factor $1/\Delta^2$ is the price of the right-side bound --- a larger spectral gap $\Delta$ in $H_z$ means the gap reopens faster after the crossing, and the quadratic dependence arises because both $B_1$ and $B_2$ contribute a factor of $1/\Delta$. The dominant factor $\sqrt{N/d_0}$ is the quantum speedup: $\sqrt{N} = \sqrt{2^n}$ is exponential in $n$, and more solutions (larger $d_0$) reduce the runtime.
+
+For the Ising Hamiltonian $H_\sigma$ (Eq.~\eqref{eq:Ising-Ham}) with $A_1, A_2 = O(\mathrm{poly}(n))$ and $\Delta \geq 1/\mathrm{poly}(n)$: $T = \widetilde{O}(\sqrt{N/d_0})$, matching the lower bound of \cite{farhi2008fail} up to polylogarithmic factors. When $d_0 = O(1)$ (constant number of solutions), the adiabatic algorithm achieves the Grover speedup $\sqrt{N}$.
+
+For the running example ($M = 2$, $A_1 = (N-1)/N \approx 1$, $A_2 = (N-1)/N \approx 1$, $\Delta = 1$, $d_0 = 1$):
+\begin{equation}
+T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{1}{1 \cdot 2}\cdot\sqrt{N}\right) = O\!\left(\frac{\sqrt{N}}{\varepsilon}\right),
+\end{equation}
+matching the circuit-based Grover algorithm. The adaptive adiabatic approach achieves the same quadratic speedup through a smooth interpolation between two Hamiltonians, without requiring oracle queries or amplitude amplification.
+
+The result comes with a caveat. The schedule~\eqref{eq:adaptive-schedule} requires knowing $g_0(s)$, which requires knowing $s^*$, $\delta_s$, and $g_{\min}$. All three depend on the spectral parameter $A_1$. In the crossing window $[s^* - \delta_s, s^*)$, the schedule is constant: $K' = c/(\varepsilon\, b^p\, g_{\min}^2)$. This rate does not depend on $A_1$ beyond $g_{\min}$. But the window's location is $[s^* - \delta_s, s^*)$, and $s^* = A_1/(A_1+1)$ must be known to accuracy $O(\delta_s) = O(2^{-n/2})$ to ensure the slow phase occurs at the right place. Outside the window, the schedule depends linearly on the distance from $s^*$, so a small error in $s^*$ introduces a proportionally small error in $K'$, absorbed by the polynomial factors. But the window itself is exponentially narrow in $n$: placing it incorrectly causes the algorithm to evolve rapidly through the crossing, destroying the ground-state fidelity.
+
+The parameters $A_2$ and $d_0$ need not be known precisely. Replacing $A_2$ with the constant lower bound $1$ (valid for all Hamiltonians with at least two energy levels) and setting $d_0 = 1$ (the worst case) introduces at most a $\mathrm{poly}(n)$ slowdown in the runtime, since these parameters enter only through the ratio $\sqrt{A_2/d_0}$ and the bound $B_1$. The critical parameter is $A_1$: it must be computed to additive accuracy $O(\delta_s) = O(2^{-n/2})$ before the evolution begins. How hard is this computation? The precision needed is exponential in $n$, while the problem Hamiltonian $H_z$ is specified by $\mathrm{poly}(n)$ bits. Chapter 8 answers this question: approximating $A_1$ to additive accuracy $1/\mathrm{poly}(n)$ --- far less precision than needed --- is already NP-hard, and computing $A_1$ exactly is $\#$P-hard.

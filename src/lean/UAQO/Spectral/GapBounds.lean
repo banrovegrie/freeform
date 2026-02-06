@@ -358,7 +358,8 @@ theorem firstExcited_lower_bound {n M : Nat} (es : EigenStructure n M)
       ∃ (E0 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧ E0 < E1 :=
   UAQO.Proofs.Spectral.GapBounds.firstExcited_lower_bound_proof es hM s hs
 
-/-- Axiom: Gap bound to the left of avoided crossing.
+/-- Gap bound to the left of avoided crossing:
+    g(s) ≥ (A_1/A_2) * (s* - s)/(1 - s*)
 
     PAPER REFERENCE: Equation 317 / Section 2.2
 
@@ -373,29 +374,19 @@ theorem firstExcited_lower_bound {n M : Nat} (es : EigenStructure n M)
 
     Derived using the variational principle with trial state
     |phi> = (1/sqrt(A_2 N)) * sum_{k>=1} sqrt(d_k)/(E_k - E_0) |k> -/
-axiom gap_bound_left_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (_hs : leftRegion es hM s) :
-    ∃ (gap : Real), gap > 0 ∧
-    gap >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
-            A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
-           (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
-           (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-
-/-- Gap bound to the left of avoided crossing:
-    g(s) ≥ (A_1/A_2) * (s* - s)/(1 - s*)
-    This is derived using the variational principle. -/
 theorem gap_bound_left {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (hs : leftRegion es hM s) :
+    (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
+    (hcond : spectralConditionForBounds es hM) :
     ∃ (gap : Real), gap > 0 ∧
     gap >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
             A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
            (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
            (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) :=
-  gap_bound_left_axiom es hM s hs
+  UAQO.Proofs.Spectral.GapBounds.gap_bound_left_proof es hM s hs hcond
 
 /-! ## Gap bounds at the avoided crossing -/
 
-/-- Axiom: The spectral gap at the avoided crossing is approximately g_min.
+/-- The spectral gap at the avoided crossing is approximately g_min.
 
     PAPER REFERENCE: Proposition 1, Equation 311 / Section 2.2
 
@@ -409,25 +400,16 @@ theorem gap_bound_left {n M : Nat} (es : EigenStructure n M)
     where kappa' = (1+2c)/(1-2c) * sqrt(1+(1-2c)^2) for spectral condition param c.
 
     The constants 1/2 and 2 used here are conservative bounds valid when c < 0.1.
-    For c = 0.02 (our spectral condition), kappa' approx 1.08.
 
     The proof uses careful analysis of the eigenvalue equation
     near the avoided crossing, showing the gap is quadratic in |s - s*|. -/
-axiom gap_at_avoided_crossing_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (_hs : avoidedCrossingRegion es hM s)
-    (_hspec : spectralCondition es hM 0.02 (by norm_num)) :
-    ∃ (gap : Real), gap > 0 ∧
-    gap >= minimumGap es hM / 2 ∧
-    gap <= 2 * minimumGap es hM
-
-/-- The spectral gap at the avoided crossing is approximately g_min -/
 theorem gap_at_avoided_crossing {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : avoidedCrossingRegion es hM s)
-    (hspec : spectralCondition es hM 0.02 (by norm_num)) :
+    (hcond : spectralConditionForBounds es hM) :
     ∃ (gap : Real), gap > 0 ∧
     gap >= minimumGap es hM / 2 ∧
     gap <= 2 * minimumGap es hM :=
-  gap_at_avoided_crossing_axiom es hM s hs hspec
+  UAQO.Proofs.Spectral.GapBounds.gap_at_avoided_crossing_proof es hM s hs hcond
 
 /-! ## Gap bounds to the RIGHT of avoided crossing (Resolvent method) -/
 
@@ -586,29 +568,13 @@ theorem shermanMorrison_resolvent {n : Nat} (A : NQubitOperator n)
   simp only [RHS, R, α] at hresult
   exact hresult
 
-/-- Axiom: Gap bound to the right of avoided crossing.
-
-    In the right region s > s* + δ, the gap satisfies:
+/-- Gap bound to the right of avoided crossing:
     g(s) ≥ (Δ/30) * (s - s₀)/(1 - s₀)
 
     This bound is derived using the resolvent method (Section 2.2 of paper). -/
-axiom gap_bound_right_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (_hs : rightRegion es hM s)
-    (_hspec : spectralCondition es hM 0.02 (by norm_num)) :
-    let Delta := spectralGapDiag es hM
-    let k : Real := 1/4
-    let a := 4 * k^2 * Delta / 3
-    let gmin := minimumGap es hM
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
-    ∃ (gap : Real), gap > 0 ∧
-    gap >= (Delta / 30) * (s - s0) / (1 - s0)
-
-/-- Gap bound to the right of avoided crossing:
-    g(s) ≥ (Δ/30) * (s - s₀)/(1 - s₀) -/
 theorem gap_bound_right {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
-    (hspec : spectralCondition es hM 0.02 (by norm_num)) :
+    (hcond : spectralConditionForBounds es hM) :
     let Delta := spectralGapDiag es hM
     let k : Real := 1/4
     let a := 4 * k^2 * Delta / 3
@@ -617,11 +583,11 @@ theorem gap_bound_right {n M : Nat} (es : EigenStructure n M)
     let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
     ∃ (gap : Real), gap > 0 ∧
     gap >= (Delta / 30) * (s - s0) / (1 - s0) :=
-  gap_bound_right_axiom es hM s hs hspec
+  UAQO.Proofs.Spectral.GapBounds.gap_bound_right_proof es hM s hs hcond
 
 /-! ## Combined gap bound for all s -/
 
-/-- Axiom: Main gap bound theorem combining all three regions.
+/-- Main gap bound theorem: combining all three regions.
 
     For all s ∈ [0,1], the spectral gap of H(s) is bounded below by g_min/4.
     This follows from the three regional bounds:
@@ -630,45 +596,27 @@ theorem gap_bound_right {n M : Nat} (es : EigenStructure n M)
     - Right region: g(s) >= (Δ/30)(s - s₀)/(1 - s₀) >= O(g_min)
 
     The constant 1/4 is a conservative lower bound that holds in all regions. -/
-axiom gap_bound_all_s_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (_hs : 0 <= s ∧ s <= 1)
-    (_hspec : spectralCondition es hM 0.02 (by norm_num)) :
-    ∃ (gap : Real), gap > 0 ∧
-    gap >= minimumGap es hM / 4
-
-/-- Main gap bound theorem: combining all three regions -/
 theorem gap_bound_all_s {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
-    (hspec : spectralCondition es hM 0.02 (by norm_num)) :
+    (hcond : spectralConditionForBounds es hM) :
     ∃ (gap : Real), gap > 0 ∧
     gap >= minimumGap es hM / 4 :=
-  gap_bound_all_s_axiom es hM s hs hspec
+  UAQO.Proofs.Spectral.GapBounds.gap_bound_all_s_proof es hM s hs hcond
 
-/-- Axiom: The spectral gap achieves its minimum near the avoided crossing.
+/-- The gap achieves its minimum near the avoided crossing.
 
     At s = s*, the gap equals g_min (up to constants). For all other s ∈ [0,1],
     the gap is at least as large. This is the key structural result that enables
     the running time analysis. -/
-axiom gap_minimum_at_crossing_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num)) :
-    ∃ (sMin : Real), 0 < sMin ∧ sMin < 1 ∧
-    avoidedCrossingRegion es hM sMin ∧
-    ∃ (gapAtMin : Real), gapAtMin > 0 ∧
-      gapAtMin >= minimumGap es hM / 2 ∧
-      gapAtMin <= 2 * minimumGap es hM ∧
-      ∀ s, (0 <= s ∧ s <= 1) ->
-        ∃ (gapS : Real), gapS >= gapAtMin
-
-/-- The gap achieves its minimum near the avoided crossing -/
 theorem gap_minimum_at_crossing {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num)) :
+    (hM : M >= 2) (hcond : spectralConditionForBounds es hM) :
     ∃ (sMin : Real), 0 < sMin ∧ sMin < 1 ∧
     avoidedCrossingRegion es hM sMin ∧
     ∃ (gapAtMin : Real), gapAtMin > 0 ∧
       gapAtMin >= minimumGap es hM / 2 ∧
       gapAtMin <= 2 * minimumGap es hM ∧
-      ∀ s, (0 <= s ∧ s <= 1) ->
+      ∀ (s : Real), (0 <= s ∧ s <= 1) ->
         ∃ (gapS : Real), gapS >= gapAtMin :=
-  gap_minimum_at_crossing_axiom es hM hspec
+  UAQO.Proofs.Spectral.GapBounds.gap_minimum_at_crossing_proof es hM hcond
 
 end UAQO

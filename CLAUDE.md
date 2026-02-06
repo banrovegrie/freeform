@@ -62,6 +62,7 @@ All important content lives in `src/`.
 ### Writing
 
 - Simple and coherent enough to understand (as simple as possible but not simpler for non-triviality or orthogonality has its place) yet rigorous enough to be able to experiment with the ideas.
+- The thesis must exceed the paper in exposition depth, motivation and accessibility. Every concept the paper introduces tersely should get a fuller treatment: why it's needed, what it controls, how it connects to what came before.
 - Make sure that we have consistent formatting and notation.
 - Avoid bullet points.
 - Not a lot of subsections. Chapters and sections best.

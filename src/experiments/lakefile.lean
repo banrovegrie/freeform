@@ -30,3 +30,7 @@ lean_lib MeasureCondition where
 lean_lib PartialInformation where
   srcDir := "07_partial_information/lean"
   globs := #[.one `PartialInformation, .submodules `PartialInformation]
+
+lean_lib InformationTheoretic where
+  srcDir := "10_information_theoretic/lean"
+  globs := #[.one `InformationTheoretic, .submodules `InformationTheoretic]

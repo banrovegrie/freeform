@@ -156,7 +156,28 @@ Making simple ideas sound complicated:
 
 This doesn't mean avoiding technical depth. The adiabatic theorem is genuinely subtle. But "$H(s)$ interpolates between $H_0$ and $H_P$" needs no elaboration.
 
-### 14. Lean Code Quality
+### 14. Insufficient Depth
+
+The thesis must exceed the paper in exposition depth, motivation and accessibility. 
+
+- Every concept the paper introduces tersely should get a fuller treatment: why it's needed, what it controls, how it connects to what came before.
+- "Every sentence must carry information" forbids filler (vague claims, hedging, meta-commentary).
+- It does not forbid elaborate explanation. A ten-line motivated derivation where the paper has two lines of algebra is good. A ten-line paragraph saying "this is important" is not.
+
+Some examples of thesis content thinner than the corresponding paper section may include:
+
+- A proof the paper gives in full but the thesis only sketches without adding intuition
+- A definition the paper motivates (or in thesis deserves motivation) but the thesis states bare
+- A formula the paper derives step-by-step but the thesis cites without unpacking
+- Non coverage of a topic or section of a paper (thesis is supposed to be a superset)
+
+**Floor test (FAIL):** Compare against `paper/v3-quantum.tex`. If the paper provides more detail on a point than the thesis does, the thesis must either (a) match or exceed that detail, or (b) explicitly defer with a forward/backward reference to where the detail lives. A thesis that is thinner than its own source paper is broken.
+
+**Quality test (FAIL):** After reading a thesis section, could a graduate student reconstruct the argument and extend it? The paper is written for experts who already know the field. The thesis is written for someone learning it. Matching the paper's coverage is not enough. The thesis must add: why each definition is needed before stating it, what each parameter controls, how each result connects to the chapter arc, and what would go wrong if a hypothesis were dropped.
+
+**Guard rail:** Depth is explanatory power per sentence, not sentence count.
+
+### 15. Lean Code Quality
 
 Proof code should embody the same standards as prose. The proof IS the explanation.
 
@@ -239,6 +260,7 @@ A thesis differs from a paper:
 - Section that serves no structural purpose
 - Fake intuition for a central concept
 - Math-adjacent imprecision about the main results
+- Insufficient depth on a central result (thesis thinner than paper)
 
 **WARN:** Local and fixable.
 - Scaffolding phrases
@@ -259,7 +281,7 @@ For long chapters (10+ pages), use multiple passes:
 **Pass 2 (sampling):** For each section:
 - First paragraph: Does it motivate the section?
 - Final paragraph: Does it connect forward?
-- Sample 2-3 paragraphs: Check failure modes 1-7, 10-13
+- Sample 2-3 paragraphs: Check failure modes 1-7, 10-14
 
 **Pass 3 (targeted):** For flagged sections:
 - Full sentence-by-sentence analysis

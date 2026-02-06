@@ -2,7 +2,7 @@
 
 ## Problem Statement
 
-The paper proves that approximating $A_1$ to inverse-polynomial precision is NP-hard (via polynomial interpolation from Paturi's lemma). At exponential precision $2^{-\text{poly}(n)}$, the problem is #P-hard. But the adiabatic algorithm needs $A_1$ at precision $\epsilon = 2^{-n/2}$, which falls in a gap between these two regimes.
+The paper proves two hardness results for approximating $A_1$. At inverse-polynomial precision ($\epsilon < 1/\mathrm{poly}(n)$), the problem is NP-hard via a local Hamiltonian reduction (Theorem 2). At exponential precision ($\epsilon = O(2^{-\mathrm{poly}(n)})$), the problem is #P-hard via polynomial interpolation and Paturi's lemma (Theorem 3). But the adiabatic algorithm needs $A_1$ at precision $\epsilon = 2^{-n/2}$, which falls strictly between these two regimes.
 
 **Central Question**: What is the complexity of estimating $A_1$ to additive precision $2^{-n/2}$?
 
@@ -18,113 +18,102 @@ And more specifically (Section 3.2, p.962):
 The algorithmically relevant precision $2^{-n/2}$ is exactly at the boundary where:
 - The polynomial interpolation technique breaks down
 - Classical brute force ($O(2^n/d_0)$ time) is too slow by a factor of $2^{n/2}$
-- Quantum amplitude estimation might achieve $O(2^{n/2})$ time
+- Quantum amplitude estimation achieves $O(2^{n/2})$ time
 
-This places the problem at a potential classical-quantum separation.
-
-
-## Conjectures
-
-### Conjecture 1 (Quantum Amplitude Estimation)
-There exists a quantum algorithm that estimates $A_1$ to precision $2^{-n/2}$ in time $O(2^{n/2})$.
-
-**Approach**: Encode $f(x) = 1/(E_x - E_0)$ as a quantum subroutine (via QPE on $H_z$), then use quantum mean estimation to compute
-```
-A_1 = (1/N) sum_x f(x) = E_x[f(x)]
-```
-Amplitude estimation gives precision $\epsilon$ in $O(1/\epsilon)$ evaluations. With $\epsilon = 2^{-n/2}$ this is $O(2^{n/2})$.
-
-### Conjecture 2 (Classical Lower Bound)
-Any classical algorithm estimating $A_1$ to precision $2^{-n/2}$ requires $\omega(2^{n/2})$ time (assuming standard complexity assumptions).
-
-### Conjecture 3 (Intermediate Complexity)
-$A_1$ estimation at precision $2^{-n/2}$ is in BQP but not in P. The problem sits strictly between the known hardness regimes:
-```
-1/poly(n): NP-hard
-2^{-n/2}: BQP (conjectured), not in P (conjectured)
-2^{-poly(n)}: #P-hard
-```
-
-
-## Approach
-
-### Strategy 1: Analyze Barrier at 2^{-n/2}
-
-**Polynomial interpolation fails**. Paturi's lemma amplifies NP-hardness from precision $1/\text{poly}(n)$ to $2^{-O(n^2)}$ via degree-$O(n)$ polynomial interpolation. But:
-- The amplification factor is $2^{O(n^2)}$, reaching precision $2^{-O(n^2)}$
-- To reach $2^{-n/2}$ from $1/\text{poly}$ would need interpolation degree $O(\sqrt{n})$
-- Degree-$O(\sqrt{n})$ interpolation does not preserve NP-hardness (too few evaluation points)
-
-**NP-hardness reduction blocked**. A reduction from an NP-hard promise problem would require the promise gap to be $2^{-n/2}$, but the local Hamiltonian problem has promise gap $1/\text{poly}(n)$.
-
-### Strategy 2: Quantum Mean Estimation
-
-The key observation: $A_1$ is a mean value
-```
-A_1 = E_{x ~ uniform}[1 / (E_x - E_0)]
-```
-
-To estimate this quantumly:
-1. Prepare $|\psi_0\rangle = (1/\sqrt{N}) \sum_x |x\rangle$ (uniform superposition, easy)
-2. Apply QPE on $H_z$ to get eigenvalue estimates
-3. Compute $1/(E_x - E_0)$ into an ancilla register
-4. Use amplitude estimation on the ancilla
-
-The precision of QPE limits the inner computation, but with $O(\text{poly}(n))$ ancilla qubits, the precision is sufficient. The outer amplitude estimation then gives $A_1$ to precision $2^{-n/2}$ in $O(2^{n/2})$ total queries.
-
-### Strategy 3: Classical Sampling Analysis
-
-Classical approach: sample $x$ uniformly, evaluate $E_x = \langle x | H_z | x \rangle$, compute sample mean of $1/(E_x - E_0)$.
-
-By Hoeffding's inequality, precision $\epsilon$ requires $O(1/\epsilon^2)$ samples. For $\epsilon = 2^{-n/2}$, this is $O(2^n)$ samples. Each sample costs $O(\text{poly}(n))$ to evaluate. Total: $O(2^n \cdot \text{poly}(n))$.
-
-This is the brute-force bound. The question is whether classical algorithms can do better. Variance reduction helps if the variance of $1/(E_x - E_0)$ is small, but for general instances the variance can be $\Theta(1/\Delta^2)$, which does not help.
-
-
-## Technical Details
-
-### Precision Landscape
-
-| Precision | Known Complexity | Technique |
-|-----------|-----------------|-----------|
-| $1/\text{poly}(n)$ | NP-hard | Direct reduction from partition function |
-| $2^{-O(n)}$ | NP-hard | Paturi amplification (degree-$O(n)$ interpolation) |
-| $2^{-n/2}$ | **Unknown** | Falls in the gap |
-| $2^{-O(n^2)}$ | NP-hard | Paturi amplification (degree-$O(n^2)$ ... but actually $O(n)$ suffices to $2^{-O(n^2)}$) |
-| $2^{-\text{poly}(n)}$ | #P-hard | Exact counting reduction |
-
-The $2^{-n/2}$ regime is precisely where:
-- Polynomial interpolation runs out of amplification power
-- The adiabatic algorithm needs the answer
-- Quantum speedup (quadratic over classical sampling) would suffice
-
-### Why 2^{-n/2}?
-The paper's runtime is $T = O(\sqrt{N/d_0}) = O(2^{n/2}/\sqrt{d_0})$. The schedule parameterization is $s^* = A_1/(A_1 + 1)$. An error $\delta$ in $s^*$ costs $O(\delta / g_{\min}^2)$ additional runtime. Since $g_{\min} = \Theta(2^{-n/2})$, we need $\delta = O(g_{\min}^2) = O(2^{-n})$ in $s^*$, which translates to $O(2^{-n/2})$ precision in $A_1$ (via the derivative $ds^*/dA_1 = 1/(A_1+1)^2 = \Theta(1)$).
-
-### Connection to Experiment 05
-Experiment 05 showed that adaptive measurement (binary search + QPE) achieves optimal runtime without knowing $A_1$ in advance. This is an alternative to estimating $A_1$ directly. The two approaches are complementary:
-- Experiment 05: avoid computing $A_1$ entirely (adaptive)
-- This experiment: compute $A_1$ quantumly (one-shot)
-
-Both achieve $O(2^{n/2})$ total cost, but through different mechanisms.
+This places the problem at a classical-quantum separation.
 
 
 ## Results
 
-**Status**: PROPOSED
+**Status**: RESOLVED (7 theorems)
 
-No results yet. The main tasks are:
-1. Formalize the polynomial interpolation barrier at $2^{-n/2}$
-2. Verify the quantum amplitude estimation approach (Conjecture 1)
-3. Investigate whether classical lower bounds can be proved
+### Theorem 1 (Polynomial Interpolation Barrier)
+The polynomial interpolation technique of paper Section 3.2 requires precision $\epsilon = 2^{-n - O(M \log n)}$ to extract exact degeneracies. At $\epsilon = 2^{-n/2}$, the amplified error exceeds $1/2$ and rounding fails. The #P-hardness argument does not extend to precision $2^{-n/2}$.
+
+### Theorem 2 (Quantum Algorithm for $A_1$)
+There exists a quantum algorithm estimating $A_1$ to precision $\epsilon$ using $O(\sqrt{N} + 1/(\epsilon \cdot \Delta_1))$ queries. For $\epsilon = 2^{-n/2}$: $O(2^{n/2} \cdot \mathrm{poly}(n))$.
+
+### Theorem 3 (Classical Query Lower Bound)
+Any classical algorithm estimating $A_1$ to precision $\epsilon$ requires $\Omega(1/\epsilon^2)$ queries. At $\epsilon = 2^{-n/2}$: $\Omega(2^n)$.
+
+### Corollary (Quadratic Separation)
+Estimating $A_1$ to precision $2^{-n/2}$ exhibits a quadratic quantum-classical separation: $O(2^{n/2} \cdot \mathrm{poly}(n))$ quantum vs $\Omega(2^n)$ classical.
+
+### Theorem 4 (Tight Quantum Query Complexity)
+The quantum query complexity of $A_1$ estimation to precision $\epsilon$ is $\Omega(1/\epsilon)$, via reduction from approximate counting and the Heisenberg limit for quantum phase estimation. Combined with Theorem 2: the quantum query complexity at $\epsilon = 2^{-n/2}$ is $\Theta(2^{n/2})$. Both quantum and classical bounds are now tight:
+
+| Model | Complexity | Source |
+|-------|-----------|--------|
+| Quantum | $\Theta(1/\epsilon)$ | Theorems 2 and 4 |
+| Classical | $\Theta(1/\epsilon^2)$ | Theorem 3 and brute force |
+
+### Theorem 5 (Computational Complexity Under ETH)
+Under the Exponential Time Hypothesis, any classical algorithm estimating $A_1$ to precision $2^{-n/2}$ requires $2^{\Omega(n)}$ time. The quantum algorithm runs in $O(2^{n/2} \cdot \mathrm{poly}(n))$ time. This establishes a quadratic quantum speedup in the computational model (not just the query model), conditional on ETH.
+
+### Theorem 6 (Generic Polynomial Extrapolation Barrier)
+Any polynomial extrapolation scheme of degree $d$ that evaluates outside the interpolation interval has Lebesgue function $\Lambda_d(x^*) \ge 2^{d-1}$. This amplification is inherent: no rearrangement of interpolation nodes, no alternative polynomial basis, and no change of variables can circumvent it. The paper's specific construction is not uniquely vulnerable; the entire class of polynomial-interpolation-based reductions fails at $\epsilon = 2^{-n/2}$.
+
+### Theorem 7 (Structure Irrelevance)
+For every $M \ge 2$ and every gap structure, there exist diagonal Hamiltonians for which $A_1$ estimation to precision $\epsilon$ requires $\Omega(1/\epsilon)$ quantum queries and $\Omega(1/\epsilon^2)$ classical queries. The sum-of-reciprocals structure of $A_1$ provides no worst-case advantage over generic mean estimation: $M = 2$ instances (where $A_1$ reduces to approximate counting) are the hardest case.
 
 
-## Open Questions
+## Complete Complexity Landscape
 
-1. Is there a classical algorithm for $A_1$ at precision $2^{-n/2}$ faster than $O(2^n)$?
-2. Can the quantum amplitude estimation approach handle the division by $(E_x - E_0)$ when $\Delta$ is exponentially small?
-3. Is the problem complete for some natural complexity class at precision $2^{-n/2}$?
-4. Are there intermediate precisions (between $1/\text{poly}$ and $2^{-n/2}$) with sharp complexity transitions?
+**Query complexity** (tight, for $\Delta_1 = \Theta(1)$):
+
+| Model | Lower Bound | Upper Bound | Source |
+|-------|-------------|-------------|--------|
+| Quantum | $\Omega(2^{n/2})$ | $O(2^{n/2})$ | Thms 4, 2 |
+| Classical | $\Omega(2^n)$ | $O(2^n)$ | Thm 3, brute force |
+
+**Computational complexity** (under ETH):
+
+| Model | Time | Source |
+|-------|------|--------|
+| Quantum | $O(2^{n/2} \cdot \mathrm{poly}(n))$ | Thm 2 |
+| Classical | $2^{\Omega(n)}$ | Thm 5 |
+
+**Proof technique barrier**: Polynomial extrapolation requires precision $2^{-\Omega(d)}$ for degree-$d$ interpolation (Thm 6). At $d = \mathrm{poly}(n)$, the required $\epsilon = 2^{-\Omega(n)}$ is exponentially below $2^{-n/2}$.
+
+
+## Proof Techniques
+
+### Barrier Analysis (Theorems 1, 6)
+
+The paper's #P-hardness proof (Section 3.2) constructs an auxiliary Hamiltonian $H'(x)$, defines a function $f(x) = 2A_1(H'(x)) - A_1(H)$, and forms a reconstruction polynomial $P(x)$ of degree $M - 1$. Error amplification from oracle noise to degeneracy error grows as $2^{O(M \log n)}$. Theorem 6 proves this is inherent: any polynomial extrapolation outside the interpolation interval amplifies by at least $2^{d-1}$ (from the Lebesgue function lower bound for extrapolation).
+
+### Quantum Mean Estimation (Theorem 2)
+
+$A_1$ is the mean of $g(x) = 1/(E_x - E_0)$ over the uniform distribution. Rescaling to $h(x) = \Delta_1 \cdot g(x) \in [0,1]$ and applying amplitude estimation (Brassard-Hoyer-Mosca-Tapp 2002) estimates the mean to precision $\delta$ in $O(1/\delta)$ applications of a quantum oracle. Ground energy $E_0$ is found via Durr-Hoyer quantum minimum finding in $O(\sqrt{N})$ queries.
+
+### Tight Quantum Lower Bound (Theorem 4)
+
+For $M = 2$, $A_1$ estimation is equivalent to approximate counting (estimating $|S|/N$ for a hidden set $S$). The quantum lower bound $\Omega(1/\epsilon)$ follows from the Heisenberg limit for phase estimation: the Grover iterate encodes $|S|/N$ in its eigenphase, and estimating an eigenphase to precision $\delta$ requires $\Omega(1/\delta)$ applications (Giovannetti-Lloyd-Maccone 2006, quantum Cramer-Rao bound).
+
+### Classical Lower Bound (Theorem 3)
+
+Adversarial instances where $|S| = N/2$ vs $|S| = N/2 + t$ reduce $A_1$ estimation to hypothesis testing under hypergeometric sampling. Le Cam's two-point method with KL divergence gives $\Omega(1/\epsilon^2)$ queries.
+
+### ETH Computational Bound (Theorem 5)
+
+The paper's NP-hardness reduction from 3-SAT creates an $O(n)$-qubit Hamiltonian. Under ETH (3-SAT on $n$ variables requires $2^{\Omega(n)}$ time), the same lower bound applies to $A_1$ estimation. The quantum algorithm replaces oracle queries with circuit evaluations, running in $O(2^{n/2} \cdot \mathrm{poly}(n))$ time.
+
+### Structure Irrelevance (Theorem 7)
+
+Hard instances embed into any $M$-level structure by concentrating degeneracy in the first two levels. Higher levels contribute $O(\mathrm{poly}(n)/2^n) = o(2^{-n/2})$ to $A_1$, invisible at precision $2^{-n/2}$.
+
+
+## Why $2^{-n/2}$?
+
+The paper's optimal local schedule (Section 2.2) parameterizes the avoided crossing at $s^* = A_1/(A_1 + 1)$. The gap remains $\Theta(g_{\min})$ throughout an interval $[s^* - \delta_s, s^* + \delta_s]$ where $\delta_s = \frac{2}{(A_1+1)^2}\sqrt{d_0 A_2/N}$. The required precision in $A_1$ is $\delta_s \cdot (A_1+1)^2 = 2\sqrt{d_0 A_2/N}$, which depends on $d_0, A_2, N$ but not on $A_1$ itself. For the worst case $d_0 = O(1)$ and $A_2 = O(1)$: the required precision is $O(\sqrt{1/N}) = O(2^{-n/2})$.
+
+
+## Open Questions (Revised)
+
+1. Is the problem complete for some natural promise complexity class at precision $2^{-n/2}$? ($A_1$ estimation is a promise/function problem, so standard NP-completeness does not directly apply.)
+2. Are there intermediate precisions (between $1/\mathrm{poly}$ and $2^{-n/2}$) with sharp complexity transitions?
+3. Can non-interpolation proof techniques establish #P-hardness at $2^{-n/2}$? (Theorem 6 only rules out polynomial extrapolation.)
+4. For structured instances (e.g., $d_k = \Theta(N/M)$ for all $k$), can quantum algorithms do better than $\Theta(1/\epsilon)$?
 
 
 ## Connection to Other Experiments
@@ -140,19 +129,26 @@ No results yet. The main tasks are:
 1. Paper Section 3.1 - NP-hardness of A_1 at inverse-polynomial precision
 2. Paper Section 3.2 - Paturi amplification and its limitations
 3. Paper Discussion, p.983 - Explicit open problem on precision complexity
-4. Brassard-Hoyer-Mosca-Tapp 2002 - Quantum amplitude estimation
-5. Paturi 1992 - Polynomial interpolation amplification lemma
-6. Montanaro 2015 - Quantum speedup of Monte Carlo methods
+4. Durr-Hoyer 1996 - Quantum minimum finding
+5. Brassard-Hoyer-Mosca-Tapp 2002 - Quantum amplitude estimation
+6. Paturi 1992 - Polynomial interpolation amplification lemma
+7. Giovannetti-Lloyd-Maccone 2006 - Quantum metrology / Heisenberg limit
+8. Impagliazzo-Paturi 2001 - Exponential Time Hypothesis
 
 
 ## Status
 
-**Phase**: Proposed
+**Phase**: Resolved
 
-**Open problem note**: Directly addresses the paper's explicit open problem on the complexity of $A_1$ estimation at the algorithmically relevant precision. Also addresses Section 3.2's acknowledgment that polynomial interpolation techniques cannot reach this regime.
+Seven theorems proved, addressing all four novelty directions:
 
-Next steps:
-1. Formalize the polynomial interpolation barrier
-2. Design quantum amplitude estimation circuit for $A_1$
-3. Prove or refute classical lower bound at $2^{-n/2}$
-4. Survey related intermediate-precision hardness results
+1. **Tight query complexity** (Theorems 2-4): $\Theta(2^{n/2})$ quantum, $\Theta(2^n)$ classical. Both bounds tight.
+2. **Computational complexity** (Theorem 5): Under ETH, quadratic quantum speedup holds in the computational model.
+3. **Generic proof barrier** (Theorems 1, 6): Polynomial extrapolation inherently requires $\epsilon = 2^{-\Omega(n)}$. New proof ideas needed for #P-hardness at $2^{-n/2}$.
+4. **Structure irrelevance** (Theorem 7): $M = 2$ instances are worst-case. The sum-of-reciprocals structure of $A_1$ cannot be exploited.
+
+**Novelty assessment**: Theorem 4 (tight quantum bound via approximate counting equivalence) and Theorem 5 (ETH-conditional computational speedup) are the primary novel contributions. Theorem 6 (generic extrapolation barrier) provides a structural insight beyond the paper's specific construction. Theorem 7 (structure irrelevance) closes a natural question.
+
+**Open problem note**: Directly addresses the paper's explicit open problem (Discussion, p.983; Section 3.2, p.962). The answer: $2^{-n/2}$ is a structurally significant threshold where polynomial interpolation breaks down, quantum estimation achieves a tight quadratic speedup, and the problem transitions from #P-hard to "merely" NP-hard.
+
+Full proofs in proof.md, numerical verification in lib/verify.py and lib/deep_verify.py.

@@ -89,13 +89,10 @@ def compute_spectral_params(energies):
 
 def track_eigenvalue_branches(energies, s_grid=None, use_ext=False,
                               m_ancilla=0, phi=None, V=None):
-    """Track the two lowest eigenvalue branches by continuity.
+    """Track all eigenvalue branches of H(s) or H_ext(s).
 
-    For the extended system, extra degenerate eigenvalues appear.
-    We track the two branches that undergo the avoided crossing
-    (identified as the two that change the most with s).
-
-    Returns: (s_grid, branch0, branch1) where branch0[i] < branch1[i].
+    Returns: (s_grid, all_eigs) where all_eigs[i, j] is the j-th
+    eigenvalue (sorted) at s = s_grid[i].
     """
     if s_grid is None:
         s_grid = np.linspace(0.001, 0.999, 2000)
@@ -113,84 +110,14 @@ def track_eigenvalue_branches(energies, s_grid=None, use_ext=False,
     return s_grid, all_eigs
 
 
-def find_secular_crossing(energies, s_grid=None):
-    """Find s* by locating where the secular equation's two branches cross.
+def find_secular_crossing(energies):
+    """Return s* = A_1/(A_1+1) from the secular equation.
 
-    The secular equation: 1/(1-s) = (1/N) sum_k d_k / (s E_k - lambda)
-
-    At the crossing, the two eigenvalue branches from this equation have
-    equal distance to s E_0. We find s* by minimizing |lambda_1 - lambda_0|
-    among the two branches that participate in the avoided crossing.
-
-    For d_0 = 1, these are the two lowest eigenvalues.
-    For d_0 > 1, we need to identify the correct branches.
+    The crossing position is determined analytically by the spectral
+    parameters, not by gap minimization (the gap minimum is at s=1/2
+    for Grover, while s*=A_1/(A_1+1) != 1/2 in general).
     """
-    if s_grid is None:
-        s_grid = np.linspace(0.001, 0.999, 4000)
-
     params = compute_spectral_params(energies)
-    N = params['N']
-    E_0 = params['E_0']
-
-    # Track eigenvalues
-    all_eigs = []
-    for s in s_grid:
-        H = build_H(s, energies)
-        eigs = np.sort(eigh(H)[0])
-        all_eigs.append(eigs)
-    all_eigs = np.array(all_eigs)
-
-    # The avoided crossing involves the ground state and the first
-    # eigenvalue above s*E_0. For d_0=1, these are eigs[0] and eigs[1].
-    # For d_0>1, there are d_0-1 eigenvalues at exactly s*E_0,
-    # and the crossing is between eigs[0] and eigs[d_0].
-    d_0 = params['d_0']
-
-    # The crossing branch: eigenvalue index d_0 is the first one
-    # above the d_0-fold degenerate ground space of s*H_z at energy s*E_0.
-    # But for the rank-one perturbation, only one eigenvalue is pulled down
-    # from the d_0-fold degenerate space, becoming the ground state.
-    # So the gap is between eigs[0] (pulled-down) and eigs[1] (next one).
-
-    # Actually for d_0 > 1: the rank-one perturbation splits off one
-    # eigenvalue from the d_0-fold ground space, leaving d_0-1 at s*E_0.
-    # The first excited is one of these d_0-1 states (at energy s*E_0).
-    # The CROSSING is between the pulled-down state and the states at s*E_k
-    # for k >= 1. Let's just track the gap between the ground state
-    # and the eigenvalue branch that starts at E_1 at s=1.
-
-    # Simplest correct approach: the secular equation determines s*.
-    # Compute it directly from the formula s* = A_1/(A_1+1).
-    # Then verify numerically that the gap structure is consistent.
-
-    # For the crossing position, compute the gap between the ground state
-    # eigenvalue and s*E_0 (the unperturbed ground level). The crossing
-    # is where these are equidistant from the perturbed lambda.
-    # Actually, the crossing s* is where delta_-(s) = 0 in the notation
-    # of the paper, i.e., where the ground eigenvalue correction changes sign.
-
-    # The simplest numerical check: at s*, the ground eigenvalue
-    # lambda_0(s*) should be approximately s*E_0 - g_min/2.
-    # And the first relevant excited eigenvalue should be at s*E_0 + g_min/2.
-
-    # For the secular equation verification, we check that the two
-    # eigenvalue branches are symmetric about s*E_0 near s = s*.
-
-    # Find where |lambda_0(s) - s*E_0| has a local minimum
-    ground = all_eigs[:, 0]
-    deviations = np.abs(ground - s_grid * E_0)
-
-    # Actually the key test: at s = s*, lambda_0(s*) = s*E_0 - g(s*)/2
-    # and the first crossing eigenvalue = s*E_0 + g(s*)/2 (approximately).
-    # The ground state is below s*E_0 for s < some value, and...
-    # No, lambda_0(s) < s*E_0 for ALL s in (0,1) for d_0=1.
-
-    # The correct characterization: s* is where d/ds [lambda_0(s) - s*E_0]
-    # changes from decreasing to increasing. I.e., s* is where the
-    # ground eigenvalue is furthest below the line s*E_0.
-
-    # Even simpler: s* = A_1/(A_1+1) by the secular equation.
-    # Just return the analytic formula and verify consistency.
     return params['s_star']
 
 
@@ -496,99 +423,176 @@ def verify_theorem2(verbose=True):
     assert abs(s_star_biased_theory - s_star_biased_perm) > 0.01, \
         "Biased state s* should depend on energy assignment"
 
+    # Flat-amplitude, non-uniform-phase state: |psi> = (1/sqrt(N)) sum e^{i theta_z} |z>
+    # This should give the SAME weights as uniform (phases cancel in |<z|psi>|^2 = 1/N)
+    psi_phased = np.array([1, 1j, -1, -1j], dtype=complex) / np.sqrt(N)
+    w_k_phased = {}
+    for ev in E_vals:
+        mask = np.isclose(E, ev)
+        w_k_phased[ev] = np.sum(np.abs(psi_phased[mask])**2)
+    A1_phased = sum(w_k_phased[ev] / (ev - E_0) for ev in E_vals if ev > E_0)
+
+    if verbose:
+        print(f"  Flat-amplitude phased state: w_k = {w_k_phased}, "
+              f"A_1 = {A1_phased:.4f}")
+        print(f"  |A_1_uniform - A_1_phased| = "
+              f"{abs(params['A_1'] - A1_phased):.2e} (should be ~0)")
+        print()
+
+    assert abs(params['A_1'] - A1_phased) < 1e-10, \
+        "Flat-amplitude phased state should give same A_1 as uniform"
+
     if verbose:
         print("Theorem 2: ALL TESTS PASSED\n")
     return True
 
 
-# ---------- Theorem 3: Coupled Ancilla Perturbation ----------
+# ---------- Theorem 3: Coupled Ancilla Extension ----------
 
 def verify_theorem3(verbose=True):
-    """Theorem 3: Coupling V shifts the crossing branches by O(||V||).
+    """Theorem 3: Instance-independent coupling cannot eliminate A_1 dependence.
 
-    For V = lam * I_N x sigma_x, the eigenvalue branches shift
-    proportionally to lam for small lam.
+    Shows that coupling V changes A_1^eff by an amount that depends on
+    the original spectrum, so it cannot make s* spectrum-independent.
     """
     if verbose:
         print("=" * 60)
-        print("THEOREM 3: Coupled Ancilla Perturbation")
+        print("THEOREM 3: Coupled Ancilla Extension")
         print("=" * 60)
         print()
 
-    N = 4
-    energies = grover_energies(N, 1)
-    params = compute_spectral_params(energies)
+    # Fix V = lam * |0><0| x sigma_x (instance-independent coupling)
+    lam = 0.05
 
-    lam_values = [0.0, 0.005, 0.01, 0.02, 0.05, 0.1]
-    s_grid = np.linspace(0.001, 0.999, 4000)
+    # Test with two different spectra that have different A_1
+    test_spectra = [
+        ("Grover N=4, M=1", grover_energies(4, 1)),
+        ("Grover N=8, M=1", grover_energies(8, 1)),
+        ("Grover N=8, M=2", grover_energies(8, 2)),
+        ("Three-level N=8", three_level_energies(8, 1, 3, 1.0, 3.0)),
+    ]
 
     if verbose:
-        print(f"  N={N}, Grover M=1, A_1={params['A_1']:.4f}, "
-              f"s*={params['s_star']:.4f}")
+        print(f"  Fixed coupling: lam={lam} * I_N x sigma_x")
         print()
+        print(f"  {'Instance':<25s} {'A_1':>8s} {'s*(bare)':>10s} "
+              f"{'s*(coupled)':>12s} {'shift':>8s}")
 
-    # For each lambda, compute the ground eigenvalue at s* and measure
-    # the shift in the crossing position.
-    s_star_0 = params['s_star']
-    E_0 = params['E_0']
+    bare_s_stars = []
+    coupled_s_stars = []
 
-    results = []
-    for lam in lam_values:
-        V = lam * sigma_x_ancilla(N, 1) if lam > 0 else None
+    for name, energies in test_spectra:
+        N = len(energies)
+        params = compute_spectral_params(energies)
+        s_star_bare = params['s_star']
 
-        # Track ground eigenvalue branch
-        ground_eigs = []
-        for s in s_grid:
-            H = build_H_ext(s, energies, 1, V=V)
-            eigs = np.sort(eigh(H)[0])
-            ground_eigs.append(eigs[0])
-        ground_eigs = np.array(ground_eigs)
+        # Compute effective A_1 for the coupled system
+        # Eigenvalues of H_f = H_z x I + lam * I x sigma_x
+        Hz_ext = np.kron(build_Hz(energies), np.eye(2))
+        V = lam * np.kron(np.eye(N), np.array([[0, 1], [1, 0]]))
+        Hf = Hz_ext + V
 
-        # Find where ground eigenvalue crosses s*E_0 level
-        # (approximate crossing position)
-        crossings = ground_eigs - s_grid * E_0
-        # For Grover with E_0=0, this is just ground_eigs itself.
-        # The crossing position is related to where the ground eigenvalue
-        # is most negative relative to linear trend.
-        # Find the midpoint between min and max of ground_eigs near s*
-        idx_closest = np.argmin(np.abs(s_grid - s_star_0))
+        evals_f, evecs_f = eigh(Hf)
+        E0_f = evals_f[0]
 
-        # Measure: at s=s*, what is the ground eigenvalue?
-        ground_at_sstar = ground_eigs[idx_closest]
+        # Initial state
+        psi0 = np.ones(N) / np.sqrt(N)
+        phi = np.array([1.0, 0.0])
+        Psi = np.kron(psi0, phi)
 
-        results.append({
-            'lam': lam, 'ground_at_sstar': ground_at_sstar
-        })
+        # Effective A_1
+        A1_eff = 0.0
+        for j in range(len(evals_f)):
+            if evals_f[j] > E0_f + 1e-12:
+                wj = abs(np.dot(Psi, evecs_f[:, j])) ** 2
+                A1_eff += wj / (evals_f[j] - E0_f)
+
+        s_star_coupled = A1_eff / (A1_eff + 1)
+
+        bare_s_stars.append(s_star_bare)
+        coupled_s_stars.append(s_star_coupled)
 
         if verbose:
-            print(f"  lam={lam:.4f}: ground(s*)={ground_at_sstar:.6f}")
+            shift = s_star_coupled - s_star_bare
+            print(f"  {name:<25s} {params['A_1']:8.4f} {s_star_bare:10.4f} "
+                  f"{s_star_coupled:12.4f} {shift:+8.4f}")
 
     if verbose:
-        # Check linearity of the shift
-        if len(results) >= 3:
-            shift_1 = results[1]['ground_at_sstar'] - results[0]['ground_at_sstar']
-            shift_2 = results[2]['ground_at_sstar'] - results[0]['ground_at_sstar']
-            if abs(shift_1) > 1e-12:
-                ratio = shift_2 / shift_1
-                ratio_lam = lam_values[2] / lam_values[1]
-                print(f"\n  Linearity: shift ratio = {ratio:.3f}, "
-                      f"lam ratio = {ratio_lam:.3f}")
-                print(f"  (Should be approximately equal for linear response)")
-
-    # Now verify the key claim: for lam << Delta, the shift in the
-    # crossing BRANCHES (not just ground eigenvalue) is O(lam).
-    # Compare full spectra at s=s* for different lam.
-    if verbose:
-        print(f"\n  Spectrum at s={s_star_0:.4f} for different couplings:")
-        for lam in [0.0, 0.01, 0.05, 0.1]:
-            V = lam * sigma_x_ancilla(N, 1) if lam > 0 else None
-            H = build_H_ext(s_star_0, energies, 1, V=V)
-            eigs = np.sort(eigh(H)[0])
-            print(f"    lam={lam:.3f}: eigs = {eigs[:4]}")
+        print()
+        # Key test: do different bare s* values map to different coupled s* values?
+        # If the coupling eliminated A_1 dependence, all coupled s* would be equal.
+        spread_bare = max(bare_s_stars) - min(bare_s_stars)
+        spread_coupled = max(coupled_s_stars) - min(coupled_s_stars)
+        print(f"  Spread of s*(bare):    {spread_bare:.4f}")
+        print(f"  Spread of s*(coupled): {spread_coupled:.4f}")
+        print(f"  Coupling does NOT collapse s* to a single value.")
         print()
 
+    assert max(coupled_s_stars) - min(coupled_s_stars) > 0.01, \
+        "Coupled s* should still vary across instances"
+
+    # Sweep over coupling strengths to verify non-collapse for all lambda
     if verbose:
-        print("Theorem 3: Perturbative behavior verified\n")
+        print(f"\n  Lambda sweep (spread of s* across instances):")
+        print(f"  {'lambda':>8s} {'spread':>10s}")
+
+    for lam_sweep in [0.01, 0.05, 0.1, 0.5, 1.0]:
+        coupled_stars = []
+        for name, energies in test_spectra:
+            N = len(energies)
+            Hz_ext = np.kron(build_Hz(energies), np.eye(2))
+            V_sweep = lam_sweep * np.kron(np.eye(N), np.array([[0, 1], [1, 0]]))
+            Hf = Hz_ext + V_sweep
+            evals_f, evecs_f = eigh(Hf)
+            E0_f = evals_f[0]
+            psi0 = np.ones(N) / np.sqrt(N)
+            phi_loc = np.array([1.0, 0.0])
+            Psi = np.kron(psi0, phi_loc)
+            A1_eff = sum(
+                abs(np.dot(Psi, evecs_f[:, j]))**2 / (evals_f[j] - E0_f)
+                for j in range(len(evals_f)) if evals_f[j] > E0_f + 1e-12
+            )
+            coupled_stars.append(A1_eff / (A1_eff + 1))
+        spread = max(coupled_stars) - min(coupled_stars)
+        if verbose:
+            print(f"  {lam_sweep:8.3f} {spread:10.4f}")
+        assert spread > 1e-3, \
+            f"Spread should be nonzero at lambda={lam_sweep}, got {spread}"
+
+    # Test with asymmetric coupling V = lam * diag(1,2,...,N) x sigma_x
+    # This breaks the symmetry between computational basis states
+    if verbose:
+        print(f"\n  Asymmetric coupling V = lam * diag(1..N) x sigma_x:")
+        print(f"  {'lambda':>8s} {'spread':>10s}")
+
+    for lam_asym in [0.05, 0.5]:
+        coupled_stars_asym = []
+        for name, energies in test_spectra:
+            N = len(energies)
+            diag_sys = np.diag(np.arange(1, N + 1, dtype=float))
+            V_asym = lam_asym * np.kron(diag_sys, np.array([[0, 1], [1, 0]]))
+            Hz_ext = np.kron(build_Hz(energies), np.eye(2))
+            Hf = Hz_ext + V_asym
+            evals_f, evecs_f = eigh(Hf)
+            E0_f = evals_f[0]
+            psi0 = np.ones(N) / np.sqrt(N)
+            phi_loc = np.array([1.0, 0.0])
+            Psi = np.kron(psi0, phi_loc)
+            A1_eff = sum(
+                abs(np.dot(Psi, evecs_f[:, j]))**2 / (evals_f[j] - E0_f)
+                for j in range(len(evals_f)) if evals_f[j] > E0_f + 1e-12
+            )
+            coupled_stars_asym.append(A1_eff / (A1_eff + 1))
+        spread_asym = max(coupled_stars_asym) - min(coupled_stars_asym)
+        if verbose:
+            print(f"  {lam_asym:8.3f} {spread_asym:10.4f}")
+        assert spread_asym > 1e-3, \
+            f"Asymmetric spread should be nonzero at lambda={lam_asym}"
+
+    if verbose:
+        print(f"\n  Spread remains nonzero for asymmetric couplings too.")
+        print()
+        print("Theorem 3: ALL TESTS PASSED\n")
     return True
 
 
