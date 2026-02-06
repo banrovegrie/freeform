@@ -5,14 +5,14 @@
 
 
 
-\documentclass[11.5pt, paper=a4]{report}
+\documentclass[11.5pt, a4paper]{report}
 
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[T1]{fontenc}
 
 \usepackage{amsmath, amssymb, amscd, amsthm, amsfonts, mathtools}
-\usepackage[a4paper,bindingoffset=0cm,left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm,footskip=1.0cm]{geometry}
+\usepackage[a4paper,bindingoffset=0cm,left=2.0cm,right=2.0cm,top=2.5cm,bottom=2.5cm,footskip=1.0cm,headheight=15pt]{geometry}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -23,9 +23,15 @@
 
 \usepackage{graphicx}
 \usepackage[final]{hyperref}
+\usepackage{xcolor}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\definecolor{darkred}{rgb}{0.55, 0.0, 0.0}
 \hypersetup{
            breaklinks=true,   % splits links across lines
            colorlinks=true,   % displays links as colored text instead of blocks
+           citecolor=darkblue,
+           linkcolor=darkred,
+           urlcolor=darkblue,
         }
 \usepackage{physics}
 \usepackage{tikz}
@@ -54,6 +60,14 @@
 \numberwithin{conjecture}{section}
 \numberwithin{corollary}{section}
 \numberwithin{equation}{section}
+
+%% Unique hyperref anchors (avoid duplicate destinations from \numberwithin)
+\renewcommand{\theHequation}{\thechapter.\thesection.\arabic{equation}}
+\renewcommand{\theHtheorem}{\thechapter.\thesection.\arabic{theorem}}
+\renewcommand{\theHdefinition}{\thechapter.\thesection.\arabic{definition}}
+\renewcommand{\theHlemma}{\thechapter.\thesection.\arabic{lemma}}
+\renewcommand{\theHconjecture}{\thechapter.\thesection.\arabic{conjecture}}
+\renewcommand{\theHcorollary}{\thechapter.\thesection.\arabic{corollary}}
 
 
 \allowdisplaybreaks

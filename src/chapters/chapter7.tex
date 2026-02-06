@@ -142,10 +142,11 @@ T = \int_0^1 K'(s)\,ds \leq \frac{c\, B_1}{\varepsilon\, g_{\min}}.
 
 \begin{proof}
 Let $\varepsilon_0$ denote the actual error. Substituting~\eqref{eq:adaptive-schedule} into the error bound~\eqref{eq:error-bound}: $(K')^{-1} = \varepsilon\, g_0^p\, g_{\min}^{2-p}/c$, and $|((K')^{-1})'| = (\varepsilon\, g_{\min}^{2-p}/c)\cdot p\, g_0^{p-1}\,|g_0'|$. The three terms become
-\begin{equation}
+\begin{multline}
 \label{eq:adaptive-error-expanded}
-\varepsilon_0 \leq \frac{\varepsilon}{c}\, g_{\min}^{2-p}\left(g_0(1)^p\left\lVert\left[P'(1), (H(1)-\lambda_0(1))^+\right]\right\rVert + \int_0^1 g_0^p\left\lVert\left[P', (H-\lambda_0)^+\right]'\right\rVert ds + \int_0^1 p\, g_0^{p-1}|g_0'|\left\lVert\left[P', (H-\lambda_0)^+\right]\right\rVert ds\right).
-\end{equation}
+\varepsilon_0 \leq \frac{\varepsilon}{c}\, g_{\min}^{2-p}\biggl(g_0(1)^p\left\lVert\left[P'(1), (H(1)-\lambda_0(1))^+\right]\right\rVert \\
++ \int_0^1 g_0^p\left\lVert\left[P', (H-\lambda_0)^+\right]'\right\rVert ds + \int_0^1 p\, g_0^{p-1}|g_0'|\left\lVert\left[P', (H-\lambda_0)^+\right]\right\rVert ds\biggr).
+\end{multline}
 
 \textbf{Boundary term.} Using bound~\eqref{eq:commutator-bound} with $g_0 \leq g$:
 \begin{equation}

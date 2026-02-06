@@ -4,7 +4,7 @@
 
 This is to be my ([Alapan Chaudhuri](https://banrovegrie.github.io/)) master's thesis on adiabatic quantum optimization, supervised by Shantanav Chakraborty. The thesis is built on a single published paper in `paper/` ([Unstructured Adiabatic Quantum Optimization: Optimality with Limitations](https://arxiv.org/html/2411.05736v3)). The goal is to explain that work deeply, weave the necessary background into a unified whole, and propose directions beyond it. What starts as experiments may become contributions.
 
-The thesis should be the best single source for understanding its subject. A reader who finishes should have new perspective, not just new facts.
+The thesis should be the single best source for understanding its subject. A reader who finishes should have new perspective, not just new facts.
 
 - Clear enough to teach.
 - Rigorous enough to test or build on.

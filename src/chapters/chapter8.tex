@@ -6,12 +6,12 @@ The runtime of \autoref{thm:aqo-runtime},
 \[
 T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{\sqrt{A_2}}{\Delta^2\, A_1(A_1+1)}\cdot\sqrt{\frac{N}{d_0}}\right),
 \]
-makes this dependence explicit. The adaptive schedule places a slow phase in the window $[s^* - \delta_s,\, s^*)$ centered at the crossing position $s^* = A_1/(A_1+1)$, where the spectral gap reaches its minimum, and accelerates elsewhere. The parameters $A_2$ and $d_0$ enter only through the ratio $\sqrt{A_2/d_0}$ and can be replaced by conservative bounds ($A_2 \geq 1$, $d_0 = 1$) at the cost of polynomial slowdown. The critical parameter is $A_1$: it determines where the crossing occurs, and the window width $\delta_s = O(\sqrt{d_0/(NA_2)}) = O(2^{-n/2})$ sets the required precision. An error larger than $\delta_s$ in the crossing position causes the algorithm to evolve rapidly through the gap minimum, destroying the ground-state fidelity. Throughout this chapter, we write $A_1(H)$ to make the dependence on the Hamiltonian explicit when multiple Hamiltonians are under consideration.
+makes this dependence explicit. The adaptive schedule places a slow phase in the window $[s^* - \delta_s,\, s^*)$ centered at the crossing position $s^* = A_1/(A_1+1)$, where the spectral gap reaches its minimum, and accelerates elsewhere. The parameters $A_2$ and $d_0$ enter only through the ratio $\sqrt{A_2/d_0}$ and can be replaced by conservative bounds ($A_2 \geq 1$, $d_0 = 1$) at the cost of polynomial slowdown. The critical parameter is $A_1$: it determines where the crossing occurs, and the window width $\delta_s = O(\sqrt{d_0 A_2/N}) = O(2^{-n/2})$ sets the required precision. An error larger than $\delta_s$ in the crossing position causes the algorithm to evolve rapidly through the gap minimum, destroying the ground-state fidelity. Throughout this chapter, we write $A_1(H)$ to make the dependence on the Hamiltonian explicit when multiple Hamiltonians are under consideration.
 
 Estimating $A_1$ to the much coarser precision $1/\text{poly}(n)$ is already NP-hard: two queries to an $A_1$-oracle suffice to solve 3-SAT (\autoref{sec:np-hard-A1}). Computing $A_1$ exactly, or to exponentially small precision $O(2^{-\text{poly}(n)})$, is $\#$P-hard: polynomial interpolation extracts all degeneracies $d_k$ from polynomially many queries (\autoref{sec:sharp-P-hard-A1}). At the algorithmically relevant precision $2^{-n/2}$, the interpolation technique breaks down, but a quantum algorithm achieves $O(2^{n/2})$ queries while any classical algorithm requires $\Omega(2^n)$, yielding a Grover-type quadratic separation (\autoref{sec:intermediate-A1}).
 
 
-\section{NP-Hardness of Estimating $A_1$}
+\section{NP-Hardness of Estimating \texorpdfstring{$A_1$}{A1}}
 \label{sec:np-hard-A1}
 
 The Hamiltonian $H_z$ encodes an optimization problem whose ground energy $E_0$ determines whether a solution exists. For a 3-SAT instance, $E_0 = 0$ when a satisfying assignment exists and $E_0 \geq 1/\text{poly}(n)$ otherwise. Distinguishing these two cases is the local Hamiltonian promise problem, known to be NP-hard \cite{kempe2006complexity}. The spectral parameter $A_1$ is not obviously related to this decision problem --- it aggregates information about all energy levels, not just the ground energy. A modified Hamiltonian $H'$ creates a bridge: comparing $A_1(H')$ with $A_1(H)$ reveals whether $E_0$ vanishes.
@@ -102,13 +102,12 @@ H = \frac{1}{6m}\sum_{k=0}^{m-1}H_k + \frac{1}{2n_\text{var}+2m}\sum_{j=n_\text{
 \end{equation}
 The first sum normalizes the clause energies to $[1/2, 1]$; the second sum adds $n_\text{var} + m$ free qubits whose projectors prefer $\ket{0}$; the identity shift places the eigenvalues in $[0, 1]$. When all clauses are satisfied, there exists an assignment making every $H_k$ achieve its minimum, giving $E_0 = 0$. When some clause is unsatisfied, the minimum of $\sum H_k/(6m)$ increases by at least $1/(6m)$, giving $E_0 \geq 1/(6m)$.
 
-Apply \autoref{lem:disambiguation} with $\mu_1 = 1/(6m)$ and $\mu_2 = 1/2$. The number of eigenvalues is $N = 2^{2n_\text{var}+2m}$ and the ground-state degeneracy satisfies $d_0 \leq 2^{n_\text{var}+m}$, so $d_0/N \leq 2^{-(n_\text{var}+m)}$. The precision requirement in Eq.~\eqref{eq:disambiguation-bound} becomes
-\begin{align}
-\varepsilon &< \frac{1}{6}\cdot\frac{1}{6m-1} - \frac{12m}{6}\cdot\frac{d_0}{N} \nonumber \\
-&\leq \frac{1}{36(n_\text{var}+m-1)} - \frac{2m}{2^{n_\text{var}+m}}.
+Apply \autoref{lem:disambiguation} with $\mu_1 = 1/(6m)$ and $\mu_2 = 1/2$. The number of eigenvalues is $N = 2^{2n_\text{var}+2m}$ and the ground-state degeneracy satisfies $d_0 \leq 2^{n_\text{var}+m}$, so $d_0/N \leq 2^{-(n_\text{var}+m)}$. Substituting into Eq.~\eqref{eq:disambiguation-bound}, the right-hand side satisfies
+\begin{equation}
 \label{eq:precision-arithmetic}
-\end{align}
-For $n_\text{var}+m \geq 15$, the second term satisfies $2m/2^{n_\text{var}+m} \leq 1/(72(n_\text{var}+m-1))$, so
+\frac{1}{6}\cdot\frac{1}{6m-1} - \frac{12m}{6}\cdot\frac{d_0}{N} \geq \frac{1}{36(n_\text{var}+m-1)} - \frac{2m}{2^{n_\text{var}+m}},
+\end{equation}
+since $1/(6(6m-1)) \geq 1/(36(n_\text{var}+m-1))$ for $n_\text{var} \geq 1$ and $d_0/N \leq 2^{-(n_\text{var}+m)}$. For $n_\text{var}+m \geq 15$, the second term satisfies $2m/2^{n_\text{var}+m} \leq 1/(72(n_\text{var}+m-1))$, so the disambiguation succeeds whenever
 \[
 \varepsilon < \frac{1}{72(n_\text{var}+m-1)}.
 \]
@@ -120,7 +119,7 @@ For the running example ($M = 2$, Grover search), the spectral parameter $A_1 = 
 \textbf{Remark.} The disambiguation technique extends beyond 3-SAT. The MaxCut decision problem --- given a graph $G = (V,E)$ and integer $k$, does $G$ have a cut of size at least $k$? --- also reduces to $A_1$ estimation. The construction adds a weighted edge to $G$, creating an auxiliary Hamiltonian $H'$ whose $A_1$ value differs from a reference by at least $1/(|E|(|E|-1))$ between the two cases. This yields NP-hardness at precision $2/(5n^4)$ with a $2$-local Hamiltonian, sharpening the locality requirement from $3$-local to $2$-local at the cost of a slightly tighter precision bound.
 
 
-\section{$\#$P-Hardness of Computing $A_1$ Exactly}
+\section{\texorpdfstring{$\#$P}{\#P}-Hardness of Computing \texorpdfstring{$A_1$}{A1} Exactly}
 \label{sec:sharp-P-hard-A1}
 
 NP-hardness captures the decision problem: is $E_0 = 0$? But $A_1$ encodes more than a single bit. The spectral parameter is a weighted sum over all energy levels, and its exact value determines every degeneracy $d_k$. Extracting these degeneracies solves counting problems --- $d_0$ for an NP-complete Hamiltonian counts the number of satisfying assignments --- and counting is harder than deciding: it is $\#$P-complete \cite{valiant1979complexity}.
@@ -179,7 +178,7 @@ Under the same hypotheses as \autoref{lem:exact-degeneracy}, but with an oracle 
 \end{lemma}
 
 \begin{proof}[Proof sketch]
-The approximate polynomial $\tilde{P}$ is the Lagrange interpolant through the noisy values $(\tilde{P}(x_1), \ldots, \tilde{P}(x_M))$. Its difference $D = \tilde{P} - P$ is a polynomial of degree at most $M - 1$ bounded by $3\varepsilon B^M$ at the sample points. By Paturi's lemma (\autoref{lem:paturi}), $|D(x)| \leq 3\varepsilon B^M \cdot 2^{M-1}$ on the interpolation interval. At the pole evaluation points $x^* = -2\Delta_k$, which lie outside the interval $[1, 2M-1]$, the error is bounded by the Lagrange basis amplification:
+The approximate polynomial $\tilde{P}$ is the Lagrange interpolant through the noisy values $(\tilde{P}(x_1),$ $\ldots,$ $\tilde{P}(x_M))$. Its difference $D = \tilde{P} - P$ is a polynomial of degree at most $M - 1$ bounded by $3\varepsilon B^M$ at the sample points. By Paturi's lemma (\autoref{lem:paturi}), $|D(x)| \leq 3\varepsilon B^M \cdot 2^{M-1}$ on the interpolation interval. At the pole evaluation points $x^* = -2\Delta_k$, which lie outside the interval $[1, 2M-1]$, the error is bounded by the Lagrange basis amplification:
 \[
 |D(x^*)| \leq 3\varepsilon B^M \cdot \Lambda_M(x^*),
 \]

@@ -1,266 +1,1990 @@
-# ActiLabel: A Combinatorial Transfer Learning Framework for Activity Recognition
-
-Parastoo Alinia1 , Iman Mirzadeh1 , Hassan Ghasemzadeh1
-
-1Washington State University, Pullman, WA, United States {parastoo.alinia, hassan.ghasemzadeh, seyediman.mirzadeh}@wsu.edu
-
-# Abstract
-
-Sensor-based human activity recognition has become a critical component of many emerging applications ranging from behavioral medicine to gaming. However, an unprecedented increase in the diversity of sensor devices in the Internet-of-Things era has limited the adoption of activity recognition models for use across different domains. We propose ActiLabel, a combinatorial framework that learns structural similarities among the events in an arbitrary domain and those of a different domain. The structural similarities are captured through a graph model, referred to as the dependency graph, which abstracts details of activity patterns in lowlevel signal and feature space. The activity labels are then autonomously learned by finding an optimal tiered mapping between the dependency graphs. Extensive experiments based on three public datasets demonstrate the superiority of ActiLabel over state-of-the-art transfer learning and deep learning methods.
-
-# 1 Introduction
-
-Human activity recognition (HAR) systems are crucial components in health monitoring and personalized behavioral medicine. HAR systems use machine learning algorithms to detect physical activities based on the data collected from wearable and mobile sensors [Piwek et al., 2016; Pantelopoulos et al., 2010]. Such systems are usually designed based on labeled training data collected in a particular domain, such as with a specific sensor modality, wearing site, or user. A significant challenge with existing HAR systems is that the baseline machine learning model which is trained with a specific setting (i.e., source) performs poorly in new settings [Zhang et al., 2012; Wang et al., 2018]. This challenge has limited scalability of sensor-based HAR system given collecting sufficiently large amounts of labeled sensor data for every possible domain is a time-consuming, labor-intensive, and often infeasible process.
-
-We introduce ActiLabel, a combinatorial framework that learns machine learning models in a new domain (i.e., target) without the need to manually collect any labels. A unique attribute of ActiLabel is that it examines structural relationships between activity events (i.e., classes/clusters) in two different domains and uses this information for targetto-source mapping. Such structural relationships allow us to compare the two domains at a higher level of abstraction than the common feature space, therefore enable knowledge transfer across radically diverse domains. We hypothesize that even under sever cross-domain spatial and temporal uncertainties (i.e., significant distribution shift), physical activities exhibit similar structural dependencies across different domains, mainly due to the physical and physiological underpinning of human health monitoring.
-
-To the best of our knowledge, our work is the first study that develops a combinatorial approach for structural transfer learning. Our notable contributions can be summarized as follows. (i) We introduce a combinatorial optimization formulation for transfer learning; (ii) we devise methodologies for constructing a network representation of wearable sensor readings, referred to as network graph; (iii) we design algorithms that perform community detection on the network graph to identify core activity clusters; (iv) we introduce an approach to construct a dependency graph based on the core activity clusters identified on the network graph; (vi) we propose a novel multi-layer matching algorithm for mapping target-to-source dependency graphs; (vii) we conduct an extensive assessment of the performance of ActiLabel for crossmodality, cross-subject, and cross-location activity learning using real sensor data collected with human subjects.
-
-# 2 Background and Related Work
-
-# 2.1 Transfer Learning
-
-Transfer learning (TL) is the ability to extend the knowledge in one setting to another, nonidentical but related, setting. We refer to the previous setting as the source domain. The sensor data captured in this domain is referred to as the source dataset, which is fully labeled in our case. The new state of the system, which may exhibit radical changes from the source domain, is referred to as the target domain, where we intend to label the sensor data autonomously [Cook et al., 2013; Pan and Yang, 2010]. Depending on how the availability of the labels in the source and target, one can categorize TL techniques into three groups. Inductive TL is where the source is fully labeled and there are few labeled samples in the target. In transductive TL, which is the focus of this paper, labels are available in the source, but there is no label in the target. Unsupervised TL is where there is no label in neither target or source domains [Weiss et al., 2016; Redko et al., 2016]. Prior research also proposed a deep convolution recurrent neural network to automate the process of feature extraction and to capture general patterns from activity data [Ordo´nez and Roggen, 2016 ˜ ]. However, deep learning models have not shown promising performance in highly diverse domains, such as cross-modality knowledge transfer. For example, previous research achieved only $5 4 . 2 \%$ accuracy in recognizing human gestures using deep learning with computationally dense algorithms cross sensors of different modalities [Zhu et al., 2017; Feichtenhofer et al., 2016]. More advanced models combine knowledge of transfer and deep learning [Yang, 2017]. There have been studies that transfer different layers of deep neural networks across different domains. In one study, a cross-domain deep transfer learning method was introduced that achieved $6 4 . 6 \%$ accuracy with four activity classes for cross-location and crosssubject knowledge transfer [Wang et al., 2018]. Unlike our transductive transfer learning approach in this paper, these approaches fall within the category of inductive transfer learning, where some labeled instances are required in the target domain.
-
-# 2.2 Graph Theory Definitions
-
-k-Nearest Neighbor (k-NN) graphs are commonly used to classify unknown events using feature representations. During the classification process, certain features are extracted from unknown events and classified based on the features extracted from their $\mathbf { k }$ -nearest neighbors [Chen et al., 2009; Maier et al., 2009]. k-NN graph of a dataset is obtained by connecting each data point to its $\mathbf { k }$ closest points from the dataset based on a distance metric between the data points. The symmetric $\mathbf { k } { \mathbf { N N } }$ graphs are when each point is connected to another only if both are in each other k-nearest neighborhood.
-
-Community detection algorithms are widely used to identify clusters in large scale network graphs [Ferreira and Zhao, 2016]. Recent research suggests that detecting communities from a network representation of data could result in a higher clustering performance compared to traditional clustering algorithms [Puxeddu et al., 2017; Blondel et al., 2008]. We define some of the essential features related to community detection in network graphs in the following.
-
-Definition 1 (Cut). Given a graph $G ( V _ { N } , E _ { N } )$ and communities $\mathcal { C } = \{ C _ { 1 } , ~ . . . , C _ { K } \}$ , ”Cut” between communities $C _ { i }$ and $C _ { j }$ is defined as the number of edges $( u , v )$ with one end in $C _ { i }$ and the other end in $C _ { j }$ . That is,
-
-$$
-C u t ( C _ { i } , C _ { j } ) = | ( u , v ) \in E _ { N } : u \in C _ { i } \ \& \ v \in C _ { j } |
-$$
-
-Definition 2 (Cluster Density). Given a graph $G ( V _ { N } , E _ { N } )$ and communities $\mathcal { C } = \{ C _ { 1 } , ~ . . . , ~ C _ { K } \}$ within the graph $G$ , ”community density”, $\Delta ( C _ { i } ) ,$ , for community $C _ { i }$ is defined as the number of edges $( u , v )$ with both ends residing in $C _ { i }$ .
-
-$$
-\Delta ( C _ { i } ) = | ( u , v ) \in E _ { N } : u \in C _ { i } \ \& \ v \in C _ { i } |
-$$
-
-Definition 3 (Community Size). Given a graph $G ( V _ { N } , E _ { N } )$ and communities $\mathcal { C } = \{ C _ { 1 } , ~ . . . , ~ C _ { K } \}$ within the graph $G$ , ”Community Size”, $\sigma ( C _ { i } ) _ { : }$ , for community $C _ { i }$ is defined as the number of vertices that reside in $C _ { i }$ .
-
-$$
-\sigma ( C _ { i } ) = | v \in V _ { N } : v \in C _ { i } |
-$$
-
-# 3 ActiLabel
-
-We propose ActiLabel to solve the problem of labeling sensor observations in an arbitrary setting (i.e., target) based on the labeled observations in another setting (i.e., source) even when the source and target observations follow highly diverse distributions. ActiLabel aims to create a labeled dataset in the target by transferring the knowledge from the labeled source observations such that the labeling error is minimized.
-
-Assigning a label to each sensor observation in the target domain can be viewed as a mapping problem where sensor observations in the target domain are mapped to labeled observations in the source domain. ActiLabel finds an optimal mapping between the two domain; the mapping, however, is performed at a much higher level of abstraction that the traditional feature level. To this end, mapping in ActiLabel is done from groups of similar target observations, called core clusters, to known activity classes in the source domain. The goal of this optimization problem is to minimize the mapping costs/error.
-
-The overall approach in ActiLabel is illustrated in Figure 1. As summarized in Algorithm 1, the design process in ActiLabel involves the following steps, where we refer to the first two steps as graph modeling and the next two steps as optimal label learning. (i) Network graph construction from sensor readings in both domains Figure 1-a; (ii) Core cluster identification given the network graphs in both domains Figure 1-b. (iii) Dependency graph construction based on the core clusters and network graph in both domains Figure 1- c. (iv) Optimal Label learning by mapping the dependency graphs from the source and target domains Figure 1-d, Figure 1-e, and Figure 1-f.
-
-# Algorithm 1 ActiLabel
-
-Input: $D _ { t }$ , unlabeled target dataset, $\{ D _ { s } , L _ { s } \}$ , labeled source dataset. Result: Labeled target dataset, $\{ D _ { t } , L _ { t } \}$ Graph Modeling: . (section 3.1)   
-1: Construct Network Graphs in both domains; . (section 3.1)   
-2: Identify core clusters in both domains; $\triangleright$ (section 3.1)   
-3: Build Dependency graphs; $\triangleright$ (section 3.1)   
-4: Extract structural relationships among the core clusters in both domains; Optimal Label Learning $\triangleright$ (section 3.2)   
-5: Perform graph-level min-cost mapping from target to source;   
-6: Assign labels to the observations in target;   
-7: Train activity recognition model in target using new labels;
-
-# 3.1 Graph Modeling
-
-We construct dependency graphs that capture structural dependencies among the events (i.e., physical activities) in both target and source domains. The dependency graphs are then used in optimal label learning to label sensor observations and generate a training dataset in the target domain. As shown in Figure 1, our graph modeling consists of three phases: (i) network graph construction; (ii) core cluster identification;
-
-![](images/21f6c69d37c7ad146673f29838a7a2b52d7ecbce8c361e38641ff2f5a2adba38.jpg)  
-Figure 1: An overview of the ActiLabel framework including graph modeling and optimal label learning.
-
-and (iii) dependency graph construction. This section elaborates on each phase.
-
-# Network Graph Construction
-
-We initially build a network representation of the sensor observations based on symmetric k-nearest-neighboring to quantify the amount of similarity between pairs of observations.
-
-Definition 4 (Network Graph). The network graph refers $G _ { N } ( V _ { N } , E _ { N } )$ is a symmetric $k$ -NN graph where vertices are feature representation of the sensor data and distance function is the cosine similarity between the features.
-
-# Core Cluster Identification
-
-To identify core clusters in ActiLabel, we propose a graphbased clustering algorithm similar to the approach in prior research [Barton et al., 2019]. We refer to this approach as core cluster identification (CCI), which runs on the network graph $G ( V _ { N } , E _ { N } )$ in two steps. (i) Partitioning the network graph into multiple communities of approximately the same vertex size using a greedy community detection technique. (ii) Merging the communities with the highest similarity score based on their dendrogram structure.
-
-The amount of similarity $\alpha _ { i , j }$ between communities $C _ { i }$ and $C _ { j }$ is measured as the ratio of the number of edges between the two communities (i.e., $C u t ( C _ { i } , C _ { j } ) )$ to the average number of edges that reside within the two communities. Therefore, the similarity score of $\alpha _ { i , j }$ is given by
-
-$$
-\alpha ( i , j ) = \frac { C u t ( C _ { i } , C _ { j } ) } { \frac { | C _ { i } | + | C _ { j } | } { 2 } }
-$$
-
-where the terms $| C _ { i } |$ and $| C _ { j } |$ denote the number of edges that reside in $C _ { i }$ and $C _ { j }$ , respectively. Note that the similarity score $\alpha$ is defined such that it is not adversely influenced by the size of communities in unbalanced datasets.
-
-# Dependency Graph Construction
-
-To capture high-level structural relationships among sensor observations, we devise a structural dependency graph where the core clusters identified previously represent vertices of the dependency graph.
-
-Definition 5 (Dependency Graph). Given a network graph $G ( V _ { N } , E _ { N } )$ where $\left| V _ { N } \right| = \left| \mathcal { X } \right|$ and core clusters $\mathcal { C } = \{ C _ { 1 } , \ldots ,$ $C _ { K } \}$ obtained from the network graph, we define dependency graph $G ( V _ { D } , E _ { D } , W _ { D } ^ { v } , W _ { D } ^ { e } )$ as a weighted directed complete graph as follows. Each vertex $u _ { i }$ in $V _ { D }$ is associated with $a$ core cluster $C _ { i } \in \mathcal { C }$ . Thus, $| V _ { D } | = | \mathcal { C } |$ . Each vertex $u _ { i } \in V _ { D }$ is assigned a weight $w _ { i } ^ { u }$ given by
-
-$$
-w _ { i } ^ { u } = \frac { \Delta ( C _ { i } ) } { \sigma ( C _ { i } ) | }
-$$
-
-where $\Delta ( C _ { i } )$ and $\sigma ( C _ { i } )$ refer to cluster density and cluster size, respectively, for core cluster $C _ { i }$ . Each edge $( u _ { i } , u _ { j } ) \in$ $E _ { D }$ , associated with core clusters $C _ { i }$ and $C _ { j }$ , is assigned $a$ weight $w _ { i j } ^ { e }$ given by
-
-$$
-w _ { i j } ^ { e } = \frac { C u t ( C _ { i } , C _ { j } ) } { \sigma ( C _ { j } ) }
-$$
-
-# Algorithm 2 Optimal Label Learning
-
-Input: $G _ { D } ^ { t }$ and $G _ { D } ^ { s }$ , dependency graphs for target and source domains. Result: Labeled target dataset, $\{ D _ { t } , L _ { t } \}$   
-1: Construct bipartite graph $B G _ { e }$ using edge components;   
-2: Obtain bipartite mapping $M _ { e }$ on $G B _ { e }$ ;   
-3: Construct bipartite graph $B G _ { v }$ on vertex components;   
-4: Obtain bipartite mapping $M _ { v }$ on $G B _ { v }$ ;   
-5: Construct bipartite graph $B G _ { c }$ using $M _ { e }$ and $M _ { v }$ ;   
-6: Obtain bipartite mapping OptMapping on $G B _ { c }$ ;   
-7: Assign source labels to appropriate core clusters in target using OptMapping;
-
-# 3.2 Optimal Label Learning
-
-Algorithm 2 summarizes the steps for optimal label learning. The goal of the optimal label learning is to find a mapping from the dependency graph in the target to that of the source domain while minimizing the mapping error. We refer to this optimization problem as min-cost dependency graph mapping and define it as follows.
-
-Problem 1 (Min-Cost Dependency Graph Mapping). Let $G _ { D } ^ { s }$ and $G _ { D } ^ { t }$ denote dependency graphs obtained from datasets in the source and target domains, respectively. The min-cost dependency graph mapping is to find a mapping $R : G _ { D } ^ { t } \to G _ { D } ^ { s }$ from $G _ { D } ^ { t }$ to $G _ { D } ^ { s }$ such as the cost of such mapping is minimized.
-
-Problem 1 can be viewed as a combinatorial optimization problem that finds an optimal mapping in a two-tier fashion: (i) it initially performs component-level mappings where vertex-wise and edge-wise mappings are found between source and target dependency graphs; and (ii) it then uses the component-level mappings to reach a consensus about the optimal mapping for the problem as a whole. Such a two-level mapping problem can be represented using the objective in (7).
-
-$$
-M i n i m i z e \sum _ { i = 1 } ^ { | V _ { D } ^ { t } | } \sum _ { j = 1 } ^ { | V _ { D } ^ { s } | } 1 - \frac { \mu ( i , j ) } { M }
-$$
-
-where $\mu ( i , j )$ represents the number of mappings between $v _ { i } \in V _ { D } ^ { t }$ and $v _ { j } \in V _ { D } ^ { s }$ obtained through the component-level optimization. Furthermore, $M$ is a normalization factor that is equal to the total number of component-wise mappings. The objective in (7) attempts to minimize the mapping cost at the graph-level and, therefore, can be viewed as the objective for Problem 1.
-
-We build a weighted complete bipartite graph on the components of the dependency graphs to find the minimum double-cost mapping. Figure 1-d is an illustration of such a bipartite graph where the nodes on the left shore of the graph represent components (e.g., node weights) of the target dependency graph and the nodes on the right shore of the bipartite graph are associated with corresponding components in the source dependency graph.
-
-In constructing a bipartite graph, a weight $\omega _ { i j }$ is assigned to the edge that connects node $i$ in the target side to nodes $j$ in the source side. This weight also represents the actual mapping cost and is given by
-
-$$
-\omega _ { i j } = | w _ { s i } - w _ { t j } |
-$$
-
-where $w _ { s i }$ and $w t j$ are the weight values associated with component $i$ in the source domain and component $j$ in the target domain, respectively. We note that these weights can be computed using (5) and (6) for vertex-wise mapping and edge-wise mapping, respectively. We also note that if the number of components in source and target were not equal, we could add dummy nodes to one shore of the bipartite graph to create a complete and balanced bipartite graph.
-
-We use Hungarian Algorithm (a widely used weighted bipartite matching algorithm with $\mathcal { O } ( m ^ { 3 } )$ time complexity) [Kuhn, 1955] to identify an optimal mapping from the nodes on the left shore of the bipartite graph to the nodes on the right shore of the graph.
-
-The last step is to assign the labels mapped to each cluster to the target observations within that cluster. A classification model is trained on the labeled target dataset for physical activity recognition.
-
-# 3.3 Time Complexity Analysis
-
-Lemma 1. The graph modeling in ActiLabel has a time complexity of $O ( n ^ { 2 } )$ where $\ ' _ { n }$ ’ denotes the number of sensor observations.
-
-Proof. The proof is eliminated for brevity.
-
-Lemma 2. The optimal label learning phase in ActiLabel has a time complexity of $O ( n + m ^ { 3 } )$ where n denotes the number of sensor observations and m represents the number of classes.
-
-Proof. The proof is eliminated for brevity.
-
-Theorem 1. The time complexity of ActiLabel is quadratic in the number of sensor observations, $n$ .
-
-Proof. Assuming that the number of classes, $m$ , is much smaller than the number of sensor observations, $n$ , (i.e., $m \ll n$ ), the proof follows Lemma 1 and Lemma 2.
-
-# 4 Experimental Setup
-
-# 4.1 Datasets
-
-We use three sizeable human activity datasets to evaluate the performance of ActiLabel. We refer to these datasets as PAMAP2, a physical activity monitoring dataset used in [Reiss and Stricker, 2012], DAS, daily & sport activity dataset used in [Barshan and Yuksek, 2014 ¨ ], and Smartsock, a dataset containing ankle-worn sensor data used in [Fallahzadeh et al., 2016]. Table 1 has provided a summary of the datasets utilized in this study.
-
-Table 1: Brief description of the datasets utilized for activity recognition. The sensor modalities include accelerometer: ACC, gyroscope: GYR, magnetometer: MAG, temperature: TMP, orientation: ORI, heart rate: HR, stretch sensor: STR, and locations are chest: C, ankle: A, hand: H, left arm: LA, left leg: LL, right arm: RA, right leg: RL, torso: T.   
-
-<table><tr><td>Dataset</td><td>#Sub.</td><td>#Act.</td><td>#Sample</td><td>Sensors</td><td>Locations</td></tr><tr><td>PAMAP2</td><td>9</td><td>24</td><td>3850505</td><td>ACC, GYR, HR, TMP, ORI, MAG</td><td>C, H, A</td></tr><tr><td>DAS</td><td>8</td><td>19</td><td>1140000</td><td>ACC, GYR MAG</td><td>LA, RA, LL, RL, T</td></tr><tr><td>Smartsock</td><td>12</td><td>12</td><td>9888</td><td>ACC, STR</td><td>A</td></tr></table>
-
-# 4.2 Comparison Methods
-
-We compare the performance of ActiLabel with the following algorithms. (i) Baseline, which learns a shallow classifier in the source domain and deploys it for activity recognition in the target domain. (ii) Deep Convolution LSTM, [Ordo´nez ˜ and Roggen, 2016] which learns a deep classifier in the source domain and applies it for activity recognition in the target domain. (iii) DirectMap, which directly maps centroids of the clusters in the target to activity classes in the source domain to create a labeled dataset in the target. (iv) Upper-bound, which learns a classifier assuming that the actual labels are available in the target domain. We assess the performance of ActiLabel during three scenarios: (i) cross-modality transfer when sensors in the two domains have different modalities (e.g., accelerometer and gyroscope), (ii) cross-subject transfer across two different human subjects, and (iii) cross-location transfer when the target and source location of the wearable sensor is different.
-
-![](images/6a0658d1bb197a89f4efeaf324301b957bcce3f03e0df85dca9c6b9045067817.jpg)  
-Figure 2: Performance comparison between core cluster identification in ActiLabel and standard clustering and communication detection algorithms.
-
-# 4.3 Implementation Details
-
-The datasets are divided into $5 0 \%$ training, $2 5 \%$ test, and $2 5 \%$ validation parts with no overlap to avoid bias. We extracted an exhaustive set of time-domain features from a sliding window of size 2 seconds with $2 5 \%$ overlap. The extracted features include mean value, peak amplitude, entropy, and energy of the signal which are shown to be useful in human physical activity estimation using inertial sensor data [Mannini and Sabatini, 2010; Saeedi et al., 2014]. We reduce the features dimension using UMAP [McInnes et al., 2018] algorithm before clustering.
-
-We analyzed the effect of hyper-parameter $k$ in the $k$ -NN network graph on the performance of CCI as measured by NMI and purity. As shown in Figure 3, NMI achieved its highest value (i.e., 0.67 for PAMAP2, 0.88 for DAS, and 0.83 for Smartsock) when $k$ was set to $2 \%$ or $5 \%$ of the graph network size. This translates into a $k { = } 8$ for PAMAP2 and Smartsock and $k = 1 1$ for DAS datasets.
-
-![](images/74ae33ca5cd2fc2ccd97501dfa9fa7b3cee827def1e83a844f233b61a22231e5.jpg)  
-Figure 3: Performance of CCI versus parameter $k$ in network graph construction.
-
-# 5 Results
-
-We analyzed the effect of hyper-parameter $k$ in the $k$ -NN network graph on the performance of the core cluster identification as measured by normalized mutual information (NMI) and clustering purity [Rendon´ et al., 2011]. The results demonstrate $k = 8$ for PAMAP2 and Smartsock and $= k 1 1$ for DAS datasets as an optimal value.
-
-# 5.1 Performance of Core Cluster Identification
-
-As shown in Figure 2, CCI outperforms state-of-the-art clustering and community detection algorithms. The NMI for the competing methods ranged from 0.37–0.65 for PAMAP2, 0.25–0.77 for DAS, and 0.52–0.76 for Smartsock. The proposed algorithm CCI increased NMI to 0.67, 0.87, and 0.85 for PAMAP2, DAS, and Smartsock datasets, respectively. Note that the clustering was generally more accurate for Smartsock and DAS datasets because PAMAP2 contained data from sensor modalities (e.g., temperature) that might not be a good representative of the activities of interest.
-
-# 5.2 Labeling Accuracy of ActiLabel
-
-In this section, we report the labeling accuracy of DWMatching algorithm proposed in Section 3.2 as the ratio of correctly labeled observations to all named labeling accuracy. The labeling accuracy of the DWMatching algorithm mainly depends on the purity of the activity clusters and similarity between distribution of the data in the source and target.
-
-# Cross-Modality
-
-As shown in Figure 5a, accelerometer, gyroscope, magnetometer, and orientation modalities higher labeling accuracy (i.e., $7 0 . 2 \% 8 8 . 0 \% )$ ) as the target sensor across all three datasets. In PAMAP2, the labeling accuracy drops to the range $4 5 \% - 0 . 6 5 \%$ when orientation and heart rate sensors are the target modality which shows the weak clustering of their observations into the activity classes and diverse data distribution from other modalities such as accelerometer. In Smartsock, DWMatching achieves $7 1 . 5 \% { - } 8 8 . 0 \%$ labeling accuracy between an accelerometer and a stretch sensor.
-
-# Cross-Location
-
-Mappings between the same or similar body locations such as ”chest to chest”, and ”left arm to right arm” achieve high labeling accuracies (i.e., $> 7 0 . 3 \%$ ). The labeling accuracy between dissimilar locations in the DAS dataset, such as ”left leg to right arm” and ”left arm to right leg”, drops to the range $5 8 . 3 \% - 6 5 . 1 \%$ . Although chest, ankle, and hand are dissimilar body locations, mappings between them from the PAMAP2 dataset achieve $7 0 . 3 \% { - } 8 0 . 1 \%$ labeling accuracy since data in each location comes from the rich collection of sensor modalities that provide sufficient information about inter-event structural similarities captured by our label learning algorithm. The cross-location transfer does not apply to the Smartsock dataset since it contained only one sensor location.
-
-# 5.3 Performance of Activity Recognition
-
-Table 2 shows activity recognition performance for ActiLabel as well as algorithms under comparison, including baseline (BL), deep convolution LSTM (CL), DirectMap (DM), and upper-bound (UB) as discussed previously. We report the F1- Score value for each method as it is a better representative of the performance for unbalanced datasets.
-
-![](images/5ed529dcf535f5f28dde818a23e608c94dae2fd0f713796ff8f929eca7a7510f.jpg)  
-Figure 4: Labeling accuracy of ActiLabel for cross-modality scenario.
-
-![](images/32e83e0319e89c019c72c1901ab755b2f89a313d9822d439eb1940919740388f.jpg)  
-Figure 5: Labeling accuracy of ActiLabel for cross-location scenario.
-
-# Cross-Modality Transfer
-
-We examined transfer learning across accelerometer, gyroscope, magnetometer, orientation, temperature, heart rate, and stretch sensor modalities. The cross-modality results in Table 2 reflect average performance over all possible crossmodality scenarios. The baseline and ConvLSTM performed poorly overall three datasets, which shows the diverse distribution of data across sensors of different modalities. The DirectMap approach achieved $> ~ 6 6 . 0 \%$ F1-score over all three datasets. ActiLabel outperformed competing algorithms, in particular, DirectMap by $1 9 . 3 \%$ , $2 1 . 4 \%$ , and $6 . 7 \%$ for PAMAP2, DAS, and Smartsock, respectively.
-
-Table 2: Activity recognition performance (F1-Score).   
-
-<table><tr><td>Scenario</td><td>Dataset</td><td>BL</td><td>CL</td><td>DM</td><td>AL</td><td>UB</td></tr><tr><td rowspan="3">Cross- modality</td><td>PAMAP2</td><td>7.8</td><td>8.1</td><td>40.4</td><td>59.3</td><td>80.8</td></tr><tr><td>DAS</td><td>9.3</td><td>8.2</td><td>44.8</td><td>66.2</td><td>86.1</td></tr><tr><td>Smartsock</td><td>16.2</td><td>12.8</td><td>66.0</td><td>72.7</td><td>84.2</td></tr><tr><td>Cross-</td><td>PAMAP2</td><td>14.3</td><td>12.7</td><td>63.4</td><td>70.8</td><td>93.2</td></tr><tr><td>location</td><td>DAS</td><td>13.2</td><td>12.4</td><td>60.7</td><td>68.4</td><td>89.8</td></tr><tr><td rowspan="3">Cross- location</td><td>PAMAP2</td><td>65.8</td><td>61.9</td><td>85.4</td><td>82.7</td><td>98.1</td></tr><tr><td>DAS</td><td>67.1</td><td>56.8</td><td>79.0</td><td>80.3</td><td>92.5</td></tr><tr><td>Smartsock</td><td>59.8</td><td>61.8</td><td>82.6</td><td>80.0</td><td>95.2</td></tr><tr><td colspan="2">Average</td><td>31.6</td><td>29.3</td><td>63.4</td><td>71.9</td><td>89.9</td></tr></table>
-
-# Cross-Location Transfer
-
-We examined transfer learning among chest, ankle, hand, arms, legs, and torso locations. The cross-location results in Table 2 represent average values over all possible transfer scenarios. The relatively low F1-scores of the baseline and ConvLSTM algorithms can be explained by the high level of diversity between the source and target domains during crosslocation transfer learning. The DirectMap and ActiLabel both outperformed the baseline and ConvLSTM models. Specifically, DirectMap and ActiLabel $6 3 . 4 \%$ and $7 0 . 8 \%$ F1-Scores for PAMAP2, and $6 0 . 7 \%$ and $6 8 . 4 \%$ F1-Scores for DAS.
-
-# Cross-Subject Transfer
-
-The DirectMap approach and ActiLabel obtained F1-Scores of $8 5 . 4 \%$ , and $8 \hat { 2 } . 7 \%$ in PAMAP2, $7 7 . 5 9 \%$ and $8 2 . 6 \%$ in DAS, and $8 2 . 6 \%$ , and $7 7 . 5 \%$ in Smartsock, respectively. Since there is a limited amount of data for each subject, ActiLabel could not capture high-level structures in the data. Therefore, it could not beat the state-of-the-art in all cases. All the algorithms achieved higher F1-score values compared to the cross-location and cross-modality scenarios. This observation suggests that data variations among different subjects can be normalized using techniques such as feature scaling, and feature selection before classification.
-
-# 6 Conclusion
-
-We introduced ActiLabel, a computational framework with combinatorial optimization methodologies for transferring physical activity knowledge across highly diverse domains. ActiLabel extracts high-level structures from sensor observations in the target and source domains and learns labels in the target domain by finding an optimal mapping between dependency graphs in the source and target domains. ActiLabel provides consistently high accuracy for cross-domain knowledge transfer in various learning scenarios. Our extensive experimental results showed that ActiLabel achieves average F1-scores of $6 0 . 6 \%$ , 70.8, and $8 2 . 7 \%$ for cross-modality, cross-location, and cross-subject activity recognition, respectively. These results suggest that ActiLabel outperforms the competing algorithms by $3 6 . 3 \%$ , $3 2 . 7 \%$ , and $9 . { \bar { 1 } } \%$ in crossmodality, cross-location, and cross-subject learning, respectively.
-
-References   
-[Barshan and Yuksek, 2014 ¨ ] Billur Barshan and Murat Cihan Yuksek. Recognizing daily and sports activities in two open ¨ source machine learning environments using body-worn sensor units. The Computer Journal, 57(11):1649–1667, 2014.   
-[Barton et al., 2019] Tomas Barton, Tomas Bruna, and Pavel Kordik. Chameleon 2: An improved graph-based clustering algorithm. ACM Transactions on Knowledge Discovery from Data (TKDD), 13(1):10, 2019.   
-[Blondel et al., 2008] Vincent D Blondel, Jean-Loup Guillaume, Renaud Lambiotte, and Etienne Lefebvre. Fast unfolding of communities in large networks. Journal of statistical mechanics: theory and experiment, 2008(10):P10008, 2008.   
-[Chen et al., 2009] Jie Chen, Haw-ren Fang, and Yousef Saad. Fast approximate knn graph construction for high dimensional data via recursive lanczos bisection. Journal of Machine Learning Research, 10(Sep):1989–2012, 2009.   
-[Cook et al., 2013] Diane Cook, Kyle D Feuz, and Narayanan C Krishnan. Transfer learning for activity recognition: A survey. volume 36, pages 537–556. Springer, 2013.   
-[Fallahzadeh et al., 2016] Ramin Fallahzadeh, Mahdi Pedram, and Hassan Ghasemzadeh. Smartsock: A wearable platform for context-aware assessment of ankle edema. In 2016 38th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC), pages 6302–6306. IEEE, 2016.   
-[Feichtenhofer et al., 2016] Christoph Feichtenhofer, Axel Pinz, and Andrew Zisserman. Convolutional two-stream network fusion for video action recognition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 1933–1941, 2016.   
-[Ferreira and Zhao, 2016] Leonardo N Ferreira and Liang Zhao. Time series clustering via community detection in networks. Information Sciences, 326:227–242, 2016.   
-[Kuhn, 1955] Harold W Kuhn. The hungarian method for the assignment problem. Naval research logistics quarterly, 2(1- 2):83–97, 1955.   
-[Maier et al., 2009] Markus Maier, Ulrike V Luxburg, and Matthias Hein. Influence of graph construction on graph-based clustering measures. In Advances in neural information processing systems, pages 1025–1032, 2009.   
-[Mannini and Sabatini, 2010] Andrea Mannini and Angelo Maria Sabatini. Machine learning methods for classifying human physical activity from on-body accelerometers. Sensors, 10(2):1154–1175, 2010.   
-[McInnes et al., 2018] Leland McInnes, John Healy, and James Melville. Umap: Uniform manifold approximation and projection for dimension reduction. arXiv preprint arXiv:1802.03426, 2018.   
-[Ordo´nez and Roggen, 2016 ˜ ] Francisco Ordo´nez and Daniel ˜ Roggen. Deep convolutional and lstm recurrent neural networks for multimodal wearable activity recognition. Sensors, 16(1):115, 2016.   
-[Pan and Yang, 2010] Sinno Jialin Pan and Qiang Yang. A survey on transfer learning. IEEE Transactions on knowledge and data engineering, 22(10):1345–1359, 2010.   
-[Pantelopoulos et al., 2010] Alexandros Pantelopoulos, Nikolaos G Bourbakis, et al. A survey on wearable sensor-based systems for health monitoring and prognosis. IEEE Trans. Systems, Man, and Cybernetics, Part C, 40(1):1–12, 2010.   
-[Piwek et al., 2016] Lukasz Piwek, David A Ellis, Sally Andrews, and Adam Joinson. The rise of consumer health wearables: promises and barriers. PLoS medicine, 13(2):e1001953, 2016.   
-[Puxeddu et al., 2017] MG Puxeddu, Manuela Petti, Floriana Pichiorri, Febo Cincotti, Donatella Mattia, and Laura Astolfi. Community detection: Comparison among clustering algorithms and application to eeg-based brain networks. In 2017 39th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC), pages 3965–3968. IEEE, 2017.   
-[Redko et al., 2016] Ievgen Redko, Amaury Habrard, and Marc Sebban. Theoretical analysis of domain adaptation with optimal transport, 2016.   
-[Reiss and Stricker, 2012] Attila Reiss and Didier Stricker. Introducing a new benchmarked dataset for activity monitoring. In Wearable Computers (ISWC), 2012 16th International Symposium on, pages 108–109. IEEE, 2012.   
-[Rendon´ et al., 2011] Erendira Rend ´ on, Itzel M Abundez, Cit- ´ lalih Gutierrez, Sergio D´ıaz Zagal, Alejandra Arizmendi, Elvia M Quiroz, and H Elsa Arzate. A comparison of internal and external cluster validation indexes. In Proceedings of the 5th WSEAS International Conference on Computer Engineering and Applications, pages 158–163, 2011.   
-[Saeedi et al., 2014] Ramyar Saeedi, Brian Schimert, and Hassan Ghasemzadeh. Cost-sensitive feature selection for on-body sensor localization. In Proceedings of the 2014 ACM International Joint Conference on Pervasive and Ubiquitous Computing: Adjunct Publication, pages 833–842. ACM, 2014.   
-[Wang et al., 2018] Jindong Wang, Vincent W. Zheng, Yiqiang Chen, and Meiyu Huang. Deep transfer learning for crossdomain activity recognition. In Proceedings of the 3rd International Conference on Crowd Science and Engineering, ICCSE’18, pages 16:1–16:8, New York, NY, USA, 2018. ACM.   
-[Weiss et al., 2016] Karl Weiss, Taghi M Khoshgoftaar, and DingDing Wang. A survey of transfer learning. volume 3, page 9. Nature Publishing Group, 2016.   
-[Yang, 2017] Qiang Yang. When deep learning meets transfer learning. In Proceedings of the 2017 ACM on Conference on Information and Knowledge Management, CIKM ’17, pages 5–5, New York, NY, USA, 2017. ACM.   
-[Zhang et al., 2012] Chao Zhang, Lei Zhang, and Jieping Ye. Generalization bounds for domain adaptation. In Advances in neural information processing systems, pages 3320–3328, 2012.   
-[Zhu et al., 2017] Guangming Zhu, Liang Zhang, Peiyi Shen, and Juan Song. Multimodal gesture recognition using 3-d convolution and convolutional lstm. IEEE Access, 5:4517–4524, 2017.
+# Introduction
+
+Quantum walks, the quantum analogue of classical random walks, find
+widespread applications in several areas of quantum information
+processing [@kempe2003quantum]. In particular, they are a universal
+model for quantum computation
+[@childs2009universal; @childs2013universal] and are central to the
+design of several quantum algorithms [@ambainis2003quantum].
+
+The problem of finding a marked node in a graph, known as the spatial
+search algorithm, can be formulated as a continuous-time quantum walk
+(CTQW). In the original work by Childs and Goldstone
+[@childs2004spatial], it was shown that search by CTQW can find a marked
+node in $\mathcal{O}(\sqrt{n})$ time [^1] for certain graphs with $n$
+nodes such as the complete graph, hybercube and $d$-dimensional lattices
+with $d>4$. This implied a quadratic speedup for the spatial search
+problem with respect to classical random walks for these graphs. However
+for lattices of $d\leq 4$, a full quadratic speedup is lost. Since then
+a plethora of results have been published exhibiting a
+$\mathcal{O}(\sqrt{n})$ running time of the Childs and Goldstone
+algorithm (henceforth referred to as the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm) on certain
+specific graphs
+[@janmark2014global; @novo2015systematic; @chakraborty2016spatial; @philipp2016continuous; @wong2016quantum; @chakraborty2017optimal; @Boettcher_searchfractals_2017; @wong2018quantum; @glos2018optimal; @rhodes2019quantum].
+
+Although we state the general framework of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm in detail
+in Sec. [2](#sec:prelim){reference-type="ref" reference="sec:prelim"},
+here we mention the algorithm briefly as this will aid the understanding
+of our contributions. Given a graph $G$ of $n$ nodes, the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm involves
+evolving the following search Hamiltonian
+$$\label{eqmain-search-ham-def}
+H_{\mathrm{search}}=H_{\mathrm{oracle}}+ r H,$$ where $r$ is a tunable
+parameter (the hopping rate of the quantum walk on $G$), $H$ is the
+Hamiltonian encoding the structure of $G$ (such as the graph's adjacency
+matrix or Laplacian) and $H_\mathrm{oracle}$ is the oracular Hamiltonian
+that singles out the marked node, which we shall denote as $\ket{w}$
+[^2]. Typically, the algorithm commences from the highest eigenvector of
+$H$ which has a small overlap with $\ket{w}$ (say $\sqrt{\epsilon}$),
+and involves carefully choosing the value of $r$, such that evolving
+$H_{\mathrm{search}}$ for the minimum possible time, results in a state
+that has a large overlap with $\ket{w}$. It can be
+shown [@farhi1998analog] that the algorithm is optimal if it can find
+the marked node with constant probability in $\Theta(\sqrt{\epsilon})$
+time (in many cases $\epsilon=1/n$ as we discuss in
+Sec. [2](#sec:prelim){reference-type="ref" reference="sec:prelim"}).
+
+Most prior results on the optimality of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm, for
+particular graphs, have required an analysis specific to the underlying
+instance. For example in Ref. [@janmark2014global], the authors
+demonstrated, using degenerate perturbation theory that the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm can find a
+marked node on a strongly regular graph in
+$\ensuremath{\mathcal{O}}(\sqrt{n})$ time, a graph that lacks global
+symmetry. Using similar techniques it was shown that a marked node can
+be found in optimal time on a graph with low algebraic connectivity
+[@meyer2015connectivity]. A long standing open problem has been to
+obtain the general conditions for the optimality of the algorithm and in
+particular to quantify the necessary and sufficient conditions a given
+graph must satisfy for the algorithm to be optimal.
+
+A first attempt towards deriving sufficient conditions for the
+optimality of the algorithm was made in Ref. [@chakraborty2016spatial]
+by connecting the graph spectral properties to the algorithmic running
+time. Namely, the authors demonstrated that the algorithm is optimal if
+the Hamiltonian encoding the graph structure, i.e. $H$ has a constant
+spectral gap (without loss of generality, we assume $H$ to have
+eigenvalues in the interval $[0,1]$, see
+Sec. [2](#sec:prelim){reference-type="ref" reference="sec:prelim"} for
+details). However in the scenario where the spectral gap is no longer a
+constant, i.e, it decreases with the size of the graph, the results of
+the aforementioned work are not applicable.
+
+In our work, we significantly extend this result and provide the
+*necessary and sufficient* conditions for the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm to be
+optimal, for any $H$ obeying certain general assumptions
+(Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"}). The regime of validity of
+our results is defined by a *spectral condition* which is obeyed, for
+example, when the spectral gap of $H$ (say $\Delta$) is sufficiently
+larger than the overlap of the initial state with the marked node,
+i.e. $\Delta\gg \sqrt{\epsilon}$. To the best of our knowledge, this
+condition is general enough to encompass most prior works predicting
+optimality of the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$
+algorithm for specific graphs. Examples include the complete graph,
+hypercube [@childs2004spatial], strongly regular graphs
+[@janmark2014global], complete bipartite graphs [@novo2015systematic],
+lattices of dimension greater than four [@childs2004spatial],
+Erdös-Renyi random graphs [@chakraborty2016spatial] or balanced trees
+[@philipp2016continuous] (for specific positions of the marked node).
+
+To prove our optimality conditions, we first obtain general results
+regarding the best possible performance of the algorithm for any given
+graph obeying the previously mentioned validity regime. Precisely, we
+obtain general expressions, depending on the spectrum of $H$, for the
+optimal value of $r$, the maximum possible amplitude that can be
+obtained at the marked node and the time at which this amplitude is
+reached (Theorem
+[2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"}). The optimality conditions
+follow by imposing the maximum amplitude to be constant after a time
+$\sqrt{\epsilon}$.
+
+These predictions are, however, not valid for graphs with a sufficiently
+low spectral gap. Such low spectral gaps appear, for example, on graphs
+composed by highly connected clusters that are sparsely connected among
+each other, which find applications in spectral clustering
+[@von2007tutorial]. A simple example is the so-called *joined
+complete-graph* of $n$ nodes: two complete graphs of $n/2$ nodes each,
+joined by a single edge between them (See
+Fig. [2](#subfig:joined-complete){reference-type="ref"
+reference="subfig:joined-complete"}). If $H$ is defined by the
+normalized adjacency matrix of this graph, the spectral gap of $H$ is
+small enough to violate the spectral condition. However in
+Ref. [@meyer2015connectivity], using an analysis tailored to this
+particular instance, the authors showed that the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm can find a
+marked node on this graph in $\Theta(\sqrt{n})$ time.
+
+Such instances are characterized by the following features in the
+spectrum of $H$: (i) A few of the highest eigenvalues are closely spaced
+(nearly degenerate), implying an extremely small spectral gap and (ii) A
+large gap between the closely spaced eigenvalues and the rest of the
+spectrum. We capture these properties precisely via new spectral
+conditions and provide, in
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"}, a general theorem regarding
+the performance of quantum search on such graphs
+(Theorem [8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"}). This leads to a sufficient condition
+that is able to predict optimal quantum search on the joined complete
+graph and other graphs with similar spectral properties.
+
+In Sec. [5](#sec:quantum-walk-chessboard){reference-type="ref"
+reference="sec:quantum-walk-chessboard"}, we provide an explicit example
+which compares and contrasts the applicability of Theorem
+[2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} and Theorem
+[8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"}, respectively. Therein, we consider the
+quantum walk of a rook on a rectangular chessboard. This corresponds to
+the Cartesian product between two complete graphs, known as the *Rook's
+graph* (See Fig. [7](#figmain:chessboard){reference-type="ref"
+reference="figmain:chessboard"}) [@moon1963line; @hoffman1964line]. By
+altering the length and breadth of the chessboard (equivalently, by
+changing the size of the complete graphs) the spectral properties of the
+graph (namely, the spectral gap) can be changed. We identify different
+regimes of optimal and suboptimal quantum search, elucidating how the
+interplay between different choices of $r$ affect the algorithmic
+performance. Finally, we summarize and discuss upon the results of the
+article in Sec. [6](#sec:discussion){reference-type="ref"
+reference="sec:discussion"}.
+
+# Preliminaries {#sec:prelim}
+
+First, we describe the framework of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm. Consider
+any graph $G$ with a set of $n$ vertices labelled $\{1,2,...n\}$ and a
+Hamiltonian $H$, which is an Hermitian matrix of dimension $n$ that
+encodes the connectivity of the underlying graph. In other words, we
+demand that $H$ is *local*, i.e. its $(i,j)^{\mathrm{th}}$-entry is
+non-zero if and only if node $i$ (or $i^{\mathrm{th}}$ edge) is adjacent
+to node $j$ (or $j^{\mathrm{th}}$ edge) in $G$ (for example, $H$ could
+be proportional to the graph's adjacency matrix). Then, evolution under
+the Hamiltonian $H$ implements the continuous-time quantum walk on the
+graph that it encodes. Without loss of generality, it is assumed that
+$H$ has eigenvalues in the interval $[0,1]$ [^3].
+
+As mentioned earlier the search Hamiltonian corresponding to the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm is given by
+$$H_{\mathrm{search}}=H_{\mathrm{oracle}}+ r H.$$ We require that
+$H_{\mathrm{oracle}}$ is local so that it perturbs the node $\ket{w}$ in
+a way that affects only vertices (or edges) in its vicinity. We will
+focus on the original formulation of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm where
+$H_{\mathrm{oracle}}=\ket{w}\bra{w}$ adds a local energy at node
+$\ket{w}$, leaving the remaining vertices unaffected. In fact,
+simulating this oracular Hamiltonian for a time $t$, corresponds to
+$\ensuremath{\mathcal{O}}(t)$-queries to the oracle of the Grover's
+search algorithm [@roland2003quantum]. The steps of this algorithm are
+explained in
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"}.
+
+::: algorithm
+Choose some $r> 0$ such that $H_{\mathrm{search}}=\ket{w}\bra{w}+rH$.
+
+-   Prepare the $1$-eigenstate of $H$.\
+
+-   Evolve the state of $1)$ under $H_{\mathrm{search}}$ for some time
+    $T$.
+:::
+
+We note that our formulation of the $\ensuremath{\mathcal{C G}}$
+algorithm is slightly more general than that of [@childs2004spatial],
+where the authors consider the Hamiltonian
+$H_{\mathrm{search}}= - r L - \ket{w}\bra{w}$, such that $L$ is the
+Laplacian of the graph [@bollobas2013modern], and choose the inital
+state $\ket{s}=n^{-1/2}\sum_i \ket{i}$ which is the 0-eigenstate of $L$.
+Our formulation becomes equivalent to that of [@childs2004spatial] if we
+set $H=I-\mathcal{L}$, where $\mathcal{L}$ is the normalized Laplacian
+and by suitably rescaling $r$.
+
+The essential parameter in
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} is the value of $r$, which has to be chosen
+judiciously so that the state $\ket{\Psi(T)}$ prepared after step 2) has
+a large overlap with the marked node
+$$\alpha(T)=|\braket{w}{\Psi(T)}|,$$ for the minimum possible $T$. The
+marked node can then be obtained from this final state via a measurement
+on the state-space basis, or via amplitude amplification followed by
+measurement.
+
+## Running time of $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm
+
+To fully quantify the cost of running the $\ensuremath{\mathcal{C G}}$
+algorithm, it is important to take into account not only the cost of
+evolving the search Hamiltonian for a given time, but also the cost to
+set-up the initial state and measure the final state. Furthermore, in
+some prior works
+ [@childs2004spatial; @childs2004spatial-dirac; @childs2014spatial-crystal]
+amplitude amplification has been used in conjunction with Hamiltonian
+evolution in order to find a marked node on lattices. To quantify the
+cost of such a procedure we need to introduce the cost of implementing
+the Grover oracle (the cost of evolving $H_{\text{oracle}}$ for constant
+time), which we denote as $\mathcal{C}_w$.
+
+We use the following notation for the different costs.  \
+
+Setup cost $\mathcal{S}$
+
+:   the cost of preparing the initial state of the algorithm
+    ($1$-eigenstate of $H$). [^4] \
+
+Time-evolution cost $\mathcal{T}$
+
+:   The cost of implementing the time-evolution operator
+    $e^{iTH_{\mathrm{search}}}$. A discrete simulation of this operator
+    would require $O(T)$ queries to the Grover oracle [^5]. \
+
+Measurement cost $\mathcal{M}$
+
+:   The cost of performing a measurement in the state-space basis.
+
+ \
+Depending on the strategy used to obtain the marked node from the state
+$\ket{\Psi(T)}$, the overall cost can be quantified as follows (constant
+factors are omitted for simplicity):\
+ \
+**i) Amplitude Amplification**: Applying $1/\alpha(T)$ - rounds of the
+quantum amplitude amplification procedure [@brassard2002quantum] results
+in obtaining the marked node with constant probability. The overall
+running time of the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$
+algorithm along with amplitude amplification is
+$$\label{eqmain:search-time-with-amp-amp}
+T_{\mathrm{search}}=\dfrac{1}{\alpha(T)}\left(\mathcal{S}+\mathcal{T}+\mathcal{C}_w\right)+\mathcal{M}.$$
+However, amplitude amplification is a discrete-time procedure, which
+implies that the overall algorithm is no longer continuous-time.
+
+Furthermore, as evident from
+Eq. [\[eqmain:search-time-with-amp-amp\]](#eqmain:search-time-with-amp-amp){reference-type="eqref"
+reference="eqmain:search-time-with-amp-amp"}, the setup cost plays a
+crucial role in the overall running time of the algorithm. In fact in
+prior works on the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$
+algorithm, the *Setup cost* $\mathcal{S}$ and the cost of making a
+measurement $\mathcal{M}$ have not been considered in order to compute
+the overall running time.
+
+It is important to guarantee that it is advantageous to run the quantum
+walk, as opposed to using only amplitude amplification on the initial
+state and bypassing the walk altogether. If the initial state of
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} has an overlap of $\sqrt{\epsilon}$ with
+$\ket{w}$, the cost of the latter strategy is
+$$\label{eqmain:adv-amp-amp}
+T_{AA}=\frac{1}{\sqrt{\epsilon}}\left (\mathcal{S} + \mathcal{C}_w\right)+\mathcal{M},$$
+where $\mathcal{C}_w$ is the cost of implementing the Grover oracle
+(evolving $H_{\mathrm{oracle}}$ for constant time). Clearly for the CTQW
+to be advantageous we need $T_{AA}$ to be larger than
+$T_{\mathrm{search}}$ from
+Eq. [\[eqmain:search-time-with-amp-amp\]](#eqmain:search-time-with-amp-amp){reference-type="eqref"
+reference="eqmain:search-time-with-amp-amp"}.
+
+In the case of the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$
+algorithm, if the setup cost is reasonably large, such as for the
+applications considered in [@ambainis2005coins; @ambainis2007quantum],
+the aforementioned inequality is indeed satisfied and bypassing the
+quantum walk will invariably be disadvantageous. Hence, the choice of
+$r$ and $T$ should be such that the overhead due to amplitude
+amplification is as low as possible, or in other words $\alpha(T)$ is as
+large as possible.\
+ \
+**ii) Repetition**: By repeating the time-evolution followed by a
+measurement in the state-space basis $1/\alpha(T)^2$-times would result
+in obtaining the marked node with a high probability. The overall
+running time of the procedure in this case is
+$$\label{eqmain:search-time-with-repetition}
+T_{\mathrm{search}}=\dfrac{1}{\alpha(T)^2}\left(\mathcal{S}+\mathcal{T}+\mathcal{M}\right).$$
+Clearly, repeating the algorithm results in the overall running time
+being quadratically slower (with respect to $1/\alpha(T)$) as compared
+to that of amplitude amplification. However, if one assumes access only
+to the time-evolution of $H_{\mathrm{search}}$, then repeating this
+procedure is the only way to amplify the success probability.\
+ \
+
+## Optimality of the algorithm {#sec:def_optimality}
+
+It is natural to ask, in this context, what is the minimum time needed
+to find the marked node for any Hamiltonian $H$. From the seminal work
+by Farhi and Gutmann [@farhi1998analog], it is easy to obtain the
+following lower bound on the evolution time $T$ required to find
+$\ket{w}$ $$\label{eqmain:lower-bound-search}
+T=\Omega\left(\dfrac{1}{\sqrt{\epsilon}}\right).$$ For vertex-transitive
+graphs, which informally means that there is no particular structure
+that allows to distinguish a node from any other node, we have that
+$\epsilon=1/n$, recovering the familiar Grover lower bound
+$T=\Omega(\sqrt{n})$ [^6].
+
+As such, throughout the article we shall say that the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm is
+*optimal* for a given graph $G$ if Algorithm
+[\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} results in a state that has a constant
+overlap with $\ket{w}$ after evolving for a time that matches the
+aforementioned lower bound,
+i.e. $T=\Theta\left(1/\sqrt{\epsilon}\right)$. In such a case, the
+overall search time would scale as
+$$T_{\mathrm{search}}=\mathcal{S}+\Theta\left(\dfrac{\mathcal{C}_w}{\sqrt{\epsilon}}\right)+\mathcal{M},$$
+assuming the cost of implementing the walk evolution for time
+$T=\Theta\left(1/\sqrt{\epsilon}\right)$ is dominated by the cost
+$\mathcal{C}_w$ of implementing the oracle, i.e.,
+$$\mathcal{T}=\Theta\left(\dfrac{\mathcal{C}_w}{\sqrt{\epsilon}}\right).$$
+In this scenario, running the walk is advantageous as compared to simply
+doing amplitude amplification on the initial state
+(Eq. [\[eqmain:adv-amp-amp\]](#eqmain:adv-amp-amp){reference-type="eqref"
+reference="eqmain:adv-amp-amp"}) when the set-up cost is considerably
+larger than the cost of implementing the oracle.
+
+It is worth noting that in order to quantify a speedup, one can also
+compare the running time of quantum spatial search with the time
+required by classical random walks to solve the same problem. In fact,
+the time required by a classical random walk to find a marked node on
+any graph, known as the *hitting time*, is bounded as follows:
+$$\label{eqmain:hitting-time-bounds}
+\dfrac{1}{\epsilon}\leq \mathrm{HT}(w) \leq \dfrac{1}{\Delta\epsilon},$$
+where $\Delta$ is the spectral gap of the operator defining the random
+walk (such as the normalized adjacency matrix or the graph Laplacian).
+
+In fact, it has been established that discrete-time quantum walk search
+algorithms
+[@magniez2011search; @krovi2016quantum; @ambainis2019quadratic] as well
+as the recent continuous-time quantum walk search algorithm we proposed
+[@chakraborty2018finding], can find a marked node on any graph in square
+root of the hitting time, resulting in a generic quadratic advantage.
+However, such algorithms require a larger Hilbert space and can be seen
+as quantum walks on the edges of the underlying graph. As such, in this
+article we shall also compare the running time of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm with the
+*hitting time* of classical random walks, towards identifying the
+regimes for which a quadratic speed-up can be obtained as well as the
+limitations of this framework for quantum search.
+
+# Performance of the $\mathbb{\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}}$ algorithm {#sec:performance_non_degenerate}
+
+In this section we derive the main results characterizing the
+performance of the $\ensuremath{\mathcal{C G}}$ algorithm. Let $H$ have
+eigenvalues
+$0\leq \lambda_1\leq \lambda_2\leq\cdots\lambda_{n-1}<\lambda_n=1$ with
+the corresponding eigenvectors, $\ket{v_1},\cdots,\ket{v_n}$ such that
+$$H\ket{v_i}=\lambda_i\ket{v_i}.$$ Also let the gap between the two
+highest eigenvalues of $H$ (spectral gap) be given by
+$$\Delta=1-\lambda_{n-1}.$$ It will be convenient to express the marked
+node in the basis of the eigenstates of $H$ as
+$$\label{eqmain:sol-in-eigenbasis}
+\ket{w}=\sum_{i=1}^{n}a_i\ket{v_i}$$ and define the following set of
+parameters $$\label{eqmain:Sk}
+S_k=\sum_{i=1}^{n-1}\dfrac{|a_i|^2}{(1-\lambda_i)^k},$$ for integer
+$k\geq 1$. These parameters depend only on the spectral properties of
+the graph and the position of the marked node and turn out to be crucial
+to understanding the algorithmic performance, as it is clear, for
+example, in the studies of quantum search on
+lattices [@childs2004spatial] and fractals
+[@Boettcher_searchfractals_2017]. We note also that for
+vertex-transitive graphs these parameters depend only on the eigenvalues
+of $H$, as all the probabilities $|a_i|^2=1/n$.
+
+Furthermore, we impose the following *spectral condition* that defines
+the regime of validity of our analysis $$\label{eq:spectral_con}
+\sqrt{\epsilon} < c \min\left\{\frac{S_1 S_2}{S_3},\Delta\sqrt{S_2}\right\},$$
+where $c$ is a small positive constant. The reason why we need to impose
+this condition will become clear in
+Sec. [3.1](#sec:criticalpoint){reference-type="ref"
+reference="sec:criticalpoint"}. In a nutshell, this condition ensures
+that we can bound the error in our perturbative analysis and
+furthermore, that the additive error we obtain in the final amplitude at
+the marked node is small enough for our predictions to be meaningful.
+
+In
+subsection [3.3](#subsec:applicability-of-lemma-1){reference-type="ref"
+reference="subsec:applicability-of-lemma-1"} we discuss the generality
+of this condition and prove that it is fulfilled for any graph where
+$\sqrt{\epsilon} \leq c \Delta$. However, it is more general than that
+since it also includes the critical case of the 4d-lattice, where both
+$\sqrt{\epsilon}$ and $\Delta$ scale as $\Theta(1/\sqrt{n})$.
+
+Our main results regarding the performance of the algorithm are the
+following. In subsection [3.1](#sec:criticalpoint){reference-type="ref"
+reference="sec:criticalpoint"}, we demonstrate that the optimal choice
+for $r$ is $r=S_1$, provided the spectral condition from
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} is respected. In this case we show that the
+maximum amplitude at the solution is reached at time
+$$\label{eqmain:evolution-time-cg-algorithm}
+T=\Theta\left(\dfrac{1}{\sqrt{\epsilon}}\dfrac{\sqrt{S_2}}{S_1}\right)$$
+and is given by $$\label{eq:maxamp}
+\nu \approx \dfrac{S_1}{\sqrt{S_2}}.$$ Furthermore, we show that
+essentially the same behavior is maintained if we choose $r$ within a
+window of $|r-S_1|= O(\sqrt{\epsilon S_2})$. If $r$ is chosen outside
+this interval, we show in
+Sec. [3.2](#sec:failure_critpoint){reference-type="ref"
+reference="sec:failure_critpoint"} that the maximum amplitude reached is
+$o(S_1/\sqrt{S_2})$, independently of the evolution time we choose. This
+implies that $\Theta(S_1/\sqrt{S_2})$ is the maximum amplitude
+achievable for any time and any choice of $r$.
+
+Consequently, we can draw the following *necessary and sufficient
+condition* for optimal quantum search (in the sense discussed in
+Sec. [2.2](#sec:def_optimality){reference-type="ref"
+reference="sec:def_optimality"}), within the regime of validity of our
+analysis.
+
+::: {#thm:optimalityCG .theorem}
+**Theorem 1** (Optimality of quantum search). *Let $H$ be such that the
+spectral condition from
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} is fulfilled. Then the
+$\ensuremath{\mathcal{C G}}$ algorithm is optimal iff
+$S_1/\sqrt{S_2}=\Theta(1)$.*
+:::
+
+The proof of this result follows directly from the statements above. If
+$S_1/\sqrt{S_2}=\Theta(1)$, choosing $r$ sufficiently close to $S_1$
+ensures that we obtain a constant amplitude at the marked node after
+$T= \Theta\left(1/\sqrt{\epsilon}\right)$ (see Eqs.
+[\[eqmain:evolution-time-cg-algorithm\]](#eqmain:evolution-time-cg-algorithm){reference-type="eqref"
+reference="eqmain:evolution-time-cg-algorithm"} and
+[\[eq:maxamp\]](#eq:maxamp){reference-type="eqref"
+reference="eq:maxamp"}), matching the lower bound in
+Eq. [\[eqmain:lower-bound-search\]](#eqmain:lower-bound-search){reference-type="eqref"
+reference="eqmain:lower-bound-search"}. On the other hand, since
+$\Theta(S_1/\sqrt{S_2})$ is the maximum amplitude achievable, if we have
+that $S_1/\sqrt{S_2}=o(1)$ the algorithm is never optimal.
+
+With this necessary and sufficient condition, many hitherto published
+results showing that this algorithm is optimal for specific graphs can
+be recovered , without the need to do a graph specific analysis
+[@childs2004spatial; @janmark2014global; @novo2015systematic; @wong2016quantum; @wong2016quantum2; @philipp2016continuous; @wong2016laplacian; @wong2016engineering; @chakraborty2016spatial; @chakraborty2017optimal; @glos2018vertices; @glos2018optimal; @wong2018quantum].
+For example, it is possible to see, from the fact that
+$S_1/\sqrt{S_2}\geq \sqrt{\Delta}$ (see Lemma
+[5](#lem:nu-bound-1){reference-type="ref" reference="lem:nu-bound-1"}),
+that search is optimal for any Hamiltonian $H$ with a constant spectral
+gap, and thus recover the main result from
+Ref. [@chakraborty2016spatial]. This encompasses graphs such as
+Erdös-Renyi random graphs, complete bipartite graphs or strongly regular
+graphs. Additionally, our results also predict optimality for graphs
+such as hypercubes, lattices of dimension greater than four even though
+they do not exhibit a constant spectral gap.
+
+One can wonder whether a simpler and more intuitive sufficient condition
+for optimality can be derived from
+Theorem [1](#thm:optimalityCG){reference-type="ref"
+reference="thm:optimalityCG"}. To our knowledge, all previously known
+examples of graphs whose spectral gap is large enough compared to
+$\sqrt{\epsilon}$ can be searched by quantum walk in optimal time (e.g.
+lattices of dimension $d\geq5$), so one could think that
+$\sqrt{\epsilon}\ll \Delta$ is a sufficient condition for optimal
+quantum search. We show explicitly that this is not the case -- there
+exist graphs for which the spectral condition is satisfied and the
+spectral gap is such that $\sqrt{\epsilon}\ll \Delta$ but nevertheless
+the value of $S_1/\sqrt{S_2}$ decreases with the size of the graph which
+implies suboptimality. This is the case, for example, for the normalized
+adjacency matrix of the Rook's graph in some regime (see
+Sec. [5](#sec:quantum-walk-chessboard){reference-type="ref"
+reference="sec:quantum-walk-chessboard"}). In fact, this example shows
+that this quantum walk algorithm can also be slower than the square root
+of the hitting time of the corresponding classical walk.
+
+## Performance of quantum search at the critical point ($r\approx S_1$) {#sec:criticalpoint}
+
+Here we present one of our main results, which characterizes the
+performance of quantum search when the parameter $r$ is close to its
+optimal value.  \
+
+::: {#lem_main:search-highest-estate .theorem}
+**Theorem 2**. *Let $H$ be such that the spectral condition of
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} is obeyed, with $S_k$ defined as in
+Eq. [\[eqmain:Sk\]](#eqmain:Sk){reference-type="eqref"
+reference="eqmain:Sk"}. By choosing $r=S_1$ and
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon}}\dfrac{\sqrt{S_2}}{S_1}\right),$$
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} prepares a state $\ket{f}$ such that
+$\nu=|\braket{w}{f}|=\Theta\left(S_1/\sqrt{S_2}\right)$.*
+:::
+
+ \
+As defined previously, the Hamiltonian $H$ has eigenvalues $\lambda_i$
+and corresponding eigenvectors $\ket{v_i}$. We denote each eigenvalue of
+$rH$ as $\lambda'_{i}:=r\lambda_{i}$. First, we express the solution
+state $\ket{w}$ in terms of the eigenstates of $H$. We have
+$$\label{eqmain:solution_expanded}
+\left|w\right\rangle =\sum_{i=1}^{n}a_{i}\left|v_{i}\right\rangle,$$
+such that $|a_n|=\sqrt{\epsilon}$. Now we find the condition for which a
+quantum state $\ket{\psi}$ defined as
+$$\left|\psi\right\rangle =\sum_{i=1}^{n} b_{i}\left|v_{i}\right\rangle,$$
+is an eigenstate of $H_{\mathrm{search}}=rH+H_{\mathrm{oracle}}$. That
+is, $$\begin{aligned}
+H_{\mathrm{search}}\left|\psi\right\rangle  & =E\ket{\psi}\\
+\implies\sum_{i}\lambda_{i}'b_{i}\left|v_{i}\right\rangle +\underbrace{\left\langle w|\psi\right\rangle }_{=:\gamma}\left|w\right\rangle &= E\ket{\psi}\\
+\implies\sum_{i}\left(\lambda_{i}'b_{i}+\gamma a_{i}\right)\left|v_{i}\right\rangle &=\sum_{i}E b_{i}\left|v_{i}\right\rangle.
+\end{aligned}$$ This implies that $$\label{eq:coeff-estates-Hsearch}
+b_{i}=\frac{\gamma a_{i}}{E-\lambda'_{i}}.$$ Note that
+$$\gamma=\left\langle w|\psi\right\rangle =\sum_{i}a^*_{i}b_{i}$$ where
+we substitute for $b_{i}$ to get $$\label{eq:condition_new_eigenvalue}
+1=\sum_{i}\dfrac{|a_{i}|^{2}}{E-\lambda_{i}'}.$$ This equation gives us
+the condition for $E$ to be an eigenvalue of $H_{\text{search}}$. It can
+be seen that the RHS of
+[\[eq:condition_new_eigenvalue\]](#eq:condition_new_eigenvalue){reference-type="eqref"
+reference="eq:condition_new_eigenvalue"} is a monotonically decreasing
+function of $E$ within each interval $]\lambda'_{i-1},\lambda'_{i}[$ and
+$\lambda'_{i}$ are poles of this function. This guarantees that each of
+these intervals, as well as as the interval $]\lambda'_n, +\infty[$,
+contains exactly one eigenvalue.
+
+We are interested in finding the two largest eigenvalues of
+$H_{\text{search}}$. We choose $r=S_1$ and will look for solutions of
+Eq. [\[eq:condition_new_eigenvalue\]](#eq:condition_new_eigenvalue){reference-type="eqref"
+reference="eq:condition_new_eigenvalue"} of the form
+$E=\lambda'_n+\delta$, within the interval $|\delta| < c' S_1 \Delta$
+for some small constant $c'$. Indeed, we will demonstrate that there are
+two solutions within this interval.
+
+To show this, we rewrite
+Eq. [\[eq:condition_new_eigenvalue\]](#eq:condition_new_eigenvalue){reference-type="eqref"
+reference="eq:condition_new_eigenvalue"} in terms of $\delta$ and choose
+$r=S_1$ to obtain $$\label{eq:condition-new-evalue-2}
+\frac{\epsilon}{\delta}+\sum_{i<n}\frac{|a_i|^2}{S_1\Delta_i+\delta}=1,$$
+where $\Delta_i=\lambda_n-\lambda_i$. Finding solutions of this equation
+is equivalent to finding the zeros of a function $F(\delta)$ which can
+be written as $$\begin{aligned}
+F(\delta)&=\dfrac{\epsilon}{\delta}+\sum_{i<n}\dfrac{|a_i|^2}{S_1\Delta_i+\delta}-1\\
+         &=\dfrac{\epsilon}{\delta}+\sum_{i<n}\dfrac{|a_i|^2}{S_1\Delta_i}\left(1+\sum_{k=1}^{\infty}\dfrac{(-\delta)^k}{S^k_1\Delta^k_i}\right)-1\\
+         &= \dfrac{\epsilon}{\delta}-\dfrac{S_2\delta}{S_1^2}+\sum_{i<n}\dfrac{|a_i|^2\delta^2}{S_1^3\Delta_i^3}\sum_{k=0}^{\infty}
+         \dfrac{(-\delta)^k}{\Delta^k_i S_1^k} \\
+          &=\dfrac{\epsilon}{\delta}\left\{1-\dfrac{S_2\delta^2}{S_1^2\epsilon}+f(\delta)\right\}\label{eq:Fdelta},
+\end{aligned}$$ The term $f(\delta)$ can be seen as an error term that
+can be bounded as $$\begin{aligned}
+\label{eq:error-bound-taylor}
+|f(\delta)|\leq\dfrac{S_3|\delta|^3}{S^3_1\epsilon}\dfrac{1}{1-\frac{|\delta|}{S_1\Delta}}\leq \dfrac{S_3|\delta|^3}{S^3_1\epsilon}\dfrac{1}{1-c'}.
+\end{aligned}$$ If this error term was neglected, the function
+$F(\delta)$ would have zeros at $\pm \delta_0$, where
+$$\label{eq:def_delta0}
+\delta_0=\sqrt{\epsilon} \dfrac{S_{1}}{\sqrt{S_2}}.$$ We will see that
+the presence of the term $f(\delta)$ introduces a relative error in
+these solutions i.e., there are two solutions $\delta_{\pm}$ in the
+intervals $$\begin{aligned}
+%\label{eq:solution-eigenvalue-equation}
+\delta_+&\in\left[(1-\eta)\delta_0,(1+\eta)\delta_0\right] \label{eq:interval_deltaplus}\\
+\delta_-&\in\left[-(1+\eta)\delta_0,-(1-\eta)\delta_0\right]\label{eq:interval_deltaminus},
+\end{aligned}$$ where the relative error is given by
+$$\label{eq:eta-ratio}
+\eta=\dfrac{S_3\sqrt{\epsilon}}{S^{3/2}_2}.$$ To demonstrate this let us
+focus on the interval given by
+Eq. [\[eq:interval_deltaplus\]](#eq:interval_deltaplus){reference-type="eqref"
+reference="eq:interval_deltaplus"} and show that $F(\delta)$ has a zero
+in this interval (an analogous derivation can be done for the other
+interval in
+Eq. [\[eq:interval_deltaminus\]](#eq:interval_deltaminus){reference-type="eqref"
+reference="eq:interval_deltaminus"}). If we take
+$\delta_+=\delta_0(1+\eta')$, where $|\eta'|\leq \eta$ we can bound
+$|f(\delta_+)|$ as $$\begin{aligned}
+\label{eq:error-bound2}
+|f(\delta_+)|\leq\dfrac{S_3\delta_0^3(1+\eta)^3}{S^3_1\epsilon(1-c')}\leq \dfrac{\eta(1+\eta)^3}{(1-c')},
+\end{aligned}$$ where we used the definitions from
+Eqs. [\[eq:def_delta0\]](#eq:def_delta0){reference-type="eqref"
+reference="eq:def_delta0"} and
+[\[eq:eta-ratio\]](#eq:eta-ratio){reference-type="eqref"
+reference="eq:eta-ratio"}. Note that the spectral condition imposed in
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} guarantees that $\eta$ is small. Using this
+condition we can show that $$\label{eq:bound_eta}
+    \eta\leq c \frac{S_1}{\sqrt{S_2}}\leq c,$$ where we also used the
+fact that $\frac{S_1}{\sqrt{S_2}}\leq 1$ which is demonstrated later in
+Lemma [5](#lem:nu-bound-1){reference-type="ref"
+reference="lem:nu-bound-1"}.
+
+On the other hand, from
+[\[eq:Fdelta\]](#eq:Fdelta){reference-type="eqref"
+reference="eq:Fdelta"} we have that $$\begin{aligned}
+\label{eq:Fdeltaplus}
+ F(\delta_+)=\dfrac{\epsilon}{\delta_+}\left\{2\eta'+\eta'^2+f(\delta_+)\right\}.   
+\end{aligned}$$ Given the bound
+[\[eq:error-bound2\]](#eq:error-bound2){reference-type="eqref"
+reference="eq:error-bound2"}, we see that the RHS of
+[\[eq:Fdeltaplus\]](#eq:Fdeltaplus){reference-type="eqref"
+reference="eq:Fdeltaplus"} is positive if $\eta'=\eta$ and negative if
+$\eta'=-\eta$, provided $c$ and $c'$ are sufficiently small. This shows
+that indeed $\delta_+$ is in the interval from
+Eq. [\[eq:interval_deltaplus\]](#eq:interval_deltaplus){reference-type="eqref"
+reference="eq:interval_deltaplus"}. The same reasoning can be used to
+show that $\delta_-$ belongs to the interval in
+Eq. [\[eq:interval_deltaminus\]](#eq:interval_deltaminus){reference-type="eqref"
+reference="eq:interval_deltaminus"}.
+
+We can now verify the validity of the assumption
+$\delta_+\leq c' S_1 \Delta$, for some small constant $c'$, which was
+necessary to obtain the bound in
+Eq. [\[eq:error-bound-taylor\]](#eq:error-bound-taylor){reference-type="eqref"
+reference="eq:error-bound-taylor"}. We have that $$\begin{aligned}
+    \delta_+&\leq \delta_0 (1+|\eta|)\\
+    &\leq \frac{S_1}{\sqrt{S_2}}\sqrt{\epsilon}(1+c)\\
+    &\leq c (1+c) S_1 \Delta,
+\end{aligned}$$ where in the second step we used
+Eqs. [\[eq:bound_eta\]](#eq:bound_eta){reference-type="eqref"
+reference="eq:bound_eta"} and
+[\[eq:def_delta0\]](#eq:def_delta0){reference-type="eqref"
+reference="eq:def_delta0"} and in the last step we used the spectral
+condition [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}. Hence, for sufficiently small $c$ the
+condition $\delta_+\leq c' S_1 \Delta$ is verified.
+
+Now that we have obtained two approximate solutions to
+Eq. [\[eq:condition_new_eigenvalue\]](#eq:condition_new_eigenvalue){reference-type="eqref"
+reference="eq:condition_new_eigenvalue"}
+$E_{\pm}=\lambda'_n+\delta_{\pm}$, we proceed to compute the overlap of
+the corresponding eigenstates $\ket{\psi_{\pm}}$ with the marked node.
+From the normalization condition of the eigenstates of
+$H_{\mathrm{search}}$, we have $\sum |b_{i}|^{2}=1$. So from
+Eq. [\[eq:coeff-estates-Hsearch\]](#eq:coeff-estates-Hsearch){reference-type="eqref"
+reference="eq:coeff-estates-Hsearch"}, we can obtain the following
+equation for $\gamma_{\pm}=\braket{w}{\psi_{\pm}}$ $$\begin{aligned}
+&\sum_{i}\frac{|\gamma_\pm a_{i}|^2}{\left(E_\pm-\lambda'_{i}\right)^{2}}=1\\
+\implies &|\gamma_\pm|^2=\left[\frac{\epsilon}{\delta_\pm^{2}}+\sum_{i<n}\frac{|a_{i}|^{2}}{\left(E_\pm-\lambda'_{i}\right)^{2}}\right]^{-1}\\
+\implies |\gamma_\pm|^2 &=\left[\frac{\epsilon}{\delta_\pm^{2}}+\sum_{i<n}\frac{|a_{i}|^{2}}{S_1^2\Delta_i^2\left(1+\frac{\delta_\pm}{S_1\Delta_i}\right)^{2}}\right]^{-1}.
+\end{aligned}$$
+
+Replacing the values of $\delta^\pm$ and neglecting terms scaling as
+$\Theta\left(\eta^2\right)$ we obtain $$\begin{aligned}
+&|\gamma_\pm|^2=\dfrac{S_1^2}{2S_2}\left(1+\Theta\left(\eta\right)\right)\\
+\implies & |\gamma_\pm|=\dfrac{S_1}{\sqrt{2S_2}}\left(1+\Theta\left(\eta\right)\right)      
+\end{aligned}$$ Without loss of generality we can choose the eigenbasis
+of $H_{search}$ such that the overlaps $\gamma_{\pm}$ are positive.
+Furthermore, we can calculate the values of
+$b^\pm_{n}=\braket{\psi_{\pm}}{v_n}$ from
+Eq. [\[eq:coeff-estates-Hsearch\]](#eq:coeff-estates-Hsearch){reference-type="eqref"
+reference="eq:coeff-estates-Hsearch"}, which yields
+$$b^\pm_{n}=\gamma_\pm\frac{a_{n}}{\delta_\pm}.$$ Substituting the
+values of $\delta_\pm$ and $\gamma_\pm$, we obtain that,
+$$\begin{aligned}
+b^\pm_n&=\pm \dfrac{1}{\sqrt{2}}\left(1+\Theta(\eta)\right).
+\end{aligned}$$ So the starting state can be written as
+$$\left|v_{n}\right\rangle = \dfrac{\ket{\psi_+}-\ket{\psi_-}}{\sqrt{2}}+\ket{\Phi},$$
+where $\ket{\Phi}$ is an unnormalized quantum state such that
+$\left\lVert \ket{\Phi} \right\rVert\leq \Theta\left(\eta\right)$.
+
+So evolving $\ket{v_n}$ under $H_{\mathrm{search}}$ for a time $t$
+results in $$\begin{aligned}
+&e^{-iH_{\mathrm{search}}t}\left|v_{n}\right\rangle\\
+&=\frac{1}{\sqrt{2}}e^{-i\lambda'_{n}t}\left(e^{-i\delta_+ t}\left|v_{+}\right\rangle -e^{-i\delta_- t}\left|v_{-}\right\rangle \right)+\Theta\left(\eta\right).
+\end{aligned}$$ Thus after a time
+$T=\frac{\pi}{2\delta_0}=\Theta(\frac{1}{\sqrt{\epsilon}}\frac{\sqrt{S_2}}{S_1})$,
+up to a global phase, we end up in the state
+$$\ket{f}=\dfrac{\ket{v_+}+\ket{v_-}}{\sqrt{2}}+\ket{\Phi'},$$ such that
+$\left\lVert \ket{\Phi'} \right\rVert\leq \Theta\left(\eta\right)$. The
+overlap of $\ket{f}$ with the solution state is given by
+$$\begin{aligned}
+\nu&=|\braket{w}{f}|\\
+       &=\dfrac{S_1}{\sqrt{S_2}}\left(1+\Theta\left(\eta\frac{\sqrt{S_2}}{S_1}\right)\right)=\Theta\left(\dfrac{S_1}{\sqrt{S_2}}\right),
+\end{aligned}$$ where we have used the spectral condition
+[\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} which ensures that
+$$\eta\dfrac{\sqrt{S_2}}{S_1}=\dfrac{\sqrt{\epsilon}S_3}{S_1 S_2}\leq c.$$
+$\Box$\
+ \
+Subsequently, we show that essentially the same behavior is maintained
+if we choose any $r$ within a small enough interval around $S_1$.  \
+
+::: {#lem_main:robustness_r .theorem}
+**Theorem 3**. *Let $H$ be such that the spectral condition of
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} is obeyed and $r$ be chosen such that
+$$\label{eq:ropt_deviation}
+|r-S_1|\leq |\beta| \sqrt{\epsilon S_2},$$ for some small constant
+$\beta$ such that $|\beta|\ll 1$. After a time
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon}}\dfrac{\sqrt{S_2}}{S_1}\right),$$
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} prepares a state $\ket{f}$ such that
+$\nu=|\braket{w}{f}|=\Theta\left(S_1/\sqrt{S_2}\right)$.*
+:::
+
+ \
+The proof of this result follows from the fact that, for any $r$ within
+this interval, we still have that the value of
+$|\delta_{\pm}|=\Theta(\delta_0)$. More precisely, by rewriting
+Eq. [\[eq:Fdelta\]](#eq:Fdelta){reference-type="eqref"
+reference="eq:Fdelta"} for arbitrary $r$ we have
+$$F(\delta)= \frac{\epsilon}{\delta}\left\{1+\frac{\delta }{\epsilon }\left(\frac{S_1}{r}-1\right)- \frac{S_2\delta^2}{r^2\epsilon}\right\}$$
+which will have two zeros in the intervals $$\begin{aligned}
+\delta_+&\in\left[(1-\eta)\delta^{(+)}_0,(1+\eta)\delta_0^{(+)}\right] \label{eq:interval_deltaplus}\\
+\delta_-&\in\left[-(1+\eta)\delta^{(-)}_0,-(1-\eta)\delta^{(-)}_0\right]\label{eq:interval_deltaminus},
+\end{aligned}$$ where
+$$\delta_0^{(\pm)}=\left|\frac{S_1\sqrt{\epsilon}}{\sqrt{S_2}}\left(\frac{\beta}{2}\pm \sqrt{1+\frac{\beta^2}{4}}\right)\right|+\mathcal{O}(\epsilon)$$
+which is of the same order of the value $\delta_0$ from
+Eq. [\[eq:def_delta0\]](#eq:def_delta0){reference-type="eqref"
+reference="eq:def_delta0"}. Hence, with analogous arguments to those
+used in the proof of
+Theorem [2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} we conclude that a deviation
+to the optimal value of $r$ as in
+Eq. [\[eq:ropt_deviation\]](#eq:ropt_deviation){reference-type="eqref"
+reference="eq:ropt_deviation"}, only changes the maximum amplitude and
+the evolution time needed to reach this amplitude by constant factors.
+$\Box$\
+ \
+
+## Failure of the algorithm away from $\mathbf{r\approx S_1}$ {#sec:failure_critpoint}
+
+Previously, we have established that Algorithm
+[\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} prepares a state with an overlap of
+$\Theta(S_1/\sqrt{S_2})$ with the marked vertex for any choice of $r$
+within the interval $$\label{eq:robust-range-of-r}
+r^* \in \left[S_1-\Theta\left(\sqrt{S_2\epsilon}\right), S_1+\Theta\left(\sqrt{S_2\epsilon}\right) \right],$$
+after a time
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon}}\dfrac{\sqrt{S_2}}{S_1}\right).$$
+
+In this section we prove that for any choice of $r$ outside the window
+mentioned in
+Eq. [\[eq:robust-range-of-r\]](#eq:robust-range-of-r){reference-type="eqref"
+reference="eq:robust-range-of-r"}, the amplitude of the algorithm is
+less than $S_1/\sqrt{S_2}$, irrespective of $T$.  \
+
+::: {#lem:sub-optimality-for-any-r .theorem}
+**Theorem 4**. *For any $r\geq 0$, such that $r \notin r^*$,
+$$|\braket{w}{e^{-iH_{\mathrm{search}}T}|v_n}|\leq o\left(\dfrac{S_1}{\sqrt{S_2}}\right),$$
+$\forall T\geq 0$.*
+:::
+
+ \
+In order to derive this, we require all the eigenvalues and eigenvectors
+of $H_{\mathrm{search}}$. As such we consider that $H_{\mathrm{search}}$
+has eigenvalues $E_n > E_{n-1}>\cdots \geq E_1$, such that
+$H_{\mathrm{search}}\ket{\psi_i}=E_i\ket{\psi_i}$. As before, we
+consider that the eigenvectors and corresponding eigenvalues of $H$ are
+$\lambda_i$ and $\ket{v_i}$, respectively.
+
+Then for $1\leq \alpha \leq n$ let
+$$\ket{\psi_\alpha}=\sum_{i=1}^n b^{(\alpha)}_i\ket{v_i},$$ and define
+$$\label{eq:gamma-alpha}
+\gamma_\alpha =\braket{w}{\psi_\alpha}.$$
+
+So, by using the fact that
+$H_{\mathrm{search}}\ket{\psi_i}=E_i\ket{\psi_i}$, we obtain
+$$\label{eq:b-i-alpha}
+b^{(\alpha)}_i=\dfrac{\gamma_\alpha a_i}{E_\alpha - r \lambda_i},~~1\leq\alpha\leq n.$$
+For all $1\leq \alpha \leq n$, we use the definition of $\gamma_\alpha$
+in Eq. [\[eq:gamma-alpha\]](#eq:gamma-alpha){reference-type="eqref"
+reference="eq:gamma-alpha"} and the expression for $b^{(\alpha)}_i$ in
+Eq. [\[eq:b-i-alpha\]](#eq:b-i-alpha){reference-type="eqref"
+reference="eq:b-i-alpha"} to obtain $$\begin{aligned}
+\label{eq:eigenvalue-condition-alpha}
+F(E_{\alpha}):=\sum_{i=1}^n \dfrac{|a_i|^2}{E_\alpha-r\lambda_i}=1.
+\end{aligned}$$
+
+From the normalization condition, $\sum_i |b^{(\alpha)}_i|^2=1$, for
+every $\alpha$, we also obtain that $$\label{eq:gamma-alpha2}
+\dfrac{1}{|\gamma_\alpha|^2}=\sum_{i=1}^n \dfrac{|a_i|^2}{(E_\alpha-r\lambda_i)^2}.$$
+
+Now, $$\begin{aligned}
+\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}&=\sum_{\alpha}e^{-iE_\alpha t}\braket{w}{\psi_\alpha}\braket{\psi_\alpha}{v_n}\\
+                                          &=\sqrt{\epsilon}\sum_{\alpha}e^{-iE_\alpha t}\gamma_\alpha b^{(\alpha) *}_n\\                                        
+\label{eq:final-amplitude-any-t}                                          
+                                          &=\sqrt{\epsilon}\sum_{\alpha} \dfrac{|\gamma_\alpha|^2 e^{-iE_\alpha t}}{E_\alpha -r},
+\end{aligned}$$ where in the last line we have replaced the value of
+$b^{(\alpha)}_n$ from
+Eq. [\[eq:b-i-alpha\]](#eq:b-i-alpha){reference-type="eqref"
+reference="eq:b-i-alpha"}.
+
+Note that from the condition that the amplitude at $t=0$ is
+$\sqrt{\epsilon}$ we obtain $$\label{eq:initial-amplitude}
+\sum_{\alpha=1}^n \dfrac{|\gamma_\alpha|^2}{E_{\alpha}-r}=1.$$
+
+Now we shall consider the following two cases, each of which we treat
+differently: (i) When $r>r^*$ and (ii) $r<r^*$.\
+ \
+**(i) $\mathbf{r>r^*}$**: We first use
+Eq. [\[eq:final-amplitude-any-t\]](#eq:final-amplitude-any-t){reference-type="eqref"
+reference="eq:final-amplitude-any-t"} and
+Eq. [\[eq:initial-amplitude\]](#eq:initial-amplitude){reference-type="eqref"
+reference="eq:initial-amplitude"} to obtain that
+$$\label{eq:upper-bound-amplitude}
+|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\sqrt{\epsilon}|\gamma_n|^2}{E_n-r}-\sqrt{\epsilon}.$$
+
+Let $E_n=r+\delta_+$ and $\Delta_j=1-\lambda_j$. From
+Eq. [\[eq:gamma-alpha2\]](#eq:gamma-alpha2){reference-type="eqref"
+reference="eq:gamma-alpha2"} we have $$\begin{aligned}
+ \dfrac{1}{|\gamma_n|^2}&\geq \dfrac{\epsilon}{\delta^2_+}
+\label{eq:upper-bound-gamma-n}\\
+\implies |\gamma_n|^2&\leq \dfrac{\delta^2_+}{\epsilon}.
+\end{aligned}$$
+
+Substituting this into
+Eq. [\[eq:upper-bound-amplitude\]](#eq:upper-bound-amplitude){reference-type="eqref"
+reference="eq:upper-bound-amplitude"}, we get
+$$\label{eq:upper-bound-amplitude-2}
+|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\delta_+}{\sqrt{\epsilon}}$$
+
+Next using the fact that $F(E_n)=1$
+(Eq. [\[eq:eigenvalue-condition-alpha\]](#eq:eigenvalue-condition-alpha){reference-type="eqref"
+reference="eq:eigenvalue-condition-alpha"}), we obtain an upper bound on
+$\delta_+$ as follows $$\begin{aligned}
+&\dfrac{\epsilon}{\delta_+}+\sum_{j=1}^{n-1}\dfrac{|a_j|^2}{E_n-r+r\Delta_j}=1\\
+&\implies \dfrac{\epsilon}{\delta_+}+\dfrac{S_1}{r}>1\\
+\label{eq:upper-bound-delta-+}
+&\implies \delta_+ < \dfrac{\epsilon r}{r-S_1}.
+\end{aligned}$$ Next we substitute the upper bound on $\delta_+$ into
+Eq. [\[eq:upper-bound-amplitude-2\]](#eq:upper-bound-amplitude-2){reference-type="eqref"
+reference="eq:upper-bound-amplitude-2"} to obtain
+$$|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\sqrt{\epsilon}r}{S_1-r}.$$
+For any $r=S_1+\omega\left(S_2\sqrt{\epsilon}\right)$, we indeed obtain
+that
+$$|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq o\left(\dfrac{S_1}{\sqrt{S_2}}\right).$$\
+ \
+(ii) **$\mathbf{r<r^*}$: **In this region, the proof is similar in
+spirit to the case where $r>r^*$. Here we can bound the amplitude by
+bounding the value of $\delta_-$ where $E_{n-1}=r-\delta_-$.
+
+In fact as before, using
+Eq. [\[eq:final-amplitude-any-t\]](#eq:final-amplitude-any-t){reference-type="eqref"
+reference="eq:final-amplitude-any-t"} and
+Eq. [\[eq:initial-amplitude\]](#eq:initial-amplitude){reference-type="eqref"
+reference="eq:initial-amplitude"} to obtain that
+$$\label{eq:upper-bound-amplitude-left}
+|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\sqrt{\epsilon}|\gamma_{n-1}|^2}{\delta_-}+\sqrt{\epsilon}.$$
+From Eq. [\[eq:gamma-alpha\]](#eq:gamma-alpha){reference-type="eqref"
+reference="eq:gamma-alpha"}, it is easy to obtain that $$\begin{aligned}
+\label{eq:upper-bound-gamma-n-left}
+|\gamma_{n-1}|^2\leq \dfrac{\delta^2_-}{\epsilon}.
+\end{aligned}$$
+
+This gives us $$\label{eq:upper-bound-amplitude-2-left}
+|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\delta_-}{\sqrt{\epsilon}}+\sqrt{\epsilon}$$
+
+Here we use the fact that $F(E_{n-1})=1$ to obtain an upper bound on
+$\delta_-$. We have, $$\begin{aligned}
+&-\dfrac{\epsilon}{\delta_-}+\sum_{j=1}^{n-1}\dfrac{|a_j|^2}{-\delta_-+r\Delta_j}=1\\
+&\implies -\dfrac{\epsilon}{\delta_-}+\dfrac{S_1}{r}<1~~~~~~[\because~\delta_-< r\Delta]\\
+\label{eq:upper-bound-delta--}
+&\implies \delta_- < \dfrac{\epsilon r}{S_1-r}.
+\end{aligned}$$ We now substitute the upper bound on $\delta_-$ into
+Eq. [\[eq:upper-bound-amplitude-2-left\]](#eq:upper-bound-amplitude-2-left){reference-type="eqref"
+reference="eq:upper-bound-amplitude-2-left"} to obtain
+$$|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq \dfrac{2\sqrt{\epsilon}r}{r-S_1}+\sqrt{\epsilon}.$$
+Thus any $r=S_1-\omega\left(S_2\sqrt{\epsilon}\right)$, we indeed obtain
+that
+$$|\braket{w}{e^{-iH_{\mathrm{search}}t}|v_n}|\leq o\left(\dfrac{S_1}{\sqrt{S_2}}\right),$$
+where in the last line we use the fact that we are in a regime where
+$\sqrt{\epsilon}=o\left(S_1/\sqrt{S_2}\right)$.\
+ \
+This concludes the proof. $\Box$\
+
+## Validity of the spectral condition and implications to algorithmic performance {#subsec:applicability-of-lemma-1}
+
+We have seen that the maximum amplitude at the marked node is determined
+by the ratio $S_1/\sqrt{S_2}$ and hence it is important to obtain upper
+and lower bounds on this quantity, given any $H$. We do so via the
+following lemma:\
+ \
+
+::: {#lem:nu-bound-1 .lemma}
+**Lemma 5**. *If $S_1,~S_2$ and $\epsilon$ are defined as in
+Lemma [2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"}, then
+$$\sqrt{\Delta(1-\epsilon)}\leq \frac{S_1}{\sqrt{S_2}} \leq 1.$$*
+:::
+
+ \
+ \
+The lower bound is obtained in a straightforward manner. Observe that
+$$\begin{aligned}
+\dfrac{S_1}{\sqrt{S_2}}&=\frac{\sum_{i<n}\frac{|a_{i}|^{2}}{1-\lambda_{i}}}{\sqrt{\sum_{i<n}\frac{|a_{i}|^{2}}{\left(1-\lambda{}_{i}\right)^{2}}}}\\
+   &\geq \sqrt{\Delta\sum_{i<n}\frac{|a_{i}|^{2}}{1-\lambda_{i}}}\geq\sqrt{\Delta(1-\epsilon)}=\Theta\left(\sqrt{\Delta}\right),
+\end{aligned}$$ It is possible to show that this bound is in fact tight.
+For example, we can construct a normalized Hamiltonian for which
+$|a_i|^2=1/n$ [^7] and the spectrum is such that:  \
+
+-   there is one eigenvector with eigenvalue $1$. \
+
+-   there are $\Theta(n\sqrt{\Delta})$ eigenvectors with eigenvalue
+    $1-\Delta$. \
+
+-   there are $\Theta(n(1-\sqrt{\Delta}))$ eigenvectors with eigenvalue
+    $0$.
+
+ \
+It can be seen in this case the quantity
+$S_1/{\sqrt{S_2}}=\Theta(\sqrt{\Delta})$.
+
+To prove the upper bound, we show that $S_1^2/S_2 \leq 1$, for which it
+suffices to prove that
+$$S_2-S_1^2=\sum_{i<n}\dfrac{|a_{i}|^{2}}{(1-\lambda_{i})^2}-\left(\sum_{i<n}\dfrac{|a_{i}|^{2}}{1-\lambda_{i}}\right)^2> 0.$$
+The left hand side of this inequality can be written as
+$$\begin{aligned}
+\label{eq:sum}
+&|a_n|^2\sum_{i<n}\dfrac{|a_{i}|^{2}}{(1-\lambda_{i})^2}+\sum_{i,k < n}\left(\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})^2}-\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})(1-\lambda_k)}\right).
+\end{aligned}$$ Clearly, the first term is always non-negative so we now
+show that the second term is also non-negative. The second term can be
+written as $$\begin{aligned}
+&\sum_{i,k < n}\left(\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})^2}-\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})(1-\lambda_k)}\right)=\\
+&\dfrac{1}{2}\sum_{i,k < n}\left(\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})^2}-\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})(1-\lambda_k)}\right)+\\
+&\dfrac{1}{2}\sum_{k,i < n}\left(\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{k})^2}-\frac{|a_{i}|^{2}|a_k|^2}{(1-\lambda_{i})(1-\lambda_k)}\right)=\\
+&\sum_{i,k < n}\dfrac{|a_i|^2|a_k|^2}{2}\left(\dfrac{1}{(1-\lambda_i)^2}+\dfrac{1}{(1-\lambda_k)^2}-\dfrac{2}{(1-\lambda_i)(1-\lambda_k)}\right)\\
+&=\dfrac{1}{2}\left[\sum_{i,k < n}|a_i|^2|a_k|^2 \dfrac{(\lambda_k-\lambda_i)^2}{(1-\lambda_i)^2(1-\lambda_k)^2}\right]\geq 0.
+\end{aligned}$$ This implies that $S_1^2/S_2\leq 1$ and hence
+$S_1/\sqrt{S_2}\leq 1$. This is saturated (up to $O(1/n)$ terms), for
+example, if $H$ is the normalized adjacency matrix of the complete
+graph. $\Box$\
+\
+ \
+Furthermore, we need to understand the validity of the spectral
+condition imposed in
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}. For this, it will be useful to write a
+weaker condition in terms of the spectral gap $\Delta$. From the
+definition of the quantities $S_k$ (see
+Eq. [\[eqmain:Sk\]](#eqmain:Sk){reference-type="eqref"
+reference="eqmain:Sk"}) it is possible to see that $S_2\geq \Delta S_3$
+and $S_1, S_2\geq 1$. Furthermore, from
+Lemma [5](#lem:nu-bound-1){reference-type="ref"
+reference="lem:nu-bound-1"} we have that $S_1\leq \sqrt{S_2}$. Hence, we
+can bound the RHS of the spectral condition as
+$$\label{eq:spectral_con_bound}
+ c \min\left\{\frac{S_1 S_2}{S_3},\Delta\sqrt{S_2}\right\}\geq c \Delta S_1  \geq c\Delta.$$
+This implies that our analysis is valid for any graph with
+$\sqrt{\epsilon}\leq c \Delta$ i.e., with a sufficiently large spectral
+gap compared to the overlap of the initial state with the marked node.
+For example, for $d$-dimensional lattices the spectral gap is
+$\Delta\sim n^{-2/d}$ and $\epsilon=1/n$ and so it is easy to see from
+the bound in
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} and
+[\[eq:spectral_con_bound\]](#eq:spectral_con_bound){reference-type="eqref"
+reference="eq:spectral_con_bound"} that the spectral condition is
+satisfied for lattices of dimension larger than $5$. In this scenario,
+we have that both $S_1$ and $S_2$ are constants [@childs2004spatial] and
+so we recover the result that marked node can be found in
+$\Theta(\sqrt{n})$ time in such a case as demonstrated by Childs and
+Goldstone. A similar behaviour appears in certain fractal lattices. The
+scaling of the gap depends on the spectral dimension $d_s$ as
+$\Delta\sim n^{-2/d_s}$ and the coefficients $S_1$ and $S_2$ are
+constant for spectral dimension larger than 4
+[@Boettcher_evaluation_2017]. Hence, it can be shown that quantum search
+is optimal in this regime [@Boettcher_searchfractals_2017].
+
+We nottice, in addition, that for regular lattices the performance of
+quantum search for the critical case $d=4$ is also recovered. For
+$4d$-lattices, we have that $\Delta=\Theta(1/\sqrt{n})$,
+$S_1=\Theta(1)$, $S_2=\Theta(\log n)$ and $S_3=\Theta(\sqrt{n})$
+[@childs2004spatial]. As such the spectral condition is satisfied. Thus,
+the amplitude of the final state with the solution node is
+$S_1/\sqrt{S_2}=\Theta(1/\sqrt{\log n})$ after a time
+$T=\Theta(\sqrt{n\log n})$. It can be seen, however, than for dimensions
+$2$ and $3$ where the algorithm has been shown to be suboptimal
+[@childs2004spatial], the spectral condition is violated and our
+analysis fails.
+
+On the other hand, there exist graphs for which the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm can be
+demonstrated to run in $\Theta(\sqrt{n})$ time, even though the spectral
+condition is violated. In the next section, we show how a different
+analysis helps capture the algorithmic performance on such instances.
+
+# Quantum search on graphs with quasi-degenerate highest eigenvalues {#sec:search-degenerate-spectra}
+
+In this section, we begin by considering examples of graphs for which
+the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm runs
+optimally even though their normalized adjacency matrix violates the
+*spectral condition* in
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}.
+
+An example of this is the following vertex-transitive graph, which we
+shall refer to as a *bridged-complete graph*: two complete graphs of
+$n/2$ nodes such that every node in one complete graph is connected to
+the corresponding node in the other (See
+Fig. [1](#subfig:bridged-complete){reference-type="ref"
+reference="subfig:bridged-complete"}). This is a particular case of the
+Rook's graph which we discuss in
+Sec. [5](#sec:quantum-walk-chessboard){reference-type="ref"
+reference="sec:quantum-walk-chessboard"}. The normalized adjacency
+matrix of this graph (i) has an extremely small spectral gap
+($\Delta=\Theta\left(n^{-1+o(1)}\right)$) and (ii) there exists a
+constant gap between the first two eigenvalues and the rest of the
+spectrum. The spectral condition is violated, since
+$$\min\left\{\frac{S_1 S_2}{S_3},\Delta\sqrt{S_2}\right\}=\Theta\left(\epsilon\right)\ll \sqrt{\epsilon},$$
+implying that Theorem
+[2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} is not applicable for
+analyzing the algorithmic performance for this graph.
+
+<figure id="figmain:bridged-joined-cg">
+<figure id="subfig:bridged-complete">
+<p><img src="bridged-complete.jpg" style="width:60.0%"
+alt="image" /><br />
+</p>
+<figcaption> </figcaption>
+</figure>
+<p><br />
+</p>
+<figure id="subfig:joined-complete">
+<img src="joined-complete.jpg" style="width:60.0%" />
+<figcaption> </figcaption>
+</figure>
+<figcaption><span>(a) The <em>bridged-complete</em></span> graph is a
+special case of a Rook’s graph with <span
+class="math inline"><em>n</em><sub>1</sub> = 2</span> and <span
+class="math inline"><em>n</em><sub>2</sub> = <em>n</em>/2</span>. This
+corresponds to two complete graphs of <span
+class="math inline"><em>n</em>/2</span> edges such that each node in one
+complete graph is connected to the corresponding node in the other. (b)
+<em>Joined-complete graph</em>: two complete graphs of <span
+class="math inline"><em>n</em>/2</span> nodes each are connected by a
+single edge.</figcaption>
+</figure>
+
+However, intuitively the quantum walk search algorithm should run
+optimally for the bridged-complete graph. The quantum walk starts with
+an equal superposition of all nodes and, if we neglect the effect of the
+bridges connecting the two complete graphs, it is expected to be able to
+find a node marked in any of the two complete graphs of $n/2$ nodes with
+probability $1/2$ in $\sim \sqrt{n}/2$ time. Moreover, since there is a
+bridge connecting each node in one complete graph to another node in the
+other, the walker can transition between any of the two complete graphs.
+So one expects that a marked node would be obtained in
+$\Theta(\sqrt{n})$ time. A very similar example, with analogous spectral
+properties is the *joined-complete graph* (two complete-graphs joined by
+a single bridge, Fig [2](#subfig:joined-complete){reference-type="ref"
+reference="subfig:joined-complete"}). This example was used in
+Ref. [@meyer2015connectivity] to show that large spectral gaps are
+indeed not necessary for optimal quantum search.
+
+Thus, for both these graphs, we find that the spectrum of their
+normalized adjacency matrix satisfies the following two properties:
+(i) A few of the highest eigenvalues are closely spaced (nearly
+degenerate) and (ii) there exists a large gap between these highest
+eigenvalues and the rest of the spectrum (see
+Fig. [4](#fig:qd_eigenvalues){reference-type="ref"
+reference="fig:qd_eigenvalues"}). We call the space spanned by the
+eigenvectors corresponding to the closely-spaced eigenvalues as
+*quasi-degenerate*. Generally such graphs find applications in spectral
+clustering as they can be partitioned into clusters [@von2007tutorial].
+
+We show here that a modification of the analysis done in
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"}, which explicitly takes into
+account this quasi-degeneracy of the highest eigenvalues, allows us to
+construct spectral conditions which are sufficient to predict whether
+the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm is
+optimal for Hamiltonians that satisfy the aforementioned properties. In
+particular, these conditions will allow us to predict optimality of
+quantum search for graphs such as the joined complete, or the bridged
+complete graph.
+
+Formally, consider a Hamiltonian $H$ such that its eigenvalues are
+$$0\leq\lambda_1\leq\cdots\leq \lambda_n=1,$$ such that
+$$H\ket{v_i}=\lambda_i\ket{v_i}.$$ Let us denote by
+$\ensuremath{\mathcal{D}}$ the space spanned by the $D$ eigenstates
+corresponding to the highest eigenvalues of $H$,
+i.e. $$\label{eq:quasi-degenerate-space}
+\ensuremath{\mathcal{D}}=\mathrm{Span}\{\ket{v_n},\cdots,\ket{v_{n-D+1}}\},$$
+such that $|\ensuremath{\mathcal{D}}|=D$. Consequently, we refer to the
+space spanned by the remaining eigenstates by
+$\bar{\ensuremath{\mathcal{D}}}$. Furthermore, we denote the gaps
+between the eigenvalues $\lambda_n=1$ and $\lambda_{n-D+1}$ as
+$$\label{eqmain:gap-degenerate-space}
+\Delta_\ensuremath{\mathcal{D}}= 1-\lambda_{n-D+1},$$ and the gap
+between the $\lambda_n=1$ and $\lambda_{n-D}$ as
+$$\label{eqmain:gap-bet-nonD-D}
+\Delta=1-\lambda_{n-D},$$ as depicted in
+Fig. [4](#fig:qd_eigenvalues){reference-type="ref"
+reference="fig:qd_eigenvalues"}. Our analysis aims at predicting the
+algorithmic performance in cases where
+$\Delta_\ensuremath{\mathcal{D}}\ll \sqrt{\epsilon}$ and $\Delta$ is
+sufficiently large, for example, when $\Delta\gg \epsilon$. Hence, we
+say that the $D$ largest eigenvalues are nearly degenerate or
+*quasi-degenerate*. The precise spectral properties that the Hamiltonian
+$H$ must fulfil are stated precisely in terms of a new spectral
+condition later on. Also, note that $D=1$ corresponds to the
+non-degenerate case considered in
+Theorem [2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} with $\Delta$ being the
+spectral gap of $H$.
+
+We demonstrate the algorithmic performance for such instances in the
+following subsections in two steps. We first assume that
+$\ensuremath{\mathcal{D}}$ is completely degenerate, i.e. all
+eigenstates in $\ensuremath{\mathcal{D}}$ have eigenvalue one
+($\Delta_\ensuremath{\mathcal{D}}=0$) and find the evolution time and
+final amplitude of the algorithm based on this assumption
+(Subsec. [4.1](#subsec:search-degenerate){reference-type="ref"
+reference="subsec:search-degenerate"}) [^8]. Next, we demonstrate that,
+given certain conditions on $\Delta_\ensuremath{\mathcal{D}}$, the
+algorithmic dynamics for the aforementioned case is the same as when
+$\ensuremath{\mathcal{D}}$ is completely degenerate, up to some small
+error.
+
+## Performance of the $\mathbf{\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}}$ algorithm when $\mathbf{\ensuremath{\mathcal{D}}}$ is degenerate {#subsec:search-degenerate}
+
+In order to analyse graphs with a $D$-degenerate highest eigenvalue
+($\Delta_\ensuremath{\mathcal{D}}=0$), it will be useful to define the
+following quantities $$\label{eqmain:Sk-D}
+S_{k,\bar{\ensuremath{\mathcal{D}}}}=\sum_{i=1}^{n-D}\dfrac{|a_i|^2}{(1-\lambda_i)^k},$$
+where $k\geq 1$. These parameters are similar to $S_k$ defined in
+Eq. [\[eqmain:Sk\]](#eqmain:Sk){reference-type="eqref"
+reference="eqmain:Sk"}, except that the sum excludes all the $D$
+degenerate eigenvalues (note that the quantities $S_k$ are not defined
+if there is degeneracy of the largest eigenvalue).
+
+Furthermore, we define $\sqrt{\epsilon_\ensuremath{\mathcal{D}}}$ as the
+overlap of the solution with the $\ensuremath{\mathcal{D}}$ subspace. If
+the solution state $\ket{w}$ is expressed in the eigenbasis of $H$ as in
+Eq. [\[eqmain:sol-in-eigenbasis\]](#eqmain:sol-in-eigenbasis){reference-type="eqref"
+reference="eqmain:sol-in-eigenbasis"}, this is given by
+$$\label{eqmain:overlap:w-D}
+\epsilon_\ensuremath{\mathcal{D}}=\sum_{i\in \ensuremath{\mathcal{D}}} |a_i|^2.$$
+In addition, we define $\sqrt{\epsilon}=|\braket{w}{v_n}|=|a_n|$ as
+before, except that in this case $\ket{v_n}$ can be any state in the
+degenerate subspace $\ensuremath{\mathcal{D}}$. We introduce the
+following spectral condition, analogous to the one in
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}, in terms of the
+$S_{k,\bar{\ensuremath{\mathcal{D}}}}$ parameters
+$$\label{eq:spec-cond-deg}
+\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}\leq c\min\left\{\dfrac{S_{1,\bar{\ensuremath{\mathcal{D}}}}S_{2,\bar{\ensuremath{\mathcal{D}}}}}{S_{3,\bar{\ensuremath{\mathcal{D}}}}},\Delta\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}\right\}.$$
+Our result regarding the performance of the quantum search algorithm is
+the following.  \
+
+::: {#thm:performance-search-deg .theorem}
+**Theorem 6**. *Let $H$ be such that its largest $D$ highest eigenvalues
+are degenerate and the spectral condition of
+Eq. [\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} is obeyed, with
+$S_{k,\bar{\ensuremath{\mathcal{D}}}}$ defined as in
+Eq. [\[eqmain:Sk-D\]](#eqmain:Sk-D){reference-type="eqref"
+reference="eqmain:Sk-D"}. By choosing
+$r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$ and
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}}\dfrac{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}{S_{1,\bar{\ensuremath{\mathcal{D}}}}}\right),$$
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"}, starting from any one of the
+$1$-eigenstates of $H$, denoted by $\ket{v_n}$, prepares a state
+$\ket{f}$ such that $$\label{eq:nu_deg}
+\nu=|\braket{w}{f}|=\Theta\left(\sqrt{\frac{\epsilon}{\epsilon_{\ensuremath{\mathcal{D}}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right).$$*
+:::
+
+![The analysis of
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"} is tailored to the study of
+quantum search on graphs whose spectrum exhibits the features displayed
+in this figure. A small number $D$ of quasi-degenerate eigenvalues lie
+close to the maximum value $1$, within an energy gap
+$\Delta_{\ensuremath{\mathcal{D}}}$. The next largest eigenvalue has an
+energy $1-\Delta$, where $\Delta\gg \Delta_{\ensuremath{\mathcal{D}}}$.
+Such spectral features appear, for example, in the graphs of
+Fig [3](#figmain:bridged-joined-cg){reference-type="ref"
+reference="figmain:bridged-joined-cg"} or, more generally, in graphs
+composed by highly connected clusters that are sparsely connected to
+each other.](eigenvalues_quasidegenerate.jpg){#fig:qd_eigenvalues}
+
+ \
+Let the solution state $\ket{w}$ be expressed in the eigenbasis of $H$
+as in
+Eq. [\[eqmain:sol-in-eigenbasis\]](#eqmain:sol-in-eigenbasis){reference-type="eqref"
+reference="eqmain:sol-in-eigenbasis"}. It will be convenient to consider
+a rotated basis for the degenerate subspace $\ensuremath{\mathcal{D}}$
+such that a single eigenstate, defined as
+$$\label{eqmain:state-relabeled-basis}
+\ket{v_\ensuremath{\mathcal{D}}^{(1)}}=\dfrac{1}{\sqrt{\epsilon_\ensuremath{\mathcal{D}}}}\sum_{j\in\ensuremath{\mathcal{D}}} a_j\ket{v_j},$$
+contains the whole overlap of this subspace with $\ket{w}$, i.e.
+$|\braket{w}{v_\ensuremath{\mathcal{D}}^{(1)}}|=\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}$.
+We complete the basis with the states
+$\ket{v_\ensuremath{\mathcal{D}}^{(j)}}$, $2\leq j\leq D$, such that
+$\braket{v_\ensuremath{\mathcal{D}}^{(l)}}{v_\ensuremath{\mathcal{D}}^{(m)}}=\delta_{l,m}$
+for any $l,m\in \{1,...,D\}$.
+
+We note that this choice guarantees that
+$\braket{w}{v_\ensuremath{\mathcal{D}}^{(j)}}=0$, for $2\leq j\leq D$.
+This implies that these are eigenstates of $H_{\text{search}}$ with
+eigenvalue $1$, since $$\label{eq:trivial_eigenstates}
+    H_{\text{search}}\ket{v_\ensuremath{\mathcal{D}}^{(j)}}= H \ket{v_\ensuremath{\mathcal{D}}^{(j)}}=\ket{v_\ensuremath{\mathcal{D}}^{(j)}},$$
+for $2\leq j \leq D$. This gives us a set of $D-1$ eigenstates which do
+not play a role in the computation of the final amplitude. To see this,
+let us first express the initial state $\ket{v_n}$ [^9] as
+$$\label{eq:start-state-relabelled}
+\ket{v_n}=\sum_{j=1}^{D}\alpha_j\ket{v_{\ensuremath{\mathcal{D}}}^{(j)}},$$
+where $\sum_{j=1}^D |\alpha_j|^2=1$ and
+$\alpha_1=\sqrt{\epsilon/\epsilon_{\ensuremath{\mathcal{D}}}}$. We can
+now write $$\label{eq:amplitude_deg}
+    \bra{w}e^{i H_{\text{search}}T} \ket{v_n} = \sqrt{\epsilon/\epsilon_{\ensuremath{\mathcal{D}}}} \bra{w}e^{i H_{\text{search}}T} \ket{v_\ensuremath{\mathcal{D}}^{(1)}},$$
+using
+Eq. [\[eq:trivial_eigenstates\]](#eq:trivial_eigenstates){reference-type="eqref"
+reference="eq:trivial_eigenstates"} and the fact that
+$\braket{w}{v_\ensuremath{\mathcal{D}}^{(j)}}=0$, for $2\leq j\leq D$.
+
+Hence, to analyse the amplitude
+$\bra{w}e^{i H_{\text{search}}T} \ket{v_\ensuremath{\mathcal{D}}^{(1)}}$
+it is enough to consider the dynamics in the subspace
+$$V=\text{span}\left\{\ket{v_\ensuremath{\mathcal{D}}^{(1)}}, \ket{v_i}, i\in\{1,...,n-D\}\right\}.$$
+We do this by applying the same techniques of
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"} for the projected search
+Hamiltonian
+$$H'_{\text{search}}=P_V H_{\text{search}} P_V =\ket{w}\bra{w} + P_V H P_V,$$
+where $P_V$ is the projector in the $V$ subspace. Note that the
+Hamiltonian $H'=P_V H P_V$ has a single eigenvalue 1 (the state
+$\ket{v_\ensuremath{\mathcal{D}}^{(1)}}$) and a spectral gap $\Delta$.
+The only difference with respect to the analysis in
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"} is that its dimension is
+$n-D+1$. Hence, we can apply
+Theorem [2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} by replacing the parameters
+$S_k$ by $S_{k,\bar{\ensuremath{\mathcal{D}}}}$ defined in
+Eq. [\[eqmain:Sk-D\]](#eqmain:Sk-D){reference-type="eqref"
+reference="eqmain:Sk-D"} as well as replacing the spectral condition of
+Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"} by the one in
+Eq. [\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"}. This implies that, by choosing
+$r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$ and evolving
+$H'_{\mathrm{search}}$ for time $$\label{eq:tsearch_deg}
+T=\Theta\left(\dfrac{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}{S_{1,\bar{\ensuremath{\mathcal{D}}}}}\dfrac{1}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}}\right),$$
+with initial state $\ket{v_\ensuremath{\mathcal{D}}^{(1)}}$, results in
+a state that has an overlap with the solution
+$$\label{eqmain:amplitude-degenerate}
+|\bra{w}e^{i H_{\text{search}}T} \ket{v_\ensuremath{\mathcal{D}}^{(1)}}|= \Theta\left(\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right).$$
+Finally, replacing this amplitude in
+Eq. [\[eq:amplitude_deg\]](#eq:amplitude_deg){reference-type="eqref"
+reference="eq:amplitude_deg"} we obtain that after this time the
+amplitude $| \bra{w}e^{i H_{\text{search}}T} \ket{v_n}|$ is given by
+Eq. [\[eq:nu_deg\]](#eq:nu_deg){reference-type="eqref"
+reference="eq:nu_deg"}. $\Box$\
+ \
+One can easily see that for $D=1$,
+$|\epsilon|=|\epsilon_{\ensuremath{\mathcal{D}}}|$,
+$S_{1,\bar{\ensuremath{\mathcal{D}}}}=S_1$ and
+$S_{2,\bar{\ensuremath{\mathcal{D}}}}=S_2$ we recover the statement of
+Theorem [2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"}. However, for $D>1$ there
+is, in general, no way to have
+$|\epsilon|=|\epsilon_{\ensuremath{\mathcal{D}}}|$ as this would assume
+we are able to prepare the state
+$\ket{v_\ensuremath{\mathcal{D}}^{(1)}}$ from
+Eq. [\[eqmain:state-relabeled-basis\]](#eqmain:state-relabeled-basis){reference-type="eqref"
+reference="eqmain:state-relabeled-basis"}, which depends on $w$ via the
+overlaps $a_i$. Given this, a possible strategy would be to choose
+$\ket{v_n}$ as a random state in the degenerate subspace
+$\ensuremath{\mathcal{D}}$, in which case the expected value of
+$\epsilon/\epsilon_{\ensuremath{\mathcal{D}}}$ would be $1/D$.
+
+Similarly to Theorem [3](#lem_main:robustness_r){reference-type="ref"
+reference="lem_main:robustness_r"}, it can be shown that the same
+algorithmic performance is maintained by choosing $r$ such that
+$|r-S_{1,\bar{\ensuremath{\mathcal{D}}}}|\ll \epsilon_{\ensuremath{\mathcal{D}}}S_{2,\bar{\ensuremath{\mathcal{D}}}}$.
+An analogous derivation to that of
+Theorem [4](#lem:sub-optimality-for-any-r){reference-type="ref"
+reference="lem:sub-optimality-for-any-r"} shows that any choice of $r$
+such that $$\label{eq:robust-range-of-r-deg}
+r \not\in \left[S_{1,\bar{\ensuremath{\mathcal{D}}}}-\Theta\left(\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}\epsilon_\ensuremath{\mathcal{D}}}\right), S_{1,\bar{\ensuremath{\mathcal{D}}}}+\Theta\left(\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}\epsilon_\ensuremath{\mathcal{D}}}\right) \right],$$
+leads to a maximum amplitude of
+$$o\left(\sqrt{\frac{\epsilon}{\epsilon_{\ensuremath{\mathcal{D}}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right).$$
+
+This implies the following necessary and sufficient conditions for
+optimality for Hamiltonians with degenerate highest eigenvalues.
+Provided that the spectral condition in
+Eq. [\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} holds, we obtain that the algorithm is
+optimal, in the sense discussed in
+Sec. [2.2](#sec:def_optimality){reference-type="ref"
+reference="sec:def_optimality"}, *if and only if*
+$$\label{eq:cond_optimality_deg}
+\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}=\Theta(1),$$
+and $D=\Theta(1)$, which ensures that an amplitude of
+$\sqrt{\epsilon/\epsilon_{\ensuremath{\mathcal{D}}}}=\Theta(1)$ after a
+time $T=\Theta(1/\sqrt{\epsilon})$. More generally, if $D$ is not
+constant and provided
+Eq. [\[eq:cond_optimality_deg\]](#eq:cond_optimality_deg){reference-type="eqref"
+reference="eq:cond_optimality_deg"} holds, we obtain an amplitude
+$$\nu\sim \sqrt{\frac{\epsilon}{\epsilon_\ensuremath{\mathcal{D}}}},$$
+after a time
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon_\ensuremath{\mathcal{D}}}}\right).$$
+Hence, from
+Eq. [\[eqmain:search-time-with-amp-amp\]](#eqmain:search-time-with-amp-amp){reference-type="eqref"
+reference="eqmain:search-time-with-amp-amp"}, using
+$\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}/\epsilon}$ rounds of quantum
+amplitude amplification would also result in finding the marked vertex
+in time $$\label{eq:cost_deg_nuequal1}
+T_{\mathrm{search}}=\sqrt{\dfrac{\epsilon_\ensuremath{\mathcal{D}}}{\epsilon}}\mathcal{S} + \dfrac{\ensuremath{\mathcal{C}}_w}{\sqrt{\epsilon}}+\mathcal{M},$$
+which is similar to the optimal performance except that there is a
+multiplicative overhead in the set-up cost of
+$\sqrt{\epsilon_\ensuremath{\mathcal{D}}/\epsilon}$.
+
+## Performance of the $\mathbf{\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}}$ algorithm when $\mathbf{\ensuremath{\mathcal{D}}}$ is quasi-degenerate {#subsec:search-quasi-degenerate}
+
+In this subsection, we explicitly calculate an upper bound on the error
+of the predicted performance of the $\ensuremath{\mathcal{C G}}$
+algorithm when $\Delta_\ensuremath{\mathcal{D}}$, defined in
+Eq. [\[eqmain:gap-degenerate-space\]](#eqmain:gap-degenerate-space){reference-type="eqref"
+reference="eqmain:gap-degenerate-space"}, is larger than $0$. In this
+case, we write $H$ in its spectral form as
+$$\label{eq:spectral-form-quasi-deg-Ham}
+H=\sum_{j\in\ensuremath{\mathcal{D}}} \ket{v_j}\bra{v_j}+\sum_{j\notin\ensuremath{\mathcal{D}}} \lambda_j\ket{v_j}\bra{v_j}+\sum_{j\in\ensuremath{\mathcal{D}}} (\lambda_j-1)\ket{v_j}\bra{v_j}.$$
+
+This in turn implies that the search Hamiltonian $H_{\mathrm{search}}$
+can be split as $$\begin{aligned}
+\label{eq:spectral-form-quasi-deg-Ham-search}
+H_{\mathrm{search}}&=H^{\mathrm{deg}}_{\mathrm{search}}+H_{\mathrm{err}},
+\end{aligned}$$ where $H^{\mathrm{deg}}_{\mathrm{search}}$ corresponds
+to the search Hamiltonian assuming that eigenspace
+$\ensuremath{\mathcal{D}}$ of $H$ is exactly degenerate with all
+eigenvalues in $\ensuremath{\mathcal{D}}$ equal to $1$,
+i.e. $$\label{eq:spectral-form-deg-Ham-search}
+H^{\mathrm{deg}}_{\mathrm{search}}=\ket{w}\bra{w}+r \left(\sum_{j\in\ensuremath{\mathcal{D}}} \ket{v_j}\bra{v_j}+\sum_{j\notin\ensuremath{\mathcal{D}}} \lambda_j\ket{v_j}\bra{v_j}\right)$$
+and $$\label{eq:Herr}
+H_{\mathrm{err}}=r \sum_{j\in\ensuremath{\mathcal{D}}} (\lambda_j-1)\ket{v_j}\bra{v_j}.$$
+We can quantify the error caused by neglecting $H_{err}$ in the time
+evolution of $H_{\mathrm{search}}$ for time $T$ via the Trotter formulas
+[@childs2019trotter]. This leads to the following Lemma.  \
+
+::: {#lem:trotter-error .lemma}
+**Lemma 7**. *Let
+$H_{\mathrm{search}}=H^{\mathrm{deg}}_{\mathrm{search}}+H_{\mathrm{err}}$,
+with $H^{\mathrm{deg}}_{\mathrm{search}}$ and $H_{\mathrm{err}}$ defined
+in
+Eqs. [\[eq:spectral-form-deg-Ham-search\]](#eq:spectral-form-deg-Ham-search){reference-type="eqref"
+reference="eq:spectral-form-deg-Ham-search"} and
+[\[eq:Herr\]](#eq:Herr){reference-type="eqref" reference="eq:Herr"},
+respectively. For any time $T\geq 1/\sqrt{\epsilon_D}$, we have that
+$$\bra{w}e^{i H_{\mathrm{search}}T} \ket{v_n}= \bra{w}e^{iH^{\mathrm{deg}}_{\mathrm{search}}T} \ket{v_n}+\eta_{qd},$$
+where
+$$\eta_{qd}=O\left(r \Delta_\ensuremath{\mathcal{D}}\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}T^2\right).$$*
+:::
+
+ \
+Using first order Trotter formula [@childs2019trotter] we have
+$$\begin{aligned}
+e^{-iTH_{\mathrm{search}}}&=e^{-iT\left(H^{\mathrm{deg}}_{\mathrm{search}}+H_{\mathrm{err}}\right)}\\
+\label{eqmain:trotter-error1}                          
+                          &=e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}e^{-iTH_{\mathrm{err}}}+O\left(\left\lVert [\ket{w}\bra{w},H_{\mathrm{err}}] \right\rVert T^2\right)\\
+                          &=e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}e^{-iTH_{\mathrm{err}}}+O\left(r\Delta_\ensuremath{\mathcal{D}}\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}T^2\right),
+\end{aligned}$$ where we used the bound
+$$\left\lVert [\ket{w}\bra{w},H_{\mathrm{err}}] \right\rVert=O(r\Delta_\ensuremath{\mathcal{D}}\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}),$$
+which can be demonstrated by using the fact that $H_{\mathrm{err}}$ has
+support only on the $\ensuremath{\mathcal{D}}$ subspace.
+
+Moreover, we have that $$\begin{aligned}
+e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}e^{-iTH_{\mathrm{err}}}&=e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}\left(I-iTH_{\mathrm{err}}+\cdots\right)\\
+\label{eqmain:truncating-exponential}                                                                
+                                                                &=e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}+O\left(T\left\lVert H_{\mathrm{err}} \right\rVert\right)\\
+                                                                &=e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}+O\left(r\Delta_\ensuremath{\mathcal{D}}T\right).
+\end{aligned}$$ The error in the approximation can be bounded by
+combining
+Eq. [\[eqmain:trotter-error1\]](#eqmain:trotter-error1){reference-type="eqref"
+reference="eqmain:trotter-error1"} and
+Eq. [\[eqmain:truncating-exponential\]](#eqmain:truncating-exponential){reference-type="eqref"
+reference="eqmain:truncating-exponential"} as $$\begin{aligned}
+\label{eq:error-trotter}
+e^{-iTH_{\mathrm{search}}}=
+&e^{-iTH^{\mathrm{deg}}_{\mathrm{search}}}
++\eta_{qd},
+\end{aligned}$$ with $$\begin{aligned}
+   \eta_{qd}&= O\left(r\Delta_\ensuremath{\mathcal{D}}\max\left\{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}T^2,T\right\}\right)
+   \\&=O\left(r \Delta_\ensuremath{\mathcal{D}}\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}T^2\right),
+\end{aligned}$$ where in the last step we assumed
+$T\geq 1/\sqrt{\epsilon_D}$. $\Box$\
+ \
+Using this Lemma, we can now adapt
+Theorem [6](#thm:performance-search-deg){reference-type="ref"
+reference="thm:performance-search-deg"} to Hamiltonians with
+quasi-degenerate highest eigenvalues. To do so, we need to impose a
+condition on the spectrum of $H$, that guarantees that the error
+$\eta_{qd}$ in Lemma [7](#lem:trotter-error){reference-type="ref"
+reference="lem:trotter-error"} is small enough for the predictions of
+Theorem [6](#thm:performance-search-deg){reference-type="ref"
+reference="thm:performance-search-deg"} to be meaningful. It can be seen
+that this is possible if $$\begin{aligned}
+ \sqrt{\epsilon}\geq \dfrac{1}{c_1}\dfrac{S^{3/2}_{2,\bar{\ensuremath{\mathcal{D}}}}\Delta_\ensuremath{\mathcal{D}}}{S^2_{1,\bar{\ensuremath{\mathcal{D}}}}}.\label{eq:lowerbound_epsilonD}
+\end{aligned}$$ For a sufficiently small positive constant $c_1$. A
+simpler, but less tight form for this condition in terms of the gaps
+$\Delta_\ensuremath{\mathcal{D}}$ and $\Delta$ can be obtained by using
+the lower bound in
+Lemma [\[lem:nu-bound-1\]](#lem:nu-bound-1){reference-type="eqref"
+reference="lem:nu-bound-1"} (which is valid also for
+$S_{1,\bar{\ensuremath{\mathcal{D}}}}/\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}$).
+It can be shown that if
+$$\sqrt{\epsilon} \geq \frac{\Delta_\ensuremath{\mathcal{D}}}{ c_1 \Delta^2}$$
+then
+Eq. [\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"} is satisfied. For graphs such as the
+joined or bridged complete graph, we can take $D=2$ in which case
+$\Delta_{\ensuremath{\mathcal{D}}}=\Theta(1/n)$ and $\Delta=\Theta(1)$,
+whereas $\sqrt{\epsilon}=\Theta(n^{-1/2})$, ensuring this condition is
+satisfied.
+
+Our general result for search on graphs for which $H$ has
+quasi-degenerate highest eigenvalues is the following.  \
+
+::: {#thm:performance_qd .theorem}
+**Theorem 8**. *For a given Hamiltonian $H$, assume there is a positive
+integer $D$ such that the conditions in
+Eqs. [\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"} and
+[\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} are true. Then, by choosing
+$r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$ and
+$$T=\Theta\left(\dfrac{1}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}}\dfrac{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}{S_{1,\bar{\ensuremath{\mathcal{D}}}}}\right),$$
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} prepares a state $\ket{f}$ such that
+$$\label{eq:nu_deg}
+\nu=|\braket{w}{f}|=\Theta\left(\sqrt{\frac{\epsilon}{\epsilon_{\ensuremath{\mathcal{D}}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right).$$*
+:::
+
+ \
+The proof follows by combining the result of
+Lemma [7](#lem:trotter-error){reference-type="ref"
+reference="lem:trotter-error"} with that of
+Theorem [6](#thm:performance-search-deg){reference-type="ref"
+reference="thm:performance-search-deg"}. After a time
+$$T=\Theta\left(\dfrac{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}{S_{1,\bar{\ensuremath{\mathcal{D}}}}}\dfrac{1}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}}\right),$$
+we have the following bound for the error term $$\begin{aligned}
+\eta_{qd}&=O\left(\dfrac{\Delta_\ensuremath{\mathcal{D}}S_{2,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}S_{1,\bar{\ensuremath{\mathcal{D}}}}}\right)\\
+& =c_1 O\left(\sqrt{\frac{\epsilon}{\epsilon_{\ensuremath{\mathcal{D}}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right),
+\label{eq:additive-error-trotter}
+\end{aligned}$$ where in the second step we use the condition from
+Eq. [\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"}. Hence, for a sufficient small value
+of constant $c_1$, the amplitude obtained at the solution after evolving
+for this time $T$ from
+Eq. [\[eq:tsearch_deg\]](#eq:tsearch_deg){reference-type="eqref"
+reference="eq:tsearch_deg"} is given by $$\begin{aligned}
+    \bra{w}e^{i H_{\text{search}}T} \ket{v_n}& = \bra{w}e^{i H_{\text{search}}^{\mathrm{deg}}T}  \ket{v_n} + \eta_{qd}\\&
+    =\Theta\left(\sqrt{\frac{\epsilon}{\epsilon_{\ensuremath{\mathcal{D}}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right),
+\end{aligned}$$ where we used
+Eq. [\[eq:additive-error-trotter\]](#eq:additive-error-trotter){reference-type="eqref"
+reference="eq:additive-error-trotter"} and
+Theorem [6](#thm:performance-search-deg){reference-type="ref"
+reference="thm:performance-search-deg"}. $\Box$\
+
+This result leads to the following *sufficient* condition for optimal
+quantum search: provided there is an integer $D=\Theta(1)$ such that
+Eqs. [\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"} and
+[\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} are satisfied and
+$S_{1,\bar{\ensuremath{\mathcal{D}}}}/{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}=\Theta(1)$,
+quantum search is optimal. This is the case, for example, for graphs in
+which there a constant $D$ such that
+$\Delta_{\ensuremath{\mathcal{D}}}=o(\sqrt{\epsilon})$ and a large gap
+$\Delta=\Theta(1)$, such as the bridged or joined-complete graph.
+
+Note that, even though in the fully degenerate case in
+Sec. [4.1](#subsec:search-degenerate){reference-type="ref"
+reference="subsec:search-degenerate"} our analysis provided necessary
+and sufficient conditions for optimal quantum search, here we can only
+provide a sufficient condition because our analysis gives no guarantee
+that the choice $r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$ gives the best
+algorithmic performance when there is quasi-degeneracy. This is because,
+the error term that we obtain by approximating the quasi-degenerate case
+with the fully degenerate case in
+Lemma [7](#lem:trotter-error){reference-type="ref"
+reference="lem:trotter-error"}, becomes too large for sufficiently large
+values of $r$ and $T$.
+
+# Finding a marked node on the Rook's graph {#sec:quantum-walk-chessboard}
+
+In this section, we discuss the performance of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm on the
+Rook's graph. The edges of this graph correspond to the possible
+movements of a rook on a rectangular chessboard with $n=n_1 n_2$ nodes,
+where $n_1$ is the number of rows and $n_2$ the number of columns. We
+assume, without loss of generality, that $n_2\geq n_1$ and take
+$n_1=n^{\sigma}$ and $n_2=n^{1-\sigma}$ where $0<\sigma<1/2$.
+
+The motivation for studying quantum search on this graph is that,
+depending on the choice of $\sigma$, the performance of the algorithm
+varies drastically. The analysis of
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"} can be applied in certain
+regimes, showing that for $1/3\leq \sigma \leq 1/2$ the algorithm is
+optimal, whereas for $1/4 \leq \sigma < 1/3$ the algorithm is suboptimal
+and also slower than the square root of the classical hitting time,
+which for this graph is $\Theta(n)$. Interestingly, this suboptimality
+result holds even when the spectral gap $\Delta_{RG}\gg \sqrt{\epsilon}$
+showing that the latter condition is not sufficient for optimal quantum
+search.
+
+For sufficiently low values of $\sigma$, the analysis of
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"} breaks down and the
+quasi-degenerate treatment from
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"} can be used to provide lower
+bounds on the amplitude that can be obtained at the marked node after a
+certain time. This allows us, for example, to demonstrate that if
+$n_1=\Theta(1)$ the algorithm is optimal. Our predictions regarding the
+algorithmic performance are summarized in
+Table [\[tab:compare\]](#tab:compare){reference-type="ref"
+reference="tab:compare"} for different regimes of $\sigma$.
+
+## The Rook's graph and its spectrum
+
+We begin by introducing the Rook's graph and the associated Hamiltonian
+$H$ that drives the quantum walk.
+
+Consider the movement of a rook on a rectangular chessboard of $n_1$
+rows and $n_2$ columns. The position of the rook on the chessboard is
+defined by the tuple $(i_{\leftrightarrow},j_{\updownarrow})$, where
+$i_{\leftrightarrow}\in [n_2]$ and $j_{\updownarrow}\in [n_1]$. From any
+given position, the rook can move horizontally (left or right) to any of
+the available $n_2$ positions or it can move vertically (forward and
+backward) to any of the available $n_1$ positions. Furthermore, suppose
+the rook accesses one of these available positions uniformly at random.
+
+<figure id="figmain:chessboard">
+<figure id="subfig:chessboard">
+<img src="rook_chessboard.jpg" />
+<figcaption> </figcaption>
+</figure>
+<figure id="subfig:cartesian-complete-graphs">
+<img src="cartesian_product.jpg" />
+<figcaption> </figcaption>
+</figure>
+<figcaption> The possible moves of a rook on a rectangular chessboard of
+<span class="math inline"><em>n</em><sub>1</sub></span> rows and <span
+class="math inline"><em>n</em><sub>2</sub></span> columns (a)
+corresponds to a graph which is the Cartesian product of two complete
+graphs (Rook’s graph) of <span
+class="math inline"><em>n</em><sub>1</sub></span> and <span
+class="math inline"><em>n</em><sub>2</sub></span> nodes respectively as
+depicted in (b).</figcaption>
+</figure>
+
+If every cell of the chessboard is represented by the node of a graph
+then, the vertical movement of the rook is a walk on a complete graph of
+$n_1$ nodes and the horizontal movement corresponds to a walk on the
+complete graph of $n_2$ nodes. So, overall there are $n_2-1$ number of
+cliques (complete subgraphs) of $n_1$ nodes such that each node of an
+$n_1$-sized clique is connected to the corresponding node in $n_2-1$
+other cliques. The resulting graph has $n=n_1n_2$ vertices and each node
+has degree $d=n_1+n_2-2$. This regular graph, known as the *Rook's
+graph* [@moon1963line; @hoffman1964line], corresponds to the Cartesian
+product of two complete graphs of $n_1$ nodes and $n_2$ nodes
+respectively and is also vertex-transitive. This has been depicted in
+Fig. [7](#figmain:chessboard){reference-type="ref"
+reference="figmain:chessboard"}.
+
+The Cartesian product of two graphs $G_1$ and $G_2$ is denoted as
+$G_1\square G_2$. If the adjacency matrix of $G_1$ is $A_{G_1}$ and the
+adjacency matrix of $G_2$ is $A_{G_2}$, then
+$$A_{G_1\square G_2}= A_{G_1}\otimes I_{n_2}+ I_{n_1}\otimes A_{G_2},$$
+where $\otimes$ denotes the Kronecker product and $I_j$ denotes the
+identity matrix of dimension $j$. Thus, the adjacency matrix of the
+Rook's graph is given by $$\begin{aligned}
+\label{eq:adj-matrix-graph}
+A_G&= A^{n_1}_{CG}\otimes I_{n_2}+ I_{n_1}\otimes A^{n_2}_{CG},
+\end{aligned}$$ where $A^{n_1}_{CG}$ and $A^{n_2}_{CG}$ are the
+adjacency matrices of the complete graph with $n_1$ vertices and $n_2$
+vertices respectively. As an aside, note that the graph corresponding to
+the case where $n_1=2$ and $n_2=n/2$ is the *bridged-complete graph* see
+Fig. [1](#subfig:bridged-complete){reference-type="ref"
+reference="subfig:bridged-complete"} and the case where $n_2=n$ and
+$n_1=1$ is the complete graph.
+
+We divide $A_G$ by the degree of each node $(n_1+n_2-2)$ and rescale its
+eigenvalues so they lie between $0$ and $1$. So the Hamiltonian we
+consider for the spatial search problem is the rescaled and shifted
+version of $A_G$ which we denote by $H$. Without loss of generality, we
+take $n_2\geq n_1$ (the case $n_1\geq n_2$ can be recovered simply by
+exchanging the labels $1$ and $2$ i.e. what we refer to as horizontal
+and vertical directions). Furthermore, we assume that $n_1=n^{\sigma}$
+and $n_2=n^{1-\sigma}$ where $0<\sigma<1/2$.
+
+It can be demonstrated that the Hamiltonian has 4 distinct eigenvalues
+(except in the case $n_1=n_2$, when there are there only three) which
+are shown in Table
+[\[tab:evalues-chessboard\]](#tab:evalues-chessboard){reference-type="ref"
+reference="tab:evalues-chessboard"} along with its degeneracies. Its
+spectral gap is given by $$\label{eqmain:spectral-gap-chessboard}
+\Delta_{RG}=1-\lambda_B=\Theta\left(\dfrac{n_1}{n_2}\right)=\Theta\left(\dfrac{1}{n^{1-2\sigma}}\right).$$
+Hence, by changing the value of $\sigma$, both the gap as well as the
+degeneracy of the different eigenvalues changes.
+
+In what follows we shall analyse the problem of finding a marked node on
+this graph for different regimes of $\sigma$. In particular, we will
+highlight regimes of $\sigma$ where treating the first few eigenstates
+of $H$ as quasi-degenerate shall help in deducing the algorithmic
+running time.
+
+::: center
+::: tabular
+\@lll@ Eigenvalue & Degeneracy\
+$\lambda_A=1$   &   $1$\
+$\lambda_B=\frac{n_2-\frac{1}{n_2}}{n_1+n_2-\frac{1}{n_1}-\frac{1}{n_2}}=1-\Theta(n^{2\sigma-1})$  
+&   $n_1-1$\
+$\lambda_C=\frac{n_1-\frac{1}{n_1}}{n_1+n_2-\frac{1}{n_1}-\frac{1}{n_2}}=\Theta(n^{2\sigma-1})$  
+&   $n_2-1$\
+$\lambda_D=0$  &   $(n_1-1)(n_2-1)$\
+:::
+:::
+
+## Algorithmic performance when $\mathbf{r=S_1}$ {#subsec:r-S1-chessboard}
+
+We will first analyse the performance of quantum search via the approach
+developed in
+Sec. [3](#sec:performance_non_degenerate){reference-type="ref"
+reference="sec:performance_non_degenerate"}. In order to determine the
+regime of validity of this approach we need to estimate the quantities
+$\epsilon, S_1$, $S_2$ and $S_3$. First observe that the resultant graph
+is symmetric and vertex-transitive, i.e. $|a_i|=1/\sqrt{n},~\forall i$,
+where $a_i$ is as defined in
+Eq. [\[eqmain:sol-in-eigenbasis\]](#eqmain:sol-in-eigenbasis){reference-type="eqref"
+reference="eqmain:sol-in-eigenbasis"}. Consequently, we have
+$\epsilon=1/n$.
+
+Furthermore, using the definition of the parameters $S_k$ from
+Eq. [\[eqmain:Sk\]](#eqmain:Sk){reference-type="eqref"
+reference="eqmain:Sk"}, it can be shown that these parameters scale with
+$n$ as $$\begin{aligned}
+    S_k&= \Theta\left(\frac{n^{\sigma-1}}{(n^{2\sigma-1})^k}+1\right).
+\end{aligned}$$ In particular, this implies that $$\begin{aligned}
+S_1=\Theta(1)
+\end{aligned}$$ and $$S _2 = \begin{cases}
+        \Theta\left(n^{1-3\sigma}\right),~&\text{for } 0< \sigma\leq 1/3\\
+        \Theta\left(1\right),~&\text{for } 1/3\leq \sigma \leq 1/2.
+        \end{cases}$$ We can now verify the regime of validity of
+*spectral condition* in
+Eq.[\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}, which is required for Theorem
+[2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} to be applied. It is easy to
+verify that this holds only when $1/4\leq \sigma \leq 1/2$. Consequently
+the amplitude of the final state of the algorithm with the marked vertex
+is $$\begin{aligned}
+\nu=\Theta\left(\frac{S_1}{\sqrt{S_2}}\right)&=\begin{cases}
+       \Theta\left(n^{-(1-3\sigma)/2}\right),~&\text{for } 1/4\leq \sigma\leq 1/3\\
+       \Theta\left(1\right),~&\text{for } 1/3\leq \sigma \leq 1/2,
+        \end{cases}
+\end{aligned}$$ after a time $$\begin{aligned}
+T=\Theta\left(\dfrac{1}{\sqrt{\epsilon}}\dfrac{\sqrt{S_2}}{S_1}\right)&=\begin{cases}
+       \Theta\left(n^{1-3\sigma/2}\right),~&\text{for } 1/4\leq \sigma\leq 1/3\\
+       \Theta\left(\sqrt{n}\right),~&\text{for } 1/3\leq \sigma \leq 1/2.
+       \end{cases}
+\end{aligned}$$ The performance of the algorithm is thus quite distinct
+in the following two regimes.\
+ \
+***i) $\mathbf{1/3\leq \sigma\leq 1/2}$:* ** In this regime the
+algorithm is optimal, since $\nu=\Theta(1)$ after a time
+$\Theta(\sqrt{n})$. This provides another example of optimal search for
+graphs which do not have constant spectral gap. In fact, from
+Eq. [\[eqmain:spectral-gap-chessboard\]](#eqmain:spectral-gap-chessboard){reference-type="eqref"
+reference="eqmain:spectral-gap-chessboard"} we see that in this regime
+the scaling of the spectral gap changes from $n^{-1/3}$ for $\sigma=1/3$
+to constant for $\sigma=1/2$ .\
+ \
+***ii) $\mathbf{1/4\leq \sigma< 1/3}$:* ** In this regime, the algorithm
+is suboptimal, as the final overlap with the marked node
+$\nu=\Theta\left(n^{-(1-3\sigma)/2}\right)$ after
+$T= \Theta\left(n^{1-3\sigma/2}\right)$. In the worst case, for
+$\sigma=1/4$, even if we assume that amplitude amplification can be
+used, one would need to evolve the walk for a total time of
+$\Theta(n^{3/4})$ to find the marked node.  \
+Interestingly, the Rook's graph within this region of $\sigma$ provides
+an example of suboptimality even though in this regime we have that
+$\Delta_{RG}\gg \sqrt{\epsilon}=n^{-1/2}$ (excluding in the case
+$\sigma=1/4$). This proves that the latter condition is not sufficient
+for optimal quantum search. In addition, given that the hitting time for
+the Rook's graph is $\Theta(n)$ for any $\sigma$, this shows that there
+exists a range of values of $\sigma$ for which the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm is slower
+than the square root of the classical hitting time.
+
+## Algorithmic performance when $\mathbf{r=S_{1,\bar{\mathcal{\mathbf{D}}}}}$
+
+In order to go beyond the limitations imposed by the spectral condition
+of Eq. [\[eq:spectral_con\]](#eq:spectral_con){reference-type="eqref"
+reference="eq:spectral_con"}, which is only valid in the regime
+$1/4\leq \sigma\leq 1/2$, we use the analysis of
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"}. It is expected that this
+analysis is valid for low values of $\sigma$, since the gap
+$1-\lambda_B$ becomes very small
+(Eq. [\[eqmain:spectral-gap-chessboard\]](#eqmain:spectral-gap-chessboard){reference-type="eqref"
+reference="eqmain:spectral-gap-chessboard"}) whereas the gap
+$1-\lambda_C=\Theta(1)$ is much larger (see
+Table [\[tab:evalues-chessboard\]](#tab:evalues-chessboard){reference-type="ref"
+reference="tab:evalues-chessboard"}).
+
+Hence, we will treat the eigenstate with eigenvalue $\lambda_A=1$ and
+the $n_1-1$ eigenstates with eigenvalue $\lambda_B$ as
+*quasi-degenerate*. To be consistent with the notation in
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"}, we denote this space as
+$\ensuremath{\mathcal{D}}$ such that
+$D=|\ensuremath{\mathcal{D}}|=n_1=n^\sigma$. In addition, the gaps
+$\Delta_\ensuremath{\mathcal{D}}$ and $\Delta$ defined in
+Sec. [4](#sec:search-degenerate-spectra){reference-type="ref"
+reference="sec:search-degenerate-spectra"} are in this case
+$$\begin{aligned}
+  \Delta_\ensuremath{\mathcal{D}}&\equiv \Delta_{RG}=1-\lambda_B=\Theta(n^{2\sigma-1}),\\
+  \Delta&=1-\lambda_C=\Theta(1).
+\end{aligned}$$ The projection of the marked node $\ket{w}$ in the
+quasi-degenerate subspace $\ensuremath{\mathcal{D}}$ is
+$$\label{eqmain:epsilon-D-chessboard}
+\epsilon_\ensuremath{\mathcal{D}}=\frac{D}{n}=\frac{n_1}{n},$$ where we
+have used the fact that the underlying graph is vertex-transitive
+implying that $|a_i|^2=1/n,~\forall i$. The parameters
+$S_{k,\bar{\ensuremath{\mathcal{D}}}}$, defined in
+Eq. [\[eqmain:Sk-D\]](#eqmain:Sk-D){reference-type="eqref"
+reference="eqmain:Sk-D"}, are given by $$\begin{aligned}
+S_{k,\bar{\ensuremath{\mathcal{D}}}}&=\frac{1}{n} \left[\dfrac{n_2-1}{(1-\lambda_C)^k}+\dfrac{(n_1-1)(n_2-1)}{(1-\lambda_D)^k}\right]\\
+         &=1+\Theta(1/n_1)=\Theta(1),
+\end{aligned}$$ $\forall k\geq 1$.
+
+For Theorem [8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"} to hold, we require that both conditions
+Eqs. [\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"} and
+[\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} are satisfied. Since $\Delta$ and the
+parameters $S_{k,\bar{\ensuremath{\mathcal{D}}}}$ are constants, the
+condition in
+Eq. [\[eq:spec-cond-deg\]](#eq:spec-cond-deg){reference-type="eqref"
+reference="eq:spec-cond-deg"} is valid for any $0\leq \sigma < 1/2$. On
+the other hand, it can be shown that
+[\[eq:lowerbound_epsilonD\]](#eq:lowerbound_epsilonD){reference-type="eqref"
+reference="eq:lowerbound_epsilonD"} is valid as long as
+$\sigma\leq 1/4$. Hence, Theorem
+[8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"} allows us to predict the performance of
+the algorithm for the choice of $r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$
+and in the regime $0\leq \sigma\leq 1/4$.
+
+::: table*
+::: center
+   Range of $n_1=n^\sigma$                  $r=S_1$                                                               $r=S_{1,\bar{\ensuremath{\mathcal{D}}}}$     
+  -------------------------- -------------------------------------- ----------------------------------------- ------------------------------------------------ ------------------------------------------------
+             2-5                              $T$                                     $\nu$                                         $T$                                             $\nu$
+     1-5 $n_1=\Theta(1)$                       --                                      --                              $\Theta\left(\sqrt{n}\right)$                             $\Theta(1)$
+        $0<\sigma<1/4$                         --                                      --                      $\Theta\left(\sqrt{\frac{n}{n^\sigma}}\right)$   $\Theta\left(\frac{1}{\sqrt{n^\sigma}}\right)$
+    $1/4\leq \sigma <1/3$     $\Theta\left(n^{1-3\sigma/2}\right)$   $\Theta\left(n^{-(1-3\sigma)/2}\right)$                         --                                               --
+   $1/3\leq \sigma\leq 1/2$      $\Theta\left(\sqrt{n}\right)$                     $\Theta(1)$                                       --                                               --
+:::
+:::
+
+We obtain that, after a time $$\label{eq:time-chessboard}
+T=\Theta\left(\dfrac{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}{S_{1,\bar{\ensuremath{\mathcal{D}}}}}\dfrac{1}{\sqrt{\epsilon_{\ensuremath{\mathcal{D}}}}}\right)=\Theta\left(\sqrt{\dfrac{n}{n_1}}\right)=\Theta\left(\sqrt{n^{1-\sigma}}\right),$$
+Algorithm [\[algo-cg-general\]](#algo-cg-general){reference-type="ref"
+reference="algo-cg-general"} prepares a state that has an overlap of
+$$\label{eq:amp-chessboard}
+\nu =\Theta\left(\sqrt{\dfrac{\epsilon}{\epsilon_\ensuremath{\mathcal{D}}}}\frac{S_{1,\bar{\ensuremath{\mathcal{D}}}}}{\sqrt{S_{2,\bar{\ensuremath{\mathcal{D}}}}}}\right)=\Theta\left(\frac{1}{\sqrt{n_1}}\right)=\Theta\left(\frac{1}{\sqrt{n^\sigma}}\right)$$
+with the marked node. We discuss the following two cases:\
+ \
+***i) constant $\mathbf{n_1}$ $(\mathbf{\sigma=0})$:* ** In this regime,
+the algorithm is optimal, as the marked node is found with a constant
+probability after $T=\Theta\left(\sqrt{n}\right)$. Note that, as
+mentioned before, the *bridged-complete graph* corresponds to the choice
+of $n_1=2$ and $n_2=n/2$. As such, this demonstrates the optimality of
+the algorithm for this instance.\
+ \
+***ii) $\mathbf{n_1=n^\sigma}$, with $\mathbf{0<\sigma<1/4}$:* ** In
+this range, the amplitude at the marked node is $\Theta(1/\sqrt{n_1})$
+after $\Theta(\sqrt{n/n_1})$ time. If the quantum amplitude
+amplification procedure is available, then using $\sqrt{n_1}$ rounds of
+amplitude amplification, the marked node can be obtained for
+$T=\Theta(\sqrt{n})$, however, with an overhead due to the need of
+reflecting on the initial state that has a certain set-up cost (in this
+case the total cost is given by
+Eq. [\[eq:cost_deg_nuequal1\]](#eq:cost_deg_nuequal1){reference-type="eqref"
+reference="eq:cost_deg_nuequal1"}).
+
+On the other hand, if we assume access to simply the time evolution
+according to $H_{\mathrm{search}}$, we have to repeat the entire
+procedure $\sim n_1$ times to find the marked node, leading to an
+overall evolution time of $T=\Theta(\sqrt{n.n_1})$. However, as we
+previously pointed out, the predicition from
+Theorem [8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"} does not guarantee that this is the best
+possible performance. We leave open the question of whether a better
+running time can be obtained for a different choice of $r$. Indeed, one
+would expect that the best choice of $r$ should converge to the value
+$S_1$ at $c=1/4$ and recover the prediction of
+Sec. [5.2](#subsec:r-S1-chessboard){reference-type="ref"
+reference="subsec:r-S1-chessboard"}.\
+ \
+
+# Discussion {#sec:discussion}
+
+In this article, we provide the necessary and sufficient conditions for
+the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm to be
+optimal, assuming very general conditions on the spectrum of the
+Hamiltonian encoding the structure of the underlying graph. An immediate
+consequence is that our necessary and sufficient conditions hold for all
+graphs whose normalized adjacency matrices exhibit a large enough
+spectral gap ($\Delta\gg \sqrt{\epsilon}$). Additionally, we also
+provide strategies to analyze the algorithmic performance for graphs
+with a few quasi-degenerate highest eigenvalues, followed by a large
+gap. Such spectral features appear, for example, in graphs composed by a
+few clusters with sparse connections among them. Our work implies that,
+to the best of our knowledge, all prior results demonstrating the
+optimality of the algorithm for specific graphs, requiring
+instance-specific analysis, can now be recovered from our general
+results. We also provided an explicit example, namely, the application
+of the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm to
+the Rook's graph which highlights the predictive power of our results
+and the limitations of this search algorithm, which is suboptimal for
+certain regimes of the "aspect ratio" of the chessboard.
+
+Our results provide a recipe to compute analytically the performance of
+the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm on any
+graph fulfilling the spectral conditions required for our main theorems
+to be valid (Theorem
+[2](#lem_main:search-highest-estate){reference-type="ref"
+reference="lem_main:search-highest-estate"} and
+[8](#thm:performance_qd){reference-type="ref"
+reference="thm:performance_qd"}). They can hence be used to analyse
+quantum search on graphs that have not been previously studied or on
+graphs that were analysed only numerically such as the Chimera
+graph [@glos2019impact] -- a graph that encodes the underlying
+architecture of the hardware of quantum annealers.
+
+We remark that our results are not directly applicable, but could in
+principle be extended, to some modified versions of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm. For
+example, it would be interesting to extend our analysis to encompass
+strategies with different choices of the parameter $r$ for different
+evolution times. Such strategies have been known to improve the
+algorithmic performance for some graphs [@meyer2015connectivity]. We
+also note that our results are only valid for the oracle Hamiltonian
+introduced in [@childs2004spatial], which singles out the marked node by
+adding a local energy term to the Hamiltonian. Different oracles, which
+remove edges connected to the marked node, have been considered in works
+that show optimal quantum search on certain lattices such as graphene
+[@foulger2014quantum] or crystal lattices [@childs2014spatial-crystal].
+General conditions for optimal quantum search with such oracles are
+still unknown (some progress has been made in
+[@chakraborty2018finding]).
+
+Our work further highlights the difficulty in comparing the performance
+of the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm to
+its classical counterpart (search by a classical random walk), where the
+performance is measured by the classical hitting time. In fact, it is
+not clear how the expressions that we have obtained for predicting the
+performance of this quantum search algorithm relate to this classical
+quantity. We can nevertheless guarantee that whenever the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm is optimal,
+there exists at least a quadratic speed-up with respect to the classical
+hitting time, since the latter is lower bounded by $1/\epsilon$ (see
+Eq. [\[eqmain:hitting-time-bounds\]](#eqmain:hitting-time-bounds){reference-type="eqref"
+reference="eqmain:hitting-time-bounds"}). However, we also proved that
+the $\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm fails
+to achieve quadratic speedups with respect to classical search in some
+cases, as evidenced by the algorithmic running time on the Rook's graph
+in the suboptimal regime (See
+Eq. [\[eq:time-chessboard\]](#eq:time-chessboard){reference-type="eqref"
+reference="eq:time-chessboard"} and
+Eq. [\[eq:amp-chessboard\]](#eq:amp-chessboard){reference-type="eqref"
+reference="eq:amp-chessboard"}).
+
+Different quantum walk based algorithms are known to achieve this
+general quadratic speed-up in the discrete-time framework
+[@szegedy2004quantum; @krovi2016quantum; @ambainis2019quadratic] and in
+continuous-time, as recently demonstrated in
+Ref. [@chakraborty2018finding]. In the latter work, we propose a new
+continuous-time time quantum walk algorithm based on the time-evolution
+of a Hamiltonian encoding an interpolating Markov chain. Compared to the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm, it has the
+additional advantages that it can be applied to any ergodic, reversible
+Markov chain and has a guaranteed performance even when there are
+multiple marked nodes.
+
+We also propose a modified version of the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm that is
+applicable to search problems on Markov chains [@chakraborty2018finding]
+which can be seen as a quantum walk on the edges and thus requires an
+extension of the walk's Hilbert space. This modified algorithm improves
+upon the performance of the original
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm for several
+instances such as lattices of dimension less than five. In particular,
+this modified algorithm can find a marked node on the Rook's graph in
+$\Theta(\sqrt{n})$ time for any dimensions of the chessboard, without
+requiring amplitude amplification. However, the modified
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm does not
+provide a generic speedup over the
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm and
+counterexamples have also been demonstrated in
+Ref. [@chakraborty2018finding]. Moreover, a simple comparison of the
+performance of this modified
+$\ensuremath{\mathcal{C}}\ensuremath{\mathcal{G}}$ algorithm to the
+classical hitting time remains elusive.
+
+An interesting direction of future research would be to explore the
+possibility of using continuous-time quantum walks to solve optimization
+problems, namely, to find ground states of classical Ising Hamiltonians
+which encode the solution to some NP-Hard problems [@lucas2014ising].
+Recently, the applicability of CTQW to tackle this problem has been
+numerically investigated [@callison2019finding]. In this approach, each
+node represents a spin configuration, and the idea is to perform a
+continuous-time quantum walk on a graph where the local energies of each
+node, instead of being set by an oracle, corresponds to the energy of
+this respective configuration according to the Ising Hamiltonian. The
+aim is thus to use the quantum walk to find the node of minimum energy
+faster than classical methods. In Ref [@callison2019finding], the
+authors observe that this approach leads a faster than quadratic
+speedup, with respect to unstructured search, in the time required to
+find the ground state of random Ising Hamiltonians, for quantum walks on
+certain graphs. We remark that when the underlying graph of this quantum
+walk is the complete graph, our results can be used to make some
+analytical predictions, since the Hamiltonian of the walk has the form
+$H+r P$, where $P$ is a one-dimensional projector (in this case, $H$ is
+the classical Ising Hamiltonian and the adjacency matrix of the complete
+graph is a one-dimensional projector). It would be interesting if
+extensions of our results could help derive analytical expressions for
+the performance of this approach on different graphs. This could lead to
+a better understanding of the potential of CTQW-based algorithms to
+solve optimization problems.\
+ \
+
+::: acknowledgments
+S.C. and J.R. are supported by the Belgian Fonds de la Recherche
+Scientifique - FNRS under grants no F.4515.16 (QUICTIME) and
+R.50.05.18.F (QuantAlgo). S.C. and L.N. acknowledge support from
+F.R.S.-FNRS. L.N. also acknowledges funding from the Wiener-Anspach
+Foundation.
+:::
+
+[^1]: Throughout the article, we use a plethora of complexity theoretic
+    notations which we briefly define now. $f(n)=\mathcal{O}(g(n))$, if
+    there exists a positive constant $c$ such that $|f(n)|\leq c. g(n)$.
+    If $f(n)=\mathcal{O}(g(n))$, then $g(n)=\Omega(f(n))$. Also
+    $f(n)=o(g(n))$ if for all positive constants $k$, $|f(n)|<k.g(n)$.
+    Consequently, if $f(n)=o(g(n))$, then $g(n)=\omega(f(n))$.
+
+[^2]: It is worth mentioning, that throughout the article we consider
+    the scenario where only a single node is marked and analogous
+    results for multiple marked nodes is an open problem in this
+    framework.
+
+[^3]: This can be ensured by replacing $H$ with $(H/||H||+I)/2$, where
+    $I$ is the identity matrix.
+
+[^4]: The cost of reflecting on this state can be quantified as
+    $2\mathcal{S}$. However, we shall omit constant factors for
+    simplicity.
+
+[^5]: The results of [@berry2017exponential] on simulating continuous
+    query models can be used to quantify the cost of implementing
+    time-evolution of $H_{search}$ in terms of discrete queries to the
+    Grover oracle as well as the cost of simulating $H$ and the error of
+    the simulation.
+
+[^6]: For non vertex-transitive graphs, the structure can be such that
+    certain particular nodes can be found faster than $\sqrt{n}$ time.
+    For example, the central node on a star graph can be found in
+    constant time. However, if any of the graph's nodes can be marked,
+    the minimum time needed to find any node in a graph is lower bounded
+    by $\sqrt{n}$ [@farhi1998analog].
+
+[^7]: This is possible independently of the position of the marked node
+    $\ket{w}$, for example, if the Hamiltonian is diagonalized by the
+    Fourier transform.
+
+[^8]: From the Perron-Frobenius theorem,
+    $\Delta_\ensuremath{\mathcal{D}}$ can never zero for the adjacency
+    matrix (or Laplacian) of a connected graph.
+
+[^9]: Since we are assuming $D$ eigenstates with eigenvalue $1$,
+    $\ket{v_n}$ can be any state in the subspace
+    $\ensuremath{\mathcal{D}}$.

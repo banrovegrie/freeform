@@ -15,7 +15,7 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 | Metric | Count |
 |--------|-------|
 | Axioms (main) | 18 |
-| Axioms (proofs) | 8 |
+| Axioms (proofs) | 7 |
 | Theorems | 85+ |
 | Sorries | **0** |
 | Lines of Lean | ~6,800 |
@@ -23,21 +23,21 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 The formalization compiles successfully with **0 sorries**.
 - 9 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
 - 9 axioms remain in main code for running time and complexity results.
-- 8 axioms in Proofs/ encapsulate deep spectral analysis (Prop. 1, Eq. 317, Lemma 5).
+- 7 axioms in Proofs/ encapsulate deep spectral analysis (Prop. 1, Eq. 317, Lemma 5).
 
 **Recent Progress:**
-- **5 GAP BOUND AXIOMS ELIMINATED** - converted to theorems using proofs from GapBoundsProofs.lean
+- **6 GAP BOUND AXIOMS ELIMINATED** - converted to theorems using proofs from GapBoundsProofs.lean
 - **3 TRIVIAL AXIOMS ELIMINATED** - `theorem1_product_invariance` (definitional), `theorem3/4` placeholders
+- **1 AXIOM DERIVED** - `sStar_gap_upper_bound` derived from `crossing_region_gap_upper_bound_axiom`
 - Gap bound theorems now fully proved: `gap_bound_left`, `gap_at_avoided_crossing`, `gap_bound_right`, `gap_bound_all_s`, `gap_minimum_at_crossing`
-- All 8 Proofs/ axioms capture core spectral analysis claims from the paper:
-  - `crossing_region_gap_lower_bound` (Proposition 1)
-  - `sStar_gap_upper_bound` (Proposition 1)
-  - `left_region_gap_exceeds_sStar` (Equation 317)
-  - `right_region_gap_exceeds_sStar` (Lemma 5)
-  - `crossing_region_gap_exceeds_sStar` (Proposition 1)
-  - `left_region_explicit_bound` (Equation 317)
-  - `crossing_region_gap_upper_bound` (Proposition 1)
-  - `right_region_explicit_bound` (Lemma 5)
+- All 7 Proofs/ axioms capture core spectral analysis claims from the paper:
+  - `crossing_region_gap_lower_bound` (Proposition 1) - gap >= g_min/2 in crossing
+  - `crossing_region_gap_upper_bound` (Proposition 1) - gap <= 2*g_min in crossing
+  - `left_region_explicit_bound` (Equation 317) - explicit formula in left region
+  - `right_region_explicit_bound` (Lemma 5) - explicit formula in right region
+  - `left_region_gap_exceeds_sStar` (Equation 317) - monotonicity left
+  - `right_region_gap_exceeds_sStar` (Lemma 5) - monotonicity right
+  - `crossing_region_gap_exceeds_sStar` (Proposition 1) - minimum at s*
 
 24+ core theorems have been fully proved including:
 - Variational principle and spectral bounds (Parseval identity, weighted sum bounds)
@@ -84,7 +84,7 @@ UAQO/
 
 ## Axiom Tracking
 
-### Remaining Axioms (26 total: 18 main + 8 proofs)
+### Remaining Axioms (25 total: 18 main + 7 proofs)
 
 **External Foundations (9 axioms)** - Require independent formalization projects:
 
@@ -119,23 +119,25 @@ UAQO/
 | `mainResult3` | #P-hardness via interpolation |
 | `mainResult3_robust` | Robustness to exponential errors |
 
-**Spectral Analysis (8 axioms in Proofs/)** - Deep spectral results from paper:
+**Spectral Analysis (7 axioms in Proofs/)** - Deep spectral results from paper:
 
-| Axiom | Paper Reference |
-|-------|-----------------|
-| `crossing_region_gap_lower_bound` | Proposition 1 |
-| `sStar_gap_upper_bound` | Proposition 1 |
-| `left_region_gap_exceeds_sStar` | Equation 317 |
-| `right_region_gap_exceeds_sStar` | Lemma 5 |
-| `crossing_region_gap_exceeds_sStar` | Proposition 1 |
-| `left_region_explicit_bound` | Equation 317 |
-| `crossing_region_gap_upper_bound` | Proposition 1 |
-| `right_region_explicit_bound` | Lemma 5 |
+| Axiom | Paper Reference | Description |
+|-------|-----------------|-------------|
+| `crossing_region_gap_lower_bound` | Proposition 1 | gap >= g_min/2 in crossing |
+| `crossing_region_gap_upper_bound` | Proposition 1 | gap <= 2*g_min in crossing |
+| `left_region_explicit_bound` | Equation 317 | Explicit variational bound |
+| `right_region_explicit_bound` | Lemma 5 | Explicit resolvent bound |
+| `left_region_gap_exceeds_sStar` | Equation 317 | Monotonicity in left region |
+| `right_region_gap_exceeds_sStar` | Lemma 5 | Monotonicity in right region |
+| `crossing_region_gap_exceeds_sStar` | Proposition 1 | Minimum achieved at s* |
 
-### Eliminated Axioms (30 total)
+Note: `sStar_gap_upper_bound` is now a derived theorem from `crossing_region_gap_upper_bound`.
+
+### Eliminated Axioms (31 total)
 
 | Axiom | File | Method |
 |-------|------|--------|
+| `sStar_gap_upper_bound` | GapBoundsProofs.lean | Derived from crossing_region_gap_upper_bound |
 | `gap_bound_left_axiom` | GapBounds.lean | Uses gap_bound_left_proof |
 | `gap_at_avoided_crossing_axiom` | GapBounds.lean | Uses gap_at_avoided_crossing_proof |
 | `gap_bound_right_axiom` | GapBounds.lean | Uses gap_bound_right_proof |

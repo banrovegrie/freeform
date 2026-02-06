@@ -288,11 +288,13 @@ theorem sStar_gap_upper_bound {n M : Nat} (es : EigenStructure n M)
     (hE0_lt_E1 : E0 < E1) :
     E1 - E0 <= 2 * minimumGap es hM := by
   -- s* is in the crossing region: |s* - s*| = 0 <= δ_s
-  let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   have hsStar := avoidedCrossing_in_interval es hM
-  have hsStar_bounds : (0 : Real) <= sStar ∧ sStar <= 1 :=
+  have hsStar_bounds : (0 : Real) <=
+      avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) ∧
+      avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) <= 1 :=
     ⟨le_of_lt hsStar.1, le_of_lt hsStar.2⟩
-  have h_in_crossing : avoidedCrossingRegion es hM sStar := by
+  have h_in_crossing : avoidedCrossingRegion es hM
+      (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) := by
     unfold avoidedCrossingRegion
     simp only [sub_self, abs_zero]
     unfold avoidedCrossingWindow
@@ -300,8 +302,9 @@ theorem sStar_gap_upper_bound {n M : Nat} (es : EigenStructure n M)
     · apply div_nonneg; norm_num; exact sq_nonneg _
     · exact Real.sqrt_nonneg _
   -- Apply the crossing region upper bound
-  exact crossing_region_gap_upper_bound_axiom es hM hcond sStar hsStar_bounds h_in_crossing
-    E0 E1 hE0_is hE1_is hE0_lt_E1
+  exact crossing_region_gap_upper_bound_axiom es hM hcond
+    (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
+    hsStar_bounds h_in_crossing E0 E1 hE0_is hE1_is hE0_lt_E1
 
 
 /-! ### Regional comparison with gap at s*
