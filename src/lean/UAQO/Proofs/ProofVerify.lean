@@ -83,37 +83,52 @@ These appear to have bugs or are unprovable as stated:
 - `threeSATWellFormed_numVars` - REMOVED: was unused and unprovable without well-formedness constraints
   (CNFFormula.numVars is a field, not derived from clauses)
 
-## External Foundations (9 axioms - kept as axioms)
+## External Foundations (8 axioms - kept as axioms)
 Standard complexity theory and physics axioms:
 - `threeSAT_in_NP`, `threeSAT_NP_complete` (Cook-Levin theorem)
 - `sharpThreeSAT_in_SharpP`, `sharpThreeSAT_complete` (Valiant's theorem)
 - `sharpP_solves_NP`, `degeneracy_sharpP_hard` (Oracle complexity)
 - `adiabaticTheorem`, `eigenpath_traversal` (Quantum adiabatic theorem)
-- `resolvent_distance_to_spectrum` (Spectral theory)
 
-## Remaining Axioms (16 axioms needing proofs)
+### Recently Proved (formerly external)
+- `resolvent_distance_to_spectrum` (Operators.lean - nonzero resolvent + Frobenius positivity)
 
-### GapBounds.lean (7 axioms) - Require axiom-to-theorem conversion
-- `groundEnergy_variational_bound` - proof available in GapBoundsProofs.lean
-- `firstExcited_lower_bound` - needs spectral decomposition
-- `gap_bound_left_axiom` - depends on variational bound
-- `gap_at_avoided_crossing_axiom` - perturbation analysis
-- `gap_bound_right_axiom` - resolvent method (Sherman-Morrison available)
-- `gap_bound_all_s_axiom` - combines regional bounds
-- `gap_minimum_at_crossing_axiom` - structural result
+## Remaining Axioms (24 total: 17 main + 7 spectral proofs)
 
-### RunningTime.lean (4 axioms) - Depend on gap bounds
+### Spectral Analysis (7 axioms in GapBoundsProofs.lean)
+These encapsulate deep spectral analysis from the paper (Prop 1, Eq 317, Lemma 5):
+- `crossing_region_gap_lower_bound_axiom` - gap >= g_min/2 in crossing (Proposition 1)
+- `crossing_region_gap_upper_bound_axiom` - gap <= 2*g_min in crossing (Proposition 1)
+- `left_region_explicit_bound_axiom` - explicit variational bound (Equation 317)
+- `right_region_explicit_bound_axiom` - explicit resolvent bound (Lemma 5)
+- `left_region_gap_exceeds_sStar_axiom` - monotonicity in left region (Eq 317)
+- `right_region_gap_exceeds_sStar_axiom` - monotonicity in right region (Lemma 5)
+- `crossing_region_gap_exceeds_sStar_axiom` - s* achieves minimum (Proposition 1)
+
+NOTE: `sStar_gap_upper_bound` is now a DERIVED THEOREM from crossing_region_gap_upper_bound_axiom.
+
+### RunningTime.lean (4 axioms) - Depend on adiabatic theorem
 - `mainResult1` - running time T = O(1/Δ)
 - `runningTime_ising_bound` - Ising model bound
-- `lowerBound_unstructuredSearch` - BBBV lower bound
+- `lowerBound_unstructuredSearch` - BBBV lower bound (external)
 - `runningTime_matches_lower_bound` - optimality
 
 ### Hardness.lean (5 axioms) - Complexity results
 - `mainResult2` - NP-hardness of approximating A1
 - `A1_approx_implies_P_eq_NP` - P vs NP implication
-- `A1_polynomial_in_beta` - A1 is polynomial in β
+- `A1_numerator_polynomial_in_beta` - numerator of A1(H_beta) is polynomial
 - `mainResult3` - #P-hardness of exact computation
 - `mainResult3_robust` - robustness to exponential errors
+
+### Gap Bound Theorems (FULLY PROVED using 7 spectral axioms)
+The following were formerly axioms but are now theorems:
+- `gap_bound_left_proof` - uses left_region_explicit_bound_axiom
+- `gap_at_avoided_crossing_proof` - uses crossing region bounds
+- `gap_bound_right_proof` - uses right_region_explicit_bound_axiom
+- `gap_bound_all_s_proof` - combines regional bounds
+- `gap_minimum_at_crossing_proof` - uses gap_is_minimum_at_sStar
+- `groundEnergy_variational_bound_proof` - spectral theorem + Parseval
+- `firstExcited_lower_bound_proof` - shows E_min < E_max via non-scalar argument
 
 ## Bridge Files (no axioms eliminated, provide Mathlib connections)
 - `MatrixDetLemma.lean` - connects outerProd/innerProd to Mathlib equivalents

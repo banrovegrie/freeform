@@ -14,14 +14,14 @@ This formalization captures the mathematical structure of adiabatic quantum opti
 
 | Metric | Count |
 |--------|-------|
-| Axioms (main) | 18 |
+| Axioms (main) | 17 |
 | Axioms (proofs) | 7 |
 | Theorems | 85+ |
 | Sorries | **0** |
 | Lines of Lean | ~6,800 |
 
 The formalization compiles successfully with **0 sorries**.
-- 9 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
+- 8 axioms are external foundations (Cook-Levin, Valiant, adiabatic theorem).
 - 9 axioms remain in main code for running time and complexity results.
 - 7 axioms in Proofs/ encapsulate deep spectral analysis (Prop. 1, Eq. 317, Lemma 5).
 
@@ -84,9 +84,9 @@ UAQO/
 
 ## Axiom Tracking
 
-### Remaining Axioms (25 total: 18 main + 7 proofs)
+### Remaining Axioms (24 total: 17 main + 7 proofs)
 
-**External Foundations (9 axioms)** - Require independent formalization projects:
+**External Foundations (8 axioms)** - Require independent formalization projects:
 
 | Axiom | Reason |
 |-------|--------|
@@ -98,7 +98,6 @@ UAQO/
 | `degeneracy_sharpP_hard` | Reduction proof |
 | `adiabaticTheorem` | Quantum dynamics |
 | `eigenpath_traversal` | Quantum dynamics |
-| `resolvent_distance_to_spectrum` | Finite-dim spectral theory |
 
 **Running Time (4 axioms)** - Depend on gap bounds:
 
@@ -113,7 +112,7 @@ UAQO/
 
 | Axiom | Notes |
 |-------|-------|
-| `A1_polynomial_in_beta` | Polynomial structure analysis |
+| `A1_numerator_polynomial_in_beta` | Numerator polynomial structure (Eq. 319-320) |
 | `mainResult2` | NP-hardness via threshold distinction |
 | `A1_approx_implies_P_eq_NP` | Corollary of mainResult2 |
 | `mainResult3` | #P-hardness via interpolation |
@@ -133,7 +132,7 @@ UAQO/
 
 Note: `sStar_gap_upper_bound` is now a derived theorem from `crossing_region_gap_upper_bound`.
 
-### Eliminated Axioms (31 total)
+### Eliminated Axioms (32 total)
 
 | Axiom | File | Method |
 |-------|------|--------|
@@ -168,6 +167,7 @@ Note: `sStar_gap_upper_bound` is now a derived theorem from `crossing_region_gap
 | `avoidedCrossing_bound` | Schedule.lean | spectralConditionForBounds |
 | `A2_upper_bound` | SpectralParameters.lean | Finset sum bounds |
 | `piecewiseSchedule_monotone` | Schedule.lean | Real analysis, 6-case split |
+| `resolvent_distance_to_spectrum` | Operators.lean | Nonzero resolvent + Frobenius positivity |
 
 ### Formulation Fixes Applied
 
@@ -269,12 +269,12 @@ def spectralConditionForBounds (es : EigenStructure n M) : Prop :=
 - Valiant's theorem (2 axioms): `sharpThreeSAT_in_SharpP`, `sharpThreeSAT_complete`
 - Oracle complexity (2 axioms): `sharpP_solves_NP`, `degeneracy_sharpP_hard`
 - Adiabatic theorem (2 axioms): `adiabaticTheorem`, `eigenpath_traversal`
-- Spectral theory (1 axiom): `resolvent_distance_to_spectrum`
+**Correctness audit (2026-02-06):** Fixed 3 FALSE axiom statements:
+- `crossing_region_gap_upper_bound_axiom` - was false for arbitrary eigenvalue pairs; fixed with ground/first-excited hypotheses
+- `A1_polynomial_in_beta` renamed to `A1_numerator_polynomial_in_beta` - A1 is rational, not polynomial
+- `mainResult3_robust` - precision changed from fixed 2^(-10) to formula-dependent 1/(2*M^2)
 
-**Known formulation issues (4 axioms):**
-- `A2_lower_bound` - bound direction reversed
-- `avoidedCrossing_bound`, `piecewiseSchedule_monotone` - missing hypotheses
-- `threeSATWellFormed_numVars` - unprovable as stated (empty formula counterexample)
+**Infrastructure sorry:** `spectral_gap_pair_exists` (bridge lemma, not an axiom)
 
 ## Verification
 

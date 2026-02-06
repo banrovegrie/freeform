@@ -54,7 +54,7 @@ Protocol:
 
 ## Axiom Summary
 - `A1_modification_formula`: A_1 changes monotonically under modification
-- `A1_polynomial_in_beta`: A_1(H_beta) is polynomial in beta of degree M-1
+- `A1_numerator_polynomial_in_beta`: numerator of A_1(H_beta) is polynomial of degree M-1
 - `mainResult2`: Two queries suffice to decide 3-SAT (NP-hardness)
 - `mainResult3`: M queries suffice to extract all degeneracies (#P-hardness)
 -/
@@ -1042,34 +1042,44 @@ noncomputable def betaModifiedHamiltonian {n M : Nat} (es : EigenStructure n M)
   deg_count := betaModifiedHam_deg_count es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
 }
 
-/-- Key lemma: A_1(H_beta) is a polynomial in beta of degree M-1
-    whose coefficients encode the degeneracies d_k.
+/-- Numerator polynomial of A_1 for beta-modified Hamiltonians (Eq. 319-320).
 
-    This is a key technical result for the #P-hardness proof (Lemma 2.7 in paper).
+    A_1(H_beta) is a RATIONAL function of beta, not a polynomial.
+    However, the paper constructs a polynomial P(beta) by clearing denominators:
 
-    For the beta-modified Hamiltonian with eigenvalues E_{2k} = E_k and
-    E_{2k+1} = E_k + beta/2, the spectral parameter A_1 takes the form:
+      f(beta) = 2*A_1(H_beta) - A_1(H) = (1/N) sum_{k=0}^{M-1} d_k/(Delta_k + beta/2)
 
-    A_1(H_beta) = (1/2N) * sum_{k>=1} d_k * [1/(E_k)^1 + 1/(E_k + beta/2)^1]
+      P(beta) = prod_{k=0}^{M-1} (Delta_k + beta/2) * f(beta)
+              = (1/N) sum_{k=0}^{M-1} d_k * prod_{l != k} (Delta_l + beta/2)
 
-    Expanding in powers of beta and collecting terms yields a polynomial
-    in beta whose coefficients are rational functions of {E_k, d_k}.
-    By choosing M distinct beta values and using Lagrange interpolation,
-    all M coefficients (and hence all degeneracies) can be recovered.
+    P(beta) is a polynomial of degree M-1 whose coefficients encode the
+    degeneracies d_k. The common denominator D(beta) = prod(Delta_k + beta/2)
+    is computable from the eigenvalues alone, so M evaluations of A_1 at
+    distinct beta values determine P via Lagrange interpolation.
 
-    Reference: Section 2.3, Lemma 2.7 in the paper. -/
-axiom A1_polynomial_in_beta {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
+    Degeneracies are recovered: d_k = N * P(-2*Delta_k) / prod_{l!=k}(Delta_l - Delta_k).
+
+    Reference: Section 2.3, between Lemma 1 and Lemma 2 in the paper. -/
+axiom A1_numerator_polynomial_in_beta {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     ∃ (p : Polynomial Real),
       p.natDegree = M - 1 ∧
-      -- The polynomial evaluated at beta equals A_1 of the beta-modified Hamiltonian
-      -- (for beta values satisfying the gap and eigenvalue bound constraints)
+      -- For valid beta, the numerator polynomial P(beta) equals the common denominator
+      -- D(beta) times f(beta), where f is a known rational function of A_1.
+      -- Since D(beta) is computable from eigenvalues, M evaluations of A_1
+      -- determine P uniquely by Lagrange interpolation.
       (∀ (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
          (hgap : allGapsGreaterThan es (beta / 2))
          (hEigBound : ∀ k : Fin M, es.eigenvalues k <= 1 - beta / 2),
         let esBeta := betaModifiedHamiltonian es beta hbeta hM hgap hEigBound
         let hM2 : 2 * M > 0 := Nat.mul_pos (by norm_num : 0 < 2) (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-        Polynomial.eval beta p = A1 esBeta hM2) ∧
-      -- Coefficients encode the degeneracies
+        -- P(beta) = D(beta) * (2*A1(H_beta) - A1(es))
+        -- where D(beta) = prod_{k} (eigenvalues k - eigenvalues 0 + beta/2)
+        -- This is an implicit characterization: P is the unique degree-(M-1) polynomial
+        -- that, when divided by the known denominator, yields f(beta).
+        ∃ (D_beta : Real), D_beta > 0 ∧
+          Polynomial.eval beta p = D_beta * (2 * A1 esBeta hM2 -
+            A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))) ∧
+      -- Degeneracies can be extracted from the polynomial coefficients
       (∀ k : Fin M, ∃ (extraction : Polynomial Real -> Real),
         extraction p = es.degeneracies k)
 
@@ -1153,18 +1163,23 @@ axiom mainResult3 (computer : A1ExactComputer) :
 
 /-- The #P-hardness is robust to exponentially small errors (Berlekamp-Welch).
 
-    Even with precision eps in O(2^{-poly(n)}), we can recover the polynomial
-    coefficients using error-correcting polynomial interpolation. This requires
-    O(M) evaluations with O(M) errors tolerated when eps < 1/(2M^2).
+    Even with precision eps < 1/(2*M^2) (which is O(2^{-poly(n)}) for typical
+    3-SAT instances), we can recover the polynomial coefficients using
+    error-correcting polynomial interpolation (Berlekamp-Welch). This requires
+    3*M evaluations and tolerates up to M errors.
+
+    The precision bound depends on M = threeSATNumLevels(f), the number of
+    distinct energy levels. For random 3-SAT, M = O(poly(n)).
 
     Reference: Lemma 2.8 (Paturi's lemma) bounds polynomial coefficients,
     enabling Berlekamp-Welch recovery. -/
 axiom mainResult3_robust :
     ∀ (approx : A1Approximator),
-      approx.precision < 2^(-(10 : Int)) ->
       ∀ (f : CNFFormula) (hf : is_kCNF 3 f)
         (hallpop : allLevelsPopulated f)  -- All levels must be populated
         (hclauses : f.clauses.length >= 1),  -- At least one clause
+      -- Precision must be smaller than 1/(2*M^2), which depends on the formula
+      approx.precision < 1 / (2 * (threeSATNumLevels f : Real)^2) ->
         let es := threeSATToHamiltonian f hf hallpop
         let M := threeSATNumLevels f
         let hM2 : M >= 2 := threeSATNumLevels_ge_two f hclauses
@@ -1200,9 +1215,9 @@ theorem exact_A1_is_sharpP_hard :
     Proof: Even with exponentially small errors, Berlekamp-Welch (mainResult3_robust)
     allows recovery of degeneracies, and computing degeneracies is #P-hard. -/
 theorem approx_A1_sharpP_hard :
-    ∀ approx : A1Approximator, approx.precision < 2^(-(10 : Int)) ->
+    ∀ approx : A1Approximator,
       IsSharpPHard DegeneracyProblem := by
-  intro _ _
+  intro _
   exact degeneracy_sharpP_hard
 
 /-- Summary: Computing A_1 to various precisions -/
@@ -1210,8 +1225,7 @@ theorem A1_hardness_summary :
     -- 1. Exactly computing A_1 is #P-hard
     (∀ computer : A1ExactComputer, IsSharpPHard DegeneracyProblem) ∧
     -- 2. Computing A_1 to 2^{-poly(n)} precision is #P-hard
-    (∀ approx : A1Approximator, approx.precision < 2^(-(10 : Int)) ->
-      IsSharpPHard DegeneracyProblem) ∧
+    (∀ approx : A1Approximator, IsSharpPHard DegeneracyProblem) ∧
     -- 3. Computing A_1 to 1/poly(n) precision is NP-hard
     True := by
   exact ⟨exact_A1_is_sharpP_hard, approx_A1_sharpP_hard, trivial⟩

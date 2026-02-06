@@ -362,10 +362,52 @@ lemma resolvent_right_inv {N : Nat} (A : Operator N) (gamma : Complex)
   have hUnit : IsUnit (gamma • identityOp N - A).det := isUnit_iff_ne_zero.mpr hInv
   exact Matrix.nonsing_inv_mul _ hUnit
 
-/-- For a normal operator, ‖R_A(γ)‖⁻¹ gives the distance from γ to spectrum of A -/
--- This is a key fact used in the paper (Eq. 2.1)
-axiom resolvent_distance_to_spectrum {N : Nat} (A : Operator N) (gamma : Complex)
-    (hA : IsHermitian A) (hInv : (gamma • identityOp N - A).det ≠ 0) :
-    ∃ (d : Real), d > 0 ∧ spectralNorm (resolvent A gamma) = 1 / d
+/-- For a Hermitian operator with γ not in the spectrum, the resolvent has positive norm.
+
+    Mathematically: ‖R_A(γ)‖ = 1/dist(γ, σ(A)). Since spectralNorm is a Frobenius norm
+    placeholder, we prove the weaker statement that ‖R‖ > 0 (equivalently ‖R‖ = 1/d
+    for some d > 0). The resolvent is nonzero because it is the inverse of an
+    invertible matrix: (γI - A) · R = I, so R = 0 would give 0 = I.
+
+    Note: N > 0 is required since the 0×0 matrix ring is trivial (0 = 1). -/
+theorem resolvent_distance_to_spectrum {N : Nat} (A : Operator N) (gamma : Complex)
+    (hA : IsHermitian A) (hInv : (gamma • identityOp N - A).det ≠ 0)
+    (hN : N > 0) :
+    ∃ (d : Real), d > 0 ∧ spectralNorm (resolvent A gamma) = 1 / d := by
+  -- Step 1: The resolvent is nonzero.
+  -- If R = 0, then (γI - A) * R = 0 ≠ 1, contradicting resolvent_left_inv.
+  have hR_ne_zero : resolvent A gamma ≠ 0 := by
+    intro hR
+    have h1 := resolvent_left_inv A gamma hInv
+    rw [hR, mul_zero] at h1
+    haveI : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+    exact absurd h1.symm one_ne_zero
+  -- Step 2: Nonzero matrix has positive Frobenius norm.
+  have hNorm_pos : spectralNorm (resolvent A gamma) > 0 := by
+    simp only [spectralNorm]
+    apply Real.sqrt_pos_of_pos
+    -- Extract a nonzero entry
+    have ⟨i, j, hij⟩ : ∃ i j, (resolvent A gamma) i j ≠ 0 := by
+      by_contra h
+      push_neg at h
+      exact hR_ne_zero (Matrix.ext (fun i j => by simp [h i j]))
+    -- Double sum ≥ inner sum at row i ≥ normSq at (i,j) > 0
+    calc Finset.sum Finset.univ (fun i' =>
+           Finset.sum Finset.univ (fun j' =>
+             Complex.normSq ((resolvent A gamma) i' j')))
+        ≥ Finset.sum Finset.univ (fun j' =>
+            Complex.normSq ((resolvent A gamma) i j')) :=
+          Finset.single_le_sum
+            (fun i' _ => Finset.sum_nonneg (fun j' _ => Complex.normSq_nonneg _))
+            (Finset.mem_univ i)
+      _ ≥ Complex.normSq ((resolvent A gamma) i j) :=
+          Finset.single_le_sum
+            (fun j' _ => Complex.normSq_nonneg _)
+            (Finset.mem_univ j)
+      _ > 0 := Complex.normSq_pos.mpr hij
+  -- Step 3: Set d = 1/‖R‖, giving ‖R‖ = 1/d with d > 0.
+  exact ⟨1 / spectralNorm (resolvent A gamma),
+    div_pos one_pos hNorm_pos,
+    by rw [one_div, one_div, inv_inv]⟩
 
 end UAQO
