@@ -57,10 +57,30 @@ Launched spectral and hardness audit agents. Found critical issues:
 - Updated README.md with audit results and renamed axiom
 - Updated ProofVerify.lean references
 
+### Phase 2: Prove resolvent_distance_to_spectrum (COMPLETE)
+
+- Proved `resolvent_distance_to_spectrum` in Operators.lean
+- Proof strategy: nonzero resolvent (R=0 implies 0=I contradiction) + Frobenius positivity
+- Added `N > 0` hypothesis (always satisfied: N = 2^n with n >= 1)
+- Axiom count: 25 → 24
+
+### Phase 2b: Eliminate spectral_gap_pair_exists sorry (COMPLETE)
+
+- Proved bridge lemma `isEigenvalue_is_mathlib_eigenvalue` in GapBoundsProofs.lean
+  - Strategy: eigenbasis expansion + Parseval. If E is eigenvalue with eigenvector v,
+    expand v in orthonormal eigenbasis. Hermiticity + eigenvalue mismatch force all
+    inner products to zero, contradicting ||v||^2 > 0.
+- Proved `spectral_gap_pair_exists` using bridge lemma + `min_eigenvalue_to_our` + `Finset.min'`
+- Key technical challenges resolved:
+  - `conj` vs `Complex.conj` vs `star` matching: used existing `conj_ofReal'` from EigenvalueCondition.lean
+  - EuclideanSpace ↔ Fin N → C coercion: used `apply hne; ext i; exact hall i` pattern
+  - Eigenvalue coercion rewriting: used `simp only` instead of `rwa`
+- Updated AXIOMS.md, README.md, ProofVerify.lean documentation
+
 ### Build Status
 - Full build: 2540 jobs, 0 errors
-- Sorries: 1 (spectral_gap_pair_exists infrastructure, not an axiom)
-- Axioms: 25 (9 external + 7 spectral + 4 running time + 5 hardness)
+- Sorries: 0
+- Axioms: 24 (8 external + 7 spectral + 4 running time + 5 hardness)
 
 ### Status
-PHASE 0-1 COMPLETE - Correctness audit and documentation done
+PHASE 0-2 COMPLETE - Ready for Phase 3 (spectral gap bounds)

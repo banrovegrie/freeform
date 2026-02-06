@@ -274,7 +274,8 @@ def spectralConditionForBounds (es : EigenStructure n M) : Prop :=
 - `A1_polynomial_in_beta` renamed to `A1_numerator_polynomial_in_beta` - A1 is rational, not polynomial
 - `mainResult3_robust` - precision changed from fixed 2^(-10) to formula-dependent 1/(2*M^2)
 
-**Infrastructure sorry:** `spectral_gap_pair_exists` (bridge lemma, not an axiom)
+**Infrastructure sorries:** 0. `spectral_gap_pair_exists` is now fully proved via
+`isEigenvalue_is_mathlib_eigenvalue` (eigenbasis expansion + Parseval).
 
 ## Verification
 

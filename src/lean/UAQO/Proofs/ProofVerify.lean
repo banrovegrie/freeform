@@ -73,6 +73,8 @@ namespace UAQO.Proofs
 - `weighted_sum_ge_min_times_sum` - FULL PROOF: convex combination bound
 - `expectation_ge_min_eigenvalue` - FULL PROOF: expectation ≥ min eigenvalue
 - `groundEnergy_variational_bound_proof` - FULL PROOF: E0 ≤ ⟨phi|H|phi⟩
+- `isEigenvalue_is_mathlib_eigenvalue` - FULL PROOF: IsEigenvalue → Mathlib eigenvalue
+- `spectral_gap_pair_exists` - FULL PROOF: ground/first-excited pair (0 sorry)
 
 ## Axioms with Formulation Issues (3 axioms)
 These appear to have bugs or are unprovable as stated:

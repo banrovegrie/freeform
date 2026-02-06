@@ -1878,6 +1878,44 @@ lemma spectral_gap_exists {n M : Nat} (es : EigenStructure n M)
   obtain ⟨E1, hE1_is, _, E0, hE0_is, hE0_lt_E1⟩ := firstExcited_lower_bound_proof es hM s hs
   exact ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩
 
+/-- Bridge lemma: every eigenvalue in our sense equals a Mathlib eigenvalue.
+    Proof: expand eigenvector in orthonormal eigenbasis; the eigenvalue equation
+    Av = Ev and Hermiticity give (λ_k - E)⟨e_k|v⟩ = 0 for each k. If no λ_k = E,
+    all inner products vanish, so by Parseval ‖v‖² = 0, contradiction. -/
+lemma isEigenvalue_is_mathlib_eigenvalue {N : Nat} [NeZero N]
+    (A : Matrix (Fin N) (Fin N) ℂ) (hA : Matrix.IsHermitian A)
+    (E : ℝ) (hE : IsEigenvalue A E) :
+    ∃ i : Fin N, hA.eigenvalues i = E := by
+  obtain ⟨v, hv_pos, hv_eq⟩ := hE
+  have hOur : IsHermitian A := (isHermitian_iff_matrix A).mpr hA
+  let b := hA.eigenvectorBasis
+  by_contra h
+  push_neg at h
+  -- Show all inner products ⟨e_k|v⟩ = 0
+  have hc_zero : ∀ k : Fin N, innerProd ⇑(b k) v = 0 := by
+    intro k
+    have hk_ne : (hA.eigenvalues k : ℂ) ≠ (E : ℂ) := by
+      intro heq; exact h k (Complex.ofReal_injective heq)
+    -- Way 1: Av = Ev gives E * ⟨e_k|v⟩
+    have hw1 : innerProd ⇑(b k) (A ⬝ v) = (E : ℂ) * innerProd ⇑(b k) v := by
+      rw [hv_eq]; exact innerProd_smul_right _ _ _
+    -- Way 2: Hermiticity gives λ_k * ⟨e_k|v⟩
+    have hw2 : innerProd ⇑(b k) (A ⬝ v) =
+        (hA.eigenvalues k : ℂ) * innerProd ⇑(b k) v := by
+      have heig : A ⬝ ⇑(b k) = (hA.eigenvalues k : ℂ) • ⇑(b k) := by
+        rw [applyOp_eq_mulVec]; exact hA.mulVec_eigenvectorBasis k
+      rw [innerProd_hermitian A hOur, heig, innerProd_smul_left, conj_ofReal']
+    -- (E - λ_k) * ⟨e_k|v⟩ = 0, and E ≠ λ_k, so ⟨e_k|v⟩ = 0
+    have h_sub : ((E : ℂ) - (hA.eigenvalues k : ℂ)) * innerProd ⇑(b k) v = 0 := by
+      have := sub_eq_zero.mpr (hw1.symm.trans hw2); rwa [← sub_mul] at this
+    exact (mul_eq_zero.mp h_sub).resolve_left (sub_ne_zero.mpr (Ne.symm hk_ne))
+  -- By Parseval: Σ |⟨e_k|v⟩|² = normSquared v, but all terms vanish
+  have hparseval := parseval_normSquared hA v
+  have hsum_zero : ∑ k : Fin N, Complex.normSq ((star ⇑(b k)) ⬝ᵥ v) = 0 := by
+    apply Finset.sum_eq_zero; intro k _
+    rw [← innerProd_eq_euclidean_inner, hc_zero k, map_zero]
+  linarith [hparseval.symm.trans hsum_zero]
+
 /-- The spectral gap pair: ground state and first excited state eigenvalues.
 
     Returns the two smallest eigenvalues E0 < E1 of H(s), together with
@@ -1887,29 +1925,73 @@ lemma spectral_gap_exists {n M : Nat} (es : EigenStructure n M)
     This is needed for the upper bound axiom, which only holds for the
     spectral gap (not arbitrary eigenvalue pairs).
 
-    PROOF STRATEGY: Use Mathlib's spectral decomposition to get all
-    eigenvalues, find the minimum (E0) and the minimum of eigenvalues
-    above E0 (E1). The matrix is non-scalar (proved via off-diagonal
-    argument), so at least two distinct eigenvalues exist. -/
+    Uses isEigenvalue_is_mathlib_eigenvalue to bridge between our IsEigenvalue
+    and Mathlib eigenvalues, then Finset.min' for ground/first-excited. -/
 lemma spectral_gap_pair_exists {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1) :
     ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
       IsEigenvalue (adiabaticHam es s hs) E1 ∧ E0 < E1 ∧
       (∀ E, IsEigenvalue (adiabaticHam es s hs) E → E0 ≤ E) ∧
       (∀ E, IsEigenvalue (adiabaticHam es s hs) E → E ≤ E0 ∨ E1 ≤ E) := by
-  -- PROOF SKETCH: Use Mathlib spectral decomposition for Hermitian matrices.
-  -- 1. Get ordered eigenvalues λ₀ ≤ λ₁ ≤ ... ≤ λ_{N-1} from hHerm.eigenvalues
-  -- 2. E0 = λ₀ (minimum), E1 = min{λ_i | λ_i > λ₀} (first excited)
-  -- 3. Non-scalar argument (from firstExcited_lower_bound_proof) gives E0 < E1
-  -- 4. Ground state: E0 ≤ E for all eigenvalues follows from E0 = min
-  -- 5. First excited: E ≤ E0 ∨ E1 ≤ E follows from E1 = min of {λ > E0}
-  --
-  -- REQUIRES: Bridge lemma (IsEigenvalue ↔ is one of Mathlib eigenvalues)
-  -- This is provable: expand eigenvector in orthonormal eigenbasis, use
-  -- A*v = λ*v and basis independence to conclude λ = some eigenvalue_k.
-  -- The bridge lemma is the main infrastructure gap; once proved, all
-  -- five properties follow from standard Finset.min' arguments.
-  sorry
+  let A := adiabaticHam es s hs
+  have hHerm := adiabaticHam_matrix_hermitian es s hs
+  have hN : NeZero (qubitDim n) :=
+    ⟨Nat.pos_iff_ne_zero.mp (Nat.pow_pos (by norm_num : 0 < 2))⟩
+  -- E0: minimum eigenvalue
+  obtain ⟨E0, hE0_is, hE0_min⟩ := @min_eigenvalue_to_our (qubitDim n) hN A hHerm
+  -- Two distinct eigenvalues exist (non-scalar argument)
+  obtain ⟨E0', E1', hE0'_is, hE1'_is, hlt⟩ := spectral_gap_exists es hM s hs
+  -- Bridge: E1' corresponds to some Mathlib eigenvalue
+  obtain ⟨i1, hi1⟩ := isEigenvalue_is_mathlib_eigenvalue A hHerm E1' hE1'_is
+  obtain ⟨j0, hj0⟩ := isEigenvalue_is_mathlib_eigenvalue A hHerm E0' hE0'_is
+  -- There exists a Mathlib eigenvalue strictly above E0
+  have hE0_lt : E0 < hHerm.eigenvalues i1 := by
+    calc E0 ≤ hHerm.eigenvalues j0 := hE0_min j0
+      _ = E0' := hj0
+      _ < E1' := hlt
+      _ = hHerm.eigenvalues i1 := hi1.symm
+  -- E1: minimum Mathlib eigenvalue strictly above E0
+  let above := Finset.univ.filter (fun i : Fin (qubitDim n) => E0 < hHerm.eigenvalues i)
+  have above_ne : above.Nonempty :=
+    ⟨i1, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hE0_lt⟩⟩
+  let above_vals := above.image hHerm.eigenvalues
+  have above_vals_ne : above_vals.Nonempty := above_ne.image _
+  let E1 := above_vals.min' above_vals_ne
+  -- E1 is realized by some eigenvector
+  have hE1_mem : E1 ∈ above_vals := Finset.min'_mem _ _
+  rw [Finset.mem_image] at hE1_mem
+  obtain ⟨j1, hj1_in, hj1_eq⟩ := hE1_mem
+  -- E0 < E1
+  have hE0_lt_E1 : E0 < E1 := by
+    have := (Finset.mem_filter.mp hj1_in).2
+    linarith [hj1_eq]
+  -- E1 is IsEigenvalue
+  have hE1_is : IsEigenvalue A E1 := by
+    use ⇑(hHerm.eigenvectorBasis j1)
+    refine ⟨?_, ?_⟩
+    · rw [normSquared_pos_iff]
+      by_contra hall; push_neg at hall
+      have hne := hHerm.eigenvectorBasis.orthonormal.ne_zero j1
+      apply hne; ext i; exact hall i
+    · rw [applyOp_eq_mulVec]
+      have h := hHerm.mulVec_eigenvectorBasis j1
+      simp only [hj1_eq] at h; exact h
+  -- Assemble the result
+  refine ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, ?_, ?_⟩
+  · -- Ground state: E0 ≤ E for all eigenvalues
+    intro E hE_is
+    obtain ⟨i, hi⟩ := isEigenvalue_is_mathlib_eigenvalue A hHerm E hE_is
+    linarith [hE0_min i]
+  · -- First excited: E ≤ E0 ∨ E1 ≤ E
+    intro E hE_is
+    obtain ⟨i, hi⟩ := isEigenvalue_is_mathlib_eigenvalue A hHerm E hE_is
+    by_cases h : E0 < hHerm.eigenvalues i
+    · right
+      have hi_above : i ∈ above := Finset.mem_filter.mpr ⟨Finset.mem_univ _, h⟩
+      have : E1 ≤ hHerm.eigenvalues i :=
+        Finset.min'_le above_vals _ (Finset.mem_image.mpr ⟨i, hi_above, rfl⟩)
+      linarith
+    · left; linarith [hE0_min i, not_lt.mp h]
 
 /-- Helper: minimum gap is positive -/
 lemma minimumGap_positive {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :

@@ -14,10 +14,10 @@ All axioms in the UAQO Lean 4 formalization, with justifications.
 
 Previously eliminated: 32 axioms converted to theorems.
 
-Infrastructure sorry: `spectral_gap_pair_exists` (bridge lemma between custom
-`IsEigenvalue` and Mathlib eigenvalue API). This is NOT an axiom; it is a
-provable infrastructure lemma whose proof requires the bridge
-`IsEigenvalue <-> is one of Mathlib eigenvalues`.
+Infrastructure sorries: **0**. The bridge lemma `spectral_gap_pair_exists`
+(previously the only sorry) is now fully proved via `isEigenvalue_is_mathlib_eigenvalue`,
+which shows that every eigenvalue in our sense corresponds to a Mathlib eigenvalue
+by expanding in the eigenbasis and using Parseval's identity.
 
 ## Correctness Audit (2026-02-06)
 
