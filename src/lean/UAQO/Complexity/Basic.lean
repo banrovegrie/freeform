@@ -85,10 +85,13 @@ noncomputable def countAssignmentsWithKUnsatisfied (f : CNFFormula) (k : Nat) : 
 
 /-! ## Polynomial time -/
 
-/-- A function is polynomial-time computable (informal) -/
-def IsPolynomialTime (_f : List Bool -> List Bool) : Prop :=
-  ∃ (_p : Nat), ∀ (_input : List Bool),
-    True  -- Placeholder: computation time <= p * |input|^p
+/-- A function is polynomial-time computable.
+
+    AXIOM: Formalizing polynomial-time computation requires a Turing machine
+    model beyond current Lean 4/Mathlib scope.
+
+    Citation: Arora-Barak, Chapter 1. -/
+axiom IsPolynomialTime (f : List Bool -> List Bool) : Prop
 
 /-- A decision problem -/
 structure DecisionProblem where

@@ -770,28 +770,15 @@ theorem mainResult2 (approx : A1Approximator) :
 
 /-- Corollary: If we can approximate A_1 to 1/poly(n) precision in poly time, then P = NP.
 
-    This follows from mainResult2 combined with the Cook-Levin theorem.
-    Any polynomial-time A_1 approximator with precision 1/poly(n) would give
-    a polynomial-time algorithm for 3-SAT, implying P = NP.
+    AXIOM: Building a polynomial-time SAT solver from a poly-time A_1
+    approximator requires IsPolynomialTime to be formalized and the
+    two-query protocol (mainResult2) to produce an actual algorithm.
 
-    Note: The precision bound must be 1/poly(n), not a fixed constant. -/
-theorem A1_approx_implies_P_eq_NP :
+    Citation: arXiv:2411.05736, Corollary of Theorem 2. -/
+axiom A1_approx_implies_P_eq_NP :
     (∃ (approx : A1Approximator) (polyDeg : Nat),
       ∀ n, n >= 2 -> approx.precision < 1 / (72 * n^polyDeg)) ->
-    ∀ (prob : DecisionProblem), InNP prob -> InP prob := by
-  -- Note: IsPolynomialTime is a placeholder (∃ p, ∀ input, True), so InP reduces to
-  -- constructing a characteristic function for yes_instances, which exists classically.
-  -- The real content (efficient approximation implies efficient SAT solving) is not
-  -- captured because the formalization does not model computational complexity.
-  intro _ prob _
-  classical
-  refine ⟨fun x => if x ∈ prob.yes_instances then true else false,
-    ⟨0, fun _ => trivial⟩, fun x => ?_⟩
-  constructor
-  · intro h; by_cases hx : x ∈ prob.yes_instances
-    · exact hx
-    · simp [hx] at h
-  · intro h; simp [h]
+    ∀ (prob : DecisionProblem), InNP prob -> InP prob
 
 /-! ## Main Result 3: #P-hardness of exactly computing A_1 -/
 

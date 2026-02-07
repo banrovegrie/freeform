@@ -49,45 +49,36 @@ theorem runningTime_pos {n M : Nat} (es : EigenStructure n M)
 
 /-! ## Main Result 1: Running time of AQO -/
 
-/-- Main Result 1 (Theorem 1 in the paper):
-    AQO prepares the ground state with fidelity 1-ε in time
-    T = O((1/ε) * (√A₂)/(A₁²Δ²) * √(2ⁿ/d₀))
+/-- Main Result 1 evolution bound.
 
-    This is the main running time result. The proof combines:
-    1. The adiabatic theorem (bounding error as function of T)
-    2. Gap bounds in three regions (left, crossing, right)
-    3. The local schedule that balances time across regions
-    4. Integration to get total running time -/
-theorem mainResult1 {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2)
-    (_hspec : spectralCondition es hM 0.02 (by norm_num))
+    AXIOM: The adiabatic evolution reaching the ground state at the computed
+    running time requires quantum dynamics beyond Lean 4/Mathlib scope.
+
+    Citation: Jansen, Ruskai, Seiler (2007) + arXiv:2411.05736, Theorem 1. -/
+axiom mainResult1_evolution {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
     (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1) :
     let T := runningTime es hM epsilon heps.1
     ∃ (evol : SchrodingerEvolution n T (runningTime_pos es hM epsilon heps.1)),
       let finalState := evol.psi T
       let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-      normSquared (fun i => finalState i - groundSym i) <= epsilon := by
-  intro T
-  let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-  have hT_pos := runningTime_pos es hM epsilon heps.1
-  -- Construct evolution that reaches ground state at time T
-  -- (satisfies_equation is a placeholder True, so any trajectory works)
-  let evol : SchrodingerEvolution n T hT_pos := {
-    H := ⟨fun _ => 0⟩
-    psi := fun t => if t = 0 then equalSuperpositionN n else groundSym
-    initial := by simp
-    satisfies_equation := trivial
-  }
-  refine ⟨evol, ?_⟩
-  -- psi T = groundSym since T > 0 (hence T ≠ 0)
-  show normSquared (fun i => evol.psi T i - groundSym i) ≤ epsilon
-  have hT_ne : (T : Real) ≠ 0 := ne_of_gt hT_pos
-  simp only [evol, hT_ne, ↓reduceIte]
-  -- normSquared(groundSym - groundSym) = normSquared(0) = 0 ≤ epsilon
-  have : (fun i => groundSym i - groundSym i) = fun _ => 0 := by ext i; ring
-  rw [this]
-  simp only [normSquared, Complex.normSq_zero, Finset.sum_const_zero]
-  exact le_of_lt heps.1
+      normSquared (fun i => finalState i - groundSym i) <= epsilon
+
+/-- Main Result 1 (Theorem 1 in the paper):
+    AQO prepares the ground state with fidelity 1-eps in time
+    T = O((1/eps) * (sqrt A2)/(A1^2 * Delta^2) * sqrt(2^n/d0))
+
+    Citation: arXiv:2411.05736, Theorem 1. -/
+theorem mainResult1 {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2)
+    (hspec : spectralCondition es hM 0.02 (by norm_num))
+    (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1) :
+    let T := runningTime es hM epsilon heps.1
+    ∃ (evol : SchrodingerEvolution n T (runningTime_pos es hM epsilon heps.1)),
+      let finalState := evol.psi T
+      let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
+      normSquared (fun i => finalState i - groundSym i) <= epsilon :=
+  mainResult1_evolution es hM hspec epsilon heps
 
 /-! ## Optimality for Ising Hamiltonians -/
 
@@ -223,24 +214,16 @@ structure SearchAlgorithm (n : Nat) where
 
 /-- The Farhi-Goldstone-Gutmann lower bound for unstructured search.
 
-    Any quantum algorithm that uses at least one query and finds a marked item in
-    an unstructured database of size N = 2^n with constant success probability
-    requires Omega(sqrt(N)) oracle queries.
+    AXIOM: Any quantum algorithm that finds a marked item in an unstructured
+    database of size N = 2^n with constant success probability requires
+    Omega(sqrt(N)) oracle queries. Proof requires the quantum adversary method
+    or polynomial method, beyond Lean 4/Mathlib scope.
 
-    Proof: With queryCount ≥ 1, use c = 1/sqrt(2^n). Then queryCount ≥ 1 = c · sqrt(2^n). -/
-theorem lowerBound_unstructuredSearch :
-    ∀ (n : Nat) (alg : SearchAlgorithm n) (_hQ : alg.queryCount >= 1),
-      ∃ (c : Real), c > 0 ∧ alg.queryCount >= c * Real.sqrt (2^n) := by
-  intro n alg hQ
-  have hN_pos : (2 : Real) ^ n > 0 := pow_pos (by norm_num) n
-  have hsqrt_pos : Real.sqrt (2 ^ n) > 0 := Real.sqrt_pos.mpr hN_pos
-  use 1 / Real.sqrt (2 ^ n)
-  refine ⟨div_pos one_pos hsqrt_pos, ?_⟩
-  -- 1/sqrt(N) * sqrt(N) = 1
-  have h1 : 1 / Real.sqrt (2 ^ n) * Real.sqrt (2 ^ n) = 1 :=
-    div_mul_cancel₀ 1 (ne_of_gt hsqrt_pos)
-  rw [h1]
-  exact_mod_cast hQ
+    Citation: Farhi, Goldstone, Gutmann (2000); Bennett et al. (1997). -/
+axiom lowerBound_unstructuredSearch :
+    ∀ (n : Nat) (alg : SearchAlgorithm n),
+      alg.queryCount >= 1 ->
+      ∃ (c : Real), c > 0 ∧ alg.queryCount >= c * Real.sqrt (2^n)
 
 /-- Our running time matches the lower bound up to polylog factors.
 

@@ -19,6 +19,7 @@ import UAQO.Adiabatic.Schedule
 import UAQO.Adiabatic.Theorem
 import UAQO.Adiabatic.RunningTime
 import UAQO.Complexity.Basic
+import UAQO.Complexity.Encoding
 import UAQO.Complexity.NP
 import UAQO.Complexity.SharpP
 import UAQO.Complexity.Hardness
@@ -102,6 +103,20 @@ example {n M : Nat} (es : EigenStructure n M) (hM : M > 0) (k : Fin M)
     UAQO.Complexity.extractionDenominator es hM k := by
   rfl
 
+/-! ## Encoding tests -/
+
+-- Test: CNF encoding round-trip correctness
+#check @UAQO.Complexity.decode_encode
+
+-- Test: CNF encoding injectivity
+#check @UAQO.Complexity.encodeCNF_injective
+
+-- Test: ThreeSAT uses real encoding (not Set.univ)
+#check @UAQO.Complexity.ThreeSAT
+
+-- Test: SharpThreeSAT uses real encoding (not constant 0)
+#check @UAQO.Complexity.SharpThreeSAT
+
 -- Test: extractDegeneracy_correct recovers degeneracies from numerator polynomial
 #check @UAQO.Complexity.extractDegeneracy_correct
 
@@ -109,16 +124,10 @@ example {n M : Nat} (es : EigenStructure n M) (hM : M > 0) (k : Fin M)
 #check @UAQO.Complexity.mainResult3
 
 /-! ## Theorem inventory -/
--- All 25 original axioms have been eliminated. Key theorems:
+-- Key genuine theorems (fully proved, no axiom dependencies for these):
 
--- Resolvent distance to spectrum (formerly axiom, now proved)
+-- Resolvent distance to spectrum (proved via Frobenius positivity)
 #check @resolvent_distance_to_spectrum
-
--- Lower bound for unstructured search (formerly axiom, now theorem)
-#check @lowerBound_unstructuredSearch
-
--- #3-SAT is #P-complete (formerly axiom, now theorem)
-#check @UAQO.Complexity.sharpThreeSAT_complete
 
 -- Degeneracy extraction via polynomial evaluation (paper's formula)
 #check @UAQO.Complexity.extractDegeneracy_correct
@@ -126,8 +135,41 @@ example {n M : Nat} (es : EigenStructure n M) (hM : M > 0) (k : Fin M)
 -- Numerator polynomial evaluation identity
 #check @UAQO.Complexity.numeratorPoly_eval
 
-/-! ## Verification -/
--- 0 axioms: grep -rn "^axiom " UAQO/  (should be empty)
--- 0 sorries: lake build 2>&1 | grep sorry  (should be empty)
+-- CNF encoding round-trip correctness
+#check @UAQO.Complexity.decode_encode
+
+-- Theorems proved from axioms (formerly sorry, now one-line proofs):
+
+-- Lower bound for unstructured search (axiom: quantum adversary method)
+#check @lowerBound_unstructuredSearch
+
+-- #3-SAT is #P-complete (proved from axioms sharpThreeSAT_in_SharpP + sharpThreeSAT_hard)
+#check @UAQO.Complexity.sharpThreeSAT_complete
+
+-- Adiabatic theorem (proved from adiabatic_evolution_bound axiom)
+#check @adiabaticTheorem
+
+-- Main Result 1 (proved from mainResult1_evolution axiom)
+#check @mainResult1
+
+-- Eigenpath traversal (proved from eigenpath_evolution_bound axiom)
+#check @eigenpath_traversal
+
+/-! ## Axiom audit -/
+-- 12 explicit axioms (Lean `axiom` keyword), 0 sorry
+-- All axioms visible via `#print axioms`
+-- See Proofs/ProofVerify.lean for complete inventory
+
+-- Verify mainResult2 has no custom axioms (genuine proof via classical case split)
+#print axioms UAQO.Complexity.mainResult2
+
+-- Verify mainResult3 has no custom axioms (genuine proof via extraction formula)
+#print axioms UAQO.Complexity.mainResult3
+
+-- Verify sharpThreeSAT_complete depends only on axioms 5+6
+#print axioms UAQO.Complexity.sharpThreeSAT_complete
+
+-- Verify adiabaticTheorem depends on adiabatic_evolution_bound
+#print axioms adiabaticTheorem
 
 end UAQO.Test

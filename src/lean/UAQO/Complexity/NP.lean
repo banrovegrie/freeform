@@ -4,7 +4,7 @@
   NP is the class of decision problems verifiable in polynomial time,
   or equivalently, decidable by a nondeterministic polynomial-time TM.
 -/
-import UAQO.Complexity.Basic
+import UAQO.Complexity.Encoding
 
 namespace UAQO.Complexity
 
@@ -25,40 +25,24 @@ structure Verifier (prob : DecisionProblem) where
 def InNP (prob : DecisionProblem) : Prop :=
   ∃ (_v : Verifier prob), True
 
-/-- The 3-SAT decision problem -/
+/-- The 3-SAT decision problem.
+
+    A bitstring is a YES instance iff it decodes (via decodeCNF_impl from
+    Encoding.lean) to a satisfiable 3-CNF formula. The encoding/decoding
+    infrastructure is fully formalized with round-trip correctness. -/
 def ThreeSAT : DecisionProblem where
-  yes_instances := { _encoded | ∃ (f : CNFFormula),
-    -- encoded represents f
+  yes_instances := { encoded | ∃ (f : CNFFormula),
+    decodeCNF_impl encoded = some f ∧
     is_kCNF 3 f ∧ isSatisfiable f }
 
-/-- The empty formula is a satisfiable 3-CNF, so ThreeSAT.yes_instances = Set.univ.
+/-- 3-SAT is in NP (existence of polynomial-time verifier).
 
-    The empty formula has 0 clauses, so `is_kCNF 3` holds vacuously and
-    `isSatisfiable` holds for any assignment of 0 variables. -/
-private theorem threeSAT_yes_univ : ThreeSAT.yes_instances = Set.univ := by
-  ext x
-  simp only [ThreeSAT, Set.mem_setOf_eq, Set.mem_univ, iff_true]
-  -- Witness: empty formula with 0 vars, 0 clauses
-  refine ⟨⟨[], 0⟩, ?_, ?_⟩
-  · -- is_kCNF 3: vacuously true (no clauses)
-    intro c hc; simp at hc
-  · -- isSatisfiable: any 0-variable assignment works
-    refine ⟨fun i => i.elim0, ?_⟩
-    simp [satisfies, evalCNF]
+    AXIOM: The encoding is fully formalized (decodeCNF_impl), but
+    IsPolynomialTime is an axiom, so we cannot prove the verifier
+    runs in polynomial time within this formalization.
 
-/-- 3-SAT is in NP (existence of verifier).
-
-    Since ThreeSAT.yes_instances = Set.univ, the verifier that accepts only the
-    empty certificate is sound (everything is a YES instance) and complete. -/
-theorem threeSAT_in_NP : InNP ThreeSAT := by
-  use {
-    -- Accept only empty certificates (so cert_bound is trivially satisfied)
-    verify := fun _ cert => cert.isEmpty
-    cert_bound := ⟨0, fun _ cert h => by
-      simp [List.isEmpty_iff] at h; rw [h]; simp⟩
-    sound := fun x _ _ => by rw [threeSAT_yes_univ]; exact Set.mem_univ x
-    complete := fun _ _ => ⟨[], by simp⟩
-  }
+    Citation: Cook (1971), Theorem 1. -/
+axiom threeSAT_in_NP : InNP ThreeSAT
 
 /-! ## NP-hardness -/
 

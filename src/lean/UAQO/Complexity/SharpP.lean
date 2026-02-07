@@ -30,40 +30,36 @@ def InSharpP (prob : CountingProblem) : Prop :=
       (∀ c ∈ validCerts, c.length <= certBound x.length ∧ v.verify x c = true) ∧
       prob.count x = validCerts.card
 
-/-- The #3-SAT problem: count satisfying assignments -/
-def SharpThreeSAT : CountingProblem where
-  count := fun _ =>
-    -- Number of satisfying assignments for the encoded formula
-    -- This requires full encoding/decoding infrastructure
-    0  -- Placeholder
+/-- The #3-SAT problem: count satisfying assignments.
+
+    Uses the fully formalized decodeCNF_impl from Encoding.lean to extract
+    a CNF formula from its bitstring encoding and count satisfying assignments. -/
+noncomputable def SharpThreeSAT : CountingProblem where
+  count := fun encoded =>
+    match decodeCNF_impl encoded with
+    | some f => numSatisfyingAssignments f
+    | none => 0
 
 /-- #3-SAT is in #P.
 
-    With the placeholder count = 0, we use an empty decision problem with a
-    trivial verifier. For each input x, validCerts = ∅ has card 0 = count x. -/
-theorem sharpThreeSAT_in_SharpP : InSharpP SharpThreeSAT := by
-  -- Use decision problem with empty yes_instances
-  refine ⟨⟨∅⟩, ?_, fun _ => 0, ⟨0, fun _ => by simp⟩, ?_⟩
-  · -- Construct a Verifier for the empty decision problem
-    exact {
-      verify := fun _ _ => false
-      cert_bound := ⟨0, fun _ _ h => by simp at h⟩
-      sound := fun _ _ h => by simp at h
-      complete := fun _ hx => absurd hx (by simp [Set.mem_empty_iff_false])
-    }
-  · -- For each x, validCerts = ∅, card = 0 = SharpThreeSAT.count x
-    intro x
-    exact ⟨∅, fun _ h => absurd h (by simp), by simp [SharpThreeSAT]⟩
+    AXIOM: The encoding is fully formalized (decodeCNF_impl), but
+    IsPolynomialTime is an axiom, so we cannot prove the verifier
+    runs in polynomial time within this formalization.
+
+    Citation: Valiant (1979), Proposition 1. -/
+axiom sharpThreeSAT_in_SharpP : InSharpP SharpThreeSAT
 
 /-! ## #P-hardness -/
 
 /-- A counting reduction from problem A to problem B.
 
     A reduces to B if there exist polynomial-time computable f, g such that
-    A.count(x) = g(B.count(f(x)), x) for all x. -/
+    A.count(x) = g(B.count(f(x)), x) for all x, and g is polynomially bounded:
+    g(m, x) <= m + |x|^p for some polynomial degree p. -/
 def CountingReduction (A B : CountingProblem) : Prop :=
   ∃ (f : List Bool -> List Bool) (g : Nat -> List Bool -> Nat),
     IsPolynomialTime f ∧
+    (∃ p, ∀ m x, g m x <= m + x.length^p + p) ∧
     ∀ x, A.count x = g (B.count (f x)) x
 
 /-- Parsimonious reduction: preserves the count exactly -/
@@ -80,16 +76,17 @@ def IsSharpPHard (prob : CountingProblem) : Prop :=
 def IsSharpPComplete (prob : CountingProblem) : Prop :=
   InSharpP prob ∧ IsSharpPHard prob
 
-/-- #3-SAT is #P-complete.
+/-- #3-SAT is #P-hard.
 
-    Proof: InSharpP follows from the placeholder count = 0 (see sharpThreeSAT_in_SharpP).
-    IsSharpPHard: for any other #P problem, the identity reduction works because
-    IsPolynomialTime is a placeholder (True) and g can reconstruct the original count. -/
-theorem sharpThreeSAT_complete : IsSharpPComplete SharpThreeSAT := by
-  constructor
-  · exact sharpThreeSAT_in_SharpP
-  · intro other _hSharpP
-    exact ⟨id, fun _ x => other.count x, ⟨1, fun _ => trivial⟩, fun _ => rfl⟩
+    AXIOM: Showing polynomial-time counting reductions from any #P problem to
+    #3-SAT requires IsPolynomialTime to be formalized.
+
+    Citation: Valiant (1979), Theorem 1. -/
+axiom sharpThreeSAT_hard : IsSharpPHard SharpThreeSAT
+
+/-- #3-SAT is #P-complete. PROVED from axioms sharpThreeSAT_in_SharpP + sharpThreeSAT_hard. -/
+theorem sharpThreeSAT_complete : IsSharpPComplete SharpThreeSAT :=
+  ⟨sharpThreeSAT_in_SharpP, sharpThreeSAT_hard⟩
 
 /-! ## Relationship between #P and NP -/
 
@@ -225,19 +222,24 @@ theorem berlekamp_welch (d e : Nat) (points : Fin (d + 2 * e + 1) -> Real)
 
 /-! ## Counting degeneracies -/
 
-/-- The problem of computing degeneracy d_k of eigenvalue E_k -/
-def DegeneracyProblem : CountingProblem where
-  count := fun _ =>
-    -- Extract k and H from encoded, return d_k
-    -- This requires full encoding/decoding infrastructure
-    0  -- Placeholder
+/-- Degeneracy counting function for encoded eigenvalue problems.
+
+    AXIOM: Computing d_k from an encoded bitstring requires eigenvalue problem
+    encoding/decoding infrastructure beyond the current formalization.
+
+    Citation: arXiv:2411.05736, Section 2.3. -/
+axiom degeneracyCount : List Bool -> Nat
+
+/-- The problem of computing degeneracy d_k of eigenvalue E_k. -/
+noncomputable def DegeneracyProblem : CountingProblem where
+  count := degeneracyCount
 
 /-- Computing degeneracies is #P-hard (reduces from #3-SAT).
 
-    Proof: identity reduction with g reconstructing the original count.
-    Works because IsPolynomialTime is a placeholder (True). -/
-theorem degeneracy_sharpP_hard : IsSharpPHard DegeneracyProblem := by
-  intro other _hSharpP
-  exact ⟨id, fun _ x => other.count x, ⟨1, fun _ => trivial⟩, fun _ => rfl⟩
+    AXIOM: Requires polynomial-time counting reduction from #3-SAT to the
+    degeneracy problem. Depends on IsPolynomialTime and degeneracyCount axioms.
+
+    Citation: arXiv:2411.05736, Theorem 3. -/
+axiom degeneracy_sharpP_hard : IsSharpPHard DegeneracyProblem
 
 end UAQO.Complexity

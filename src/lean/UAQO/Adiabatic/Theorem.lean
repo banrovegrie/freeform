@@ -13,8 +13,17 @@ namespace UAQO
 
 /-! ## The Schrodinger equation -/
 
+/-- The Schrodinger equation is satisfied by the evolution.
+
+    AXIOM: Formalizing the Schrodinger PDE i/T * d|psi>/ds = H(s)|psi>
+    requires operator-valued differential equations beyond Lean 4/Mathlib scope.
+
+    Citation: Jansen, Ruskai, Seiler (2007), Section 2. -/
+axiom SatisfiesSchrodingerEquation {n : Nat} {T : Real} {hT : T > 0}
+    (H : TimeDependentHam n T hT) (psi : Real -> NQubitState n) : Prop
+
 /-- State evolution under time-dependent Hamiltonian:
-    i/T * ∂|ψ⟩/∂s = H(s)|ψ⟩ -/
+    i/T * d|psi>/ds = H(s)|psi> -/
 structure SchrodingerEvolution (n : Nat) (T : Real) (hT : T > 0) where
   /-- The time-dependent Hamiltonian -/
   H : TimeDependentHam n T hT
@@ -22,8 +31,9 @@ structure SchrodingerEvolution (n : Nat) (T : Real) (hT : T > 0) where
   psi : Real -> NQubitState n
   /-- Initial state -/
   initial : psi 0 = equalSuperpositionN n
-  /-- The equation is satisfied (informally) -/
-  satisfies_equation : True -- Placeholder for PDE formulation
+  /-- The state satisfies the Schrodinger equation.
+      Uses the SatisfiesSchrodingerEquation axiom. -/
+  satisfies_equation : SatisfiesSchrodingerEquation H psi
 
 /-! ## The adiabatic theorem (Jansen et al.) -/
 
@@ -39,36 +49,38 @@ noncomputable def adiabaticError {n M : Nat} (es : EigenStructure n M)
   -- Simplified bound
   C / T * d / (minimumGap es hM)^2
 
-/-- The rigorous adiabatic theorem (Jansen et al., Theorem 3).
+/-- Jansen-Ruskai-Seiler adiabatic theorem: evolution exists with error bound.
 
-    There exists a Schrödinger evolution such that when the evolution time T is
-    sufficiently large, the final state is close to the ground state.
+    AXIOM: The existence of a Schrodinger evolution satisfying the PDE with the
+    stated error bound requires quantum dynamics beyond Lean 4/Mathlib scope.
 
-    Note: satisfies_equation is a placeholder (True), so we construct an evolution
-    that directly reaches the ground state. The real content is in the gap analysis. -/
-theorem adiabaticTheorem {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num))
+    Citation: Jansen, Ruskai, Seiler (2007), Theorem 3. -/
+axiom adiabatic_evolution_bound {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
     (T : Real) (hT : T > 0)
     (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1)
-    (_hT_large : T >= adiabaticError es hM T hT 1 ⟨by norm_num, le_refl 1⟩ / epsilon) :
+    (hT_large : T >= adiabaticError es hM T hT 1 ⟨by norm_num, le_refl 1⟩ / epsilon) :
     ∃ (evol : SchrodingerEvolution n T hT),
       let finalState := evol.psi T
       let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-      normSquared (fun i => finalState i - groundSym i) <= epsilon := by
-  let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
-  let evol : SchrodingerEvolution n T hT := {
-    H := ⟨fun _ => 0⟩
-    psi := fun t => if t = 0 then equalSuperpositionN n else groundSym
-    initial := by simp
-    satisfies_equation := trivial
-  }
-  refine ⟨evol, ?_⟩
-  have hT_ne : T ≠ 0 := ne_of_gt hT
-  simp only [evol, hT_ne, ↓reduceIte]
-  have : (fun i => groundSym i - groundSym i) = fun _ => 0 := by ext i; ring
-  rw [this]
-  simp only [normSquared, Complex.normSq_zero, Finset.sum_const_zero]
-  exact le_of_lt heps.1
+      normSquared (fun i => finalState i - groundSym i) <= epsilon
+
+/-- The rigorous adiabatic theorem (Jansen et al., Theorem 3).
+
+    There exists a Schrodinger evolution such that when the evolution time T is
+    sufficiently large, the final state is close to the ground state.
+
+    Citation: Jansen, Ruskai, Seiler (2007), Theorem 3. -/
+theorem adiabaticTheorem {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
+    (T : Real) (hT : T > 0)
+    (epsilon : Real) (heps : 0 < epsilon ∧ epsilon < 1)
+    (hT_large : T >= adiabaticError es hM T hT 1 ⟨by norm_num, le_refl 1⟩ / epsilon) :
+    ∃ (evol : SchrodingerEvolution n T hT),
+      let finalState := evol.psi T
+      let groundSym := symmetricState es ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
+      normSquared (fun i => finalState i - groundSym i) <= epsilon :=
+  adiabatic_evolution_bound es hM hspec T hT epsilon heps hT_large
 
 /-! ## Simplified adiabatic theorem for local schedules -/
 
@@ -111,38 +123,37 @@ theorem required_time_bound {n M : Nat} (es : EigenStructure n M)
 
 /-! ## Eigenpath traversal -/
 
+/-- Eigenpath evolution bound: the evolution follows the instantaneous ground state.
+
+    AXIOM: Requires quantum dynamics (Schrodinger PDE) beyond Lean 4/Mathlib scope.
+
+    Citation: Jansen, Ruskai, Seiler (2007), Corollary of Theorem 3. -/
+axiom eigenpath_evolution_bound {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
+    (T : Real) (hT : T > 0)
+    (hT_large : T >= totalTimeIntegral es hM hspec)
+    (s : Real) (hs : 0 < s ∧ s <= 1) :
+    ∃ (evol : SchrodingerEvolution n T hT),
+      let state_at_s := evol.psi (s * T)
+      let ground_at_s := instantaneousGround es hM s ⟨le_of_lt hs.1, hs.2⟩ hspec
+      normSquared (fun i => state_at_s i - ground_at_s i) <= 0.1
+
 /-- The adiabatic evolution follows the eigenpath.
 
     There exists an evolution that at each intermediate time remains close to
     the instantaneous ground state. This is a consequence of the adiabatic theorem.
 
-    Note: satisfies_equation is a placeholder (True), so we construct a trivial
-    evolution. The bound 0.1 is trivially achieved for s > 0 by direct ground
-    state tracking; at s=0 it follows from normSquared being bounded by 4. -/
+    Citation: Jansen, Ruskai, Seiler (2007), Corollary of Theorem 3. -/
 theorem eigenpath_traversal {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
     (T : Real) (hT : T > 0)
-    (_hT_large : T >= totalTimeIntegral es hM hspec)
+    (hT_large : T >= totalTimeIntegral es hM hspec)
     (s : Real) (hs : 0 < s ∧ s <= 1) :
     ∃ (evol : SchrodingerEvolution n T hT),
       let state_at_s := evol.psi (s * T)
       let ground_at_s := instantaneousGround es hM s ⟨le_of_lt hs.1, hs.2⟩ hspec
-      normSquared (fun i => state_at_s i - ground_at_s i) <= 0.1 := by
-  -- Construct evolution using ground state at parameter s as constant for t > 0
-  let gs := instantaneousGround es hM s ⟨le_of_lt hs.1, hs.2⟩ hspec
-  let evol : SchrodingerEvolution n T hT := {
-    H := ⟨fun _ => 0⟩
-    psi := fun t => if t = 0 then equalSuperpositionN n else gs
-    initial := by simp
-    satisfies_equation := trivial
-  }
-  refine ⟨evol, ?_⟩
-  have hsT_ne : s * T ≠ 0 := mul_ne_zero (ne_of_gt hs.1) (ne_of_gt hT)
-  simp only [evol, hsT_ne, ↓reduceIte, gs]
-  have : (fun i => gs i - gs i) = fun _ => (0 : Complex) := by ext i; ring
-  rw [this]
-  simp only [normSquared, Complex.normSq_zero, Finset.sum_const_zero]
-  norm_num
+      normSquared (fun i => state_at_s i - ground_at_s i) <= 0.1 :=
+  eigenpath_evolution_bound es hM hspec T hT hT_large s hs
 
 /-! ## Phase randomization extension -/
 
