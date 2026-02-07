@@ -1016,3 +1016,183 @@ $2^{-\Omega(d)}$ for degree-$d$ interpolation (Theorem 6). At
 $d = \mathrm{poly}(n)$, the required $\epsilon = 2^{-\Omega(n)}$ is
 exponentially below $2^{-n/2}$. No rearrangement of interpolation nodes
 can circumvent this.
+
+
+## Proposition 8: Precision Phase Diagram
+
+Theorems 1-4 resolve the algorithmically relevant point
+$\epsilon = 2^{-n/2}$. We now place this point in the full
+precision-complexity landscape.
+
+Define the precision-dependent core query complexity by fixing
+$M = 2$, $\Delta_1 = 1$, and known ground energy $E_0 = 0$ (the same
+approximate-counting family used in Theorem 4). In this core family,
+$A_1 = 1 - d_0/N$, so the only task is estimating one mean to
+additive error $\epsilon$.
+
+**Proposition 8.** *For $A_1$ estimation, the precision landscape is:*
+
+| Precision regime | Quantum query complexity (core) | Classical query complexity (core) | Computational status |
+|------------------|----------------------------------|-----------------------------------|----------------------|
+| $\epsilon = \Theta(1)$ | $\Theta(1)$ | $\Theta(1)$ | Trivial additive approximation |
+| $\epsilon = 1/\mathrm{poly}(n)$ | $\Theta(1/\epsilon)$ | $\Theta(1/\epsilon^2)$ | NP-hard (paper Theorem 2) |
+| $\epsilon = 2^{-cn}$, $0 < c < 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | Between NP-hard and #P-hard known points |
+| $\epsilon = 2^{-n/2}$ | $\Theta(2^{n/2})$ | $\Theta(2^n)$ | This work (Theorems 2-4) |
+| $\epsilon = 2^{-cn}$, $c > 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | #P-hard once $cn$ exceeds the paper's interpolation threshold; otherwise unresolved |
+| $\epsilon = 2^{-\mathrm{poly}(n)}$ | $\Theta(1/\epsilon)$ | $\Theta(1/\epsilon^2)$ | #P-hard (paper Theorem 3) |
+
+*Hence the query complexity changes continuously with precision
+($\Theta(1/\epsilon)$ quantum, $\Theta(1/\epsilon^2)$ classical), while
+$\epsilon = 2^{-n/2}$ is the structural boundary where interpolation-based
+#P-hardness proofs break (Theorems 1 and 6).*
+
+**Proof.**
+
+For the core family ($M = 2$, $\Delta_1 = 1$, known $E_0$):
+
+1. Quantum upper bound $O(1/\epsilon)$ follows from Theorem 2
+   (amplitude-estimation stage).
+2. Quantum lower bound $\Omega(1/\epsilon)$ follows from Theorem 4.
+3. Classical lower bound $\Omega(1/\epsilon^2)$ follows from Theorem 3.
+4. Classical upper bound $O(1/\epsilon^2)$ follows from the sample-mean
+   estimator on Bernoulli outcomes (or brute force when $1/\epsilon^2 > N$).
+
+So the core query complexities are exactly
+$\Theta(1/\epsilon)$ (quantum) and $\Theta(1/\epsilon^2)$ (classical).
+Substituting $\epsilon = 2^{-cn}$ gives
+$\Theta(2^{cn})$ and $\Theta(2^{2cn})$, with separation factor $2^{cn}$.
+At $c = 1/2$, this yields $\Theta(2^{n/2})$ vs $\Theta(2^n)$.
+
+Computational hardness labels come from the paper:
+NP-hard at inverse-polynomial precision (paper Theorem 2) and #P-hard
+at exponentially small precision $2^{-\mathrm{poly}(n)}$ (paper Theorem 3).
+For $\epsilon = 2^{-cn}$ with $c > 1/2$, we are in an exponential regime.
+Paper Theorem 3 applies once the linear exponent $cn$ is at least the
+explicit threshold polynomial appearing in that reduction. For linear
+exponents below that threshold, the computational classification remains
+open.
+
+Finally, Theorems 1 and 6 show that $\epsilon = 2^{-n/2}$ is exactly
+where polynomial extrapolation fails to carry #P-hardness downward.
+Thus the transition at $2^{-n/2}$ is a transition in available proof
+techniques, not a discontinuity in query scaling. $\square$
+
+
+## Proposition 9: Structured Families and the Limits of Theorem 7
+
+Theorem 7 is a worst-case statement over all diagonal Hamiltonians.
+Experiment 08 studies restricted structured families. We now connect the two.
+
+**Proposition 9.** *For the structured families in Experiment 08:*
+
+1. *Theorem 7 does not by itself imply hardness inside those families,
+   because its adversarial construction ranges over unrestricted diagonal
+   Hamiltonians and does not establish closure under the structural
+   constraints (bounded-treewidth local factors, ferromagnetic Ising with
+   consistent fields).*
+2. *For bounded-treewidth integer local energies (Experiment 08,
+   Proposition 8), $A_1$ is exactly computable in
+   $2^{O(w)}\mathrm{poly}(n,m)$ time. Therefore precision
+   $2^{-n/2}$ is classically tractable whenever $w = O(\log n)$
+   (in particular constant $w$).*
+3. *For ferromagnetic Ising with consistent fields (Experiment 08,
+   Proposition 13), additive-$\eta$ approximation requires
+   $\mu \le \eta/(6B)$ and $K \ge 3RB^2/(2\eta)$. At $\eta = 2^{-n/2}$ this
+   forces $1/\mu = \Omega(B2^{n/2})$, so with the standard Ising-FPRAS
+   dependence $\mathrm{poly}(n,1/\mu,\log(1/\delta_q))$ the induced scheme is
+   not polynomial-time at schedule precision.*
+4. *The Experiment 08 tractability guarantees extend to schedule-relevant
+   precision exactly when either (i) an exact polynomial-time method is
+   available (as in bounded treewidth), or (ii) the required precision
+   $\eta_{A_1} = \Theta(\sqrt{d_0A_2/N})$ is itself inverse-polynomial
+   (equivalently $d_0A_2/N \ge 1/\mathrm{poly}(n)^2$), so that
+   $\mathrm{poly}(1/\eta_{A_1})$ remains polynomial.*
+
+**Proof.**
+
+Part 1: Theorem 7 constructs hard instances by freely assigning
+degeneracies across levels while preserving only an abstract gap sequence.
+That argument does not prove the constructed spectra are realizable inside
+the structured subclasses of Experiment 08, so it is not a family-restricted
+lower bound.
+
+Part 2: Experiment 08 Proposition 8 computes all degeneracy coefficients
+$d_q$ exactly via variable elimination on width-$w$ decompositions in
+$2^{O(w)}\mathrm{poly}(n,m)$ time, then evaluates
+$A_1 = 2^{-n}\sum_{q > E_0} d_q/(q-E_0)$. Exact computation implies
+additive error $0$, hence also precision $2^{-n/2}$.
+
+Part 3: Experiment 08 Proposition 13 imposes the parameter constraints
+$\mu \le \eta/(6B)$ and $K \ge 3RB^2/(2\eta)$. At $\eta = 2^{-n/2}$ this
+implies $1/\mu = \Omega(B2^{n/2})$ and $K = \Omega(RB^2 2^{n/2})$. The
+ferromagnetic-Ising corollary in Experiment 08 assumes per-query
+complexity polynomial in $(n,1/\mu,\log(1/\delta_q))$, so these parameter
+values make the induced algorithm superpolynomial in $n$ at schedule
+precision.
+
+Part 4: Experiment 08 Proposition 14 gives required schedule precision
+$\eta_{A_1} = \Theta(\sqrt{d_0A_2/N})$. If $\eta_{A_1} \ge 1/\mathrm{poly}(n)$,
+then any method polynomial in $1/\eta$ is polynomial at that target.
+If $\eta_{A_1} = 2^{-n/2}$ (worst case $d_0,A_2 = \Theta(1)$), such methods
+are no longer polynomial unless an exact structural algorithm is available.
+$\square$
+
+
+## Proposition 10: Promise-Time Characterization and Class Mismatch
+
+Open Question 1 asks for a natural promise-class completeness statement.
+The clean statement currently available is time-parameterized.
+
+**Proposition 10.** *Let $\mathrm{A1\mbox{-}EST}_\epsilon$ be the promise
+function problem: given a succinctly described diagonal Hamiltonian $H_z$
+with $\Delta_1 \ge 1/\mathrm{poly}(n)$, output $\widetilde{A}$ such that
+$|\widetilde{A} - A_1(H_z)| \le \epsilon$. Then:*
+
+1. *$\mathrm{A1\mbox{-}EST}_\epsilon \in \mathrm{FBQTIME}(\sqrt{N} +
+   1/(\epsilon\Delta_1)\cdot \mathrm{poly}(n))$ (Theorem 2).*
+2. *On the $M = 2$ core family with $\Delta_1 = 1$ and known $E_0$,
+   quantum query complexity is $\Theta(1/\epsilon)$ (Theorem 4 and
+   Theorem 2).*
+3. *At $\epsilon = 2^{-n/2}$, this gives
+   $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$ and quantum lower bound
+   $\Omega(2^{n/2})$ in the query model. So the natural characterization is
+   parameterized-time, not PromiseBQP-type polynomial-time behavior.*
+
+**Proof.**
+
+Part 1 is exactly Theorem 2. Part 2 is Theorem 4 (lower bound) plus the
+matching amplitude-estimation upper bound in the same family. Substituting
+$\epsilon = 2^{-n/2}$ gives Part 3.
+
+The class-mismatch statement is in the black-box query sense:
+the established scaling is exponential in $n$ at the target precision on
+the core family. This supports a time-parameterized characterization, not
+a standard fixed class completeness theorem. $\square$
+
+**Remark.** We tested two natural formulations:
+
+1. Decision/promise version:
+   decide whether $A_1 \ge \tau + \epsilon$ or $A_1 \le \tau - \epsilon$.
+2. Function version:
+   output an $\epsilon$-additive approximation.
+
+Both are naturally parameterized by $\epsilon$ and yield
+$\mathrm{BQTIME}(1/\epsilon\cdot\mathrm{poly}(n))$ behavior in this
+experiment. This explains why standard classes with fixed polynomial
+runtime do not cleanly fit the $2^{-n/2}$ regime.
+
+**Formalization note.** A machine-checked discrete skeleton of
+Propositions 8-10 is provided in
+`src/experiments/13_intermediate_hardness/lean/`, including:
+
+1. Exact core scaling on the grid $\epsilon_k = 2^{-k}$.
+2. Threshold specialization at $k = n/2$.
+3. One-bit refinement identities ($Q_{k+1}=2Q_k$, separation doubles).
+4. Symbolic schedule-barrier inequality on the precision grid (all exponents).
+5. Finite-grid certificate of the schedule-barrier proxy up to exponent 1024.
+6. Structured bridge runtime specialization.
+7. Constant-factor lower/upper matching in the promise-time framing.
+
+An additional stress-verification script
+`src/experiments/13_intermediate_hardness/lib/robust_verify.py`
+performs randomized checks plus exhaustive small-parameter barrier checks.

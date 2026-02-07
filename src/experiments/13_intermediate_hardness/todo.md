@@ -1,147 +1,133 @@
-# Experiment 13: Intermediate Hardness -- `todo.md`
-
-Purpose: maintain a single consolidated place for open threads, partial results, and
-next actions while the experiment is evolving.
-
+# Experiment 13: Intermediate Hardness -- todo.md
 
 ## Plans
 
-### A. Precision landscape (complexity transitions across precisions)
+### Gap 1: Precision Landscape
+- [x] Add a precision phase diagram proposition covering:
+  - $\epsilon = \Theta(1)$
+  - $\epsilon = 1/\mathrm{poly}(n)$
+  - $\epsilon = 2^{-cn}$ for $c < 1/2$
+  - $\epsilon = 2^{-n/2}$
+  - $\epsilon = 2^{-cn}$ for $c > 1/2$
+  - $\epsilon = 2^{-\mathrm{poly}(n)}$
+- [x] Add figure-like summary table in `proof.md`.
+- [x] Chain existing theorems (paper Thms 2-3, Exp13 Thms 1-7) without re-deriving.
 
-**A0. Map the full precision-complexity diagram**
-- [ ] Classify complexity at each precision regime:
-      - \(\varepsilon = \Theta(1)\): trivial (output 0).
-      - \(\varepsilon = 1/\mathrm{poly}(n)\): NP-hard (paper Thm 2).
-        Quantum \(O(\mathrm{poly}(n))\), classical \(\Omega(\mathrm{poly}(n))\).
-      - \(\varepsilon = 2^{-cn}\) for \(c < 1/2\): intermediate.
-        Quantum \(O(2^{cn})\), classical \(\Omega(2^{2cn})\).
-      - \(\varepsilon = 2^{-n/2}\): algorithmically relevant threshold.
-        Quantum \(\Theta(2^{n/2})\), classical \(\Theta(2^n)\).
-      - \(\varepsilon = 2^{-cn}\) for \(c > 1/2\): \#P-hard territory.
-      - \(\varepsilon = 2^{-\mathrm{poly}(n)}\): exact degeneracy extraction.
-- [ ] Identify the structural boundary: \(\varepsilon = 2^{-n/2}\) is where polynomial
-      interpolation breaks (Theorem 6). Is there a phase transition in proof technique,
-      or is it smooth?
+### Gap 2: Structured Instance Investigation (Exp 08 Link)
+- [x] State whether Theorem 7 transfers to structured families.
+- [x] Characterize bounded-treewidth complexity at $2^{-n/2}$.
+- [x] Characterize ferromagnetic Ising with consistent fields at $2^{-n/2}$.
+- [x] State precise condition for when Exp 08 tractability extends to schedule-level precision.
 
-**A1. Write as a proposition**
-- [ ] State the precision landscape as a structured proposition with cited sources.
-- [ ] Add a summary table to proof.md.
-- [ ] Add numerical verification: compute quantum/classical bounds at multiple
-      \(\varepsilon\) values and verify scaling.
+### Gap 3: Promise-Class Characterization
+- [x] Add parameterized promise-time proposition for $\mathrm{A1\mbox{-}EST}_\epsilon$.
+- [x] Explain why PromiseBQP-type polynomial-time behavior does not capture $\epsilon = 2^{-n/2}$ in the query model.
+- [x] Document class mismatch honestly as an unresolved completeness question.
 
+### Gap 4: Chapter 9 Integration
+- [x] Read Chapter 9 structure in `README.md` (Ignorance Taxonomy, Central Claim).
+- [x] Add concrete insertion outline to `main.md`.
+- [x] Position Experiment 13 as bridge between hardness and information-cost narrative.
 
-### B. Structured instance investigation (connection to Exp 08)
+### Verification and Consistency
+- [x] Extend `lib/verify.py` with precision-landscape scaling checks.
+- [x] Run `lib/verify.py` and `lib/deep_verify.py` after edits.
+- [x] Add and run stress suite `lib/robust_verify.py`.
+- [x] Final notation/style consistency pass.
 
-**B0. Check Theorem 7 against structural constraints**
-- [ ] Read Exp 08 Props 8--13: identify the structural constraints (bounded treewidth,
-      ferromagnetic Ising with consistent fields).
-- [ ] Does Theorem 7's worst-case construction ("concentrate degeneracy in first two
-      levels") violate these constraints? Specifically: can a two-level spectrum arise
-      from a bounded-treewidth CSP or ferromagnetic Ising model?
-- [ ] If yes: Theorem 7 applies even for structured families (worst-case still hard).
-- [ ] If no: structured families may have easier worst-case instances.
+### Lean Hardening
+- [x] Create `lean/` package for Experiment 13.
+- [x] Formalize discrete scaling core for Propositions 8-10.
+- [x] Add finite schedule-barrier certificate module.
+- [x] Run Lean build and top-level check.
 
-**B1. Determine structured-family complexity at \(2^{-n/2}\)**
-- [ ] For bounded-treewidth CSPs: if \(A_1\) is exactly computable in poly time
-      (Exp 08, Prop 8), then estimation at \(2^{-n/2}\) is also poly time.
-      State this as a corollary.
-- [ ] For ferromagnetic Ising: if \(A_1\) is approximable to additive \(\eta\) in
-      randomized poly time (Exp 08, Prop 13), determine whether \(\eta\) can reach
-      \(2^{-n/2}\). If not, what is the best achievable precision?
-- [ ] Write as a proposition connecting Exps 08 and 13.
-
-
-### C. Promise class characterization (speculative, low priority)
-
-**C0. Identify candidate classes**
-- [ ] \(A_1\) estimation at precision \(\varepsilon\) is in
-      \(\mathrm{BQTIME}(1/\varepsilon \cdot \mathrm{poly}(n))\).
-      At \(\varepsilon = 2^{-n/2}\): \(\mathrm{BQTIME}(2^{n/2} \cdot \mathrm{poly}(n))\).
-- [ ] Is there a natural promise class capturing this intermediate regime?
-      Candidates: \(\mathrm{PromiseSBP}\), quantum approximate counting class.
-- [ ] If no clean characterization: write a Remark documenting why standard classes
-      don't fit (function problem, promise, intermediate precision).
-
-**C1. Non-interpolation hardness (open question #3)**
-- [ ] Can non-interpolation techniques establish hardness at \(2^{-n/2}\)?
-      Theorem 6 rules out polynomial extrapolation but not all proof strategies.
-- [ ] Candidates: information-theoretic reductions from counting problems,
-      communication complexity lower bounds.
-- [ ] If progress: state as a proposition. If not: document the barrier.
-
-
-### D. Chapter 9 integration
-
-**D0. Determine placement**
-- [ ] Read Chapter 9 outline in `README.md`. Natural placement: bridge between
-      the Ignorance Taxonomy and the model-separation capstone (Exp 10).
-- [ ] Narrative: "The paper proves \(A_1\) is hard. At what precision? The
-      algorithmically relevant \(2^{-n/2}\) exhibits a quadratic quantum-classical
-      separation, quantifying the information cost of the adiabatic model."
-
-**D1. Write insertion outline**
-- [ ] Map proof.md theorems to Chapter 9:
-      - Theorems 1, 6 (barrier analysis): one subsection on why \#P-hardness
-        doesn't extend
-      - Theorems 2--4 (tight bounds): one subsection on quantum-classical separation
-      - Theorem 5 (ETH): one remark on computational model
-      - Theorem 7 (structure irrelevance): one remark
-      - Gap A (precision landscape): summary table
-      - Gap B (structured instances): connection to tractability
-- [ ] Note which open questions carry into the Conclusion.
-
-
-### E. Paper-grade checklist
-
-- [x] Tight query complexity bounds (Theorems 2--4).
-- [x] Computational complexity under ETH (Theorem 5).
-- [x] Generic proof barrier (Theorems 1, 6).
-- [x] Structure irrelevance (Theorem 7).
-- [x] Comprehensive numerical verification (two scripts, 11+ tests).
-- [x] Novelty positioning paragraph.
-- [ ] Precision landscape (complexity vs precision map).
-- [ ] Structured instance investigation (connection to Exp 08).
-- [ ] Chapter 9 insertion outline.
+### Absolute Formalization Extension (Ongoing)
+- [ ] Fully formalize Theorem-1 interpolation barrier (all-parameter inequality chain, not only discrete certificates).
+- [ ] Formalize theorem-chain composition from paper Theorems 2-3 and Exp13 Theorems 1-7 in Lean (beyond narrative citation).
+- [ ] Formalize approximate-counting lower-bound core used in Theorem 4 (query lower bound side) with explicit constants.
+- [ ] Formalize ETH-conditional computational reduction details used in Theorem 5.
 
 
 ## Progress
 
-- 2026-02-06: Theorems 1--7 proved in `proof.md`. Two numerical verification
-  scripts (`verify.py`, `deep_verify.py`) all tests pass. Addresses paper's
-  explicit open problem (Discussion p.983). Created `todo.md`.
+- Read all required files:
+  - `CLAUDE.md`
+  - `src/experiments/README.md`
+  - `src/experiments/CLAUDE.md`
+  - `src/experiments/13_intermediate_hardness/main.md`
+  - `src/experiments/13_intermediate_hardness/proof.md`
+  - `src/experiments/13_intermediate_hardness/lib/verify.py`
+  - `src/experiments/13_intermediate_hardness/lib/deep_verify.py`
+  - `src/experiments/08_structured_tractability_v2/main.md`
+  - `src/experiments/10_information_theoretic/main.md`
+  - `src/experiments/12_circumventing_barrier/main.md`
+- Added to `proof.md`:
+  - Proposition 8: Precision phase diagram with complexity table and proof.
+  - Proposition 9: Structured-family bridge to Experiment 08.
+  - Proposition 10: Promise-time characterization and class mismatch remark.
+- Updated `main.md`:
+  - Added new proposition summaries.
+  - Added precision-dependent complexity table.
+  - Updated open questions to reflect resolved/remaining points.
+  - Expanded cross-experiment connections (08, 10, 12, 05, 04).
+  - Added Chapter 9 insertion outline aligned with README structure.
+  - Updated status section to include new completed contributions.
+  - Tightened Proposition 9 wording to use Exp 08 parameter constraints
+    ($\mu$, $K$) instead of an unstated runtime lower-bound assumption.
+- Updated `lib/verify.py`:
+  - Added `verify_precision_phase_diagram()`.
+  - Added exponent and smooth-scaling checks across $\epsilon$ regimes.
+- Verification runs completed:
+  - `python3 src/experiments/13_intermediate_hardness/lib/verify.py` (all checks passed)
+  - `python3 src/experiments/13_intermediate_hardness/lib/deep_verify.py` (all checks passed)
+  - `python3 src/experiments/13_intermediate_hardness/lib/robust_verify.py` (all stress checks passed, including exhaustive barrier checks on 2572 small-parameter instances)
+- Lean verification completed:
+  - `cd src/experiments/13_intermediate_hardness/lean && lake build` (build success)
+  - `cd src/experiments/13_intermediate_hardness/lean && lake env lean IntermediateHardness.lean` (all declarations checked)
+  - Added extra phase-diagram hardening lemmas:
+    `q_next_doubles`, `sep_next_doubles`.
+  - Added symbolic schedule-barrier inequality proof:
+    `scheduleErrorProxy_gt_half`.
+  - Added barrier-grid finite certificate:
+    `barrierAllUpTo_1024`.
+- Added "Absolute Formalization Extension" checklist to track remaining proof-assistant work required for end-to-end machine-checked certainty.
 
 
 ## Findings
 
-### Solid (already correct)
+### 1. Precision landscape is now explicit
+- Query-complexity core law is continuous in precision:
+  - Quantum: $\Theta(1/\epsilon)$
+  - Classical: $\Theta(1/\epsilon^2)$
+- At $\epsilon = 2^{-n/2}$ this specializes to:
+  - Quantum: $\Theta(2^{n/2})$
+  - Classical: $\Theta(2^n)$
+- The structural boundary at $2^{-n/2}$ is a proof-technique boundary (interpolation fails), not a discontinuity in the core query law.
+- For $\epsilon = 2^{-cn}$ with $c>1/2$, the query law is explicit, while #P-hardness is tied to whether $cn$ reaches the paper's interpolation threshold polynomial.
 
-- Polynomial interpolation technique fails at \(\varepsilon = 2^{-n/2}\): error
-  amplification exceeds 1/2 and rounding fails (Theorem 1).
-- Quantum estimation achieves \(\Theta(2^{n/2})\) queries via amplitude estimation
-  + minimum finding (Theorems 2, 4). Both bounds tight.
-- Classical estimation requires \(\Theta(2^n)\) queries via Le Cam / KL divergence
-  (Theorem 3). Tight with brute force.
-- Generic barrier: ANY polynomial extrapolation of degree \(d\) amplifies by
-  \(\geq 2^{d-1}\) (Theorem 6). Not specific to paper's construction.
-- \(M = 2\) instances are worst-case: sum-of-reciprocals structure of \(A_1\)
-  provides no advantage (Theorem 7).
-- Under ETH: quadratic quantum speedup holds in computational model (Theorem 5).
+### 2. Theorem 7 is worst-case, not family-preserving
+- Theorem 7 does not automatically impose hardness inside restricted structured families from Experiment 08.
+- Bounded treewidth gives exact polynomial-time computation of $A_1$ for $w=O(\log n)$ (in particular constant width), so schedule precision is tractable there.
+- Ferromagnetic Ising bridge (Exp 08, Prop 13) requires $\mu \le \eta/(6B)$; at $\eta=2^{-n/2}$ this forces $1/\mu = \Omega(B2^{n/2})$, so under standard per-query $\mathrm{poly}(n,1/\mu,\log(1/\delta))$ dependence the induced method is not polynomial-time in $n$.
 
-### Missing (needed for novelty)
+### 3. Promise-class status is clarified but incomplete
+- Best current statement is parameterized:
+  - $\mathrm{A1\mbox{-}EST}_\epsilon \in \mathrm{FBQTIME}(\sqrt{N} + 1/(\epsilon\Delta_1)\cdot\mathrm{poly}(n))$.
+- At $\epsilon=2^{-n/2}$ this gives $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$, which is beyond PromiseBQP-type polynomial-time behavior in the query model.
+- No natural completeness theorem is established yet for this precision regime.
 
-- A precision landscape mapping the full complexity-vs-precision diagram.
-- Investigation of whether structured families (Exp 08) escape Theorem 7's
-  worst-case hardness at precision \(2^{-n/2}\).
-- Chapter 9 insertion outline.
+### 4. Chapter 9 placement is now concrete
+- Placement: between "The Ignorance Taxonomy" and "Central Claim" in Chapter 9.
+- Role: quantitative bridge from hardness claims to explicit information-cost scaling at schedule precision.
+- Supporting box: structured-family caveat (Exp 08) to avoid over-generalizing worst-case hardness.
 
-### Chapter 9 insertion outline (draft)
+### 5. Remaining execution items
+- Absolute machine-checked end-to-end formalization is not complete yet.
+- Discrete/core statements are formalized; full reduction-level formalization remains.
 
-- **Placement:** bridge between Ignorance Taxonomy and model-separation capstone.
-- **Narrative:** the paper proves \(A_1\) is hard at two extreme precisions. At the
-  algorithmically relevant \(2^{-n/2}\), the complexity is neither NP-hard nor
-  \#P-hard but exhibits a clean quantum-classical separation.
-- **Content:** (1) interpolation barrier and why \#P techniques fail; (2) tight
-  quantum-classical bounds; (3) precision landscape table; (4) connection to
-  structured tractability; (5) implication for AQO practicality.
-- **Deferred:** promise class characterization, non-interpolation hardness (to
-  Conclusion/future work).
+### 6. Lean formalization status
+- Added a self-contained Lean package in `src/experiments/13_intermediate_hardness/lean/`.
+- Formalized discrete core statements that back Propositions 8-10.
+- Added symbolic barrier inequality on the precision grid (all exponents).
+- Added finite barrier certificate `barrierAllUpTo_1024` for schedule-proxy inequality.
+- Current scope is the algebraic/query-scaling skeleton on the precision grid; it does not yet encode the full paper reductions or ETH assumptions.

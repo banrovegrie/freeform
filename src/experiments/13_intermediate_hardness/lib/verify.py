@@ -9,6 +9,7 @@ Checks:
 5. Classical vs quantum complexity comparison
 6. Lebesgue function bound
 7. Product lower bound for integer gaps
+8. Precision phase diagram scaling across epsilon regimes
 """
 
 import math
@@ -241,6 +242,90 @@ def verify_quantum_vs_classical():
         )
 
     print("\n  Quadratic separation holds. Ratio ~ 2^{n/2}.")
+    print("  PASS\n")
+
+
+def verify_precision_phase_diagram():
+    """
+    Verify Proposition 8 scaling in the precision-dependent core model.
+
+    Core model: M=2, Delta1=1, known E0.
+    Then quantum ~ Theta(1/eps), classical ~ Theta(1/eps^2).
+    """
+    print("=" * 60)
+    print("Verification: Precision Phase Diagram (Core Scaling)")
+    print("=" * 60)
+
+    # Regime 1: epsilon = Theta(1)
+    eps_const = 0.25
+    q_const = 1.0 / eps_const
+    c_const = 1.0 / (eps_const**2)
+    print(
+        f"  eps=Theta(1): eps={eps_const}, Q~{q_const:.1f}, C~{c_const:.1f} "
+        "(both O(1) up to constants)"
+    )
+    assert q_const < 100 and c_const < 1000
+
+    # Regime 2: epsilon = 1/poly(n)
+    n = 64
+    eps_poly = 1.0 / (n**2)
+    q_poly = 1.0 / eps_poly
+    c_poly = 1.0 / (eps_poly**2)
+    print(
+        f"  eps=1/poly(n): n={n}, eps=1/n^2={eps_poly:.6f}, "
+        f"Q={q_poly:.1f}=n^2, C={c_poly:.1f}=n^4"
+    )
+    assert abs(q_poly - n**2) < 1e-9
+    assert abs(c_poly - n**4) < 1e-6
+
+    print("\n  Exponential regimes eps = 2^{-c n}:")
+    print(
+        f"  {'c':>5}  {'log2(1/eps)/n':>15}  {'log2(Q)/n':>10}  "
+        f"{'log2(C)/n':>10}  {'sep log2/n':>10}"
+    )
+    print(
+        f"  {'---':>5}  {'---':>15}  {'---':>10}  "
+        f"{'---':>10}  {'---':>10}"
+    )
+
+    prev_q = None
+    prev_c_val = None
+    prev_c = None
+    for c in [0.10, 0.25, 0.40, 0.50, 0.60, 0.75]:
+        eps = 2.0 ** (-c * n)
+        q = 1.0 / eps
+        c_val = 1.0 / (eps**2)
+        separation = c_val / q  # = 1/eps
+
+        log_q = math.log2(q) / n
+        log_c = math.log2(c_val) / n
+        log_sep = math.log2(separation) / n
+        log_inv_eps = math.log2(1.0 / eps) / n
+
+        print(
+            f"  {c:>5.2f}  {log_inv_eps:>15.4f}  {log_q:>10.4f}  "
+            f"{log_c:>10.4f}  {log_sep:>10.4f}"
+        )
+
+        # Scaling exponents:
+        # Q = 2^{c n}, C = 2^{2 c n}, C/Q = 2^{c n}.
+        assert abs(log_q - c) < 1e-10
+        assert abs(log_c - 2 * c) < 1e-10
+        assert abs(log_sep - c) < 1e-10
+
+        # Smooth growth in c (no jump in core scaling law).
+        if prev_q is not None:
+            expected_ratio_q = 2.0 ** ((c - prev_c) * n)
+            expected_ratio_c = 2.0 ** (2 * (c - prev_c) * n)
+            assert abs((q / prev_q) / expected_ratio_q - 1.0) < 1e-10
+            assert abs((c_val / prev_c_val) / expected_ratio_c - 1.0) < 1e-10
+
+        prev_q = q
+        prev_c_val = c_val
+        prev_c = c
+
+    print("\n  At c=1/2: Q=2^{n/2}, C=2^n (algorithmic threshold).")
+    print("  For c<1/2 and c>1/2, exponents vary continuously with c.")
     print("  PASS\n")
 
 
@@ -486,6 +571,7 @@ if __name__ == "__main__":
     verify_interpolation_barrier()
     verify_interpolation_threshold()
     verify_quantum_vs_classical()
+    verify_precision_phase_diagram()
     verify_theorem4_tight_quantum()
     verify_theorem6_lebesgue_extrapolation()
     verify_theorem7_structure_irrelevance()

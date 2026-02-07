@@ -25,7 +25,7 @@ This places the problem at a classical-quantum separation.
 
 ## Results
 
-**Status**: RESOLVED (7 theorems)
+**Status**: RESOLVED (7 theorems + 3 propositions)
 
 ### Theorem 1 (Polynomial Interpolation Barrier)
 The polynomial interpolation technique of paper Section 3.2 requires precision $\epsilon = 2^{-n - O(M \log n)}$ to extract exact degeneracies. At $\epsilon = 2^{-n/2}$, the amplified error exceeds $1/2$ and rounding fails. The #P-hardness argument does not extend to precision $2^{-n/2}$.
@@ -56,15 +56,38 @@ Any polynomial extrapolation scheme of degree $d$ that evaluates outside the int
 ### Theorem 7 (Structure Irrelevance)
 For every $M \ge 2$ and every gap structure, there exist diagonal Hamiltonians for which $A_1$ estimation to precision $\epsilon$ requires $\Omega(1/\epsilon)$ quantum queries and $\Omega(1/\epsilon^2)$ classical queries. The sum-of-reciprocals structure of $A_1$ provides no worst-case advantage over generic mean estimation: $M = 2$ instances (where $A_1$ reduces to approximate counting) are the hardest case.
 
+### Proposition 8 (Precision Phase Diagram)
+Complexity as a function of precision $\epsilon$ is now explicit. In the core query family, complexity scales continuously as $\Theta(1/\epsilon)$ quantum and $\Theta(1/\epsilon^2)$ classical. Regime values:
+- $\epsilon = \Theta(1)$: trivial constant-precision approximation
+- $\epsilon = 1/\mathrm{poly}(n)$: NP-hard computationally (paper Theorem 2)
+- $\epsilon = 2^{-cn}$, $0 < c < 1/2$: quantum $\Theta(2^{cn})$, classical $\Theta(2^{2cn})$
+- $\epsilon = 2^{-n/2}$: quantum $\Theta(2^{n/2})$, classical $\Theta(2^n)$
+- $\epsilon = 2^{-cn}$, $c > 1/2$: same query scaling, and #P-hard once $cn$ exceeds the paper's interpolation threshold; below that threshold the computational status remains open
+- $\epsilon = 2^{-\mathrm{poly}(n)}$: #P-hard (paper Theorem 3)
+
+### Proposition 9 (Structured Families, via Experiment 08)
+Theorem 7 is worst-case over unrestricted diagonal Hamiltonians, so it does not automatically transfer to restricted structured families. For bounded treewidth local energies (Exp 08, Proposition 8), $A_1$ is exactly computable in polynomial time (for bounded/logarithmic width), so precision $2^{-n/2}$ is also polynomial-time tractable. For ferromagnetic Ising with consistent fields (Exp 08, Proposition 13), the reduction requires $\mu \le \eta/(6B)$; at $\eta = 2^{-n/2}$ this forces $1/\mu = \Omega(B2^{n/2})$, so under the standard per-query dependence $\mathrm{poly}(n,1/\mu,\log(1/\delta))$ the induced method is not polynomial-time at schedule precision.
+
+### Proposition 10 (Promise-Time Characterization)
+At precision $\epsilon$, the natural containment is parameterized:
+$\mathrm{A1\mbox{-}EST}_\epsilon \in \mathrm{FBQTIME}(\sqrt{N} + 1/(\epsilon\Delta_1)\cdot \mathrm{poly}(n))$ (Theorem 2), with core lower bound $\Omega(1/\epsilon)$ (Theorem 4). At $\epsilon = 2^{-n/2}$ this gives $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$, so the natural description is parameterized-time rather than PromiseBQP-type polynomial-time behavior in the query model.
+
 
 ## Complete Complexity Landscape
 
-**Query complexity** (tight, for $\Delta_1 = \Theta(1)$):
+**Query complexity at $\epsilon = 2^{-n/2}$** (tight, for $\Delta_1 = \Theta(1)$):
 
 | Model | Lower Bound | Upper Bound | Source |
 |-------|-------------|-------------|--------|
 | Quantum | $\Omega(2^{n/2})$ | $O(2^{n/2})$ | Thms 4, 2 |
 | Classical | $\Omega(2^n)$ | $O(2^n)$ | Thm 3, brute force |
+
+**Precision-dependent core query scaling**:
+
+| Model | Complexity in $\epsilon$ | Source |
+|-------|---------------------------|--------|
+| Quantum | $\Theta(1/\epsilon)$ | Thm 4 + Thm 2 (core family) |
+| Classical | $\Theta(1/\epsilon^2)$ | Thm 3 + sampling upper bound |
 
 **Computational complexity** (under ETH):
 
@@ -110,18 +133,44 @@ The paper's optimal local schedule (Section 2.2) parameterizes the avoided cross
 
 ## Open Questions (Revised)
 
-1. Is the problem complete for some natural promise complexity class at precision $2^{-n/2}$? ($A_1$ estimation is a promise/function problem, so standard NP-completeness does not directly apply.)
-2. Are there intermediate precisions (between $1/\mathrm{poly}$ and $2^{-n/2}$) with sharp complexity transitions?
-3. Can non-interpolation proof techniques establish #P-hardness at $2^{-n/2}$? (Theorem 6 only rules out polynomial extrapolation.)
-4. For structured instances (e.g., $d_k = \Theta(N/M)$ for all $k$), can quantum algorithms do better than $\Theta(1/\epsilon)$?
+1. Can $\mathrm{A1\mbox{-}EST}_{2^{-n/2}}$ be shown complete for a natural parameterized promise/function class (beyond the current $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$ characterization)?
+2. Can a non-interpolation reduction establish #P-hardness at $\epsilon = 2^{-n/2}$? (Theorems 1 and 6 rule out polynomial extrapolation only.)
+3. Which additional structured families from Experiment 08 admit exact or schedule-precision polynomial-time $A_1$ estimation beyond bounded treewidth?
+4. Can one prove tight computational lower bounds for the quantum side (not only query lower bounds), matching the $\Theta(1/\epsilon)$ query law?
 
 
 ## Connection to Other Experiments
 
-- Complements 05 (adaptive schedules): alternative approach to the A_1 barrier (estimate vs. bypass)
-- Complements 12 (circumventing barrier): if circumvention fails, quantum estimation is the fallback
-- Informs 08 (structured tractability): tractable A_1 at 2^{-n/2} would mean AQO is in BQP for those instances
-- Relates to 04 (separation theorem): quantifies the information cost of gap-uninformed algorithms
+- **Experiment 08 (structured tractability v2):** Proposition 9 closes the loop. Bounded-treewidth families keep $A_1$ tractable even at schedule precision, while ferromagnetic partition-function approximations are polynomial only at coarser precision unless stronger structure is present.
+- **Experiment 10 (information-theoretic):** Proposition 8 supplies the quantitative precision curve behind the information-runtime narrative: each additional bit of $A_1$ precision doubles classical effort and gives a quadratic quantum advantage in the core model.
+- **Experiment 12 (circumventing barrier):** Since Hamiltonian modifications do not remove $A_1$ dependence in the rank-one framework, the intermediate-hardness complexity map becomes operationally central.
+- **Experiment 05 (adaptive schedules):** Adaptive measurement bypasses pre-computing $A_1$; this experiment quantifies the cost when one chooses estimation instead.
+- **Experiment 04 (separation theorem):** The $\epsilon = 2^{-n/2}$ point gives the concrete numerical bridge between ignorance penalties and computable schedule information.
+
+
+## Chapter 9 Integration Plan
+
+Placement follows `README.md` Chapter 9 ("Information Gap"), between
+"The Ignorance Taxonomy" and "Central Claim", with a short bridge from
+the partial-information section.
+
+1. **Subsection: Precision Phase Diagram for $A_1$**
+   Use Proposition 8 table as the chapter's complexity-vs-precision figure.
+   Message: query scaling is smooth in $\epsilon$, but proof techniques bifurcate at
+   $\epsilon = 2^{-n/2}$.
+2. **Subsection: Intermediate Precision as the Operational Threshold**
+   Insert Theorems 1-4 summary: interpolation barrier + tight
+   $\Theta(2^{n/2})$ vs $\Theta(2^n)$ query bounds.
+3. **Bridge paragraph to the Central Claim**
+   "The information cost of AQO is not only NP-hard at coarse precision;
+   at schedule precision it is quantitatively a quadratic quantum-classical
+   separation."
+4. **Structured-family caveat box (cross-ref Exp 08)**
+   Insert Proposition 9 to separate worst-case hardness from tractable
+   structured subclasses.
+5. **Open-problem handoff**
+   Move promise-class completeness and non-interpolation #P-hardness targets
+   to Chapter 11 open problems.
 
 
 ## References
@@ -140,15 +189,58 @@ The paper's optimal local schedule (Section 2.2) parameterizes the avoided cross
 
 **Phase**: Resolved
 
-Seven theorems proved, addressing all four novelty directions:
+Seven theorems and three integration propositions now cover the experiment goals:
 
 1. **Tight query complexity** (Theorems 2-4): $\Theta(2^{n/2})$ quantum, $\Theta(2^n)$ classical. Both bounds tight.
 2. **Computational complexity** (Theorem 5): Under ETH, quadratic quantum speedup holds in the computational model.
 3. **Generic proof barrier** (Theorems 1, 6): Polynomial extrapolation inherently requires $\epsilon = 2^{-\Omega(n)}$. New proof ideas needed for #P-hardness at $2^{-n/2}$.
 4. **Structure irrelevance** (Theorem 7): $M = 2$ instances are worst-case. The sum-of-reciprocals structure of $A_1$ cannot be exploited.
+5. **Precision landscape** (Proposition 8): full complexity-vs-precision diagram, including intermediate $2^{-cn}$ regimes.
+6. **Structured-family bridge** (Proposition 9): explicit compatibility/incompatibility with Experiment 08 tractability results.
+7. **Promise-time framing** (Proposition 10): precise parameterized class statement for the $2^{-n/2}$ regime.
+8. **Lean formalization (core discrete skeleton)**: machine-checked scaling lemmas for Propositions 8-10 in `lean/`.
 
 **Novelty assessment**: Theorem 4 (tight quantum bound via approximate counting equivalence) and Theorem 5 (ETH-conditional computational speedup) are the primary novel contributions. Theorem 6 (generic extrapolation barrier) provides a structural insight beyond the paper's specific construction. Theorem 7 (structure irrelevance) closes a natural question.
 
-**Open problem note**: Directly addresses the paper's explicit open problem (Discussion, p.983; Section 3.2, p.962). The answer: $2^{-n/2}$ is a structurally significant threshold where polynomial interpolation breaks down, quantum estimation achieves a tight quadratic speedup, and the problem transitions from #P-hard to "merely" NP-hard.
+**Open problem note**: Directly addresses the paper's explicit open problem (Discussion, p.983; Section 3.2, p.962). The answer is now two-layered: query complexity varies smoothly with precision, but $\epsilon = 2^{-n/2}$ is the structural boundary where interpolation-based #P-hardness arguments fail and schedule-level information cost becomes explicit.
 
-Full proofs in proof.md, numerical verification in lib/verify.py and lib/deep_verify.py.
+Full proofs in proof.md, numerical verification in `lib/verify.py` and
+`lib/deep_verify.py`, and stress verification in `lib/robust_verify.py`.
+
+
+## Lean Verification
+
+Formalization is now included at:
+
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness/Basic.lean`
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness/PhaseDiagram.lean`
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness/BarrierGrid.lean`
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness/StructuredBridge.lean`
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness/PromiseTime.lean`
+- `src/experiments/13_intermediate_hardness/lean/IntermediateHardness.lean`
+
+Scope of formalization:
+
+1. Core grid scaling: $\epsilon_k = 2^{-k}$, $Q(\epsilon_k)=2^k$, $C(\epsilon_k)=2^{2k}$, $C/Q=2^k$, with one-bit refinement laws $Q_{k+1}=2Q_k$ and $(C/Q)_{k+1}=2(C/Q)_k$.
+2. Threshold specialization: $k = n/2$ (schedule-relevant precision point).
+3. Schedule-barrier symbolic proof on the grid: `scheduleErrorProxy_gt_half` proves the proxy inequality for all exponents.
+4. Schedule-barrier finite certificate: `barrierAllUpTo_1024` machine-checks the proxy inequality on exponents $0,\ldots,1024$.
+5. Structured bridge core: exact estimators and inverse-precision runtime specialization.
+6. Promise-time core: constant-factor lower/upper matching on the precision grid.
+
+Reproducible commands:
+
+```bash
+cd src/experiments/13_intermediate_hardness/lean
+lake build
+lake env lean IntermediateHardness.lean
+```
+
+Additional stress verification:
+
+```bash
+python3 src/experiments/13_intermediate_hardness/lib/robust_verify.py
+```
+
+This suite includes randomized stress checks and an exhaustive small-parameter
+barrier sweep (2572 distinct integer-gap instances).
