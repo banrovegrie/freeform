@@ -56,8 +56,6 @@ Check line 25 for a scaffolding phrase. Delete it and let the sentence stand on 
 
 Ch8 introduces $\Delta_k = E_k - E_0$ for all $k$, extending $\Delta = E_1 - E_0$ from earlier chapters. Add one sentence at first use: "We extend the notation $\Delta = E_1 - E_0$ to all levels: $\Delta_k = E_k - E_0$ for $k \geq 1$."
 
----
-
 ## Chapter 5: Adiabatic Quantum Optimization (SECOND PRIORITY)
 
 Ch5 scored Accept (Tech 9, Presentation 7, Voice 6). Math is solid but this is the examiner's entry point — motivation before key definitions needs strengthening.
@@ -86,8 +84,6 @@ Add intellectual engagement only where natural:
 
 Do not overdo it. If a sentence reads as performative, delete it.
 
----
-
 ## Chapter 7: Optimal Schedule (THIRD PRIORITY)
 
 Ch7 scored Accept (Tech 9, Presentation 9). Only minor issues.
@@ -104,8 +100,6 @@ Used without justification. Add a brief derivation: "Since $E_k - E_0 \geq \Delt
 
 "requires knowing the exact gap" is slightly imprecise. Change to: "requires knowing a tight lower bound on the gap" or "requires knowledge of the gap profile" since the local adiabatic condition works with lower bounds.
 
----
-
 ## Chapter 6: Spectral Analysis (LOWEST PRIORITY)
 
 Ch6 scored highest: Tech 9, Presentation 9, Voice 8. Minimal fixes.
@@ -121,8 +115,6 @@ Mentioned but not developed. Either add 2 sentences explaining why concavity giv
 ### 6-C. MINOR: ε₀ = d₀/N (~line 186)
 
 Introduced abruptly. Add one defining sentence: "Define $\varepsilon_0 = d_0/N$, the fraction of the Hilbert space occupied by ground states."
-
----
 
 ## After all fixes
 
