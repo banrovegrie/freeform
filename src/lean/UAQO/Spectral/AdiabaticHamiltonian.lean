@@ -20,7 +20,7 @@ namespace UAQO
 
     The parameter s ∈ [0,1] controls the interpolation. -/
 noncomputable def adiabaticHam {n M : Nat} (es : EigenStructure n M)
-    (s : Real) (hs : 0 <= s ∧ s <= 1) : NQubitOperator n :=
+    (s : Real) (_hs : 0 <= s ∧ s <= 1) : NQubitOperator n :=
   let psi0 := equalSuperpositionN n
   let H0 := projectorOnState psi0
   let Hz := es.toHamiltonian.toOperator

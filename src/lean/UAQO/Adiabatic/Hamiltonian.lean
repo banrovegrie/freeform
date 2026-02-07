@@ -29,7 +29,7 @@ structure AdiabaticSchedule (T : Real) (hT : T > 0) where
   /-- s is monotonically increasing -/
   monotone : ∀ t₁ t₂, 0 <= t₁ -> t₁ < t₂ -> t₂ <= T -> s t₁ < s t₂
   /-- s is differentiable (placeholder) -/
-  differentiable : ∀ t, 0 < t -> t < T -> ∃ (sPrime : Real), True
+  differentiable : ∀ t, 0 < t -> t < T -> ∃ (_sPrime : Real), True
 
 /-- The linear (constant speed) schedule -/
 noncomputable def linearSchedule (T : Real) (hT : T > 0) : AdiabaticSchedule T hT where
@@ -84,7 +84,7 @@ noncomputable def buildAdiabaticHam {n M : Nat} (es : EigenStructure n M)
 /-! ## Properties at s = 0 and s = 1 -/
 
 /-- At s = 0, the ground state is |ψ₀⟩ with energy -1 -/
-theorem initial_groundstate {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
+theorem initial_groundstate {n M : Nat} (es : EigenStructure n M) (_hM : M > 0) :
     let H0 := adiabaticHam es 0 ⟨le_refl 0, by norm_num⟩
     applyOp H0 (equalSuperpositionN n) = (-1 : Complex) • equalSuperpositionN n := by
   -- H(0) = -(1-0) * projector + 0 * Hz = -projector
@@ -113,8 +113,8 @@ theorem final_groundstate {n M : Nat} (es : EigenStructure n M) (hM : M > 0)
 
 /-- The instantaneous ground state |v(s)⟩ at schedule value s -/
 noncomputable def instantaneousGround {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
-    (hspec : spectralCondition es hM 0.02 (by norm_num)) : NQubitState n :=
+    (hM : M >= 2) (s : Real) (_hs : 0 <= s ∧ s <= 1)
+    (_hspec : spectralCondition es hM 0.02 (by norm_num)) : NQubitState n :=
   -- Interpolate between |ψ₀⟩ (at s=0) and |0⟩_sym (at s=1)
   -- This is a placeholder; actual computation requires solving the eigenvalue problem
   if s < 0.5 then equalSuperpositionN n
@@ -122,7 +122,7 @@ noncomputable def instantaneousGround {n M : Nat} (es : EigenStructure n M)
 
 /-- The instantaneous first excited state |v₁(s)⟩ -/
 noncomputable def instantaneousFirstExcited {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1) : NQubitState n :=
+    (hM : M >= 2) (s : Real) (_hs : 0 <= s ∧ s <= 1) : NQubitState n :=
   -- Placeholder: use first excited symmetric state
   symmetricState es ⟨1, hM⟩
 

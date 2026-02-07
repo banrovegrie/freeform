@@ -39,11 +39,11 @@ lemma same_div2_implies_consec {i j : Nat} (h_div : i / 2 = j / 2) (h_lt : i < j
   · omega
 
 /-- The even indices in Fin (2*M) are in bijection with Fin M via k ↦ 2k. -/
-def evenBij (M : Nat) (hM : M > 0) : Fin M → Fin (2 * M) :=
+def evenBij (M : Nat) (_hM : M > 0) : Fin M → Fin (2 * M) :=
   fun i => ⟨2 * i.val, by omega⟩
 
 /-- The odd indices in Fin (2*M) are in bijection with Fin M via k ↦ 2k+1. -/
-def oddBij (M : Nat) (hM : M > 0) : Fin M → Fin (2 * M) :=
+def oddBij (M : Nat) (_hM : M > 0) : Fin M → Fin (2 * M) :=
   fun i => ⟨2 * i.val + 1, by omega⟩
 
 /-- The degeneracy sum in the beta-modified Hamiltonian equals the new Hilbert space dimension.
@@ -110,16 +110,16 @@ theorem betaModifiedHam_deg_sum_proof {n M : Nat} (es : EigenStructure n M) (hM 
         ext; omega
       · intro k hk
         -- hk : k ∈ (filter (fun k => k.val % 2 = 0) univ)
-        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe, Finset.mem_univ, true_and] at hk
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_univ, true_and] at hk
         refine ⟨⟨k.val / 2, div2_lt_of_fin_2M k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
         ext
-        simp only [Fin.val_mk]
+        simp only []
         have hkrec : k.val = 2 * (k.val / 2) + k.val % 2 := (Nat.div_add_mod k.val 2).symm
         omega
       · intro i _
         congr 1
         ext
-        simp only [Fin.val_mk]
+        simp only []
         exact (Nat.mul_div_cancel_left i.val (by norm_num : 0 < 2)).symm
     have hOddSum : Finset.sum (Finset.filter (fun k : Fin (2 * M) => k.val % 2 = 1) Finset.univ)
         (fun k => es.degeneracies ⟨k.val / 2, div2_lt_of_fin_2M k⟩) =
@@ -134,16 +134,16 @@ theorem betaModifiedHam_deg_sum_proof {n M : Nat} (es : EigenStructure n M) (hM 
         ext; omega
       · intro k hk
         -- hk : k ∈ (filter (fun k => k.val % 2 = 1) univ)
-        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_coe, Finset.mem_univ, true_and] at hk
+        simp only [Finset.coe_filter, Set.mem_setOf_eq, Finset.mem_univ, true_and] at hk
         refine ⟨⟨k.val / 2, div2_lt_of_fin_2M k⟩, Finset.mem_coe.mpr (Finset.mem_univ _), ?_⟩
         ext
-        simp only [Fin.val_mk]
+        simp only []
         have hkrec : k.val = 2 * (k.val / 2) + k.val % 2 := (Nat.div_add_mod k.val 2).symm
         omega
       · intro i _
         congr 1
         ext
-        simp only [Fin.val_mk]
+        simp only []
         have h1 : (2 * i.val + 1) / 2 = i.val := by
           omega
         exact h1.symm
@@ -241,7 +241,7 @@ theorem betaModifiedHam_deg_count_proof {n M : Nat} (es : EigenStructure n M) (h
       exact Fin.ext h_ass
     · -- Show ⟨2*(z/2) + spin, _⟩ = z as Fin elements
       apply Fin.ext
-      simp only [Fin.val_mk]
+      simp only []
       have hzrec : z.val = 2 * (z.val / 2) + z.val % 2 := (Nat.div_add_mod z.val 2).symm
       omega
 
@@ -268,7 +268,7 @@ theorem betaModifiedHam_eigenval_ordered_proof {n M : Nat} (es : EigenStructure 
     With the stronger hypothesis `allGapsGreaterThan es (beta/2)`, we can now prove
     the ordering for different original levels. -/
 theorem betaModifiedHam_eigenval_ordered_strict_proof {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2)
+    (_hM : M >= 2)
     (beta : Real) (hbeta : 0 < beta ∧ beta < 1)
     (hgap : allGapsGreaterThan es (beta / 2)) :
     ∀ i j : Fin (2 * M), i < j ->
@@ -330,7 +330,7 @@ theorem betaModifiedHam_eigenval_ordered_strict_proof {n M : Nat} (es : EigenStr
     Note: This requires the hypothesis that all eigenvalues are <= 1 - beta/2,
     which ensures the upper level eigenvalues E_k + beta/2 don't exceed 1. -/
 theorem betaModifiedHam_eigenval_bounds_proof {n M : Nat} (es : EigenStructure n M)
-    (beta : Real) (hbeta : 0 < beta ∧ beta < 1) (hM : M > 0)
+    (beta : Real) (hbeta : 0 < beta ∧ beta < 1) (_hM : M > 0)
     (hEigBound : ∀ k : Fin M, es.eigenvalues k <= 1 - beta / 2) :
     ∀ k : Fin (2 * M),
       let origIdx := k.val / 2

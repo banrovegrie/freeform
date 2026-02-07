@@ -371,7 +371,7 @@ lemma resolvent_right_inv {N : Nat} (A : Operator N) (gamma : Complex)
 
     Note: N > 0 is required since the 0×0 matrix ring is trivial (0 = 1). -/
 theorem resolvent_distance_to_spectrum {N : Nat} (A : Operator N) (gamma : Complex)
-    (hA : IsHermitian A) (hInv : (gamma • identityOp N - A).det ≠ 0)
+    (_hA : IsHermitian A) (hInv : (gamma • identityOp N - A).det ≠ 0)
     (hN : N > 0) :
     ∃ (d : Real), d > 0 ∧ spectralNorm (resolvent A gamma) = 1 / d := by
   -- Step 1: The resolvent is nonzero.

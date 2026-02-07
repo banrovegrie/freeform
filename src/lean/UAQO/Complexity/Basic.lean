@@ -86,8 +86,8 @@ noncomputable def countAssignmentsWithKUnsatisfied (f : CNFFormula) (k : Nat) : 
 /-! ## Polynomial time -/
 
 /-- A function is polynomial-time computable (informal) -/
-def IsPolynomialTime (f : List Bool -> List Bool) : Prop :=
-  ∃ (p : Nat), ∀ (input : List Bool),
+def IsPolynomialTime (_f : List Bool -> List Bool) : Prop :=
+  ∃ (_p : Nat), ∀ (_input : List Bool),
     True  -- Placeholder: computation time <= p * |input|^p
 
 /-- A decision problem -/

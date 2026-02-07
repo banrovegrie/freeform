@@ -16,8 +16,8 @@ namespace UAQO
     ds/dt = g(s)² / (∫₀¹ g(s')⁻² ds')
     This ensures slower evolution where the gap is small. -/
 noncomputable def optimalScheduleDerivative {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
-    (s : Real) : Real :=
+    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num))
+    (_s : Real) : Real :=
   -- ds/dt = g(s)² / T where T = ∫₀¹ g(s')⁻² ds'
   -- For now, use the minimum gap as a lower bound for g(s)
   let gmin := minimumGap es hM
@@ -25,7 +25,7 @@ noncomputable def optimalScheduleDerivative {n M : Nat} (es : EigenStructure n M
 
 /-- The total time is T = ∫₀¹ g(s)⁻² ds -/
 noncomputable def totalTimeIntegral {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num)) : Real :=
+    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num)) : Real :=
   -- Upper bound: T ≤ 1/g_min²
   let gmin := minimumGap es hM
   1 / gmin^2
@@ -40,7 +40,7 @@ theorem totalTimeIntegral_pos {n M : Nat} (es : EigenStructure n M)
 
 /-- The time can be computed in three parts (left, crossing, right) -/
 noncomputable def totalTimeThreeParts {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num)) : Real :=
+    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num)) : Real :=
   let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   let deltaS := avoidedCrossingWindow es hM
   let gmin := minimumGap es hM
@@ -98,12 +98,12 @@ private lemma linear_monotone (a b : Real) (ha : a > 0) (hb : b > 0) (t₁ t₂ 
 
     Note: Requires the spectral condition to ensure s* - δ > 0 and 1 - s* - δ > 0. -/
 theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
-    (hcond : spectralConditionForBounds es hM)
-    (T : Real) (hT : T > 0)
+    (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM)
+    (T : Real) (_hT : T > 0)
     (T_left T_cross T_right : Real)
     (times_pos : T_left > 0 ∧ T_cross > 0 ∧ T_right > 0)
-    (times_sum : T_left + T_cross + T_right = T)
-    (t₁ t₂ : Real) (ht₁_ge : 0 <= t₁) (ht₁_lt_t₂ : t₁ < t₂) (ht₂_le : t₂ <= T) :
+    (_times_sum : T_left + T_cross + T_right = T)
+    (t₁ t₂ : Real) (_ht₁_ge : 0 <= t₁) (ht₁_lt_t₂ : t₁ < t₂) (_ht₂_le : t₂ <= T) :
     let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
     let deltaS := avoidedCrossingWindow es hM
     let s := fun t =>
@@ -112,11 +112,11 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
         (sStar - deltaS) + 2 * deltaS * (t - T_left) / T_cross
       else (sStar + deltaS) + (1 - sStar - deltaS) * (t - T_left - T_cross) / T_right
     s t₁ < s t₂ := by
-  -- Setup: extract the key bounds from spectralConditionForBounds
+  -- Setup: extract the key bounds from FullSpectralHypothesis
   simp only
   set sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   set deltaS := avoidedCrossingWindow es hM
-  have hbounds := avoidedCrossing_bound es hM hcond
+  have hbounds := avoidedCrossing_bound es hM hcond.cond
   have hdelta_lt_sStar : deltaS < sStar := hbounds.1
   have hsStar_deltaS_lt_one : sStar + deltaS < 1 := hbounds.2
   have hdeltaS_pos : deltaS > 0 := avoidedCrossingWindow_pos es hM
@@ -136,14 +136,14 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
   · -- t₁ is in the left region
     by_cases h2 : t₂ <= T_left
     · -- Case 1: Both in left region
-      simp only [s, h1, h2, ↓reduceIte]
+      simp only [h1, h2, ↓reduceIte]
       exact linear_monotone (sStar - deltaS) T_left hsStar_minus_deltaS_pos hTl t₁ t₂ ht₁_lt_t₂
     · -- t₂ is not in left region
       have h2' : T_left < t₂ := not_le.mp h2
       by_cases h2c : t₂ <= T_left + T_cross
       · -- Case 2: t₁ in left, t₂ in crossing
         have hh2 : ¬(t₂ <= T_left) := h2
-        simp only [s, h1, if_neg hh2, h2c, ↓reduceIte]
+        simp only [h1, if_neg hh2, h2c, ↓reduceIte]
         -- s(t₁) = (sStar - deltaS) * t₁ / T_left
         -- s(t₂) = (sStar - deltaS) + 2 * deltaS * (t₂ - T_left) / T_cross
         have ht1_le_Tl : t₁ <= T_left := h1
@@ -166,7 +166,7 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
         have h2c' : T_left + T_cross < t₂ := not_le.mp h2c
         have hh2 : ¬(t₂ <= T_left) := h2
         have hh2c : ¬(t₂ <= T_left + T_cross) := h2c
-        simp only [s, h1, if_neg hh2, if_neg hh2c, ↓reduceIte]
+        simp only [h1, if_neg hh2, if_neg hh2c, ↓reduceIte]
         -- s(t₁) <= sStar - deltaS < sStar + deltaS <= s(t₂)
         have hst1_le : (sStar - deltaS) * t₁ / T_left <= sStar - deltaS := by
           rw [div_le_iff₀ hTl]
@@ -190,7 +190,7 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
       by_cases h2c : t₂ <= T_left + T_cross
       · -- Case 4: Both in crossing region
         have hh2 : ¬(t₂ <= T_left) := fun h => by linarith
-        simp only [s, if_neg hh1, h1c, if_neg hh2, h2c, ↓reduceIte]
+        simp only [if_neg hh1, h1c, if_neg hh2, h2c, ↓reduceIte]
         -- s(t₁) = (sStar - deltaS) + 2 * deltaS * (t₁ - T_left) / T_cross
         -- s(t₂) = (sStar - deltaS) + 2 * deltaS * (t₂ - T_left) / T_cross
         have hlt : (t₁ - T_left) < (t₂ - T_left) := by linarith
@@ -203,7 +203,7 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
         have h2c' : T_left + T_cross < t₂ := not_le.mp h2c
         have hh2 : ¬(t₂ <= T_left) := fun h => by linarith
         have hh2c : ¬(t₂ <= T_left + T_cross) := h2c
-        simp only [s, if_neg hh1, h1c, if_neg hh2, if_neg hh2c, ↓reduceIte]
+        simp only [if_neg hh1, h1c, if_neg hh2, if_neg hh2c, ↓reduceIte]
         -- s(t₁) <= sStar + deltaS < s(t₂)
         -- Key: t₂ > T_left + T_cross, so t₂ - T_left - T_cross > 0
         have ht2_gt : t₂ - T_left - T_cross > 0 := by linarith
@@ -232,7 +232,7 @@ theorem piecewiseSchedule_monotone {n M : Nat} (es : EigenStructure n M) (hM : M
       have hh1c : ¬(t₁ <= T_left + T_cross) := h1c
       have hh2 : ¬(t₂ <= T_left) := fun h => by linarith
       have hh2c : ¬(t₂ <= T_left + T_cross) := fun h => by linarith
-      simp only [s, if_neg hh1, if_neg hh1c, if_neg hh2, if_neg hh2c, ↓reduceIte]
+      simp only [if_neg hh1, if_neg hh1c, if_neg hh2, if_neg hh2c]
       -- s(t₁) = (sStar + deltaS) + (1 - sStar - deltaS) * (t₁ - T_left - T_cross) / T_right
       -- s(t₂) = (sStar + deltaS) + (1 - sStar - deltaS) * (t₂ - T_left - T_cross) / T_right
       have hlt : (t₁ - T_left - T_cross) < (t₂ - T_left - T_cross) := by linarith
@@ -258,7 +258,7 @@ structure PiecewiseSchedule (n M : Nat) (es : EigenStructure n M) (hM : M >= 2)
 
 /-- Build a piecewise schedule from time allocations -/
 noncomputable def buildPiecewiseSchedule {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM) (T : Real) (hT : T > 0)
+    (hM : M >= 2) (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) (T : Real) (hT : T > 0)
     (pw : PiecewiseSchedule n M es hM T hT) : AdiabaticSchedule T hT where
   s := fun t =>
     let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
@@ -304,7 +304,7 @@ noncomputable def buildPiecewiseSchedule {n M : Nat} (es : EigenStructure n M)
 
 /-- The schedule defined implicitly by: t(s) = ∫₀ˢ g(s')⁻² ds' -/
 noncomputable def implicitScheduleTime {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
+    (hM : M >= 2) (_hspec : spectralCondition es hM 0.02 (by norm_num))
     (s : Real) : Real :=
   -- Upper bound: use constant gap approximation t(s) ≈ s/g_min²
   let gmin := minimumGap es hM
@@ -313,7 +313,7 @@ noncomputable def implicitScheduleTime {n M : Nat} (es : EigenStructure n M)
 /-- The schedule is the inverse of the time function -/
 noncomputable def implicitSchedule {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
-    (T : Real) (hT_pos : T > 0) (hT_eq : T = totalTimeIntegral es hM hspec) : AdiabaticSchedule T hT_pos where
+    (T : Real) (hT_pos : T > 0) (_hT_eq : T = totalTimeIntegral es hM hspec) : AdiabaticSchedule T hT_pos where
   s := fun t =>
     -- For now, use linear schedule as placeholder; actual implementation requires inverse
     t / T
@@ -331,9 +331,9 @@ noncomputable def implicitSchedule {n M : Nat} (es : EigenStructure n M)
 /-- For the optimal local schedule, ds/dt ≤ g(s)² / T -/
 theorem schedule_derivative_bound {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (hspec : spectralCondition es hM 0.02 (by norm_num))
-    (T : Real) (hT_pos : T > 0) (hT_eq : T = totalTimeIntegral es hM hspec)
-    (sched : AdiabaticSchedule T hT_pos)
-    (t : Real) (ht : 0 < t ∧ t < T) :
+    (T : Real) (hT_pos : T > 0) (_hT_eq : T = totalTimeIntegral es hM hspec)
+    (_sched : AdiabaticSchedule T hT_pos)
+    (t : Real) (_ht : 0 < t ∧ t < T) :
     True := by  -- Placeholder for actual derivative bound
   trivial
 

@@ -272,7 +272,7 @@ lemma sum_reindex_by_assignment {n M : Nat} (es : EigenStructure n M)
   rw [es.deg_count k, nsmul_eq_mul]
 
 theorem resolvent_expectation_formula {n M : Nat} (es : EigenStructure n M)
-    (hM : M > 0) (s : Real) (lambda : Real)
+    (_hM : M > 0) (s : Real) (lambda : Real)
     (hne : ∀ k : Fin M, lambda ≠ s * es.eigenvalues k) :
     let R := ((lambda : Complex) • (1 : Matrix (Fin (qubitDim n)) (Fin (qubitDim n)) ℂ) -
               (s : Complex) • es.toHamiltonian.toOperator)⁻¹
@@ -605,7 +605,7 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
             have heq : (s : ℂ) * ↑(es.eigenvalues k) * v z0 +
                        -(1 - (s : ℂ)) * (psi0_v * (1 / ↑(Real.sqrt ↑(qubitDim n)))) =
                        (s : ℂ) * ↑(es.eigenvalues k) * v z0 := by
-              convert hcomp using 2 <;> ring
+              convert hcomp using 2; ring
             have hsub := sub_eq_zero.mpr heq
             simp only [add_sub_cancel_left] at hsub
             exact hsub
@@ -679,13 +679,11 @@ theorem eigenvalue_condition_proof {n M : Nat} (es : EigenStructure n M)
             rcases Nat.lt_trichotomy (es.assignment z).val k.val with hlt | heqv | hgt
             · have hstrictlt := hord ⟨(es.assignment z).val, (es.assignment z).isLt⟩
                                     ⟨k.val, k.isLt⟩ hlt
-              simp only [Fin.mk_eq_mk] at hstrictlt
               linarith
             · -- a(z) = k (as Nat), so a(z) = k (as Fin), contradiction with hassign_ne
               exact hassign_ne (Fin.ext heqv)
             · have hstrictgt := hord ⟨k.val, k.isLt⟩
                                     ⟨(es.assignment z).val, (es.assignment z).isLt⟩ hgt
-              simp only [Fin.mk_eq_mk] at hstrictgt
               linarith
           -- Now use s > 0 and E_{a(z)} ≠ E_k to conclude v z = 0
           have hs_ne : (s : ℂ) ≠ 0 := by

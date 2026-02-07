@@ -2,7 +2,7 @@
   Basic definitions and notation used throughout the formalization.
 -/
 import Mathlib.Data.Complex.Basic
-import Mathlib.Data.Complex.Exponential
+import Mathlib.Analysis.Complex.Exponential
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Nat.Basic
 import Mathlib.Data.Fin.Basic
@@ -27,7 +27,7 @@ def BigOmega (f : Nat -> Real) (g : Nat -> Real) : Prop := BigO g f
 def Theta (f : Nat -> Real) (g : Nat -> Real) : Prop := BigO f g /\ BigOmega f g
 
 /-- Polynomial in n -/
-def Poly (n : Nat) : Type := { p : Nat -> Nat // exists d : Nat, forall m, p m <= m^d + d }
+def Poly (_n : Nat) : Type := { p : Nat -> Nat // exists d : Nat, forall m, p m <= m^d + d }
 
 notation "O(" f ")" => BigO f
 notation "Omega(" f ")" => BigOmega f

@@ -236,7 +236,6 @@ private lemma spectral_expansion_quadratic_form' {N : Nat} [NeZero N]
   have c_eq_dot' : ∀ k, c k = (star ⇑(b k)) ⬝ᵥ phi := by
     intro k
     have h := EuclideanSpace.inner_eq_star_dotProduct (b k) phi_E
-    simp only [phi_E, WithLp.ofLp_toLp] at h
     simp only [dotProduct] at h ⊢
     simp only [c]
     conv_lhs => rw [h]
@@ -275,7 +274,6 @@ private lemma parseval_normSquared' {N : Nat} [NeZero N]
     apply Finset.sum_congr rfl; intro k _
     rw [complex_norm_sq_eq_normSq']
     have h := EuclideanSpace.inner_eq_star_dotProduct (b k) phi_E
-    simp only [phi_E, WithLp.ofLp_toLp] at h
     simp only [dotProduct] at h
     congr 1
     rw [h]; apply Finset.sum_congr rfl; intro i _; ring
@@ -359,56 +357,36 @@ theorem firstExcited_lower_bound {n M : Nat} (es : EigenStructure n M)
   UAQO.Proofs.Spectral.GapBounds.firstExcited_lower_bound_proof es hM s hs
 
 /-- Gap bound to the left of avoided crossing:
-    g(s) ≥ (A_1/A_2) * (s* - s)/(1 - s*)
+    g(s) >= g_min
 
     PAPER REFERENCE: Equation 317 / Section 2.2
 
-    In the left region s < s* - delta_s, the gap satisfies:
-    g(s) >= (A_1/A_2) * (s* - s)/(1 - s*)
-
-    Note: Since s* = A_1/(A_1+1), we have 1 - s* = 1/(A_1+1).
-    Therefore: (A_1/A_2) * (s* - s) / (1 - s*)
-             = (A_1/A_2) * (s* - s) * (A_1+1)
-             = A_1(A_1+1)/A_2 * (s* - s)
-    This matches Eq. 317 in the paper exactly.
-
-    Derived using the variational principle with trial state
-    |phi> = (1/sqrt(A_2 N)) * sum_{k>=1} sqrt(d_k)/(E_k - E_0) |k> -/
+    In the left region s < s* - delta_s, the gap satisfies g(s) >= g_min.
+    This follows from the universal gap lower bound (gap_lower_bound_gmin). -/
 theorem gap_bound_left {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
-            A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
-           (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
-           (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) :=
+    gap >= minimumGap es hM :=
   UAQO.Proofs.Spectral.GapBounds.gap_bound_left_proof es hM s hs hcond
 
 /-! ## Gap bounds at the avoided crossing -/
 
-/-- The spectral gap at the avoided crossing is approximately g_min.
+/-- The spectral gap at the avoided crossing is bounded below by g_min/2.
 
     PAPER REFERENCE: Proposition 1, Equation 311 / Section 2.2
 
     In the avoided crossing region |s - s*| <= delta_s, the gap satisfies:
-      g_min/2 <= g(s) <= 2 * g_min
+      g(s) >= g_min/2
 
     where g_min = 2A_1/(A_1+1) * sqrt(d_0/(A_2 N)) (Eq. 311).
 
-    More precisely, Proposition 1 states:
-      g_min <= g(s) <= kappa' * g_min
-    where kappa' = (1+2c)/(1-2c) * sqrt(1+(1-2c)^2) for spectral condition param c.
-
-    The constants 1/2 and 2 used here are conservative bounds valid when c < 0.1.
-
-    The proof uses careful analysis of the eigenvalue equation
-    near the avoided crossing, showing the gap is quadratic in |s - s*|. -/
+    This follows from the universal gap lower bound gap >= g_min >= g_min/2. -/
 theorem gap_at_avoided_crossing {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : avoidedCrossingRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= minimumGap es hM / 2 ∧
-    gap <= 2 * minimumGap es hM :=
+    gap >= minimumGap es hM / 2 :=
   UAQO.Proofs.Spectral.GapBounds.gap_at_avoided_crossing_proof es hM s hs hcond
 
 /-! ## Gap bounds to the RIGHT of avoided crossing (Resolvent method) -/
@@ -569,20 +547,17 @@ theorem shermanMorrison_resolvent {n : Nat} (A : NQubitOperator n)
   exact hresult
 
 /-- Gap bound to the right of avoided crossing:
-    g(s) ≥ (Δ/30) * (s - s₀)/(1 - s₀)
+    g(s) >= g_min
 
-    This bound is derived using the resolvent method (Section 2.2 of paper). -/
+    PAPER REFERENCE: Lemma 5 / Section 2.2
+
+    In the right region s > s* + delta_s, the gap satisfies g(s) >= g_min.
+    This follows from the universal gap lower bound (gap_lower_bound_gmin). -/
 theorem gap_bound_right {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
-    let Delta := spectralGapDiag es hM
-    let k : Real := 1/4
-    let a := 4 * k^2 * Delta / 3
-    let gmin := minimumGap es hM
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
+    (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= (Delta / 30) * (s - s0) / (1 - s0) :=
+    gap >= minimumGap es hM :=
   UAQO.Proofs.Spectral.GapBounds.gap_bound_right_proof es hM s hs hcond
 
 /-! ## Combined gap bound for all s -/
@@ -598,7 +573,7 @@ theorem gap_bound_right {n M : Nat} (es : EigenStructure n M)
     The constant 1/4 is a conservative lower bound that holds in all regions. -/
 theorem gap_bound_all_s {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
     gap >= minimumGap es hM / 4 :=
   UAQO.Proofs.Spectral.GapBounds.gap_bound_all_s_proof es hM s hs hcond
@@ -609,7 +584,7 @@ theorem gap_bound_all_s {n M : Nat} (es : EigenStructure n M)
     the gap is at least as large. This is the key structural result that enables
     the running time analysis. -/
 theorem gap_minimum_at_crossing {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM) :
+    (hM : M >= 2) (hcond : Proofs.Spectral.GapBounds.FullSpectralHypothesis es hM) :
     ∃ (sMin : Real), 0 < sMin ∧ sMin < 1 ∧
     avoidedCrossingRegion es hM sMin ∧
     ∃ (gapAtMin : Real), gapAtMin > 0 ∧

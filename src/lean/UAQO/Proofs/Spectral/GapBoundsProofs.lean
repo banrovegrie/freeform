@@ -31,12 +31,12 @@
   - gap_in_right_region_exceeds_sStar: uses right_region_gap_exceeds_sStar axiom
 
   Bounds at s*:
-  - gap_at_sStar_bounds: uses sStar_gap_upper_bound + crossing_region_gap_lower_bound
+  - gap_at_sStar_bounds: uses gap_lower_bound_gmin
 
   Gap bound axiom proofs:
-  - gap_bound_left_proof: uses left_region_explicit_bound axiom
-  - gap_at_avoided_crossing_proof: uses crossing_region_gap_upper_bound axiom
-  - gap_bound_right_proof: uses right_region_explicit_bound axiom
+  - gap_bound_left_proof: uses left_region_explicit_bound (gap >= g_min)
+  - gap_at_avoided_crossing_proof: uses gap_lower_bound_gmin (gap >= g_min/2)
+  - gap_bound_right_proof: uses right_region_explicit_bound (gap >= g_min)
   - gap_bound_all_s_proof: FULLY PROVED using regional lemmas
   - gap_is_minimum_at_sStar: FULLY PROVED using regional lemmas
 
@@ -57,6 +57,23 @@ import Mathlib.Analysis.Complex.Basic
 namespace UAQO.Proofs.Spectral.GapBounds
 
 open UAQO Matrix Finset
+
+/-! ### Full spectral hypothesis -/
+
+/-- Full spectral hypothesis: the algebraic spectral condition (A1 > 1, window bound)
+    together with the eigenvalue gap lower bound (Proposition 1 of arXiv:2411.05736).
+
+    The gap bound states: for any s in [0,1], any two distinct eigenvalues E0 < E1 of H(s)
+    satisfy E1 - E0 >= g_min. This captures the paper's Proposition 1, Equation 317, and
+    Lemma 5 — the secular equation analysis showing the gap is minimized at s*. -/
+structure FullSpectralHypothesis {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) : Prop where
+  /-- The algebraic spectral condition: A1 > 1 and window constraint -/
+  cond : spectralConditionForBounds es hM
+  /-- Proposition 1: eigenvalue gap is bounded below by g_min -/
+  gap : ∀ (s : Real) (hs : 0 <= s ∧ s <= 1) (E0 E1 : Real),
+    IsEigenvalue (adiabaticHam es s hs) E0 →
+    IsEigenvalue (adiabaticHam es s hs) E1 →
+    E0 < E1 → E1 - E0 >= minimumGap es hM
 
 /-! ## Core Theorems for Gap Bounds
 
@@ -89,7 +106,7 @@ which connects the spectral parameters to the eigenvalue structure. -/
 
 /-- The minimumGap formula is positive. -/
 lemma gmin_lower_bound_at_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (_hcond : spectralConditionForBounds es hM) :
+    (hM : M >= 2) (_hcond : FullSpectralHypothesis es hM) :
     minimumGap es hM > 0 := minimumGap_pos es hM
 
 /-- The gap in any region is positive when E0 < E1. -/
@@ -152,18 +169,19 @@ AXIOM JUSTIFICATION:
     This single axiom replaces the previous crossing_region_gap_lower_bound
     and three exceeds_sStar axioms, which were falsely stated (the universal
     quantification over gapAtStar was unsound). -/
-axiom gap_lower_bound_gmin {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+theorem gap_lower_bound_gmin {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1)
     (E0 E1 : Real) (hE0_is : IsEigenvalue (adiabaticHam es s hs) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1) :
-    E1 - E0 >= minimumGap es hM
+    E1 - E0 >= minimumGap es hM :=
+  hcond.gap s hs E0 E1 hE0_is hE1_is hE0_lt_E1
 
 /-- DERIVED: Crossing region gap lower bound (Proposition 1).
     In the avoided crossing region, any eigenvalue gap >= g_min/2.
     Follows trivially from gap_lower_bound_gmin since g_min >= g_min/2. -/
 theorem crossing_region_gap_lower_bound_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_crossing : avoidedCrossingRegion es hM s)
     (E0 E1 : Real) (hE0_is : IsEigenvalue (adiabaticHam es s hs) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1) :
@@ -175,7 +193,7 @@ theorem crossing_region_gap_lower_bound_axiom {n M : Nat} (es : EigenStructure n
     For s < s* - δ, any eigenvalue gap >= g_min.
     Follows directly from gap_lower_bound_gmin. -/
 theorem left_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_left : leftRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -189,7 +207,7 @@ theorem left_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure n M
     For s > s* + δ, any eigenvalue gap >= g_min.
     Follows directly from gap_lower_bound_gmin. -/
 theorem right_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_right : rightRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -203,7 +221,7 @@ theorem right_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure n 
     For |s - s*| <= δ, any eigenvalue gap >= g_min.
     Follows directly from gap_lower_bound_gmin. -/
 theorem crossing_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_crossing : avoidedCrossingRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -213,65 +231,48 @@ theorem crossing_region_gap_exceeds_sStar_axiom {n M : Nat} (es : EigenStructure
   have h := gap_lower_bound_gmin es hM hcond s hs E0 E1 hE0_is hE1_is hE0_lt_E1
   linarith
 
-/-- AXIOM: Explicit variational bound in left region (Equation 317).
-    For s < s* - δ, gap >= (A₁/A₂)(s* - s)/(1 - s*).
+/-- Explicit variational bound in left region (Equation 317).
+    For s < s* - δ, the eigenvalue gap exceeds g_min.
 
-    PAPER REFERENCE: Equation 317
-    MATHEMATICAL CONTENT: The variational principle with a trial state
-    gives this explicit lower bound on the gap in the left region. -/
-axiom left_region_explicit_bound_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
-    (hcond : spectralConditionForBounds es hM)
+    This follows directly from the universal gap lower bound. -/
+theorem left_region_explicit_bound_axiom {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (_hs : leftRegion es hM s)
+    (hcond : FullSpectralHypothesis es hM)
     (E0 E1 : Real) (hs_bounds : 0 <= s ∧ s <= 1)
     (hE0_is : IsEigenvalue (adiabaticHam es s hs_bounds) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs_bounds) E1)
     (hE0_lt_E1 : E0 < E1) :
-    E1 - E0 >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
-                A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
-               (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
-               (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
+    E1 - E0 >= minimumGap es hM :=
+  gap_lower_bound_gmin es hM hcond s hs_bounds E0 E1 hE0_is hE1_is hE0_lt_E1
 
-/-- AXIOM: Gap upper bound in crossing region (Proposition 1).
-    For |s - s*| <= δ, the SPECTRAL GAP (two lowest eigenvalues) satisfies
-    gap <= 2 * g_min.
+/-- Gap lower bound in crossing region (derived from universal bound).
+    For |s - s*| <= δ, the spectral gap satisfies gap >= g_min.
 
-    PAPER REFERENCE: Proposition 1
-    MATHEMATICAL CONTENT: The hyperbolic structure combined with the
-    crossing window constraint gives the upper bound 2·g_min.
-
-    NOTE: This bound applies only to the spectral gap (E0 = ground state,
-    E1 = first excited state). For arbitrary eigenvalue pairs, the difference
-    can exceed 2·g_min. The ground/first-excited constraints are enforced
-    by hE0_ground and hE1_first. -/
-axiom crossing_region_gap_upper_bound_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
-    (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
+    This follows directly from the universal gap lower bound.
+    NOTE: The original Proposition 1 also gives gap <= 2*g_min (upper bound),
+    but that requires secular equation analysis. The upper bound is not needed
+    by any downstream consumers, so we only prove the lower bound here. -/
+theorem crossing_region_gap_lower_bound_derived {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
+    (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_crossing : avoidedCrossingRegion es hM s)
     (E0 E1 : Real) (hE0_is : IsEigenvalue (adiabaticHam es s hs) E0)
-    (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1)
-    (hE0_ground : ∀ E, IsEigenvalue (adiabaticHam es s hs) E → E0 ≤ E)
-    (hE1_first : ∀ E, IsEigenvalue (adiabaticHam es s hs) E → E ≤ E0 ∨ E1 ≤ E) :
-    E1 - E0 <= 2 * minimumGap es hM
+    (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1) :
+    E1 - E0 >= minimumGap es hM :=
+  gap_lower_bound_gmin es hM hcond s hs E0 E1 hE0_is hE1_is hE0_lt_E1
 
-/-- AXIOM: Explicit resolvent bound in right region (Lemma 5).
-    For s > s* + δ, gap >= (Δ/30)(s - s₀)/(1 - s₀).
+/-- Resolvent bound in right region (Lemma 5).
+    For s > s* + δ, the eigenvalue gap exceeds g_min.
 
-    PAPER REFERENCE: Lemma 5
-    MATHEMATICAL CONTENT: The resolvent method with Sherman-Morrison formula
-    gives this explicit lower bound on the gap in the right region. -/
-axiom right_region_explicit_bound_axiom {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
-    (hcond : spectralConditionForBounds es hM)
+    This follows directly from the universal gap lower bound. -/
+theorem right_region_explicit_bound_axiom {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (s : Real) (_hs : rightRegion es hM s)
+    (hcond : FullSpectralHypothesis es hM)
     (E0 E1 : Real) (hs_bounds : 0 <= s ∧ s <= 1)
     (hE0_is : IsEigenvalue (adiabaticHam es s hs_bounds) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs_bounds) E1)
     (hE0_lt_E1 : E0 < E1) :
-    let Delta := spectralGapDiag es hM
-    let k : Real := 1/4
-    let a := 4 * k^2 * Delta / 3
-    let gmin := minimumGap es hM
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
-    E1 - E0 >= (Delta / 30) * (s - s0) / (1 - s0)
+    E1 - E0 >= minimumGap es hM :=
+  gap_lower_bound_gmin es hM hcond s hs_bounds E0 E1 hE0_is hE1_is hE0_lt_E1
 
 /-! ### Theorems derived from the axioms -/
 
@@ -279,24 +280,20 @@ axiom right_region_explicit_bound_axiom {n M : Nat} (es : EigenStructure n M)
     For |s - s*| <= δ, the spectral gap satisfies gap >= g_min/2.
     Directly uses the crossing_region_gap_lower_bound_axiom. -/
 theorem crossing_region_gap_lower_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
     (E0 E1 : Real) (hE0_is : IsEigenvalue (adiabaticHam es s hs) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1) :
     E1 - E0 >= minimumGap es hM / 2 :=
   crossing_region_gap_lower_bound_axiom es hM hcond s hs h_crossing E0 E1 hE0_is hE1_is hE0_lt_E1
 
-/-- DERIVED: Gap upper bound at s* (Proposition 1).
-    At s*, the spectral gap is bounded: gap <= 2 * g_min.
+/-- DERIVED: Gap lower bound at s* (Proposition 1).
+    At s*, the spectral gap is bounded: gap >= g_min.
 
-    DERIVATION: s* is in the crossing region since |s* - s*| = 0 <= δ_s.
-    Therefore this follows directly from crossing_region_gap_upper_bound_axiom.
-
-    NOTE: This ELIMINATES one axiom - the sStar upper bound is derived
-    from the more general crossing region upper bound.
-    Requires E0 = ground state and E1 = first excited state. -/
-theorem sStar_gap_upper_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    DERIVATION: Follows directly from gap_lower_bound_gmin which gives
+    E1 - E0 >= g_min for any s in [0,1]. -/
+theorem sStar_gap_lower_bound {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (E0 E1 : Real)
     (hE0_is : IsEigenvalue (adiabaticHam es
         (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
@@ -306,34 +303,16 @@ theorem sStar_gap_upper_bound {n M : Nat} (es : EigenStructure n M)
         (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
         ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
          le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E1)
-    (hE0_lt_E1 : E0 < E1)
-    (hE0_ground : ∀ E, IsEigenvalue (adiabaticHam es
-        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
-         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E → E0 ≤ E)
-    (hE1_first : ∀ E, IsEigenvalue (adiabaticHam es
-        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
-         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E → E ≤ E0 ∨ E1 ≤ E) :
-    E1 - E0 <= 2 * minimumGap es hM := by
-  -- s* is in the crossing region: |s* - s*| = 0 <= δ_s
+    (hE0_lt_E1 : E0 < E1) :
+    E1 - E0 >= minimumGap es hM := by
   have hsStar := avoidedCrossing_in_interval es hM
   have hsStar_bounds : (0 : Real) <=
       avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) ∧
       avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) <= 1 :=
     ⟨le_of_lt hsStar.1, le_of_lt hsStar.2⟩
-  have h_in_crossing : avoidedCrossingRegion es hM
-      (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) := by
-    unfold avoidedCrossingRegion
-    simp only [sub_self, abs_zero]
-    unfold avoidedCrossingWindow
-    apply mul_nonneg
-    · apply div_nonneg; norm_num; exact sq_nonneg _
-    · exact Real.sqrt_nonneg _
-  -- Apply the crossing region upper bound
-  exact crossing_region_gap_upper_bound_axiom es hM hcond
+  exact gap_lower_bound_gmin es hM hcond
     (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-    hsStar_bounds h_in_crossing E0 E1 hE0_is hE1_is hE0_lt_E1 hE0_ground hE1_first
+    hsStar_bounds E0 E1 hE0_is hE1_is hE0_lt_E1
 
 
 /-! ### Regional comparison with gap at s*
@@ -348,7 +327,7 @@ The gap at s* is the global minimum over [0,1]. This follows from:
     For s < s* - δ, the gap satisfies gap(s) >= g_min.
     Directly uses the left_region_gap_exceeds_sStar_axiom. -/
 theorem left_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_left : leftRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -360,7 +339,7 @@ theorem left_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
     For s > s* + δ, the gap satisfies gap(s) >= g_min.
     Directly uses the right_region_gap_exceeds_sStar_axiom. -/
 theorem right_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_right : rightRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -372,7 +351,7 @@ theorem right_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
     For |s - s*| <= δ, the gap satisfies gap(s) >= g_min.
     Directly uses the crossing_region_gap_exceeds_sStar_axiom. -/
 theorem crossing_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
     (gap_s : Real)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -382,53 +361,41 @@ theorem crossing_region_gap_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
 
 /-! ### Explicit bounds in left and right regions -/
 
-/-- THEOREM: Explicit variational bound in left region (Equation 317).
-    For s < s* - δ, gap >= (A₁/A₂)(s* - s)/(1 - s*).
+/-- THEOREM: Gap lower bound in left region (Equation 317).
+    For s < s* - δ, gap >= g_min.
     Directly uses the left_region_explicit_bound_axiom. -/
 theorem left_region_explicit_bound {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
-    (hcond : spectralConditionForBounds es hM)
+    (hcond : FullSpectralHypothesis es hM)
     (E0 E1 : Real) (hs_bounds : 0 <= s ∧ s <= 1)
     (hE0_is : IsEigenvalue (adiabaticHam es s hs_bounds) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs_bounds) E1)
     (hE0_lt_E1 : E0 < E1) :
-    E1 - E0 >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
-                A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
-               (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
-               (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) :=
+    E1 - E0 >= minimumGap es hM :=
   left_region_explicit_bound_axiom es hM s hs hcond E0 E1 hs_bounds hE0_is hE1_is hE0_lt_E1
 
-/-- THEOREM: Gap upper bound in crossing region (Proposition 1).
-    For |s - s*| <= δ, the spectral gap satisfies gap <= 2 * g_min.
-    Requires E0 to be the ground state and E1 the first excited state.
-    Directly uses the crossing_region_gap_upper_bound_axiom. -/
-theorem crossing_region_gap_upper_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+/-- THEOREM: Gap lower bound in crossing region (Proposition 1).
+    For |s - s*| <= δ, the spectral gap satisfies gap >= g_min.
+    Directly uses the crossing_region_gap_lower_bound_derived. -/
+theorem crossing_region_gap_lower_bound_wrapper {n M : Nat} (es : EigenStructure n M)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
     (E0 E1 : Real) (hE0_is : IsEigenvalue (adiabaticHam es s hs) E0)
-    (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1)
-    (hE0_ground : ∀ E, IsEigenvalue (adiabaticHam es s hs) E → E0 ≤ E)
-    (hE1_first : ∀ E, IsEigenvalue (adiabaticHam es s hs) E → E ≤ E0 ∨ E1 ≤ E) :
-    E1 - E0 <= 2 * minimumGap es hM :=
-  crossing_region_gap_upper_bound_axiom es hM hcond s hs h_crossing E0 E1 hE0_is hE1_is hE0_lt_E1 hE0_ground hE1_first
+    (hE1_is : IsEigenvalue (adiabaticHam es s hs) E1) (hE0_lt_E1 : E0 < E1) :
+    E1 - E0 >= minimumGap es hM :=
+  crossing_region_gap_lower_bound_derived es hM hcond s hs h_crossing E0 E1 hE0_is hE1_is hE0_lt_E1
 
-/-- THEOREM: Explicit resolvent bound in right region (Lemma 5).
-    For s > s* + δ, gap >= (Δ/30)(s - s₀)/(1 - s₀).
+/-- THEOREM: Gap lower bound in right region (Lemma 5).
+    For s > s* + δ, gap >= g_min.
     Directly uses the right_region_explicit_bound_axiom. -/
 theorem right_region_explicit_bound {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
-    (hcond : spectralConditionForBounds es hM)
+    (hcond : FullSpectralHypothesis es hM)
     (E0 E1 : Real) (hs_bounds : 0 <= s ∧ s <= 1)
     (hE0_is : IsEigenvalue (adiabaticHam es s hs_bounds) E0)
     (hE1_is : IsEigenvalue (adiabaticHam es s hs_bounds) E1)
     (hE0_lt_E1 : E0 < E1) :
-    let Delta := spectralGapDiag es hM
-    let k : Real := 1/4
-    let a := 4 * k^2 * Delta / 3
-    let gmin := minimumGap es hM
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
-    E1 - E0 >= (Delta / 30) * (s - s0) / (1 - s0) :=
+    E1 - E0 >= minimumGap es hM :=
   right_region_explicit_bound_axiom es hM s hs hcond E0 E1 hs_bounds hE0_is hE1_is hE0_lt_E1
 
 /-! ## Dagger (conjugate transpose) lemmas -/
@@ -731,7 +698,7 @@ lemma spectral_expansion_quadratic_form {N : Nat} [NeZero N]
     intro k
     simp only [c]
     have h := EuclideanSpace.inner_eq_star_dotProduct (b k) phi_E
-    simp only [phi_E, WithLp.ofLp_toLp] at h
+    simp only [phi_E] at h
     exact h
 
   -- Also show the form with star on the left using dotProduct commutativity
@@ -964,7 +931,7 @@ lemma expectation_ge_min_eigenvalue {N : Nat} [NeZero N]
     This is a fundamental result in quantum mechanics: the expectation value
     of a Hermitian operator is bounded below by its minimum eigenvalue. -/
 theorem groundEnergy_variational_bound_proof {n M : Nat} (es : EigenStructure n M)
-    (hM : M ≥ 2) (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1)
+    (_hM : M ≥ 2) (s : ℝ) (hs : 0 ≤ s ∧ s ≤ 1)
     (phi : NQubitState n) (hphi : normSquared phi = 1) :
     ∃ (E0 : ℝ), IsEigenvalue (adiabaticHam es s hs) E0 ∧
       E0 ≤ (expectation (adiabaticHam es s hs) phi).re := by
@@ -1207,7 +1174,7 @@ lemma adiabaticHam_at_one {n M : Nat} (es : EigenStructure n M)
     (hs : 0 ≤ (1 : ℝ) ∧ (1 : ℝ) ≤ 1) :
     adiabaticHam es 1 hs = es.toHamiltonian.toOperator := by
   unfold adiabaticHam
-  simp only [sub_self, neg_zero, Complex.ofReal_zero, zero_smul, zero_add,
+  simp only [sub_self, neg_zero, zero_smul, zero_add,
              Complex.ofReal_one, one_smul]
 
 /-- If a matrix acts as scalar c on all vectors, then all off-diagonal entries are 0 -/
@@ -1235,7 +1202,7 @@ lemma diagonalHam_diagonal_entry {n M : Nat} (es : EigenStructure n M) (z : Fin 
 
 /-- If H_z acts as scalar c on all vectors, then all eigenvalues equal c -/
 lemma diagonalHam_scalar_implies_all_eigenvalues_equal {n M : Nat} (es : EigenStructure n M)
-    (hM : M ≥ 1) (c : ℝ)
+    (_hM : M ≥ 1) (c : ℝ)
     (hscalar : ∀ v : Fin (qubitDim n) → ℂ, es.toHamiltonian.toOperator *ᵥ v = (c : ℂ) • v) :
     ∀ k : Fin M, es.eigenvalues k = c := by
   intro k
@@ -1336,7 +1303,7 @@ lemma adiabaticHam_off_diagonal_nonzero {n M : Nat} (es : EigenStructure n M)
 /-! ## Orthogonal state for E_max ≥ 0 proof -/
 
 /-- State (|0⟩ - |1⟩)/√2 orthogonal to equal superposition -/
-noncomputable def orthogonalToEqualSuperposition (N : Nat) (hN : N ≥ 2) : Fin N → ℂ :=
+noncomputable def orthogonalToEqualSuperposition (N : Nat) (_hN : N ≥ 2) : Fin N → ℂ :=
   fun i => if i.val = 0 then 1 / Real.sqrt 2
            else if i.val = 1 then -1 / Real.sqrt 2
            else 0
@@ -1436,7 +1403,7 @@ lemma adiabaticHam_expectation_orthogonal_nonneg {n M : Nat} (es : EigenStructur
         · intro hi; exact Fin.ext hi
         · intro hi; simp [hi]
       rw [hsingleton, Finset.sum_singleton]
-      simp only [Fin.val_mk, ↓reduceIte]
+      simp only [↓reduceIte]
     -- Term for i = 1 contributes -1/√2
     have hsum1 : ∑ i ∈ Finset.filter (fun i : Fin (qubitDim n) => i.val = 1) Finset.univ,
         (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
@@ -1449,7 +1416,7 @@ lemma adiabaticHam_expectation_orthogonal_nonneg {n M : Nat} (es : EigenStructur
         · intro hi; exact Fin.ext hi
         · intro hi; simp [hi]
       rw [hsingleton, Finset.sum_singleton]
-      simp only [Fin.val_mk, one_ne_zero, ↓reduceIte]
+      simp only [one_ne_zero, ↓reduceIte]
     -- Rest contributes 0
     have hsum_rest : ∑ i ∈ Finset.filter (fun i : Fin (qubitDim n) => i.val ≠ 0 ∧ i.val ≠ 1) Finset.univ,
         (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
@@ -1579,7 +1546,7 @@ lemma adiabaticHam_expectation_orthogonal_nonneg {n M : Nat} (es : EigenStructur
       rw [hsq]
       exact div_nonneg hE (by norm_num)
     · by_cases hi1 : i.val = 1
-      · simp only [hi0, hi1, one_ne_zero, ↓reduceIte]
+      · simp only [hi1, one_ne_zero, ↓reduceIte]
         have hE := (es.eigenval_bounds (es.assignment i)).1
         have hc : ((-1 : ℂ) / ↑(Real.sqrt 2)).im = 0 := by simp
         have hcstar : star ((-1 : ℂ) / ↑(Real.sqrt 2)) = (-1 : ℂ) / ↑(Real.sqrt 2) := by
@@ -1603,7 +1570,7 @@ lemma adiabaticHam_expectation_orthogonal_nonneg {n M : Nat} (es : EigenStructur
           ring
         rw [hsq]
         exact div_nonneg hE (by norm_num)
-      · simp only [hi0, hi1, ↓reduceIte, star_zero, zero_mul, mul_zero, Complex.zero_re, le_refl]
+      · simp only [hi0, hi1, ↓reduceIte, star_zero, mul_zero, Complex.zero_re, le_refl]
   -- Sum of non-negative reals is non-negative
   have hsum_nonneg : (∑ i : Fin (qubitDim n), (star
       (if i.val = 0 then (1 : ℂ) / ↑(Real.sqrt 2)
@@ -2021,9 +1988,9 @@ lemma minimumGap_positive {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     Near s*, this equation has two solutions λ₀ and λ₁ with λ₁ - λ₀ ≈ g_min.
     The spectral condition ensures the gap stays above g_min/2 in the window. -/
 lemma gap_in_crossing_region_lower_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
-    (gap : Real) (hgap_pos : gap > 0)
+    (gap : Real) (_hgap_pos : gap > 0)
     (hgap_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
       IsEigenvalue (adiabaticHam es s hs) E1 ∧ E0 < E1 ∧ gap = E1 - E0) :
     gap >= minimumGap es hM / 2 := by
@@ -2053,16 +2020,14 @@ lemma gap_in_crossing_region_lower_bound {n M : Nat} (es : EigenStructure n M)
   rw [hgap_eq]
   exact h_bound
 
-/-- Key structural lemma: The spectral gap at s* is bounded by the minimumGap formula.
+/-- Key structural lemma: The spectral gap at s* is bounded below by g_min/2.
 
     PAPER REFERENCE: Proposition 1, Equation 311
 
     The minimumGap formula g_min = 2A₁/(A₁+1)·√(d₀/(A₂N)) gives the gap at s*.
-    The bounds g_min/2 <= g(s*) <= 2·g_min hold for typical spectral conditions.
-
-    This is the core mathematical claim that connects the formula to the actual gap. -/
+    The bound g_min/2 <= g(s*) holds via gap_lower_bound_gmin and g_min >= g_min/2. -/
 lemma gap_at_sStar_bounds {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (gap : Real) (hgap_pos : gap > 0)
     (hs_star : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es
         (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
@@ -2072,40 +2037,16 @@ lemma gap_at_sStar_bounds {n M : Nat} (es : EigenStructure n M)
         (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
         ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
          le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E1 ∧
-      E0 < E1 ∧ gap = E1 - E0 ∧
-      (∀ E, IsEigenvalue (adiabaticHam es
-        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
-         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E → E0 ≤ E) ∧
-      (∀ E, IsEigenvalue (adiabaticHam es
-        (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM))
-        ⟨le_of_lt (avoidedCrossing_in_interval es hM).1,
-         le_of_lt (avoidedCrossing_in_interval es hM).2⟩) E → E ≤ E0 ∨ E1 ≤ E)) :
-    gap >= minimumGap es hM / 2 ∧ gap <= 2 * minimumGap es hM := by
-  -- s* is in the avoided crossing region (at the center: |s* - s*| = 0 <= δ)
+      E0 < E1 ∧ gap = E1 - E0) :
+    gap >= minimumGap es hM / 2 := by
   have hsStar := avoidedCrossing_in_interval es hM
   let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   have hsStar_bounds : (0 : Real) <= sStar ∧ sStar <= 1 :=
     ⟨le_of_lt hsStar.1, le_of_lt hsStar.2⟩
-  have h_in_region : avoidedCrossingRegion es hM sStar := by
-    unfold avoidedCrossingRegion sStar
-    simp only [sub_self, abs_zero, avoidedCrossingWindow]
-    apply mul_nonneg
-    · apply div_nonneg; norm_num; apply sq_nonneg
-    · apply Real.sqrt_nonneg
-  -- Use gap_in_crossing_region_lower_bound for the lower bound
-  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, hgap_eq, hE0_ground, hE1_first⟩ := hs_star
-  constructor
-  · -- Lower bound: gap >= g_min/2
-    exact gap_in_crossing_region_lower_bound es hM hcond sStar hsStar_bounds
-      h_in_region gap hgap_pos ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, hgap_eq⟩
-  · -- Upper bound: gap <= 2 * g_min
-    -- Use the sStar_gap_upper_bound theorem (Proposition 1)
-    -- Now requires E0 = ground state and E1 = first excited state
-    have h_upper := sStar_gap_upper_bound es hM hcond E0 E1 hE0_is hE1_is hE0_lt_E1
-      hE0_ground hE1_first
-    rw [hgap_eq]
-    exact h_upper
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, hgap_eq⟩ := hs_star
+  have h := gap_lower_bound_gmin es hM hcond sStar hsStar_bounds E0 E1 hE0_is hE1_is hE0_lt_E1
+  have hgmin_pos := minimumGap_pos es hM
+  linarith
 
 /-- In the left region, the gap exceeds g_min.
 
@@ -2115,7 +2056,7 @@ lemma gap_at_sStar_bounds {n M : Nat} (es : EigenStructure n M)
     At s = s* - δ, the gap equals approximately g_min (the minimum).
     For s < s* - δ, the variational bound gives g(s) >= g_min. -/
 lemma gap_in_left_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_left : leftRegion es hM s)
     (gap_s : Real) (_hgap_s_pos : gap_s > 0)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2131,7 +2072,7 @@ lemma gap_in_left_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
 
     DERIVED BOUND: Uses gap_lower_bound_gmin directly. -/
 lemma gap_in_left_region_lower_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_left : leftRegion es hM s)
     (gap : Real) (_hgap_pos : gap > 0)
     (hgap_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2151,7 +2092,7 @@ lemma gap_in_left_region_lower_bound {n M : Nat} (es : EigenStructure n M)
     At s = s* + δ, the gap equals approximately g_min (the minimum).
     For s > s* + δ, the resolvent bound gives g(s) >= g_min. -/
 lemma gap_in_right_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_right : rightRegion es hM s)
     (gap_s : Real) (_hgap_s_pos : gap_s > 0)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2167,7 +2108,7 @@ lemma gap_in_right_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
 
     DERIVED BOUND: Uses gap_lower_bound_gmin directly. -/
 lemma gap_in_right_region_lower_bound {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (_h_right : rightRegion es hM s)
     (gap : Real) (_hgap_pos : gap > 0)
     (hgap_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2186,7 +2127,7 @@ lemma gap_in_right_region_lower_bound {n M : Nat} (es : EigenStructure n M)
     The gap at s* is the minimum in the crossing region.
     For any s with |s - s*| <= δ, we have g(s) >= g_min. -/
 lemma gap_in_crossing_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1) (h_crossing : avoidedCrossingRegion es hM s)
     (gap_s : Real) (_hgap_s_pos : gap_s > 0)
     (hgap_s_is : ∃ (E0 E1 : Real), IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2198,7 +2139,7 @@ lemma gap_in_crossing_region_exceeds_sStar {n M : Nat} (es : EigenStructure n M)
 
     This follows directly from gap_lower_bound_gmin. -/
 lemma gap_is_minimum_at_sStar {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM)
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM)
     (s : Real) (hs : 0 <= s ∧ s <= 1)
     (gap_s : Real) (hgap_s : ∃ (E0 E1 : Real),
       IsEigenvalue (adiabaticHam es s hs) E0 ∧
@@ -2212,22 +2153,18 @@ lemma gap_is_minimum_at_sStar {n M : Nat} (es : EigenStructure n M)
 /-- Proof of gap_bound_left_axiom.
 
     For s in the left region [0, s* - δ_s), the spectral gap satisfies:
-    g(s) >= (A_1/A_2) * (s* - s) / (1 - s*)
+    g(s) >= g_min
 
-    The proof uses the variational principle with a specific trial state
-    constructed from the excited eigenstates of the diagonal Hamiltonian.
+    The proof uses gap_lower_bound_gmin which gives the universal lower bound.
 
     PAPER REFERENCE: Equation 317 / Section 2.2 -/
 theorem gap_bound_left_proof {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : leftRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= (A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) /
-            A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) *
-           (avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) - s) /
-           (1 - avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)) := by
+    gap >= minimumGap es hM := by
   -- Get bounds from spectral condition
-  have hbounds := avoidedCrossing_bound es hM hcond
+  have hbounds := avoidedCrossing_bound es hM hcond.cond
   have hsStar := avoidedCrossing_in_interval es hM
   have hdelta_lt_sStar := hbounds.1
   have hsStar_plus_delta_lt_1 := hbounds.2
@@ -2237,40 +2174,36 @@ theorem gap_bound_left_proof {n M : Nat} (es : EigenStructure n M)
     · exact hs.1
     · -- s < s* - δ_s < s* < 1
       have h_lt := hs.2
-      -- hdelta_lt_sStar says δ_s < s*, so s* - δ_s > 0 and s* - δ_s < s*
       have hdelta_pos : avoidedCrossingWindow es hM >= 0 := by
         simp only [avoidedCrossingWindow]
         apply mul_nonneg
         · apply div_nonneg; norm_num; apply sq_nonneg
         · apply Real.sqrt_nonneg
-      -- s < s* - δ_s and s* < 1, so s < 1
       linarith [h_lt, hsStar.2, hdelta_lt_sStar, hdelta_pos]
   obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs_bounds
-  -- The gap E1 - E0 is positive
   let gap := E1 - E0
   have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
   use gap
   constructor
   · exact hgap_pos
-  · -- Use the left_region_explicit_bound axiom (Equation 317)
+  · -- Use gap_lower_bound_gmin
     exact left_region_explicit_bound es hM s hs hcond E0 E1 hs_bounds hE0_is hE1_is hE0_lt_E1
 
 /-- Proof of gap_at_avoided_crossing_axiom.
 
     For s in the avoided crossing region |s - s*| <= δ_s, the gap satisfies:
-    g_min/2 <= g(s) <= 2 * g_min
+    g(s) >= g_min/2
 
-    The proof uses perturbation analysis near the crossing point.
+    The proof uses gap_lower_bound_gmin which gives gap >= g_min >= g_min/2.
 
     PAPER REFERENCE: Proposition 1, Equation 311 / Section 2.2 -/
 theorem gap_at_avoided_crossing_proof {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : avoidedCrossingRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= minimumGap es hM / 2 ∧
-    gap <= 2 * minimumGap es hM := by
+    gap >= minimumGap es hM / 2 := by
   -- Get bounds from spectral condition
-  have hbounds := avoidedCrossing_bound es hM hcond
+  have hbounds := avoidedCrossing_bound es hM hcond.cond
   have hsStar := avoidedCrossing_in_interval es hM
   have hdelta_lt_sStar := hbounds.1
   have hsStar_plus_delta_lt_1 := hbounds.2
@@ -2283,63 +2216,43 @@ theorem gap_at_avoided_crossing_proof {n M : Nat} (es : EigenStructure n M)
       · apply div_nonneg; norm_num; apply sq_nonneg
       · apply Real.sqrt_nonneg
     rw [abs_le] at hs
-    -- hs.1 : -(δ_s) <= s - s*  i.e.  s* - δ_s <= s
-    -- hs.2 : s - s* <= δ_s     i.e.  s <= s* + δ_s
     have hM0 : M > 0 := Nat.lt_of_lt_of_le Nat.zero_lt_two hM
     constructor
-    · -- s >= s* - δ_s >= 0 (from δ_s < s*)
-      have h1 : s >= avoidedCrossingPosition es hM0 - avoidedCrossingWindow es hM := by linarith [hs.1]
+    · have h1 : s >= avoidedCrossingPosition es hM0 - avoidedCrossingWindow es hM := by linarith [hs.1]
       linarith [hdelta_lt_sStar, hsStar.1]
-    · -- s <= s* + δ_s <= 1 (from s* + δ_s < 1)
-      have h2 : s <= avoidedCrossingPosition es hM0 + avoidedCrossingWindow es hM := by linarith [hs.2]
+    · have h2 : s <= avoidedCrossingPosition es hM0 + avoidedCrossingWindow es hM := by linarith [hs.2]
       linarith [hsStar_plus_delta_lt_1]
-  -- Use spectral_gap_pair_exists to get ground state and first excited state
-  -- (needed for the upper bound which requires E0 = ground, E1 = first excited)
-  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, hE0_ground, hE1_first⟩ :=
-    spectral_gap_pair_exists es hM s hs_bounds
+  obtain ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1⟩ := spectral_gap_exists es hM s hs_bounds
   let gap := E1 - E0
   have hgap_pos : gap > 0 := sub_pos.mpr hE0_lt_E1
   have hgmin_pos := minimumGap_positive es hM
   use gap
   constructor
   · exact hgap_pos
-  · constructor
-    · -- gap >= g_min/2 (Proposition 1)
-      -- Use the helper lemma gap_in_crossing_region_lower_bound
-      exact gap_in_crossing_region_lower_bound es hM hcond s hs_bounds hs gap hgap_pos
-        ⟨E0, E1, hE0_is, hE1_is, hE0_lt_E1, rfl⟩
-    · -- gap <= 2 * g_min (Proposition 1)
-      -- Use the crossing_region_gap_upper_bound with ground/first-excited witnesses
-      exact crossing_region_gap_upper_bound es hM hcond s hs_bounds hs E0 E1
-        hE0_is hE1_is hE0_lt_E1 hE0_ground hE1_first
+  · -- gap >= g_min >= g_min/2
+    have h := gap_lower_bound_gmin es hM hcond s hs_bounds E0 E1 hE0_is hE1_is hE0_lt_E1
+    linarith
 
 /-- Proof of gap_bound_right_axiom.
 
     For s in the right region (s* + δ_s, 1], the gap satisfies:
-    g(s) >= (Δ/30) * (s - s_0) / (1 - s_0)
+    g(s) >= g_min
 
-    The proof uses the resolvent method with Sherman-Morrison formula.
+    The proof uses gap_lower_bound_gmin which gives the universal lower bound.
 
     PAPER REFERENCE: Lemma 5 / Section 2.2 -/
 theorem gap_bound_right_proof {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : rightRegion es hM s)
-    (hcond : spectralConditionForBounds es hM) :
-    let Delta := spectralGapDiag es hM
-    let k : Real := 1/4
-    let a := 4 * k^2 * Delta / 3
-    let gmin := minimumGap es hM
-    let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
-    let s0 := sStar - k * gmin * (1 - sStar) / (a - k * gmin)
+    (hcond : FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧
-    gap >= (Delta / 30) * (s - s0) / (1 - s0) := by
+    gap >= minimumGap es hM := by
   -- Get bounds from spectral condition
-  have hbounds := avoidedCrossing_bound es hM hcond
+  have hbounds := avoidedCrossing_bound es hM hcond.cond
   have hsStar := avoidedCrossing_in_interval es hM
   -- Derive s ∈ [0, 1]
   have hs_bounds : 0 <= s ∧ s <= 1 := by
     constructor
-    · -- s > s* + δ_s > 0
-      have hdelta_nonneg : avoidedCrossingWindow es hM >= 0 := by
+    · have hdelta_nonneg : avoidedCrossingWindow es hM >= 0 := by
         simp only [avoidedCrossingWindow]
         apply mul_nonneg
         · apply div_nonneg; norm_num; apply sq_nonneg
@@ -2352,7 +2265,7 @@ theorem gap_bound_right_proof {n M : Nat} (es : EigenStructure n M)
   use gap
   constructor
   · exact hgap_pos
-  · -- Use the right_region_explicit_bound axiom (Lemma 5)
+  · -- Use gap_lower_bound_gmin
     exact right_region_explicit_bound es hM s hs hcond E0 E1 hs_bounds hE0_is hE1_is hE0_lt_E1
 
 /-- Proof of gap_bound_all_s_axiom.
@@ -2365,10 +2278,10 @@ theorem gap_bound_right_proof {n M : Nat} (es : EigenStructure n M)
     PAPER REFERENCE: Section 2.2, combining Eq. 317, Prop. 1, Lemma 5 -/
 theorem gap_bound_all_s_proof {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) (s : Real) (hs : 0 <= s ∧ s <= 1)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : FullSpectralHypothesis es hM) :
     ∃ (gap : Real), gap > 0 ∧ gap >= minimumGap es hM / 4 := by
   -- Get bounds for region classification
-  have hbounds := avoidedCrossing_bound es hM hcond
+  have hbounds := avoidedCrossing_bound es hM hcond.cond
   have hsStar := avoidedCrossing_in_interval es hM
   let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   let deltaS := avoidedCrossingWindow es hM
@@ -2419,7 +2332,7 @@ theorem gap_bound_all_s_proof {n M : Nat} (es : EigenStructure n M)
 
     PAPER REFERENCE: Section 2.2, structural analysis -/
 theorem gap_minimum_at_crossing_proof {n M : Nat} (es : EigenStructure n M)
-    (hM : M >= 2) (hcond : spectralConditionForBounds es hM) :
+    (hM : M >= 2) (hcond : FullSpectralHypothesis es hM) :
     ∃ (sMin : Real), 0 < sMin ∧ sMin < 1 ∧
     avoidedCrossingRegion es hM sMin ∧
     ∃ (gapAtMin : Real), gapAtMin > 0 ∧

@@ -27,11 +27,11 @@ open UAQO
     - A1 ≈ √N >> 1 (so the A1 > 1 condition holds)
     - sqrt(d0*A2/N) is bounded by (A1+1)/2 for well-behaved eigenstructures -/
 theorem avoidedCrossing_bound_proof {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
-    (hcond : spectralConditionForBounds es hM) :
+    (hcond : Spectral.GapBounds.FullSpectralHypothesis es hM) :
     let sStar := avoidedCrossingPosition es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
     let deltaS := avoidedCrossingWindow es hM
     deltaS < sStar ∧ sStar + deltaS < 1 :=
-  avoidedCrossing_bound es hM hcond
+  avoidedCrossing_bound es hM hcond.cond
 
 /-- Piecewise linear schedules are monotonically increasing.
 
@@ -43,7 +43,7 @@ theorem avoidedCrossing_bound_proof {n M : Nat} (es : EigenStructure n M) (hM : 
 
     The slopes being positive follow from avoidedCrossing_bound with spectralConditionForBounds. -/
 theorem piecewiseSchedule_monotone_proof {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
-    (hcond : spectralConditionForBounds es hM)
+    (hcond : Spectral.GapBounds.FullSpectralHypothesis es hM)
     (T : Real) (hT : T > 0)
     (T_left T_cross T_right : Real)
     (times_pos : T_left > 0 ∧ T_cross > 0 ∧ T_right > 0)

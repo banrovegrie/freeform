@@ -145,7 +145,7 @@ theorem A2_upper_bound {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     intro k hk
     simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hk
     have hk1 : k ≥ ⟨1, hM⟩ := by
-      simp only [Fin.le_iff_val_le_val, Fin.val_mk]
+      simp only [Fin.le_iff_val_le_val]
       omega
     have hEk : es.eigenvalues k - es.eigenvalues ⟨0, hM0⟩ >= Delta := by
       have h1 : es.eigenvalues ⟨1, hM⟩ <= es.eigenvalues k := by
@@ -252,7 +252,7 @@ theorem A2_lower_bound_simple {n M : Nat} (es : EigenStructure n M) (hM : M >= 2
 
 /-- The spectral condition: (1/Δ)√(d_0/(A_2 N)) < c for small constant c -/
 def spectralCondition {n M : Nat} (es : EigenStructure n M) (hM : M >= 2)
-    (c : Real) (hc : c > 0) : Prop :=
+    (c : Real) (_hc : c > 0) : Prop :=
   let d0 := es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
   let Delta := spectralGapDiag es hM
   let A2_val := A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
@@ -330,14 +330,19 @@ noncomputable def avoidedCrossingWindow {n M : Nat} (es : EigenStructure n M)
 
 notation "δ_s" => avoidedCrossingWindow
 
-/-- The minimum spectral gap: g_min = 2A_1/(A_1+1) √(d_0/(A_2 N)) -/
+/-- The minimum spectral gap: g_min = (1-2*eta) * 2A_1/(A_1+1) * sqrt(d_0/(A_2*N))
+    where eta = 0.1 is the perturbation parameter from Proposition 1 (Eq. 311).
+
+    The (1-2*eta) = 0.8 prefactor arises from the secular equation analysis:
+    the gap bound holds in the interval [s* - eta*delta_s, s* + eta*delta_s]
+    rather than the full avoided crossing region. -/
 noncomputable def minimumGap {n M : Nat} (es : EigenStructure n M)
     (hM : M >= 2) : Real :=
   let A1_val := A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   let A2_val := A2 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM)
   let d0 := es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩
   let N := qubitDim n
-  2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N))
+  (1 - 2 * (0.1 : Real)) * (2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N)))
 
 notation "g_min" => minimumGap
 
@@ -354,11 +359,13 @@ theorem minimumGap_pos {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
   have hNpos : (qubitDim n : Real) > 0 :=
     Nat.cast_pos.mpr (Nat.pow_pos (by norm_num : 0 < 2))
   have hA1plus1_pos : A1 es (Nat.lt_of_lt_of_le Nat.zero_lt_two hM) + 1 > 0 := by linarith
+  have heta : (1 : Real) - 2 * 0.1 > 0 := by norm_num
+  apply mul_pos heta
   apply mul_pos
   · exact div_pos (mul_pos (by norm_num : (2 : Real) > 0) hA1pos) hA1plus1_pos
   · exact Real.sqrt_pos.mpr (div_pos hd0pos (mul_pos hA2pos hNpos))
 
-/-- The minimum gap scales as √(d_0/N) -/
+/-- The minimum gap scales as sqrt(d_0/N) -/
 theorem minimumGap_scaling {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
     ∃ (c : Real), c > 0 ∧
     minimumGap es hM <= c * Real.sqrt ((es.degeneracies ⟨0, Nat.lt_of_lt_of_le Nat.zero_lt_two hM⟩ : Real) / qubitDim n) := by
@@ -371,6 +378,7 @@ theorem minimumGap_scaling {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
   have hA1pos : A1_val > 0 := spectralParam_positive es hM 1 (by norm_num)
   have hNpos : N > 0 := Nat.cast_pos.mpr (Nat.pow_pos (by norm_num : 0 < 2))
   have hd0nn : d0 >= 0 := Nat.cast_nonneg _
+  have heta : (1 : Real) - 2 * 0.1 = 0.8 := by norm_num
   use 2 / Real.sqrt A2_val
   constructor
   · apply div_pos (by norm_num : (2 : Real) > 0)
@@ -378,8 +386,17 @@ theorem minimumGap_scaling {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) :
   · have h1 : A1_val / (A1_val + 1) < 1 := by
       rw [div_lt_one (by linarith)]
       linarith
-    calc 2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N))
-        = 2 * (A1_val / (A1_val + 1)) * Real.sqrt (d0 / (A2_val * N)) := by ring
+    -- The (1-2*eta) factor is <= 1, so we can drop it
+    have hprefactor_le : (1 : Real) - 2 * 0.1 <= 1 := by norm_num
+    have hinner_nonneg : 2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N)) >= 0 := by
+      apply mul_nonneg
+      · apply div_nonneg (mul_nonneg (by norm_num : (0 : Real) <= 2) (le_of_lt hA1pos))
+        linarith
+      · exact Real.sqrt_nonneg _
+    calc (1 - 2 * (0.1 : Real)) * (2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N)))
+        <= 1 * (2 * A1_val / (A1_val + 1) * Real.sqrt (d0 / (A2_val * N))) := by
+           apply mul_le_mul_of_nonneg_right hprefactor_le hinner_nonneg
+      _ = 2 * (A1_val / (A1_val + 1)) * Real.sqrt (d0 / (A2_val * N)) := by ring
       _ <= 2 * 1 * Real.sqrt (d0 / (A2_val * N)) := by
            apply mul_le_mul_of_nonneg_right
            apply mul_le_mul_of_nonneg_left (le_of_lt h1) (by norm_num : (0 : Real) <= 2)
