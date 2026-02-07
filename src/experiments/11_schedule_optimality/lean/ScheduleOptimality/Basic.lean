@@ -64,7 +64,8 @@ noncomputable def SpectralParams.cR (p : SpectralParams) : Real :=
 theorem SpectralParams.sStar_pos (p : SpectralParams) : p.sStar > 0 := by
   simp only [SpectralParams.sStar]
   apply div_pos p.hA1_pos
-  linarith
+  have hden : p.A1 + 1 > 0 := by linarith [p.hA1_pos]
+  exact hden
 
 theorem SpectralParams.sStar_lt_one (p : SpectralParams) : p.sStar < 1 := by
   simp only [SpectralParams.sStar]
@@ -117,21 +118,23 @@ noncomputable def groverGapSq (N : Real) (s : Real) : Real :=
   (2 * s - 1) ^ 2 * (1 - 1 / N) + 1 / N
 
 /-- Grover gap squared is at least 1/N -/
-theorem groverGapSq_ge (N : Real) (hN : N > 0) (s : Real) :
+theorem groverGapSq_ge (N : Real) (hN : N ≥ 1) (s : Real) :
     groverGapSq N s ≥ 1 / N := by
   simp only [groverGapSq]
   have h1 : (2 * s - 1) ^ 2 ≥ 0 := sq_nonneg _
   have h2 : 1 - 1 / N ≥ 0 := by
-    rw [sub_nonneg, div_le_one hN]
+    have hN_pos : N > 0 := lt_of_lt_of_le (by norm_num : (0 : Real) < 1) hN
+    have hdiv : 1 / N ≤ 1 := by
+      rw [div_le_one hN_pos]
+      exact hN
     linarith
   linarith [mul_nonneg h1 h2]
 
 /-- Grover gap squared achieves minimum 1/N at s = 1/2 -/
-theorem groverGapSq_min (N : Real) (hN : N > 0) :
+theorem groverGapSq_min (N : Real) (_hN : N > 0) :
     groverGapSq N (1/2) = 1 / N := by
   simp only [groverGapSq]
   ring_nf
-  ring
 
 /-- Grover gap squared at endpoints equals 1 -/
 theorem groverGapSq_at_zero (N : Real) (hN : N > 0) :

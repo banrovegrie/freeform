@@ -251,7 +251,10 @@ The Remark above left Conjecture 3 partially resolved, noting that $I$ and $C^2$
 (a) In the right-arm-dominated regime ($30(1-s_0)/\Delta \gg 3/c_L$):
 $$\frac{C^2}{I} \to \frac{1}{c_L} = \frac{A_2}{A_1(A_1+1)}.$$
 
-(b) $C^2 < I$ whenever $c_L$ is sufficiently large relative to $3/c_L$ (specifically, when the right-arm terms dominate and $c_L > 1$).
+(b) Writing $a=3/c_L$ and $r=30(1-s_0)/\Delta$, one has
+$$C^2<I \iff (c_L-1)r^2-2ar+a(1-a)>0.$$
+In particular, $C^2<I$ throughout the right-arm-dominated region
+($r\gg a$) whenever $c_L>1$.
 
 (c) For Grover: $C^2/I \to 1089/1806 \approx 0.603$ as $N \to \infty$.
 
@@ -261,15 +264,30 @@ $$\frac{C^2}{I} \to \frac{1}{c_L} = \frac{A_2}{A_1(A_1+1)}.$$
 
 (a) For $r \gg a$: $C^2 \approx r^2$, $I \approx r^2 c_L$, so $C^2/I \approx 1/c_L$.
 
+(b) Compute
+$$I-C^2
+=\bigl(a+r^2c_L\bigr)-\bigl(a+r\bigr)^2
+=(c_L-1)r^2-2ar+a(1-a).$$
+Hence $C^2<I$ is exactly equivalent to
+$(c_L-1)r^2-2ar+a(1-a)>0$.
+For $c_L>1$ and $r\gg a$, the positive quadratic term
+$(c_L-1)r^2$ dominates the lower-order terms, so $C^2<I$.
+
 (c) For Grover: $c_L = (2N-1)/N$, $a = 3N/(2N-1)$, $r = 30N/(2N-1)$. As $N \to \infty$: $a \to 3/2$, $r \to 15$, $c_L \to 2$. So $C \to 33/2$, $I \to 3/2 + 225 \cdot 2 = 903/2$, and $C^2/I \to (33/2)^2/(903/2) = 1089/1806$.
 
 (d) $C_{\mathrm{exact}} = 1$ (Theorem B). $I_{\mathrm{exact}}$ from Theorem D. Their ratio is $1/I_{\mathrm{exact}} = \sqrt{N-1}/(N\arctan\sqrt{N-1}) \to 2/(\pi\sqrt{N})$. $\square$
 
-**Interpretation.** Both $C^2$ and $I$ enter their respective runtime bounds in the same role: $T_{\mathrm{RC}} = \|H'\| I / (\epsilon \hat{g})$ and $T_{\mathrm{JRS}} = K\|H'\| C^2/(\epsilon g_{\min})$ for some universal constant $K$ from the JRS framework. Since $\hat{g} = \Theta(g_{\min})$, the ratio $T_{\mathrm{JRS}}/T_{\mathrm{RC}}$ is governed by $C^2/I$ (up to the constant $K$). Theorem E shows $C^2/I < 1$ for Grover and generically when $c_L > 1$, meaning the JRS analysis certifies a tighter runtime than the RC analysis.
+**Interpretation.** Both $C^2$ and $I$ enter their respective runtime bounds in the same role: $T_{\mathrm{RC}} = \|H'\| I / (\epsilon \hat{g})$ and $T_{\mathrm{JRS}} = K\|H'\| C^2/(\epsilon g_{\min})$ for some universal constant $K$ from the JRS framework. Since $\hat{g} = \Theta(g_{\min})$, the ratio $T_{\mathrm{JRS}}/T_{\mathrm{RC}}$ is governed by $C^2/I$ (up to the constant $K$). Theorem E shows $C^2/I < 1$ for Grover and, more generally, throughout the right-arm-dominated regime with $c_L>1$, meaning the JRS analysis certifies a tighter runtime than the RC analysis there.
 
 The improvement factor is approximately $c_L = A_1(A_1+1)/A_2$. For Grover, $c_L \to 2$: the JRS bound is roughly twice as tight. For the exact Grover values, the improvement grows as $\sqrt{N}$ (since $C^2 = 1$ while $I \sim \sqrt{N}$), but this overstates the practical advantage because the JRS constant $K$ is not computed here.
 
-**Conjecture 3 (Full Resolution).** The structural constant $C^2$ in the JRS framework is strictly smaller than the integral constant $I$ in the RC framework for any instance where $c_L > 1$ (equivalently $A_1(A_1+1) > A_2$). This includes Grover and, more generally, any instance where the eigenvalue distribution is not concentrated at the smallest level. The $p = 3/2$ schedule's JRS bound is tighter in its structural constant by a factor of $c_L$, modulo the universal prefactor $K$ from the JRS error functional (which is not computed here).
+**Conjecture 3 (Full Resolution).** The structural constant comparison is now explicit:
+$$C^2<I \iff (c_L-1)r^2-2ar+a(1-a)>0,\quad a=3/c_L,\; r=30(1-s_0)/\Delta.$$
+For the paper's relevant right-arm-dominated regime and $c_L>1$ (including Grover),
+this condition holds, so the $p=3/2$ JRS certification is tighter in structural
+constant than the $p=2$ RC certification. The improvement factor is asymptotically
+$\sim c_L$, modulo the universal prefactor $K$ from the JRS error functional (not
+computed here).
 
 **When $c_L < 1$: a counterpoint.** For a two-level system with small gap $\Delta$: $A_1 = d_1/(N\Delta)$, $A_2 = d_1/(N\Delta^2)$, so $c_L = \Delta(A_1+1) = \Delta(d_1/(N\Delta) + 1) = d_1/N + \Delta$. For $\Delta$ small (and $d_1/N < 1$): $c_L < 1$, and $C^2/I > 1$. The RC analysis is tighter for small-gap instances. This makes physical sense: when the gap is very small, the instantaneous transition rate (bounded by RC) is the dominant error mechanism.
 
@@ -367,6 +385,147 @@ For $\alpha > 1$: $C \to \infty$ (Theorem F), and the JRS bound degrades. The RC
 The ratios stabilize, confirming the theoretical scaling.
 
 
+## Proposition I: Schedule Selection Under Partial Information
+
+We connect this experiment to experiment 07 (partial information) and quantify how the
+$p=2$ and $p=3/2$ schedules degrade when schedule inputs are uncertain.
+
+**Proposition I.** Let $\epsilon_{A_1}$ denote additive precision in $A_1$.
+
+(a) **RC schedule ($p=2$).** By experiment 07, Theorem 3:
+$$T_{\mathrm{RC}}(\epsilon_{A_1})
+= T_{\mathrm{RC},\infty}\cdot
+\Theta\!\left(\max\!\left(1,\frac{\epsilon_{A_1}}{\delta_{A_1}}\right)\right),$$
+with $\delta_{A_1}=2\sqrt{d_0A_2/N}$.
+
+(b) **JRS schedule ($p=3/2$).** Write the ideal JRS-certified runtime as
+$$T_{\mathrm{JRS},\infty}=\frac{K\|H'\|C^2}{\varepsilon_{\mathrm{ad}}\,g_{\min}},$$
+where $\varepsilon_{\mathrm{ad}}$ is the target adiabatic error and $K$ is the
+universal JRS prefactor. Suppose we have certified bounds
+$$C \le C_+ = C+\delta_C,\qquad g_- = g_{\min}-\delta_g \le g_{\min},\qquad 0\le \delta_g<g_{\min}.$$
+Choosing runtime
+$$T_{\mathrm{JRS}}(\delta_C,\delta_g)=\frac{K\|H'\|C_+^2}{\varepsilon_{\mathrm{ad}}\,g_-}$$
+guarantees adiabatic error $\le \varepsilon_{\mathrm{ad}}$, and the overhead factor is
+$$\frac{T_{\mathrm{JRS}}(\delta_C,\delta_g)}{T_{\mathrm{JRS},\infty}}
+=\frac{(1+\delta_C/C)^2}{1-\delta_g/g_{\min}}
+=1+\frac{2\delta_C}{C}+\frac{\delta_g}{g_{\min}}
++O\!\left(\left(\frac{\delta_C}{C}\right)^2+\left(\frac{\delta_g}{g_{\min}}\right)^2\right).$$
+
+(c) **Comparison.** If $\delta_C$ and $\delta_g$ are $O(\epsilon_{A_1})$ (for example,
+from Lipschitz propagation of $A_1$ estimation error into $(C,g_{\min})$), then
+$$T_{\mathrm{JRS}}(\epsilon_{A_1})=T_{\mathrm{JRS},\infty}\cdot(1+O(\epsilon_{A_1})),$$
+while
+$$T_{\mathrm{RC}}(\epsilon_{A_1})/T_{\mathrm{RC},\infty}
+=\Theta\!\left(\max\!\left(1,\frac{\epsilon_{A_1}}{\delta_{A_1}}\right)\right).$$
+Since $\delta_{A_1}=\Theta(2^{-n/2})$ for unstructured families (experiment 07,
+Part VI, Corollary "Unstructured Search"), RC degrades much faster once
+$\epsilon_{A_1}\gg \delta_{A_1}$.
+
+*Proof.* Part (a) is exactly experiment 07, Theorem 3 (plus the definition of
+$\delta_{A_1}$ from experiment 07 setup). For part (b), substitute $(C_+,g_-)$ into
+the JRS runtime formula and divide by $T_{\mathrm{JRS},\infty}$:
+$$\frac{C_+^2/g_-}{C^2/g_{\min}}
+=\left(\frac{C+\delta_C}{C}\right)^2\frac{g_{\min}}{g_{\min}-\delta_g}
+=\frac{(1+\delta_C/C)^2}{1-\delta_g/g_{\min}}.$$
+The first-order expansion is a Taylor expansion at $(\delta_C,\delta_g)=(0,0)$.
+Part (c) follows by substituting $\delta_C,\delta_g=O(\epsilon_{A_1})$ and comparing
+with part (a). $\square$
+
+**Corollary I.1 (Explicit $A_1 \to (\delta_C,\delta_g)$ propagation under fixed side parameters).**
+Define
+$$\kappa := \sqrt{\frac{d_0}{NA_2}},\qquad \beta := 3A_2,\qquad
+\rho := \frac{30(1-s_0)}{\Delta},$$
+and surrogate functions
+$$g_{\mathrm{mod}}(A):=\frac{2\kappa A}{A+1},\qquad
+C_{\mathrm{mod}}(A):=\frac{\beta}{A(A+1)}+\rho.$$
+Assume $\rho$ is independently certified (or fixed by a separate estimator), and
+$\widetilde{A}=A+e$ with $|e| \le \epsilon < A$.
+
+Then:
+$$\frac{g_{\mathrm{mod}}(\widetilde{A})}{g_{\mathrm{mod}}(A)} - 1
+= \frac{e}{A(A+e+1)},$$
+so
+$$\frac{|g_{\mathrm{mod}}(\widetilde{A})-g_{\mathrm{mod}}(A)|}{g_{\mathrm{mod}}(A)}
+\le \chi_g(\epsilon)
+:= \frac{\epsilon}{A(A+1-\epsilon)}.$$
+
+For the $A$-dependent part of $C_{\mathrm{mod}}$:
+$$\frac{C_{\mathrm{mod}}(\widetilde{A})-\rho}{C_{\mathrm{mod}}(A)-\rho} - 1
+= -\frac{(2A+1)e + e^2}{(A+e)(A+e+1)},$$
+hence
+$$\frac{|C_{\mathrm{mod}}(\widetilde{A})-C_{\mathrm{mod}}(A)|}{C_{\mathrm{mod}}(A)}
+\le \chi_C(\epsilon)
+:= \frac{\epsilon(2A+1+\epsilon)}{(A-\epsilon)(A+1-\epsilon)}.$$
+
+Substituting into Proposition I(b):
+$$\frac{T_{\mathrm{JRS}}(\epsilon)}{T_{\mathrm{JRS},\infty}}
+\le \frac{(1+\chi_C(\epsilon))^2}{1-\chi_g(\epsilon)}.$$
+For $\epsilon \ll A$, this is
+$$1 + \frac{(4A+3)\epsilon}{A(A+1)} + O(\epsilon^2).$$
+
+Thus Proposition I(c)'s $O(\epsilon_{A_1})$ degradation is not only asymptotic: it has
+an explicit certified constant in this parameterization.
+
+**Practical schedule rule.** If $A_1$ is only coarsely known
+($\epsilon_{A_1}\gg\delta_{A_1}$), use $p=3/2$ with conservative $(C_+,g_-)$: the
+runtime overhead is controlled by relative errors in $(C,g_{\min})$, not by the
+exponentially small crossing-localization scale $\delta_{A_1}$. If
+$\epsilon_{A_1}\lesssim\delta_{A_1}$, both schedules are constant-factor optimal and
+the constant-level comparison reduces to $I$ versus $C^2$ (Theorem E and Remark J).
+
+
+## Remark J: Structured-Family Constant Comparison (Exp 08 Connection)
+
+We instantiate Theorem E on a concrete structured family from experiment 08,
+Proposition 13 (ferromagnetic Ising with consistent fields).
+
+Take an open-chain Ising instance with $n=10$ spins, couplings $J_{i,i+1}=1$, and
+fields $h_i=1$. Define normalized energy
+$$E(\sigma)=\frac{C(\sigma)-C_{\min}}{C_{\max}-C_{\min}} \in [0,1],$$
+so $N=2^{10}=1024$, and the spectrum has $d_0=1$ and minimum excitation
+$\Delta = 1/7 \approx 0.142857$.
+
+Exact spectral sums (by full enumeration of the diagonal spectrum) give:
+$$A_1 = 1.5848010225,\qquad A_2 = 2.8410286701,\qquad
+s^*=\frac{A_1}{A_1+1}=0.6131230252.$$
+
+Using the reduced $M\times M$ block of $H(s)$ (uniform vectors on each energy level),
+the minimum avoided-crossing gap is numerically
+$$g_{\min}=0.0227184465 \quad \text{at } s \approx 0.6136859310.$$
+With $k=1/4$, $a=\Delta/12$, we have $a-kg_{\min}>0$, and
+$$s_0 = s^* - \frac{k g_{\min}(1-s^*)}{a-k g_{\min}} = 0.2601498656.$$
+
+Substituting into Theorems A and C:
+$$C=\frac{3A_2}{A_1(A_1+1)}+\frac{30(1-s_0)}{\Delta}=157.4491589643,$$
+$$I=\frac{3A_2}{A_1(A_1+1)}
++\frac{900(1-s_0)^2A_1(A_1+1)}{A_2\Delta^2}
+=34807.9388418623.$$
+Hence
+$$\frac{C^2}{I}=0.7122006784.$$
+
+For Grover, Theorem E gives $C^2/I \to 0.603$ (and at $N=1024$:
+$C^2/I=0.6032846058$). Therefore this structured Ising instance has a larger ratio:
+$$0.7122 > 0.6033.$$
+So JRS still has a smaller structural constant than RC ($C^2<I$), but the advantage is
+weaker than in Grover.
+
+**Family-level robustness (same model).** For the same open-chain ferromagnetic Ising
+family with $h_i=1$ and $n \in \{8,10,12\}$, numerical scans give:
+$$\frac{C^2}{I}(n=8)=0.7273,\quad
+\frac{C^2}{I}(n=10)=0.7122,\quad
+\frac{C^2}{I}(n=12)=0.6908,$$
+while Grover's bound-ratio benchmarks at matching $N$ are
+$0.6042, 0.6033, 0.6031$ respectively. The qualitative conclusion is stable:
+structured ratios stay above the Grover benchmark but below $1$.
+
+At fixed size $n=10$, varying uniform field strength in the same family
+($h \in \{1,2,3,4\}$) gives
+$$\frac{C^2}{I}=0.7122,\;0.7098,\;0.7531,\;0.7793,$$
+each still above the Grover benchmark $0.6033$ and below $1$.
+
+All values are reproduced in `lib/verify_extensions.py`.
+
+
 ## Summary: Conjecture Resolutions (Updated)
 
 | Conjecture | Statement | Status | Theorem |
@@ -376,6 +535,18 @@ The ratios stabilize, confirming the theoretical scaling.
 | 3 | $p = 3/2$ improves constant over $p = 2$ | **PROVED** | Theorem E |
 | 4 | Grover case: $C = O(1)$ | **PROVED** | Theorem B |
 
-All four conjectures fully resolved. Conjecture 3 is now proved: the JRS constant $C^2$ is strictly smaller than the RC integral constant $I$ for any instance with $c_L > 1$ (Theorem E), with the improvement factor approximately $c_L = A_1(A_1+1)/A_2$. The comparison is between proven bounds (RC is exact for $p = 2$, JRS is an upper bound for $p = 3/2$), so $C^2 < I$ means the JRS certification is tighter.
+**Synthesis Results (new in this completion).**
+
+| Result | Statement | Reference |
+|---|---|---|
+| Partial-information comparison | RC degrades as $\max(1,\epsilon_{A_1}/\delta_{A_1})$ (Exp 07), while JRS degrades as $((1+\delta_C/C)^2)/(1-\delta_g/g_{\min})$ under certified parameter uncertainty | Proposition I |
+| Structured-family constant benchmark | Ferromagnetic Ising chain instance gives $C^2/I = 0.7122$, larger than Grover's $0.6033$ benchmark | Remark J |
+
+All four conjectures fully resolved. Conjecture 3 is now proved in the precise form
+of Theorem E: $C^2<I$ exactly when
+$(c_L-1)r^2-2ar+a(1-a)>0$ with $a=3/c_L$ and $r=30(1-s_0)/\Delta$, and in particular
+throughout the right-arm-dominated regime with $c_L>1$ (including Grover). The
+comparison is between proven bounds (RC is exact for $p = 2$, JRS is an upper bound
+for $p = 3/2$), so $C^2 < I$ means the JRS certification is tighter.
 
 Extensions D--H establish the broader context: the paper's $\alpha = 1$ gap profile sits at the exact boundary where both frameworks apply and neither uniformly dominates. Steeper gaps ($\alpha < 1$) favor RC; flatter gaps ($\alpha > 1$) break JRS entirely. The universality of $\alpha = 1$ for the paper's Hamiltonian class (Theorem G) explains why both frameworks achieve the same runtime scaling.

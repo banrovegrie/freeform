@@ -41,6 +41,8 @@
 
 import ScheduleOptimality.Basic
 import ScheduleOptimality.Theorems
+import ScheduleOptimality.PartialInfo
+import ScheduleOptimality.StructuredInputs
 
 namespace ScheduleOptimality
 
@@ -51,6 +53,15 @@ namespace ScheduleOptimality
 #check grover_ratio_above_max
 #check grover_C_equals_one
 #check runtime_recovery
+#check rcOverhead
+#check rcOverhead_ge_one
+#check rcOverhead_eq_ratio_of_ge
+#check jrs_overhead_exact
+#check gShape_rel_exact
+#check cLeftShape_rel_exact
+#check c2_lt_i_iff
+#check isingOpenChainN10
+#check structuredC2OverI
 #check grover_4_A1
 #check grover_4_sStar
 #check grover_4_cL

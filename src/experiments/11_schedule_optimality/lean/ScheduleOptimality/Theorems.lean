@@ -38,7 +38,7 @@ constant C is finite and depends only on spectral parameters.
 /-- **Theorem A (Structure)**: The measure condition constant
     depends only on spectral parameters and is independent of N.
     Specifically, C = 3*A_2/(A_1*(A_1+1)) + 30*(1-s_0)/Delta. -/
-theorem measure_condition_constant_formula (p : SpectralParams) (s0 : Real) (hs0 : s0 < 1) :
+theorem measure_condition_constant_formula (p : SpectralParams) (s0 : Real) (_hs0 : s0 < 1) :
     measureConstant p s0 = 3 * p.A2 / (p.A1 * (p.A1 + 1)) + 30 * (1 - s0) / p.Delta := by
   rfl
 
@@ -126,19 +126,26 @@ theorem grover_C_equals_one (N : Real) (hN : N > 1) :
     linarith [zero_div x]
   · -- 1/sqrt(N) ≤ x ≤ 1: need sqrt((Nx^2-1)/(N-1)) / x ≤ 1
     rw [div_le_one hx]
-    -- Suffices: sqrt((Nx^2-1)/(N-1)) ≤ sqrt(x^2) = x
     have hx_nn : (0 : Real) ≤ x := le_of_lt hx
-    calc Real.sqrt ((N * x ^ 2 - 1) / (N - 1))
-        ≤ Real.sqrt (x ^ 2) := by
-          apply Real.sqrt_le_sqrt
-          -- (Nx^2-1)/(N-1) ≤ x^2 iff Nx^2-1 ≤ x^2(N-1) iff x^2 ≤ 1
-          rw [div_le_iff (show (0 : Real) < N - 1 from by linarith)]
-          -- x*x ≤ 1*1 since 0 ≤ x ≤ 1, then N*x^2-1 ≤ N*x^2-x^2 = x^2*(N-1)
-          nlinarith [mul_le_mul h2 h2 hx_nn (show (0 : Real) ≤ 1 from by norm_num)]
+    have hden : (0 : Real) < N - 1 := by linarith
+    have hnum_nonpos : x ^ 2 - 1 ≤ 0 := by
+      nlinarith [h2, hx_nn]
+    have hfrac_nonpos : (x ^ 2 - 1) / (N - 1) ≤ 0 :=
+      div_nonpos_of_nonpos_of_nonneg hnum_nonpos (le_of_lt hden)
+    have haux : (N * x ^ 2 - 1) / (N - 1) ≤ x ^ 2 := by
+      have hEq : (N * x ^ 2 - 1) / (N - 1) - x ^ 2 = (x ^ 2 - 1) / (N - 1) := by
+        field_simp [show (N - 1 : Real) ≠ 0 by linarith]
+        ring
+      have haux' : (N * x ^ 2 - 1) / (N - 1) - x ^ 2 ≤ 0 := by
+        simpa [hEq] using hfrac_nonpos
+      nlinarith
+    calc
+      Real.sqrt ((N * x ^ 2 - 1) / (N - 1))
+          ≤ Real.sqrt (x ^ 2) := Real.sqrt_le_sqrt haux
       _ = x := Real.sqrt_sq hx_nn
   · -- x > 1: mu = 1, ratio = 1/x ≤ 1
     rw [div_le_one hx]
-    exact le_of_lt (not_le.mp h2)
+    nlinarith [not_le.mp h2]
 
 
 /-! ## Theorem C: Runtime Recovery (Structure)
@@ -177,16 +184,21 @@ theorem runtime_recovery (p : SpectralParams) :
     div_pos (mul_pos p.hN_pos p.hA2_pos) p.hd0_pos
   -- Coefficient cancellation: (A1+1)/(2A1) * (2A1)/(A1+1) = 1
   have hcoeff : (p.A1 + 1) / (2 * p.A1) * (2 * p.A1 / (p.A1 + 1)) = 1 := by
-    have h1 : (2 * p.A1 : Real) ≠ 0 := ne_of_gt (by linarith [p.hA1_pos])
+    have hA1_ne : (p.A1 : Real) ≠ 0 := ne_of_gt p.hA1_pos
+    have h1' : (2 * p.A1 : Real) > 0 := by nlinarith [p.hA1_pos]
+    have h1 : (2 * p.A1 : Real) ≠ 0 := ne_of_gt h1'
     have h2 : (p.A1 + 1 : Real) ≠ 0 := ne_of_gt (by linarith [p.hA1_pos])
-    field_simp
+    field_simp [h1, h2, hA1_ne]
   -- Sqrt cancellation: sqrt(NA2/d0) * sqrt(d0/(NA2)) = 1
   have hsqrt : Real.sqrt (p.N * p.A2 / p.d0) * Real.sqrt (p.d0 / (p.N * p.A2)) = 1 := by
     rw [← Real.sqrt_mul (le_of_lt hNA2_d0)]
     have h : p.N * p.A2 / p.d0 * (p.d0 / (p.N * p.A2)) = 1 := by
       have hd0_ne : p.d0 ≠ 0 := ne_of_gt p.hd0_pos
       have hNA2_ne : p.N * p.A2 ≠ 0 := ne_of_gt (mul_pos p.hN_pos p.hA2_pos)
-      field_simp
+      calc
+        p.N * p.A2 / p.d0 * (p.d0 / (p.N * p.A2)) = (p.N * p.A2) / (p.N * p.A2) := by
+          field_simp [hd0_ne, hNA2_ne]
+        _ = 1 := by simpa using (div_self hNA2_ne)
     rw [h, Real.sqrt_one]
   -- Rearrange (a*b)*(c*d) = (a*c)*(b*d) and cancel
   rw [mul_mul_mul_comm, hcoeff, hsqrt, one_mul]

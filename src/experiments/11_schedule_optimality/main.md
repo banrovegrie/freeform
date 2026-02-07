@@ -36,7 +36,7 @@ Specifically:
 
 **Theorem C (Runtime Recovery).** Both the paper's $p = 2$ and Guo-An's $p = 3/2$ schedules achieve $T = O(1/(\epsilon \cdot g_{\min})) = O(\sqrt{NA_2/d_0}/\epsilon)$.
 
-### Extensions (Theorems D--H)
+### Extensions (Theorems D--H, Proposition I, Remark J)
 
 **Theorem D (Exact Grover Integral).** $\int_0^1 g(s)^{-2}\,ds = N\arctan(\sqrt{N-1})/\sqrt{N-1} \to (\pi/2)\sqrt{N}$.
 
@@ -48,6 +48,21 @@ Specifically:
 
 **Proposition H (Framework Comparison).** For $\alpha < 1$: RC tighter. For $\alpha = 1$: comparable, JRS constant smaller by factor $c_L$. For $\alpha > 1$: JRS fails.
 
+**Proposition I (Partial Information Schedule Selection).** Importing experiment 07, RC obeys
+$T_{\mathrm{RC}}(\epsilon_{A_1}) = T_{\mathrm{RC},\infty}\cdot\Theta(\max(1,\epsilon_{A_1}/\delta_{A_1}))$ with
+$\delta_{A_1}=2\sqrt{d_0A_2/N}$, while JRS with certified $(C_+,g_-)$ has multiplicative overhead
+$((1+\delta_C/C)^2)/(1-\delta_g/g_{\min})$. RC degrades on the exponentially small
+crossing-localization scale; JRS degrades with relative estimation errors in $(C,g_{\min})$.
+Corollary I.1 provides explicit $A_1$-error propagation identities for one natural
+parameterization of $C$ and $g_{\min}$.
+
+**Remark J (Structured Family Constant Comparison).** For a concrete ferromagnetic Ising chain
+instance from experiment 08 (open chain, $n=10$, $J=1$, $h_i=1$), one gets
+$C^2/I = 0.7122$, compared to Grover's $0.6033$ (same $N$ bound constants). JRS still has
+$C^2 < I$, but the advantage over RC is weaker than in Grover. Family-level scans
+across sizes ($n=8,10,12$) and field strengths ($h=1,2,3,4$ at $n=10$) preserve this
+qualitative ordering.
+
 ### Conjecture Resolutions
 
 | Conjecture | Status | Reference |
@@ -57,7 +72,15 @@ Specifically:
 | 3: $p = 3/2$ improves constant over $p = 2$ | **PROVED** | Theorem E |
 | 4: Grover case $C = O(1)$ | **PROVED** | Theorem B |
 
-**On Conjecture 3 (Full Resolution).** The structural constant $C^2$ in the JRS framework is strictly smaller than the integral constant $I$ in the RC framework by a factor of approximately $c_L = A_1(A_1+1)/A_2$ in the right-arm-dominated regime (Theorem E). For Grover, $C^2_{\mathrm{bound}}/I_{\mathrm{bound}} \approx 0.603$; for exact values, $C^2_{\mathrm{exact}} = 1$ while $I_{\mathrm{exact}} \to (\pi/2)\sqrt{N}$. The $p = 3/2$ JRS bound is tighter in its structural constant when $c_L > 1$, modulo the universal JRS prefactor $K$ (not computed here). When $c_L < 1$ (small-gap instances with $\Delta \ll 1$), the RC bound wins.
+**On Conjecture 3 (Full Resolution).** Theorem E gives an exact condition:
+$C^2<I$ iff $(c_L-1)r^2-2ar+a(1-a)>0$ with $a=3/c_L$ and
+$r=30(1-s_0)/\Delta$. In the right-arm-dominated regime this reduces to
+$C^2/I \approx 1/c_L$, so for $c_L>1$ the JRS structural constant is smaller.
+For Grover, $C^2_{\mathrm{bound}}/I_{\mathrm{bound}} \approx 0.603$; for exact values,
+$C^2_{\mathrm{exact}} = 1$ while $I_{\mathrm{exact}} \to (\pi/2)\sqrt{N}$. The
+core `proof.md` document leaves the universal JRS prefactor unresolved; continuation
+results in `proof2.md` extract an explicit certificate prefactor $B_{\mathrm{JRS}}(p)$.
+When $c_L < 1$ (small-gap instances with $\Delta \ll 1$), the RC bound can win.
 
 
 ## Technical Details
@@ -77,19 +100,30 @@ A schedule $u: [0,1] \to [0,1]$ reparameterizes the adiabatic path. The $p$-sche
 Experiment 06 proved $T = \Theta(1/\Delta_*^{3 - 2/\alpha})$ where $\alpha$ is the flatness exponent. For the paper's gap, $\alpha = 1$, giving $T = \Theta(1/\Delta_*)$. This is the regime where the measure condition holds, confirming consistency.
 
 
-## Open Questions
+## Open Questions and Continuation Status
 
-1. Can the JRS constant $K$ be computed explicitly, enabling a numerical (not just structural) comparison of $T_{\mathrm{RC}}$ vs $T_{\mathrm{JRS}}$ for Grover?
-2. Are there Hamiltonian interpolation schemes beyond $H(s) = -(1-s)|w\rangle\langle w| + sH_z$ where $\alpha \neq 1$, and does the measure condition failure at $\alpha > 1$ have computational consequences?
-3. Does the $C^2 < I$ inequality extend to non-power-law schedules in Guo-An's framework?
+1. **Resolved in continuation (`main2.md`, `proof2.md`)**: explicit JRS certificate
+   prefactor extracted. For $p=3/2$:
+   $B_{\mathrm{JRS}}(3/2)=8A_HC_\mu+63A_H^2C_\mu^2$.
+2. **Open**: identify interpolation schemes beyond
+   $H(s)=-(1-s)|w\rangle\langle w| + sH_z$ with $\alpha \neq 1$ and test whether
+   $\alpha>1$ measure-condition failure yields computational phase changes.
+3. **Resolved for multiplicative penalty class in continuation (`main3.md`, `proof3.md`)**:
+   on the alpha=1 model, schedules
+   $ds/dt=(\epsilon_{\mathrm{ad}}/A_H)g(s)^2/\Phi(g(s))$ satisfy
+   $T_{\Phi}/T_{\mathrm{RC}} \geq \Phi(g_{\min})/[2(1-g_{\min}/c)]$.
+   The earlier exponential result from `proof2.md` is a corollary. Open scope is now
+   outside this class/model.
 
 
 ## Connection to Other Experiments
 
-- Builds on 06 (measure condition): uses $\alpha = 1$ classification
-- Related to 02 (robust schedules): alternative schedule optimality criterion
-- Related to 07 (partial information): schedule computation requires gap knowledge
-- Complements 12 (circumventing barrier): even with optimal schedule, $A_1$ dependence remains
+- Builds on 06 (measure condition): uses the $\alpha = 1$ boundary classification and scaling spectrum.
+- Integrates 07 (partial information): Proposition I imports Theorem 3 from experiment 07 to compare RC versus JRS under imperfect $A_1$ knowledge.
+- Integrates 08 (structured tractability): Remark J computes $C$ and $I$ for a concrete ferromagnetic Ising instance from the Proposition 13 family.
+- Connects to 10 (information-theoretic): practical schedule choice now depends on what information can be estimated robustly, not only on asymptotic gap scaling.
+- Related to 02 (robust schedules): complementary notion of robustness (parameter uncertainty versus schedule family uncertainty).
+- Complements 12 (circumventing barrier): even with schedule optimality, information bottlenecks in spectral parameters remain central.
 
 
 ## References
@@ -104,4 +138,8 @@ Experiment 06 proved $T = \Theta(1/\Delta_*^{3 - 2/\alpha})$ where $\alpha$ is t
 
 **Phase**: Resolved
 
-All four conjectures fully proved. Extensions D--H establish the broader context: exact Grover integral (Theorem D), $C^2 < I$ comparison resolving Conjecture 3 (Theorem E), measure condition classification by gap flatness (Theorem F), structural $\alpha = 1$ for the paper's Hamiltonian class (Theorem G), and framework comparison across gap geometries (Proposition H). See proof.md for complete proofs, lib/verify_extensions.py for numerical verification.
+All four conjectures fully proved. Extensions D--H establish the framework-level picture, and the final synthesis is complete: Proposition I gives the partial-information schedule comparison (Exp 07 connection), and Remark J gives the first structured-family constant comparison (Exp 08 connection). The experiment now answers both asymptotic and practical schedule-selection questions for this Hamiltonian class. Lean checks now include `ScheduleOptimality/PartialInfo.lean` for the Proposition I algebraic core. See `proof.md` for proofs and `lib/verify_extensions.py` for numerical verification.
+
+Continuation closures are documented in `main2.md`/`proof2.md` and
+`main3.md`/`proof3.md`, with dedicated verification in
+`lib/verify_open_threads.py`.
