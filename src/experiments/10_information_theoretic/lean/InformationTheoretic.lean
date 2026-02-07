@@ -14,9 +14,9 @@
   3. Geometric series for Durr-Hoyer: 2 + sqrt(2) < 3.5
   4. Crossing position: s* = A_1/(A_1+1) in (0,1), monotone in A_1
   5. Grover N=4 sanity check: s* = 3/7
-  6. Model separation structure (from axiomatized external results)
+  6. Model separation structure (from assumption-parameterized external results)
 
-  WHAT IS AXIOMATIZED (from literature):
+  EXTERNAL RESULTS AS ASSUMPTION INTERFACES:
   1. BBBV lower bound: Omega(sqrt(N/d_0)) queries (Bennett et al. 1997)
   2. Durr-Hoyer upper bound: O(sqrt(N/d_0)) queries (1996)
 
@@ -45,10 +45,21 @@ namespace InformationTheoretic
 #check grover_n4_crossing            -- s*(3/4) = 3/7
 #check crossing_monotone             -- s* increasing in A_1
 
--- Part IV: Model Separation (axiomatized)
+-- Part IV: Model Separation (assumption-parameterized)
 #check bbbv_lower_bound              -- Omega(sqrt(N/d_0))
 #check durr_hoyer_upper_bound        -- O(sqrt(N/d_0))
 #check main_theorem                  -- Theta(sqrt(N/d_0))
 #check separation_gives_uninformed_bound  -- T_unf >= R * lb
+
+-- Part V: Precision-Aware Composition
+#check precompute_plus_adiabatic_scaling  -- quantum precompute + adiabatic stays O(sqrt(N/d_0))
+#check classical_precompute_dominates     -- classical precompute lower bound dominates total
+
+-- Part VI: Continuous-Time Counterexample Algebra
+#check constant_control_phase_cancellation
+#check constant_control_success_at_tstar
+
+-- Part VII: Normalized Worst-Case Scaling
+#check normalized_lower_bound_specialization
 
 end InformationTheoretic

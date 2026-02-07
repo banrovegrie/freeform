@@ -2,161 +2,185 @@
 
 ## Problem Statement
 
-All current hardness results are specific to adiabatic quantum optimization:
-- $A_1$ is hard to compute classically (Paper, Theorems 2-3)
-- The separation theorem (Experiment 04) bounds fixed adiabatic schedules
-- Guo-An's results are about adiabatic error bounds
+The paper proves that fixed-schedule AQO needs precise crossing information
+($A_1$ / $s^*$), and computing that information is classically hard.
+This experiment asks whether that barrier is fundamental to the computational task
+or specific to the adiabatic model.
 
-**Central Question**: Are there fundamental information-theoretic limits that apply to ANY algorithm (quantum or classical, adiabatic or circuit-based) trying to find ground states without spectral information?
+**Central question.**
+For ground-state finding of diagonal Hamiltonians, is the $A_1$ barrier an
+information-theoretic limit across all algorithms?
 
-**Answer**: No. The only universal limit is the Grover lower bound $\Omega(\sqrt{N/d_0})$. The $A_1$ barrier is specific to the adiabatic model.
+**Answer.**
+No. The only universal lower bound is the Grover scale
+$\Omega(\sqrt{N/d_0})$. The $A_1$ barrier is model-specific.
+
+**Scope.**
+All results here are for ground-state finding of diagonal $n$-qubit Hamiltonians.
+For other tasks (energy estimation, full-spectrum reconstruction, thermal-state
+preparation), spectral information can remain necessary even in circuit settings.
 
 
 ## Novelty Assessment
 
-The paper itself observes (p.983) that $A_1$ hardness is "absent in the circuit model." The core negative result -- that the $A_1$ barrier is model-specific -- is therefore not new. The novel contributions of this experiment are:
+The statement "AQO has an $A_1$ barrier while circuits do not" appears informally in
+the paper discussion. The novelty in this experiment is the formal and complete
+landscape:
 
-1. **$A_1$-blindness formalization** (Part VII): A rigorous information-theoretic proof that, for the amplified Durr-Hoyer algorithm, $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$, with equality to zero conditioned on success. This makes the informal observation precise: the circuit model reveals negligible information about $A_1$, while the adiabatic model both requires and leaks information about $A_1$.
+1. **$A_1$-blindness theorem layer (Part VII).**
+   Circuit output carries negligible information about $A_1$:
+   $I(X_{\mathrm{DH}};A_1\mid S_0,E_0)\le 2^{-\Omega(n)}$, and exactly zero when
+   conditioned on success.
 
-2. **Unified information-runtime landscape** (Part VIII): Importing the interpolation theorem from Experiment 07 and recasting it in the communication framework of Part IV. The bit-runtime tradeoff $T(C) = T_{\mathrm{inf}} \cdot 2^{n/2 - C}$ for $C$ communicated bits, with the circuit model bypassing the tradeoff entirely at $C = 0$.
+2. **Precision-aware bridge (Part VIII, Proposition 9).**
+   Combining Experiment 07 and Experiment 13 yields:
+   quantum estimate-$A_1$-then-evolve runs in $O(2^{n/2}p(n))$,
+   classical estimate-$A_1$-then-evolve is $\Omega(2^n)$.
+   This identifies the information gap scale with the quantum speedup scale.
 
-3. **Continuous-time conjecture** (Part IX): Conjecture 5 states that the $A_1$ barrier extends to all continuous-time rank-one algorithms, not just the adiabatic protocol. Evidence from Farhi et al. (2008) supports this but a proof remains open. Resolving this conjecture would determine the precise scope of the $A_1$ barrier.
+3. **Complete model comparison theorem (Part X, Theorem 8).**
+   One theorem now unifies Experiments 08, 10, 12, and 13 into a single table with
+   explicit assumptions, runtime bounds, information sources, and barrier status.
 
-4. **Communication complexity formalization** (Part IV): The Alice-Bob model gives a clean separation $C_{\mathrm{circuit}} = 0$, $C_{\mathrm{adiabatic}} = \Theta(n)$, $C_{\mathrm{adaptive}} = 0$.
+4. **Continuous-time barrier resolution split across `proof.md` and `proof2.md`.**
+   A constant-control rank-one protocol on the two-level family
+   $H_z=\mathbb{I}-P_0$ reaches the ground space in
+   $\Theta(\sqrt{N/d_0})$ time without $A_1$ input.
+   The normalized worst-case reformulation is then proved in `proof2.md` (Theorem 10).
 
 
 ## Conjectures
 
 ### Conjecture 1 (Oracle Lower Bound) -- PROVED
-Any algorithm (quantum or classical) that finds the ground state of $H_z$ using oracle access requires $\Omega(\sqrt{N/d_0})$ queries, regardless of what other information is available.
-
-**Resolution**: This follows from the BBBV lower bound (1997) by reduction to unstructured search with $d_0$ marked items. Also follows from Farhi et al. (2008), Theorem 1, for the specific adiabatic setting. The bound is tight: Durr-Hoyer achieves $O(\sqrt{N/d_0})$.
+Ground-state finding needs $\Omega(\sqrt{N/d_0})$ queries.
+Resolved via BBBV reduction and Farhi et al. consistency check.
 
 ### Conjecture 2 (Information-Complexity Tradeoff) -- REFINED AND SOLVED
-Original claim: there exists a function $f$ such that for any algorithm achieving runtime $T$, $I(\mathrm{algorithm}) \geq f(N, d_0, T)$, where $I$ is the mutual information between the algorithm's internal state and the spectrum of $H_z$.
+Original formulation was not well-posed for quantum algorithms.
+Correct statement is model-specific: fixed AQO obeys the bit-runtime law
+$T(C)=T_{\mathrm{inf}}\Theta(\max(1,2^{n/2-C}))$.
 
-**Resolution**: The conjecture as stated is ill-defined for quantum algorithms. The correct model-specific version is: within the adiabatic model with fixed schedules, $C$ bits of $A_1$ knowledge give runtime $T(C) = T_{\mathrm{inf}} \cdot 2^{n/2 - C}$ (Experiment 07, imported in Part VIII). The circuit model bypasses this tradeoff at $C = 0$.
-
-### Conjecture 3 (Adiabatic Limitation) -- PROVED (with caveat)
-Adiabatic algorithms are uniquely limited: they achieve optimal query complexity $O(\sqrt{N/d_0})$ but require additional $O(n)$ bits of information ($A_1$ or equivalent) that circuit algorithms do not need.
-
-**Resolution**: Correct but the framing is misleading. Circuit algorithms do not "get $A_1$ for free" -- they do not need $A_1$ at all. Formally: $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$ for amplified Durr-Hoyer, and exactly zero conditioned on success (Part VII, Proposition 8).
+### Conjecture 3 (Adiabatic Limitation) -- PROVED (Corrected Framing)
+Fixed AQO needs $n/2$ bits at schedule precision; circuit algorithms do not.
+The right statement is "circuits do not need $A_1$", not "circuits get $A_1$ for free."
 
 ### Conjecture 4 (No Free Lunch) -- REFUTED
-Original claim: any algorithm achieving $O(\sqrt{N/d_0})$ without explicit spectral information either (a) implicitly computes the spectral information, or (b) works only for structured problem classes.
+Durr-Hoyer is a direct counterexample: optimal scaling without computing spectral
+aggregates such as $A_1$.
 
-**Resolution**: The Durr-Hoyer algorithm is an explicit counterexample. See proof.md, Part V.
-
-### Conjecture 5 (Continuous-Time $A_1$ Barrier) -- OPEN
-For any continuous-time rank-one algorithm with control functions chosen without knowledge of $A_1$: $T = \Omega(N/\sqrt{d_0})$.
-
-**Status**: Stated in Part IX with evidence from Farhi et al. (2008). Unresolved.
+### Conjecture 5 (Continuous-Time $A_1$ Barrier) -- RESOLVED (SPLIT FORM)
+Literal form is refuted in `proof.md` Part IX.
+Normalized worst-case reformulation is proved in `proof2.md` (Theorem 10).
 
 
 ## Results
 
-**Theorem 1 (Query Lower Bound)**: Any quantum algorithm finding a ground state of $H_z$ requires $\Omega(\sqrt{N/d_0})$ oracle queries. (BBBV 1997, Farhi et al. 2008.)
+| ID | Statement | Status |
+|---|---|---|
+| Thm 1 | Universal lower bound $\Omega(\sqrt{N/d_0})$ | Proved |
+| Thm 2 | Durr-Hoyer achieves $O(\sqrt{N/d_0})$ with no spectral inputs | Proved |
+| Thm 3 | Model separation: circuit vs fixed AQO vs adaptive AQO | Proved |
+| Thm 4 | Communication complexity formalization | Proved |
+| Thm 5 | Conjecture 4 refuted | Proved |
+| Props 6-8 | $A_1$-blindness of circuit algorithm | Proved |
+| Thm 6 | Interpolation import from Exp 07 | Imported and integrated |
+| Thm 7 | Bit-runtime information law | Proved |
+| Prop 9 | Quantum pre-computation tradeoff (Exp 07 + Exp 13) | Proved by citation chain |
+| Thm 8 | Complete model comparison theorem (Exps 08, 10, 12, 13) | Proved by citation chain |
+| Prop 10 | Constant-control rank-one protocol on two-level family | Proved |
+| Thm 9 | Conjecture 5 (literal form) refuted by counterexample | Proved |
+| Thm 10 (proof2) | Normalized worst-case continuous-time lower bound | Proved |
 
-**Theorem 2 (Spectral-Information-Free Achievability)**: The Durr-Hoyer algorithm finds the ground state of any $H_z$ in $O(\sqrt{N/d_0})$ queries without any spectral information. (Durr-Hoyer 1996.)
-
-**Theorem 3 (Model Separation)**: Synthesizing experiments 04+05 with the paper:
-- Circuit model: 0 additional bits, $O(\sqrt{N/d_0})$ queries
-- Adiabatic, fixed: $\Theta(n)$ bits of $A_1$ required, else $\Omega(N/\sqrt{d_0})$ time
-- Adiabatic, adaptive: 0 communicated bits, $O(n)$ measurements, $O(\sqrt{N/d_0})$ time
-
-**Theorem 4 (Communication Complexity)**: In a model where Alice holds $H_z$ and Bob has a quantum computer:
-- Circuit-oracle: communication = 0 bits
-- Fixed-schedule adiabatic: communication = $\Theta(n)$ bits
-- Adaptive adiabatic: communication = 0 bits
-
-**Theorem 5 (Counterexample to No Free Lunch)**: Durr-Hoyer refutes Conjecture 4.
-
-**Propositions 6-8 ($A_1$-Blindness)**: Conditioned on success, Durr-Hoyer's output is $\mathrm{Uniform}(S_0)$ independent of $A_1$; its query complexity depends only on $N$ and $d_0$; $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$ for the amplified algorithm.
-
-**Theorem 6 (Interpolation, from Experiment 07)**: With $A_1$ known to precision $\varepsilon$: $T(\varepsilon) = T_{\mathrm{inf}} \cdot \Theta(\max(1, \varepsilon/\delta_{A_1}))$ where $\delta_{A_1} = \Theta(2^{-n/2})$.
-
-**Theorem 7 (Model-Dependent Information Cost)**: The communication cost for optimal adiabatic runtime is $C^*_{\mathrm{adiabatic}}(T) = \max(0, n/2 - \log_2(T/T_{\mathrm{inf}}))$ bits, while $C^*_{\mathrm{circuit}} = 0$ for all $T \geq T_{\mathrm{inf}}$.
-
-**Main Theorem**: The Grover lower bound $\Omega(\sqrt{N/d_0})$ is the ONLY universal query complexity lower bound for ground state finding. The $A_1$ barrier is model-specific, not information-theoretic.
+**Main theorem of the experiment.**
+For the scoped task (ground-state finding of diagonal Hamiltonians), the only
+universal query barrier is Grover/BBBV. The AQO $A_1$ barrier is model-dependent.
 
 
 ## Main Insight
 
-$A_1 = \frac{1}{N}\sum_{k \geq 1} d_k/(E_k - E_0)$ parameterizes the avoided crossing of the adiabatic path $H(s) = -(1-s)|\psi_0\rangle\langle\psi_0| + sH_z$. An algorithm that never traverses this path has no use for $A_1$. The quantity is an artifact of the adiabatic formulation, not a property of the computational task (finding ground states of diagonal Hamiltonians).
+The AQO crossing parameter
+$$A_1 = \frac{1}{N}\sum_{k\ge 1}\frac{d_k}{E_k-E_0}$$
+controls one specific path family.
+Algorithms that do not rely on that path do not pay that information cost.
 
-The complete picture:
+The complete comparison now has two layers:
 
-| Model | Bits of $A_1$ | Runtime | $I(\text{output}; A_1)$ |
-|---|---|---|---|
-| Circuit (Durr-Hoyer) | 0 | $\Theta(\sqrt{N/d_0})$ | $\leq 2^{-\Omega(n)}$ |
-| Adiabatic, $C$ bits | $C$ | $T_{\mathrm{inf}} \cdot 2^{n/2-C}$ | $> 0$ |
-| Adiabatic, fully informed | $n/2$ | $\Theta(\sqrt{N/d_0})$ | $> 0$ |
-| Adiabatic, uninformed | 0 | $\Omega(N/\sqrt{d_0})$ | $> 0$ |
-| Adiabatic, adaptive | 0 (measured) | $\Theta(\sqrt{N/d_0})$ | $> 0$ |
+1. **Worst-case unstructured layer (Part X table).**
+   Fixed AQO needs spectrum bits; circuit and adaptive models can avoid prior
+   classical communication.
 
-The circuit model achieves the leftmost column (0 bits, optimal runtime, zero information about $A_1$). The adiabatic model traces the diagonal: each missing bit doubles the runtime.
-
-
-## Approach (Executed)
-
-### Strategy 1: Query Complexity Lower Bound -- EXECUTED
-Reduced ground state finding to unstructured search. Applied BBBV lower bound. Result: $\Omega(\sqrt{N/d_0})$.
-
-### Strategy 2: Communication Complexity -- EXECUTED
-Formalized as Alice-Bob communication problem. Result: clean separation $C_{\mathrm{circuit}} = 0$, $C_{\mathrm{adiabatic}} = \Theta(n)$, $C_{\mathrm{adaptive}} = 0$.
-
-### Strategy 3: Information-Theoretic Framework -- EXECUTED
-The mutual information framework (Conjecture 2) turned out to be ill-defined for quantum algorithms. Replaced with: (a) the $A_1$-blindness formalization $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$ (Part VII), and (b) the bit-runtime tradeoff from Experiment 07 (Part VIII).
-
-### Strategy 4: Compare Algorithm Classes -- EXECUTED
-Complete landscape table (proof.md, Part VIII) covers circuit, adiabatic at every bit-precision level, and adaptive models.
-
-### Strategy 5: Continuous-Time Scope -- STATED AS CONJECTURE
-Conjecture 5 (Part IX): the $A_1$ barrier extends to all continuous-time rank-one algorithms. Evidence cited; proof open.
+2. **Structured-family layer (import from Exp 08).**
+   On bounded-treewidth and partition-function-tractable families
+   (Exp 08, Props 8-12), $A_1$ can be estimated/computed in polynomial time.
+   Then the gap-informed AQO row changes qualitatively from "hard pre-step" to
+   "polynomial pre-step."
 
 
 ## Open Questions
 
-1. **Conjecture 5 (Continuous-Time Barrier)**: Does the $A_1$ barrier extend to all continuous-time quantum algorithms with rank-one driver $|\psi_0\rangle\langle\psi_0|$? Evidence from Farhi et al. (2008) supports this but falls short of a proof for the specific gap-uninformed setting.
+1. **Unnormalized control/action formulations.**
+   Worst-case barrier is proved under normalized controls (`proof2.md`, Theorem 10).
+   Remaining work is to characterize equivalent formulations when control amplitude is
+   unbounded and complexity is measured by oracle action instead of raw time.
 
-2. **Classical lower bounds**: Is there a separation between classical and quantum communication complexity for ground state finding? Classically, finding the minimum of $f: \{0,1\}^n \to \mathbb{R}$ requires $\Theta(N)$ queries. Quantumly: $\Theta(\sqrt{N})$. The communication version is unexplored.
+2. **Classical communication lower bounds.**
+   Query complexity is tight; communication-complexity lower bounds outside the fixed
+   schedule model remain less sharp.
 
-3. **Spectral information for other tasks**: While $A_1$ is not needed for ground state finding, it IS needed for tasks like estimating the ground energy to precision $2^{-n/2}$, or computing the full spectrum. For which computational tasks does spectral information become truly necessary?
+3. **Beyond ground-state finding.**
+   Identify the precise task boundary where spectral information becomes unavoidable
+   in every model.
 
 
 ## Connection to Other Experiments
 
-- **Experiment 04** (Separation Theorem): Establishes the adiabatic-specific lower bound $T_{\mathrm{unf}} = \Omega(2^{n/2} \cdot T_{\mathrm{inf}})$. This experiment shows this is model-specific, not universal.
-- **Experiment 05** (Adaptive Schedules): Circumvents the barrier within the adiabatic model. This experiment shows the barrier does not exist outside the adiabatic model.
-- **Experiment 07** (Partial Information): Proves the interpolation theorem $T(\varepsilon) = T_{\mathrm{inf}} \cdot \max(1, \varepsilon/\delta_{A_1})$, imported in Part VIII and recast in communication bits.
-- **Experiment 12** (Circumventing the Barrier): Asks whether modified Hamiltonians can eliminate $A_1$ dependence. This experiment shows that leaving the adiabatic framework is a more direct solution.
-- **Experiment 13** (Intermediate Hardness): Asks about complexity of $A_1$ at precision $2^{-n/2}$. This experiment shows the complexity is irrelevant for circuit-model algorithms but remains interesting for the adiabatic model.
+- **Experiment 04 (Separation Theorem):** supplies the fixed-schedule uninformed AQO
+  penalty used in this experiment's model separation.
+- **Experiment 05 (Adaptive Schedules):** supplies the adaptive bypass row in the
+  model table.
+- **Experiment 07 (Partial Information):** supplies interpolation theorem imported as
+  Theorem 6 and used to derive Theorem 7 and Proposition 9.
+- **Experiment 08 (Structured Tractability v2):** supplies Propositions 8-12, which
+  modify the gap-informed rows on structured families.
+- **Experiment 12 (Circumventing Barrier):** supplies Theorem 5 no-go for rank-one
+  instance-independent modified Hamiltonians.
+- **Experiment 13 (Intermediate Hardness):** supplies Theorems 2-5 used in
+  Proposition 9 and Theorem 8.
 
 
 ## References
 
-1. Bennett, Bernstein, Brassard, Vazirani (1997) - Strengths and Weaknesses of Quantum Computing. $\Omega(\sqrt{N/k})$ lower bound.
-2. Farhi, Goldstone, Gutmann, Nagaj (2008) - How to Make the Quantum Adiabatic Algorithm Fail. $\Omega(\sqrt{N/k})$ for rank-one $H_B$.
-3. Durr, Hoyer (1996) - A Quantum Algorithm for Finding the Minimum. $O(\sqrt{N})$ minimum finding.
-4. Ambainis (2004) - Quantum Search Algorithms. Survey including Durr-Hoyer analysis.
-5. Boyer, Brassard, Hoyer, Tapp (1998) - Tight Bounds on Quantum Searching. $O(\sqrt{N/k})$ with unknown $k$.
-6. Paper, Section 3 - $A_1$ NP-hardness (Theorem 2) and \#P-hardness (Theorem 3).
-7. Experiment 04 - Gap-Uninformed Separation Theorem.
-8. Experiment 05 - Adaptive Schedules: Binary Search with Phase Estimation.
-9. Experiment 07 - Partial Information: The Interpolation Theorem.
+1. Bennett, Bernstein, Brassard, Vazirani (1997) -- query lower bound.
+2. Farhi, Goldstone, Gutmann, Nagaj (2008) -- rank-one adiabatic lower bound instance.
+3. Durr, Hoyer (1996) -- quantum minimum finding.
+4. Boyer, Brassard, Hoyer, Tapp (1998) -- search with unknown number of marked items.
+5. Paper Section 3 -- NP-hard and #P-hard hardness of $A_1$.
+6. Experiment 08 -- structured tractability (Props 8-12 import).
+7. Experiment 12 -- rank-one no-go (Thm 5 import).
+8. Experiment 13 -- precision $2^{-n/2}$ estimation complexity (Thms 2-5 import).
+9. Lee, Mittal, Reichardt, Spalek, Szegedy (2011) -- bounded-error equivalence of
+   discrete and continuous-time query models used for the tight transfer in `proof2.md`.
+10. Brandeho, Roland (2015) -- continuous-time adversary lower-bound framework used
+    in `proof2.md`.
+11. Cleve, Gottesman, Mosca, Somma, Yonge-Mallo (2009) -- near-linear simulation
+    of continuous-time queries by discrete queries (`O(T log T / log log T)`), giving a
+    weaker transferred lower bound.
 
 
 ## Status
 
-**Phase**: Extended
+**Phase:** Extended-complete (core and synthesis complete; Conjecture 5 resolved in split form)
 
-- Conjecture 1: PROVED (Grover/BBBV lower bound)
-- Conjecture 2: REFINED AND SOLVED (model-specific; bit-runtime tradeoff via Experiment 07)
-- Conjecture 3: PROVED (with corrected framing and formal $A_1$-blindness)
-- Conjecture 4: REFUTED (Durr-Hoyer counterexample)
-- Conjecture 5: OPEN (continuous-time $A_1$ barrier)
-- Main Result: The $A_1$ barrier is model-specific, not information-theoretic
-- Extended Results: $A_1$-blindness (Part VII), unified landscape (Part VIII), continuous-time conjecture (Part IX)
-- Lean formalization: 14 verified theorems (Part I-IV algebraic core)
-- Numerical verification: lib/verify.py (all tests pass)
-- Full proofs in proof.md
+- Conjecture 1: PROVED
+- Conjecture 2: REFINED AND SOLVED
+- Conjecture 3: PROVED (corrected framing)
+- Conjecture 4: REFUTED
+- Conjecture 5: RESOLVED IN SPLIT FORM (literal refuted; normalized worst-case proved in `proof2.md`)
+- New in this pass: Proposition 9, Proposition 10, Theorem 9, Theorem 10, and Theorem 8
+- Numerics: `lib/verify.py` now runs 8 tests including Part IX and addendum scaling checks
+- Lean: algebraic core, Part IX identities, and addendum scaling identity verified (18 checks)
+
+## Addendum Files
+
+- `main2.md`: open-item resolution summary and interpretation.
+- `proof2.md`: normalized worst-case theorem and proof details.

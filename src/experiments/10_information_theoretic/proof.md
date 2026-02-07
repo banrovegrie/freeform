@@ -267,6 +267,45 @@ The communication cost is a property of the computational model, not of the comp
 - $C = 4$: $T = 16 \cdot 1 = 16 = \sqrt{N}$. Optimal. $\checkmark$
 - Circuit: $T = 16$ at $C = 0$. $\checkmark$
 
+**Proposition 9 (Quantum Pre-Computation Tradeoff, Importing Experiment 13).**
+Fix the AQO-relevant precision scale
+$$\epsilon_* = \Theta(\delta_{A_1}) = \Theta(2^{-n/2})$$
+in the unstructured regime $d_0 = \Theta(1)$, $A_2 = \Theta(1)$.
+Let $p(n)$ denote the polynomial overhead from arithmetic/oracle implementation in Experiment 13.
+Then:
+
+(a) **Quantum pre-computation + informed adiabatic evolution.**
+Estimate $A_1$ to precision $\epsilon_*$ using Experiment 13, Theorem 2 in
+$O(2^{n/2} p(n))$ time (for $\Delta_1 = \Theta(1)$), then run the informed
+adiabatic schedule in $T_{\mathrm{inf}} = \Theta(2^{n/2})$ time. Total:
+$$T_{\mathrm{quant\text{-}pre}} = O(2^{n/2} p(n)) = O(\sqrt{N/d_0}\,p(n)).$$
+
+(b) **Classical pre-computation + informed adiabatic evolution.**
+Any classical estimator of $A_1$ at precision $\epsilon_*$ needs
+$\Omega(2^n)$ queries (Experiment 13, Theorem 3). Therefore:
+$$T_{\mathrm{class\text{-}pre}} = \Omega(2^n) + \Theta(\sqrt{N/d_0}) = \Omega(2^n).$$
+
+(c) **Tightness and computational separation.**
+Experiment 13, Theorem 4 gives a matching quantum lower bound
+$\Omega(2^{n/2})$ for this estimation task, so the quantum pre-computation cost is
+tight up to the factor $p(n)$. Experiment 13, Theorem 5 lifts the same quadratic gap
+to the computational model under ETH.
+
+*Proof.* Theorem 6 implies that precision $\epsilon_* = \Theta(\delta_{A_1})$ is the
+threshold for reaching $T = \Theta(T_{\mathrm{inf}})$. For unstructured search,
+$\delta_{A_1} = \Theta(2^{-n/2})$. Experiment 13, Theorem 2 gives quantum estimation
+time $O(2^{n/2} p(n))$ at this precision (assuming $\Delta_1 = \Theta(1)$). Adding
+the informed adiabatic runtime $\Theta(2^{n/2})$ yields $O(2^{n/2} p(n))$.
+Experiment 13, Theorem 3 gives the classical lower bound $\Omega(2^n)$ at the same
+precision. Adding the adiabatic execution term does not change the leading order.
+The final statement is exactly Experiment 13, Theorems 4 and 5. $\square$
+
+**Structural implication.** The information cost of fixed-schedule adiabatic
+optimization matches the quantum speedup scale. Estimating the missing $n/2$ bits of
+$A_1$ costs $\Theta(2^{n/2})$ quantumly, the same scale as Grover search and
+informed AQO runtime. The circuit model achieves that scale without this pre-step
+because amplitude amplification directly solves the search task.
+
 
 ## Part IX: Scope of the $A_1$ Barrier
 
@@ -282,26 +321,146 @@ where $f, g: [0, T] \to \mathbb{R}$ are control functions and $|\psi_0\rangle = 
 $$T = \Omega(N/\sqrt{d_0}).$$
 That is, the uninformed runtime penalty of the fixed adiabatic model extends to the full class of continuous-time algorithms sharing the rank-one driver.
 
-**Evidence for the conjecture.**
+**Proposition 10 (Rank-One Constant-Control Counterexample on Two-Level Instances).**
+Consider the two-level family
+$$H_z = \mathbb{I} - P_0,$$
+where $P_0$ is the projector onto the $d_0$-dimensional ground subspace.
+Run the continuous-time rank-one protocol with constant controls
+$$f(t) \equiv -1, \qquad g(t) \equiv 1,$$
+from initial state $|\psi_0\rangle = N^{-1/2}\sum_x |x\rangle$.
+Then the success probability on the ground space is
+$$p_0(t) = \frac{d_0}{N} + \left(1-\frac{d_0}{N}\right)\sin^2\!\left(\sqrt{\frac{d_0}{N}}\,t\right),$$
+so at
+$$t_* = \frac{\pi}{2}\sqrt{\frac{N}{d_0}}$$
+we have $p_0(t_*) = 1$. Therefore
+$$T = \Theta\!\left(\sqrt{\frac{N}{d_0}}\right).$$
+The controls are constant and independent of $A_1$.
 
-(i) *Farhi, Goldstone, Gutmann, Nagaj (2008).* For a rank-one driver $H_B = E'(\mathbb{I} - |s\rangle\langle s|)$ and cost Hamiltonians with spectrum $(0, E, \ldots, E)$, the adiabatic algorithm requires time $T = \Omega(\sqrt{N/k})$ where $k$ is the ground space dimension (their Theorem 1). Their analysis extends to certain alternating-operator protocols beyond the purely adiabatic case, though the precise scope of this extension applies to a specific spectral structure rather than general $H_z$.
+*Proof.* Let $\varepsilon = d_0/N$, let
+$|G\rangle = d_0^{-1/2}\sum_{x \in S_0}|x\rangle$ and
+$|B\rangle = (N-d_0)^{-1/2}\sum_{x \notin S_0}|x\rangle$.
+The initial state is
+$$|\psi_0\rangle = \sqrt{\varepsilon}\,|G\rangle + \sqrt{1-\varepsilon}\,|B\rangle.$$
+With $f=-1$, $g=1$:
+$$H = -|\psi_0\rangle\langle\psi_0| + H_z
+= \mathbb{I} - \left(|\psi_0\rangle\langle\psi_0| + P_0\right).$$
+Dropping the global phase term $\mathbb{I}$, the effective Hamiltonian is
+$$H_{\mathrm{eff}} = -\left(|\psi_0\rangle\langle\psi_0| + P_0\right).$$
+In basis $(|G\rangle,|B\rangle)$:
+$$H_{\mathrm{eff}} =
+-\begin{pmatrix}
+1+\varepsilon & \sqrt{\varepsilon(1-\varepsilon)} \\
+\sqrt{\varepsilon(1-\varepsilon)} & 1-\varepsilon
+\end{pmatrix}.$$
+Subtracting another global phase gives
+$$\widetilde{H} =
+-\begin{pmatrix}
+\varepsilon & \sqrt{\varepsilon(1-\varepsilon)} \\
+\sqrt{\varepsilon(1-\varepsilon)} & -\varepsilon
+\end{pmatrix}, \qquad
+\widetilde{H}^2 = \varepsilon\,\mathbb{I}_2.$$
+Hence
+$$e^{-it\widetilde{H}}
+= \cos(\sqrt{\varepsilon}\,t)\,\mathbb{I}_2
+- i\frac{\sin(\sqrt{\varepsilon}\,t)}{\sqrt{\varepsilon}}\,\widetilde{H}.$$
+Applying this to $|\psi_0\rangle$ gives
+$$p_0(t)=|\langle G|e^{-it\widetilde{H}}|\psi_0\rangle|^2
+= \varepsilon + (1-\varepsilon)\sin^2(\sqrt{\varepsilon}\,t).$$
+At $t_* = \pi/(2\sqrt{\varepsilon})$, $\sin^2(\sqrt{\varepsilon}t_*)=1$, so
+$p_0(t_*)=1$ and $T=\Theta(\sqrt{N/d_0})$. $\square$
 
-(ii) *Heuristic argument.* The evolution under $H(t) = f(t)|\psi_0\rangle\langle\psi_0| + g(t)H_z$, projected onto the two-dimensional subspace spanned by $|\psi_0\rangle$ and the ground state $|\phi_0\rangle$, encounters an avoided crossing structure parameterized by $A_1$. The control functions $f(t), g(t)$ determine how fast the system traverses this crossing. Without knowledge of $A_1$, the controls cannot be tuned to the crossing location. (This projection argument is approximate and does not constitute a proof; the full $N$-dimensional evolution may exploit effects invisible in the two-dimensional projection.)
+**Theorem 9 (Conjecture 5 is False as Stated).**
+Conjecture 5 is refuted by Proposition 10.
 
-**Evidence against the conjecture.**
+*Proof.* Proposition 10 gives a continuous-time rank-one protocol with controls
+independent of $A_1$ and runtime $T=\Theta(\sqrt{N/d_0})$. For $d_0=1$, this is
+$\Theta(\sqrt{N})$, which contradicts the conjectured lower bound
+$\Omega(N/\sqrt{d_0})=\Omega(N)$. $\square$
 
-(iii) *Diabatic protocols.* Non-adiabatic strategies (fast passage through the crossing followed by interference) might exploit mechanisms qualitatively different from the adiabatic path. A diabatic transition followed by a suitable rotation could potentially reach the ground state without localizing the crossing.
+**What remains open.**
+The refutation applies to the literal statement of Conjecture 5.
+The still-open statement in this file is an unnormalized worst-case version:
+"for every instance-independent control pair $(f,g)$, there exist diagonal
+Hamiltonians on which runtime is $\Omega(N/\sqrt{d_0})$."
+This is consistent with Proposition 10 because Proposition 10 only proves fast runtime
+on the two-level family $H_z=\mathbb{I}-P_0$.
 
-(iv) *Higher-rank drivers.* Replacing the rank-one driver $|\psi_0\rangle\langle\psi_0|$ with a higher-rank or structured driver could eliminate the crossing bottleneck entirely. This would not refute the conjecture (which specifies rank-one) but would limit its significance.
+**Addendum resolution note.**
+The normalized-control version of this worst-case statement is proved in
+`proof2.md`, Theorem 10.
 
-(v) *Quantum control theory.* The full space of control functions $f(t), g(t)$ is infinite-dimensional. The adiabatic schedule is a one-dimensional subspace. Optimal control over the full space might achieve performance inaccessible to adiabatic strategies.
+**Remark (Difficulty of the Worst-Case Continuous-Time Statement).** We attempted to
+prove the worst-case statement for monotone controls $f'(t) \leq 0$, $g'(t) \geq 0$.
+The attempt fails at one specific point.
 
-**Open Question.** Resolve Conjecture 5. A proof would show that the $A_1$ barrier is intrinsic to the rank-one driver structure, not just the adiabatic protocol. A counterexample would exhibit a non-adiabatic continuous-time protocol that achieves $O(\sqrt{N/d_0})$ without knowledge of $A_1$.
+Farhi et al. (2008) prove a lower bound for a restricted spectral family by controlling
+the growth of overlaps between evolutions for different marked sets. Their key bound is
+closed because the problem Hamiltonian has two energy levels and the same phase profile
+on all non-ground states. For a general diagonal $H_z$, the overlap derivative picks up
+mode-dependent oscillatory factors
+$e^{-i\int_0^t g(\tau)(E_x-E_y)d\tau}$.
+These phases do not cancel under monotonicity of $f,g$ alone. The evolution no longer
+closes in a two-dimensional effective system with a uniform leakage bound.
+
+Therefore the missing lemma is:
+"A spectrum-uniform reduction from the full $N$-dimensional dynamics of
+$H(t)=f(t)|\psi_0\rangle\langle\psi_0|+g(t)H_z$ to a two-level Landau-Zener model with
+error $o(1)$ independent of $\{E_k,d_k\}$."
+Current techniques in this project do not provide that lemma. This is the obstruction.
+
+
+## Part X: Complete Model Comparison Across Experiments 08, 10, 12, 13
+
+**Scope and assumptions.** This theorem concerns the single task:
+ground-state finding for $n$-qubit diagonal Hamiltonians
+$H_z=\sum_x E_x|x\rangle\langle x|$ with $d_0$ ground states and success probability
+at least $2/3$. The table does not claim anything about other tasks
+(ground-energy estimation, full-spectrum reconstruction, thermal-state preparation),
+where spectral data can be necessary even in circuit models.
+
+**Theorem 8 (Complete Model Comparison Theorem).** Under the above scope, the current
+landscape is:
+
+| Model | Spectral Info Required | Runtime | Info Source | Barrier / Limitation | Source |
+|---|---|---|---|---|---|
+| Circuit (Durr-Hoyer) | 0 bits | $\Theta(\sqrt{N/d_0})$ | None | None | Thms 1-2, Props 6-8 |
+| Adiabatic, fixed, gap-informed | $n/2+O(1)$ bits of $A_1$ | $\Theta(\sqrt{N/d_0})$ | Classical or quantum pre-computation | Must locate crossing to width $\Theta(2^{-n/2})$ | Paper Thm 1, Part VIII |
+| Adiabatic, fixed, $C$ bits | $C$ bits of $A_1$ | $\Theta(T_{\mathrm{inf}}\max(1,2^{n/2-C}))$ | Partial pre-computation | Each missing bit costs factor 2 | Thm 6, Thm 7 |
+| Adiabatic, fixed, uninformed | 0 bits | $\Omega(N/\sqrt{d_0})$ | None | Full $A_1$ barrier | Exp 04 Thm 2, Thm 3(b) |
+| Adiabatic, adaptive | 0 communicated bits (plus $O(n)$ measured bits during run) | $\Theta(\sqrt{N/d_0})$ | Online quantum measurements | Barrier bypassed by adaptive sensing | Exp 05, Thm 3(d), Thm 4(c) |
+| Continuous-time rank-one, constant controls on two-level family $H_z=\mathbb{I}-P_0$ | 0 bits | $\Theta(\sqrt{N/d_0})$ | None | Fast family-level protocol; no worst-case guarantee over all diagonal spectra | Prop 10, Thm 9 |
+| Adiabatic with modified Hamiltonian, rank-one instance-independent design | 0 bits (if no spectral pre-step) | No guaranteed route to spectrum-independent $\Theta(\sqrt{N/d_0})$ scaling | None | Rank-one no-go: crossing remains spectrum-dependent | Exp 12 Thm 5 + Part VIII tradeoff framework |
+| Quantum $A_1$ estimation subroutine ($\epsilon=2^{-n/2}$, $\Delta_1=\Theta(1)$) | Not a ground-state solver by itself | $\Theta(2^{n/2})$ queries (up to $p(n)$ gate overhead) | Phase/amplitude estimation | Tight | Exp 13 Thms 2 and 4 |
+| Classical $A_1$ estimation subroutine ($\epsilon=2^{-n/2}$) | Not a ground-state solver by itself | $\Theta(2^n)$ queries | Sampling / brute force | Tight in queries; ETH lower bound in time | Exp 13 Thm 3 + Thm 5 + brute-force upper bound |
+
+*Proof.* Each row is a direct citation-chain import:
+
+Row 1 follows from Theorems 1-2 and Propositions 6-8 of this file.
+Row 2 follows from the paper's informed-schedule theorem and the precision scale in
+Part VIII.
+Rows 3-4 are Theorem 6 and Theorem 7 (with $C=0$ for row 4), plus Experiment 04 for
+the uninformed lower bound.
+Row 5 is Experiment 05 imported in Theorems 3-4.
+Row 6 is Proposition 10 and Theorem 9 of this file.
+Row 7 is Experiment 12, Theorem 5: within rank-one instance-independent design, the
+crossing cannot be made spectrum-independent. This eliminates the intended bypass route
+for removing $A_1$-dependence in that framework; combined with the fixed-schedule
+information-tradeoff framework of Part VIII, there is no 0-bit guarantee of
+$\Theta(\sqrt{N/d_0})$ scaling.
+Rows 8-9 are Experiment 13, Theorems 2-5 plus the trivial exhaustive classical upper
+bound. $\square$
+
+**Structured-family import (Experiment 08).** The table above is worst-case.
+Experiment 08 changes the gap-informed rows on structured families:
+Proposition 8 gives exact polynomial-time $A_1$ computation on bounded-treewidth local
+energy functions; Propositions 10-12 give additive-approximation reductions from
+partition-function evaluation without direct $d_0$ access. On such families, the
+"pre-computation hardness" entry can drop from exponential to polynomial.
 
 
 ## Summary
 
-We resolved all four conjectures:
+We resolved Conjectures 1-5 at the stated level:
 
 1. **Conjecture 1 (Oracle Lower Bound): PROVED.** $\Omega(\sqrt{N/d_0})$ queries are necessary. This is the Grover/BBBV bound, and it is the only universal information-theoretic limit.
 
@@ -311,12 +470,24 @@ We resolved all four conjectures:
 
 4. **Conjecture 4 (No Free Lunch): REFUTED.** The Durr-Hoyer algorithm is an explicit counterexample. It achieves $O(\sqrt{N/d_0})$ for completely general $H_z$, without computing or using any spectral information. Neither disjunct of the conjecture holds.
 
+5. **Conjecture 5 (Continuous-Time $A_1$ Barrier): REFUTED (literal form).**
+   Proposition 10 gives a continuous-time rank-one protocol with constant controls
+   independent of $A_1$ and runtime $\Theta(\sqrt{N/d_0})$ on the two-level family
+   $H_z=\mathbb{I}-P_0$. This contradicts the claimed $\Omega(N/\sqrt{d_0})$ bound.
+   The normalized worst-case variant is proved in `proof2.md` (Theorem 10).
+   The remaining open question concerns unnormalized control/action formulations.
+
 **Main insight.** The $A_1$ barrier is not an information-theoretic limit on ground state finding. It is an artifact of the adiabatic path. Algorithms that do not traverse this path (circuit model) or that adaptively probe this path (adaptive adiabatic) are unaffected.
 
-Additionally, the extended results (Parts VII-IX) establish:
+Additionally, the extended results (Parts VII-X) establish:
 
-5. **$A_1$-Blindness (Part VII).** For the amplified Durr-Hoyer algorithm, $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$, and conditioned on success, the mutual information is exactly zero. The circuit model reveals negligible information about $A_1$, while the adiabatic model both requires and leaks information about $A_1$.
+6. **$A_1$-Blindness (Part VII).** For the amplified Durr-Hoyer algorithm, $I(X_{\mathrm{DH}}; A_1 \mid S_0, E_0) \leq 2^{-\Omega(n)}$, and conditioned on success, the mutual information is exactly zero. The circuit model reveals negligible information about $A_1$, while the adiabatic model both requires and leaks information about $A_1$.
 
-6. **Unified Landscape (Part VIII).** Importing the interpolation theorem from Experiment 07: each bit of $A_1$ knowledge halves the adiabatic runtime, with the tradeoff $T(C) = T_{\mathrm{inf}} \cdot 2^{n/2 - C}$ for $C$ communicated bits. The circuit model bypasses this tradeoff entirely.
+7. **Unified Landscape and Precision Bridge (Part VIII).** Importing the interpolation theorem from Experiment 07 gives $T(C) = T_{\mathrm{inf}} \cdot 2^{n/2-C}$. Importing Experiment 13 shows that quantumly estimating the missing $n/2$ bits costs $\Theta(2^{n/2})$, matching the optimal runtime scale, while classical estimation costs $\Theta(2^n)$.
 
-7. **Continuous-Time Conjecture (Part IX).** Conjecture 5: the $A_1$ barrier extends to all continuous-time rank-one algorithms, not just the adiabatic protocol. Evidence from Farhi et al. (2008) supports this but a proof remains open.
+8. **Continuous-Time Barrier Status (Part IX + Addendum).** The literal conjecture is
+   false (Theorem 9). The normalized worst-case variant is proved (`proof2.md`,
+   Theorem 10). The unresolved formulation is the unnormalized-time version, where
+   lower bounds must be expressed in oracle action rather than raw time.
+
+9. **Complete Cross-Experiment Landscape (Part X).** Combining Experiments 08, 10, 12, and 13 yields a full model comparison theorem with explicit assumptions, runtime bounds, information sources, and limitation boundaries.
