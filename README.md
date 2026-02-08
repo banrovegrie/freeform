@@ -96,3 +96,9 @@ The writing should NOT have:
 - Rigor failures: hand-waving past the hard parts, appearing complete while eliding the most interesting pieces, shallow or circular motivation ("X is important because X is widely studied"), over-attribution to convention, vague claims hedged into vapor where a clean claim with stated conditions would serve
 - Voice failures: signaling rather than showing, narrating its own rhetorical moves ("we now make a crucial observation"), hedging filler where insight should be ("it is worth noting"), treating a surprising result and a routine calculation at identical emotional temperature, sycophantic citation language ("the seminal work of") — just state the result and cite it, symmetric treatment of related work where every citation gets the same template
 - Taste failures: throat-clearing openings that could appear in any thesis on the topic, redundant previews of what's two paragraphs away (chapter-level orientation is fine — section-level "we will now show" is not), generic transitions carrying no content, notation introduced once and never reused, rhythmic monotony — uniform sentence structure, paragraph length, and register — that reads as generated rather than written
+
+The standard is simple: correctness, completeness, and depth that remains accessible. No hallucinated mathematics, no hedged claims standing in for real ones, no cheap prose: the kind that signals effort without containing any. The reader should finish each chapter able to do something they could not do before.
+
+Any piece of writing (irrespective of origin or whether it is generated) can be good writing if and only if it holds a conversation with the reader and leaves them nourished with perspective, not just information.
+
+What survives revision against that test is the thesis we intend to write.
