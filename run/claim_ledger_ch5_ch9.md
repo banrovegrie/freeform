@@ -8,19 +8,37 @@
 
 | Severity | Location | Issue | Required change |
 |---|---|---|---|
-| Critical | `src/chapters/chapter5.tex:204` | Uses false bound `g(s) < s\\Delta` (fails at `s=0`). | Delete this inequality and replace with a valid bound actually used later (e.g. monotonic/region-specific bound already proved), or remove sentence entirely if unnecessary. |
-| Critical | `src/chapters/chapter6.tex:15` | Repeats false global bound `g(s) < s\\Delta`. | Same fix as Chapter 5: remove/replace with valid statement. |
-| Major | `src/chapters/chapter9.tex:348` | Boundary case error in gap-integral scaling: at `\\beta = 1/\\alpha`, integral scales logarithmically, not `O(1)`. | Split cases into `\\beta < 1/\\alpha`, `\\beta = 1/\\alpha`, `\\beta > 1/\\alpha`, with explicit `\\log(1/\\Delta_*)` term at equality. |
 | Major | `src/chapters/chapter7.tex:208` | Theorem statement is generic, but proof uses AQO-specific constants (`g_0(1)=\\Delta/30`, fixed `b`) not in hypotheses. | Either (A) add these assumptions to theorem statement, or (B) refactor proof to avoid special constants and prove fully generic claim. |
-| Major | `src/chapters/chapter8.tex:9` | Uses `A_2 \\ge 1` as if global. | Replace with valid global lower bound `A_2 \\ge 1 - d_0/N`, and adjust downstream constants. |
-| Major | `src/chapters/chapter7.tex:412` | Same `A_2 \\ge 1` over-claim affects runtime lower-bound constants. | Replace with `A_2 \\ge 1 - d_0/N` or explicitly assume small `d_0/N` where needed. |
+| Major | `src/chapters/chapter6.tex:284` | Hypothesis propagation gap: right-gap proof assumes `A_1 \\geq 1/2` (`chapter6.tex:146`), but complete-profile and downstream runtime statements are presented without this extra condition. | Either remove the `A_1 \\geq 1/2` restriction by strengthening the proof, or add an explicit equivalent hypothesis (e.g. `s^* \\geq 1/3`) to `chapter5.tex:362`, `chapter6.tex:284`, and downstream theorems that rely on `thm:complete-profile`. |
 | Major | `src/chapters/chapter9.tex:708` | “Structure irrelevance” theorem is stronger than the proof provided (proof is heuristic sensitivity argument, not a full worst-case reduction). | Either downgrade claim to a proposition/insight, or add a rigorous reduction proving worst-case equivalence to `M=2` approximate counting. |
-| Major | `src/chapters/chapter9.tex:526` | Proposition stated without full proof details (rank-`k` two-level obstruction). | Add formal proof (full reduction/eigenvalue argument), or mark as conjecture/proof sketch. |
-| Major | `src/chapters/chapter9.tex:533` | Proposition stated without full proof details (trace no-go). | Add formal proof (trace identity + contradiction steps), or mark as conjecture/proof sketch. |
-| Major | `src/chapters/chapter9.tex:651` | Proposition given with only a brief argument; proof dependencies not fully formalized. | Expand to full proposition-proof format with explicit reduction assumptions and runtime transfer argument. |
-| Minor | `src/chapters/chapter9.tex:32` | Running example uses approximate crossing (`s^*=3/7`) while exact Grover minimum is `1/2`; can be misread as exact. | Add explicit qualifier: this is from first-order truncation, not exact minimum-gap location. |
-| Minor | `src/chapters/chapter9.tex:299` | Same approximation-vs-exact ambiguity for `s^*`. | Add same qualifier and optional cross-reference to exact expression. |
-| Note (no blocker) | `src/chapters/chapter7.tex:385` | Uses `A_1(A_1+1)` vs source theorem `A_1^2`. | Keep as thesis variant if footnote explains stronger-safe denominator and theorem/proof remain internally consistent. |
+| Major | `src/chapters/chapter9.tex:664` | Query-complexity statement overstates precision range: theorem claims `Θ(1/\varepsilon)` for general precision, but cited upper bound (\autoref{thm:quantum-A1}) is `O(\sqrt{N} + 1/(\varepsilon\Delta_1))` unless additional assumptions (e.g., known `E_0` or `\varepsilon \lesssim 1/\sqrt{N}`) are imposed. | Restrict theorem/proposition to the schedule-relevant regime (e.g., `\varepsilon = \Theta(2^{-n/2})` or `\varepsilon \le c/\sqrt{N}`), or explicitly add assumptions under which `\sqrt{N}` is absorbed. |
+| Major | `src/chapters/chapter9.tex:282` | Measurement lower-bound proof assumes each measurement gives only binary/`O(1)` information (“ground vs excited”), but theorem quantifies over any adaptive algorithm. This is stronger than what is proved. | Either restrict theorem/model to binary decision probes (as used in the protocol) or provide a formal per-measurement information bound for the broader adaptive measurement model. |
+| Major | `src/chapters/chapter9.tex:64` | Separation theorem is stated for all gap functions in the abstract class `\mathcal{G}(s_L,s_R,\Delta_*)`, but the proof step for `T_{\mathrm{inf}}` uses rank-one-specific structure (`\delta_s=\Theta(\Delta_*)`, linear approach near crossing, and `\autoref{thm:aqo-runtime}`). This does not follow for a generic `\mathcal{G}` instance. | Narrow theorem scope to rank-one (or add explicit geometric assumptions on the informed profile that imply `T_{\mathrm{inf}}=\Theta(\Delta_*/v_{\mathrm{slow}})`), and remove the “applied to any gap profile in the class” over-claim. |
+| Minor | `src/chapters/chapter8.tex:263` | Generic extrapolation barrier uses a strong quantifier (“incurs error at least …”) while the proof establishes a worst-case amplification bound via the Lebesgue constant. | Rephrase theorem/proof to “can incur” or “worst-case error is at least …” to align quantifiers with the argument. |
+| Minor | `src/chapters/chapter9.tex:706` | Incorrect justification of the distance hypothesis for `\autoref{thm:generic-barrier}`: `x^*=\Theta(2^{-n/2})` with nodes in `[0,1/\mathrm{poly}(n)]` does not imply `\mathrm{dist}(x^*,[a,b]) \ge b-a` (typically `x^*` is inside/near the interval). | Remove or correct the parenthetical claim; state the barrier condition explicitly and tie it to the actual interpolation geometry used in Chapter 8 (evaluation outside the sampled interval). |
+
+## Resolved in Execution Pass
+
+| Location | Status | Resolution summary |
+|---|---|---|
+| `src/chapters/chapter5.tex:204` | Resolved | Removed invalid global bound `g(s) < s\Delta`; replaced with a safe non-quantitative statement. |
+| `src/chapters/chapter6.tex:15` | Resolved | Removed repeated invalid bound `g(s) < s\Delta`; kept only safe ordering statement. |
+| `src/chapters/chapter8.tex:9` | Resolved | Replaced `A_2 \ge 1` by global bound `A_2 \ge 1 - d_0/N` (via `eq:A2-lower-bound`). |
+| `src/chapters/chapter7.tex:412` | Resolved | Replaced `A_2 \ge 1` by `A_2 \ge 1 - d_0/N` in runtime discussion. |
+| `src/chapters/chapter9.tex:254` | Resolved | Replaced false `d_{i+1} \ge d_i/2` step with a valid recurrence-based shell-occupancy argument. |
+| `src/chapters/chapter9.tex:311` | Resolved | Replaced invalid MI-vs-TV step with a chain-rule entropy bound via failure indicator decomposition. |
+| `src/chapters/chapter9.tex:348` | Resolved | Added explicit boundary case `\beta=1/\alpha` with logarithmic scaling. |
+
+## Non-Blocker / Excluded Items
+
+| Location | Status | Reason |
+|---|---|---|
+| `src/chapters/chapter7.tex:385` | Excluded (thesis-safe variant) | `A_1(A_1+1)` vs paper's `A_1^2` is explicitly footnoted and internally consistent; no fix required. |
+| `src/chapters/chapter9.tex:526` | Excluded (not a correctness failure) | Proposition is concise and follows the preceding determinant-branch derivation; proof expansion is optional exposition work. |
+| `src/chapters/chapter9.tex:533` | Excluded (not a correctness failure) | Proposition statement already contains the core trace/continuity argument; adding a separate proof is optional formalization. |
+| `src/chapters/chapter9.tex:651` | Excluded (not a correctness failure) | This is an expository complexity-landscape claim with inline examples; more formal proof is optional. |
+| `src/chapters/chapter9.tex:32` | Excluded (wording-level only) | Running-example `s^*=3/7` is a first-order/rank-one parameter illustration; exact-vs-approx qualifier is editorial, not a blocker. |
+| `src/chapters/chapter9.tex:299` | Excluded (wording-level only) | Same as line 32; clarification is optional and not correctness-critical. |
 
 ## Reconciliation Notes (Chapter 9 Audit Alignment)
 
@@ -90,7 +108,7 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 46 | label | `src/chapters/chapter5.tex:347` | `lem:gap-left-preview` | Pass | - |
 | 47 | label | `src/chapters/chapter5.tex:350` | `eq:gap-left-bound` | Pass | - |
 | 48 | label | `src/chapters/chapter5.tex:357` | `eq:variational-ansatz` | Pass | - |
-| 49 | lemma | `src/chapters/chapter5.tex:362` | `\begin{lemma}[Gap to the right of the crossing]` | Pass | - |
+| 49 | lemma | `src/chapters/chapter5.tex:362` | `\begin{lemma}[Gap to the right of the crossing]` | Review-needed | Propagate the `A_1 \geq 1/2` (or equivalent) hypothesis used in Chapter 6 right-gap proof, unless proof is strengthened to remove it. |
 | 50 | label | `src/chapters/chapter5.tex:363` | `lem:gap-right-preview` | Pass | - |
 | 51 | label | `src/chapters/chapter5.tex:366` | `eq:s0-def` | Pass | - |
 | 52 | label | `src/chapters/chapter5.tex:371` | `eq:gap-right-bound` | Pass | - |
@@ -127,7 +145,7 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 24 | label | `src/chapters/chapter6.tex:237` | `eq:domination-argument` | Pass | - |
 | 25 | label | `src/chapters/chapter6.tex:246` | `eq:a-constraint` | Pass | - |
 | 26 | label | `src/chapters/chapter6.tex:257` | `eq:f-at-sstar` | Pass | - |
-| 27 | theorem | `src/chapters/chapter6.tex:284` | `\begin{theorem}[Complete gap profile]` | Pass | - |
+| 27 | theorem | `src/chapters/chapter6.tex:284` | `\begin{theorem}[Complete gap profile]` | Review-needed | Right-gap input lemma is currently proved under `A_1 \geq 1/2`; theorem hypotheses should match or proof should be generalized. |
 | 28 | label | `src/chapters/chapter6.tex:285` | `thm:complete-profile` | Pass | - |
 | 29 | label | `src/chapters/chapter6.tex:288` | `eq:piecewise-bound` | Pass | - |
 
@@ -180,7 +198,7 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 43 | label | `src/chapters/chapter7.tex:360` | `eq:B1-result` | Pass | - |
 | 44 | label | `src/chapters/chapter7.tex:366` | `eq:B2-result` | Pass | - |
 | 45 | label | `src/chapters/chapter7.tex:376` | `eq:c-result` | Pass | - |
-| 46 | theorem | `src/chapters/chapter7.tex:380` | `\begin{theorem}[Runtime of AQO --- Main Result 1 {\cite{braida2024unstructured}}]` | Pass | - |
+| 46 | theorem | `src/chapters/chapter7.tex:380` | `\begin{theorem}[Runtime of AQO --- Main Result 1 {\cite{braida2024unstructured}}]` | Review-needed | If `thm:complete-profile` keeps an extra `A_1 \geq 1/2`-type hypothesis, propagate it here (or remove by strengthening upstream proof). |
 | 47 | label | `src/chapters/chapter7.tex:381` | `thm:aqo-runtime` | Pass | - |
 | 48 | label | `src/chapters/chapter7.tex:384` | `eq:main-runtime` | Pass | - |
 
@@ -218,7 +236,7 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 28 | label | `src/chapters/chapter8.tex:234` | `eq:lebesgue-bound` | Pass | - |
 | 29 | label | `src/chapters/chapter8.tex:239` | `eq:total-error` | Pass | - |
 | 30 | label | `src/chapters/chapter8.tex:246` | `eq:rounding-condition` | Pass | - |
-| 31 | theorem | `src/chapters/chapter8.tex:261` | `\begin{theorem}[Generic extrapolation barrier]` | Pass | - |
+| 31 | theorem | `src/chapters/chapter8.tex:261` | `\begin{theorem}[Generic extrapolation barrier]` | Review-needed | Quantifier wording should reflect worst-case amplification, not universal per-instance lower bound. |
 | 32 | label | `src/chapters/chapter8.tex:262` | `thm:generic-barrier` | Pass | - |
 | 33 | theorem | `src/chapters/chapter8.tex:280` | `\begin{theorem}[Quantum algorithm for $A_1$]` | Pass | - |
 | 34 | label | `src/chapters/chapter8.tex:281` | `thm:quantum-A1` | Pass | - |
@@ -238,7 +256,7 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 4 | label | `src/chapters/chapter9.tex:43` | `lem:adversarial-gap` | Pass | - |
 | 5 | lemma | `src/chapters/chapter9.tex:51` | `\begin{lemma}[Velocity bound for uninformed schedules]` | Pass | - |
 | 6 | label | `src/chapters/chapter9.tex:52` | `lem:velocity-bound` | Pass | - |
-| 7 | theorem | `src/chapters/chapter9.tex:64` | `\begin{theorem}[Separation]` | Pass | - |
+| 7 | theorem | `src/chapters/chapter9.tex:64` | `\begin{theorem}[Separation]` | Review-needed | Theorem scope is generic `\mathcal{G}`, but proof of `T_{\mathrm{inf}}` uses rank-one-specific assumptions (`chapter9.tex:78`); align statement and proof scope. |
 | 8 | label | `src/chapters/chapter9.tex:65` | `thm:separation` | Pass | - |
 | 9 | label | `src/chapters/chapter9.tex:68` | `eq:separation-ratio` | Pass | - |
 | 10 | corollary | `src/chapters/chapter9.tex:84` | `\begin{corollary}[Unstructured search]` | Pass | - |
@@ -256,19 +274,19 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 22 | label | `src/chapters/chapter9.tex:207` | `def:adaptive-protocol` | Pass | - |
 | 23 | lemma | `src/chapters/chapter9.tex:227` | `\begin{lemma}[Phase estimation cost]` | Pass | - |
 | 24 | label | `src/chapters/chapter9.tex:228` | `lem:phase-estimation-cost` | Pass | - |
-| 25 | lemma | `src/chapters/chapter9.tex:236` | `\begin{lemma}[Phase 1 cost]` | Pass | - |
+| 25 | lemma | `src/chapters/chapter9.tex:236` | `\begin{lemma}[Phase 1 cost]` | Pass | Recurrence-based shell occupancy argument now replaces the invalid midpoint-distance inequality. |
 | 26 | label | `src/chapters/chapter9.tex:237` | `lem:phase1-cost` | Pass | - |
 | 27 | label | `src/chapters/chapter9.tex:244` | `eq:gap-lower-bound` | Pass | - |
 | 28 | label | `src/chapters/chapter9.tex:249` | `eq:pe-cost` | Pass | - |
 | 29 | theorem | `src/chapters/chapter9.tex:267` | `\begin{theorem}[Adaptive adiabatic optimality]` | Pass | - |
 | 30 | label | `src/chapters/chapter9.tex:268` | `thm:adaptive` | Pass | - |
-| 31 | theorem | `src/chapters/chapter9.tex:276` | `\begin{theorem}[Measurement lower bound]` | Pass | - |
+| 31 | theorem | `src/chapters/chapter9.tex:276` | `\begin{theorem}[Measurement lower bound]` | Review-needed | The proof at `chapter9.tex:282` assumes binary/O(1)-bit measurement outcomes; restrict theorem scope or prove this information cap in the stated adaptive model. |
 | 32 | label | `src/chapters/chapter9.tex:277` | `thm:measurement-lower` | Pass | - |
-| 33 | proposition | `src/chapters/chapter9.tex:305` | `\begin{proposition}[$A_1$-blindness]` | Pass | - |
+| 33 | proposition | `src/chapters/chapter9.tex:305` | `\begin{proposition}[$A_1$-blindness]` | Pass | Proof now uses a valid chain-rule/entropy decomposition with explicit failure-event control. |
 | 34 | label | `src/chapters/chapter9.tex:306` | `prop:A1-blindness` | Pass | - |
 | 35 | theorem | `src/chapters/chapter9.tex:326` | `\begin{theorem}[Geometric characterization]` | Pass | - |
 | 36 | label | `src/chapters/chapter9.tex:327` | `thm:geometric-char` | Pass | - |
-| 37 | lemma | `src/chapters/chapter9.tex:341` | `\begin{lemma}[Gap integral]` | Fail | Add explicit `\beta=1/\alpha` logarithmic case in proof/statement. |
+| 37 | lemma | `src/chapters/chapter9.tex:341` | `\begin{lemma}[Gap integral]` | Pass | Statement and proof now separate `\beta>1/\alpha`, `\beta=1/\alpha`, `\beta<1/\alpha`. |
 | 38 | label | `src/chapters/chapter9.tex:342` | `lem:gap-integral` | Pass | - |
 | 39 | label | `src/chapters/chapter9.tex:345` | `eq:gap-integral` | Pass | - |
 | 40 | theorem | `src/chapters/chapter9.tex:355` | `\begin{theorem}[Scaling spectrum]` | Pass | M3 reconciled: convergence window and `p=3/2` condition explicit. |
@@ -298,9 +316,9 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 64 | label | `src/chapters/chapter9.tex:505` | `thm:multi-segment` | Pass | - |
 | 65 | theorem | `src/chapters/chapter9.tex:513` | `\begin{theorem}[No-go]` | Pass | - |
 | 66 | label | `src/chapters/chapter9.tex:514` | `thm:no-go` | Pass | - |
-| 67 | proposition | `src/chapters/chapter9.tex:526` | `\begin{proposition}[Rank-$k$ two-level obstruction]` | Review-needed | Provide full proof or downgrade to conjecture/sketch. |
+| 67 | proposition | `src/chapters/chapter9.tex:526` | `\begin{proposition}[Rank-$k$ two-level obstruction]` | Pass | Concise proposition backed by the preceding determinant-branch derivation; proof expansion is optional. |
 | 68 | label | `src/chapters/chapter9.tex:527` | `prop:rank-k-obstruction` | Pass | - |
-| 69 | proposition | `src/chapters/chapter9.tex:533` | `\begin{proposition}[Trace no-go]` | Review-needed | Provide full proof or downgrade to conjecture/sketch. |
+| 69 | proposition | `src/chapters/chapter9.tex:533` | `\begin{proposition}[Trace no-go]` | Pass | Core trace/continuity reasoning is already present in the proposition statement; separate proof is optional formalization. |
 | 70 | label | `src/chapters/chapter9.tex:534` | `prop:trace-nogo` | Pass | - |
 | 71 | remark | `src/chapters/chapter9.tex:538` | `\begin{remark}` | Pass | - |
 | 72 | proposition | `src/chapters/chapter9.tex:544` | `\begin{proposition}[Constant-control optimality on two-level family]` | Pass | - |
@@ -319,11 +337,11 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 | 85 | label | `src/chapters/chapter9.tex:634` | `prop:conjecture-unique` | Pass | - |
 | 86 | proposition | `src/chapters/chapter9.tex:642` | `\begin{proposition}[Bounded degeneracy is vacuous]` | Pass | - |
 | 87 | label | `src/chapters/chapter9.tex:643` | `prop:conjecture-bounded` | Pass | - |
-| 88 | proposition | `src/chapters/chapter9.tex:651` | `\begin{proposition}[Hard optimization does not imply hard $A_1$]` | Review-needed | Expand to full proposition-proof argument with explicit reduction details. |
-| 89 | label | `src/chapters/chapter9.tex:652` | `prop:conjecture-hard-opt` | Review-needed | Complete proof body for proposition at line 651. |
-| 90 | theorem | `src/chapters/chapter9.tex:664` | `\begin{theorem}[Tight quantum query complexity]` | Pass | - |
+| 88 | proposition | `src/chapters/chapter9.tex:651` | `\begin{proposition}[Hard optimization does not imply hard $A_1$]` | Pass | Expository claim supported by standard examples (`2`-SAT vs `\#2`-SAT, promised Grover family); formal expansion is optional. |
+| 89 | label | `src/chapters/chapter9.tex:652` | `prop:conjecture-hard-opt` | Pass | - |
+| 90 | theorem | `src/chapters/chapter9.tex:664` | `\begin{theorem}[Tight quantum query complexity]` | Review-needed | Clarify precision regime/assumptions so `\sqrt{N}` term from `thm:quantum-A1` is not silently dropped. |
 | 91 | label | `src/chapters/chapter9.tex:665` | `thm:tight-quantum` | Pass | - |
-| 92 | proposition | `src/chapters/chapter9.tex:679` | `\begin{proposition}[Precision phase diagram]` | Pass | - |
+| 92 | proposition | `src/chapters/chapter9.tex:679` | `\begin{proposition}[Precision phase diagram]` | Review-needed | “Every precision scale” claim should be aligned with theorem assumptions or narrowed to schedule-relevant precision range. |
 | 93 | label | `src/chapters/chapter9.tex:680` | `prop:precision-phase` | Pass | - |
 | 94 | theorem | `src/chapters/chapter9.tex:688` | `\begin{theorem}[ETH computational complexity]` | Pass | M1 reconciled: reduction mechanism/citation corrected. |
 | 95 | label | `src/chapters/chapter9.tex:689` | `thm:eth` | Pass | - |
@@ -338,10 +356,6 @@ The following items were flagged in `run/chap9_pass0.md` but were not explicitly
 
 | Location | Status | Assertion | Action |
 |---|---|---|---|
-| `src/chapters/chapter5.tex:204` | Fail | `g(s) < s\Delta` claimed as trivial global upper bound. | Remove or replace with valid region-specific bound. |
-| `src/chapters/chapter6.tex:15` | Fail | `g(s) < s\Delta` repeated. | Remove or replace with valid bound. |
-| `src/chapters/chapter8.tex:9` | Fail | Uses `A_2 \ge 1` globally. | Replace with `A_2 \ge 1 - d_0/N`. |
-| `src/chapters/chapter7.tex:412` | Fail | Uses `A_2 \ge 1` in runtime lower bound derivation. | Replace with valid bound or explicit additional assumption. |
-| `src/chapters/chapter9.tex:348` | Fail | Equality case `\beta=1/\alpha` not separated (logarithmic divergence omitted). | Add explicit case split including `\log(1/\Delta_*)`. |
-| `src/chapters/chapter9.tex:32` | Warning | Approximate `s^*` stated near running example. | Mark as approximation from truncated model. |
-| `src/chapters/chapter9.tex:299` | Warning | Same approximation ambiguity for `s^*`. | Add explicit approximation qualifier. |
+| `src/chapters/chapter9.tex:282` | Warning | Claims each measurement yields only `O(1)` bits via an “effectively binary” outcome without model restrictions. | Restrict to binary probe model or supply a formal information bound for the stated adaptive setting. |
+| `src/chapters/chapter9.tex:78` | Fail | Uses `T_{\mathrm{inf}}=\Theta(\Delta_*/v_{\mathrm{slow}})` via `\autoref{thm:aqo-runtime}` while claiming applicability to any `g \in \mathcal{G}`; this is rank-one-specific, not generic-gap-class justified. | Restrict theorem/proof scope or add explicit assumptions ensuring informed runtime scaling for the stated class. |
+| `src/chapters/chapter9.tex:706` | Warning | Claims the generic-barrier distance condition holds from `x^*=\Theta(2^{-n/2})` and nodes in `[0,1/\mathrm{poly}(n)]`; this does not follow. | Replace parenthetical with a correct condition check tied to the concrete interpolation setup. |
