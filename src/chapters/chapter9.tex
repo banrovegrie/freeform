@@ -31,11 +31,20 @@ The gap class $\mathcal{G}(s_L, s_R, \Delta_*)$ consists of all gap functions $g
 
 \noindent For the running example ($M = 2$, $d_0 = 1$, $N = 4$), $s^* = A_1/(A_1+1) = 3/7$ and $\Delta_* = g_{\min} = 1/\sqrt{4} = 1/2$. Any gap function in $\mathcal{G}(0, 1, 1/2)$ has its minimum somewhere in $[0, 1]$ at value $1/2$; the adversary's freedom is in choosing where.
 
+\begin{definition}[RC-admissible fixed schedules]
+\label{def:rc-admissible}
+Fix a family of Hamiltonian instances. A fixed schedule $u$ with velocity profile $v(s)=|ds/dt|$ is \emph{RC-admissible} on an instance if it satisfies the local Roland-Cerf condition
+\[
+v(s) \leq \frac{\varepsilon\, g(s)^2}{\|H'(s)\|}\qquad\forall s\in[0,1].
+\]
+It is \emph{uniformly RC-admissible} on the family if this inequality holds for every instance in the family.
+\end{definition}
+
 \noindent The parameter $\Delta_*$ denotes the minimum of the abstract gap function $g$; it should not be confused with $\Delta = E_1 - E_0$ (the spectral gap of $H_z$) or with $g_{\min}$ (the minimum gap of the rank-one Hamiltonian $H(s)$). For the rank-one gap profile, $\Delta_* = g_{\min} = \Theta(\sqrt{d_0/(NA_2)})$.
 
 The schedule induces a velocity profile $v(s) > 0$ on $[0,1]$, with total evolution time $T = \int_0^1 v(s)^{-1}\,ds$.
 
-The velocity bound at the crossing follows from the Roland-Cerf local adiabatic condition (Chapter~7): the schedule must satisfy $v(s) = |ds/dt| \leq \varepsilon\,g(s)^2/\lVert H'(s) \rVert$ at each $s$ to keep the transition probability below $\varepsilon$. Since $H'(s) = \ket{\psi_0}\!\bra{\psi_0} + H_z$ satisfies $\lVert H'(s) \rVert \leq \lVert \ket{\psi_0}\!\bra{\psi_0} \rVert + \lVert H_z \rVert \leq 1 + 1 = 2$ (using the eigenvalue normalization $E_{M-1} \leq 1$ from Chapter~5), the velocity is bounded by $v(s) \leq \varepsilon\,g(s)^2/2$. At the crossing where $g = \Delta_*$, this gives $v \leq \varepsilon\,\Delta_*^2/2$.
+Within the uniformly RC-admissible class (Definition~\ref{def:rc-admissible}), the crossing velocity obeys a pointwise bound. Since $H'(s) = \ket{\psi_0}\!\bra{\psi_0} + H_z$ satisfies $\lVert H'(s) \rVert \leq \lVert \ket{\psi_0}\!\bra{\psi_0} \rVert + \lVert H_z \rVert \leq 1 + 1 = 2$ (using the eigenvalue normalization $E_{M-1} \leq 1$ from Chapter~5), RC-admissibility gives $v(s) \leq \varepsilon\,g(s)^2/2$. At a crossing point where $g=\Delta_*$, this yields $v \leq \varepsilon\,\Delta_*^2/2$.
 
 The crossing window has width $\delta_s = \Theta(\Delta_*)$, so a schedule must be slow throughout this window. To see this, recall from Chapter~5 that $\delta_s = \hat{g}/c_L$ (\autoref{eq:gmin-deltas-relation}), where $\hat{g} = \frac{2A_1}{A_1+1}\sqrt{d_0/(NA_2)}$ is the leading-order minimum gap satisfying $g_{\min} = (1 \pm O(\eta))\hat{g}$; since $c_L = A_1(A_1+1)/A_2$ is a fixed constant, $\delta_s = \Theta(g_{\min}) = \Theta(\Delta_*)$. We define $v_{\mathrm{slow}} = \varepsilon\,\Delta_*^2/2$ as the maximum crossing velocity. In the ratio $T_{\mathrm{unf}}/T_{\mathrm{inf}}$, this velocity cancels: both runtimes are computed under the same Roland-Cerf condition, so $v_{\mathrm{slow}}$ appears in both denominators, and the separation depends only on the geometric ratio $(s_R - s_L)/\Delta_*$.
 
@@ -50,20 +59,20 @@ The function satisfies $g_{\mathrm{adv}}(s_{\mathrm{adv}}) = \Delta_*$, $g_{\mat
 
 \begin{lemma}[Velocity bound for uninformed schedules]
 \label{lem:velocity-bound}
-Let $u$ be a fixed schedule achieving error $\leq \varepsilon$ for all $g \in \mathcal{G}(s_L, s_R, \Delta_*)$. Then $v(s) \leq v_{\mathrm{slow}}$ for all $s \in [s_L, s_R]$, provided $N$ is sufficiently large that $\Delta_* < \min(1 - s_R, s_L)$.
+Let $u$ be a fixed schedule that is uniformly RC-admissible on the rank-one family in \autoref{thm:separation}. Then $v(s) \leq v_{\mathrm{slow}}$ for all $s \in [s_L, s_R]$, provided $N$ is sufficiently large that $\Delta_* < \min(1 - s_R, s_L)$.
 \end{lemma}
 
 \begin{proof}
-Suppose $v(s') > v_{\mathrm{slow}}$ for some $s' \in [s_L, s_R]$. We construct a physical Hamiltonian in the rank-one family whose gap minimum occurs at $s'$, then show that the schedule violates the adiabatic condition on this instance.
+Suppose $v(s') > v_{\mathrm{slow}}$ for some $s' \in [s_L, s_R]$. We construct a physical Hamiltonian in the rank-one family whose gap minimum occurs at $s'$, then apply RC-admissibility on that instance.
 
 Since $s^* = A_1/(A_1+1)$ is a continuous, strictly increasing function of $A_1 \in (0,\infty)$ with range $(0,1)$, there exists $A_1$ placing the crossing at $s'$. On the two-level family with solution fraction $\rho = d_0/N$, the leading-order gap minimum is $\hat{g} = 2(1-s')\sqrt{\rho(1-\rho)}$ (\autoref{eq:gmin-formula}), so choosing $\rho$ to satisfy $\hat{g} = \Delta_*$ (feasible whenever $\Delta_* \leq 1 - s'$, which holds asymptotically since $\Delta_* = \Theta(2^{-n/2})$ and $s' \leq s_R < 1$) produces a problem Hamiltonian $H_z$ with crossing at $s'$ and $g_{\min} = \Theta(\Delta_*)$. The adversary in the minimax game selects this physical Hamiltonian, not merely an abstract gap function.
 
-The Roland-Cerf condition (\autoref{eq:roland-cerf-runtime}) on this Hamiltonian requires $v(s') \leq \varepsilon\,g_{\min}^2/\lVert H'(s') \rVert = \Theta(v_{\mathrm{slow}})$. Since $v(s') > v_{\mathrm{slow}}$ by assumption, the transition probability exceeds $\varepsilon$ for this instance (after absorbing the constant factor into $v_{\mathrm{slow}}$, which is defined only up to $\Theta$). Because the schedule is fixed before the instance is revealed, it must satisfy $v(s) \leq v_{\mathrm{slow}}$ at every $s \in [s_L, s_R]$.
+Uniform RC-admissibility on this Hamiltonian gives $v(s') \leq \varepsilon\,g_{\min}^2/\lVert H'(s') \rVert = \Theta(v_{\mathrm{slow}})$; after absorbing the fixed constant factor into $v_{\mathrm{slow}}$, this contradicts $v(s') > v_{\mathrm{slow}}$. Because $s'$ was arbitrary in $[s_L,s_R]$, the bound holds throughout the interval.
 \end{proof}
 
-\begin{theorem}[Separation]
+\begin{theorem}[Separation (uniformly RC-admissible class)]
 \label{thm:separation}
-Let $T_{\mathrm{unf}}$ be the minimum time for any fixed schedule achieving error $\leq \varepsilon$ for all rank-one instances whose gap minima satisfy $s^* \in [s_L,s_R]$ and $g_{\min} = \Theta(\Delta_*)$, and let $T_{\mathrm{inf}}$ be the corresponding optimal informed runtime (with known $s^*$) on the same rank-one family. Then
+Let $T_{\mathrm{unf}}$ be the minimum time over all fixed schedules that are uniformly RC-admissible for all rank-one instances whose gap minima satisfy $s^* \in [s_L,s_R]$ and $g_{\min} = \Theta(\Delta_*)$, and let $T_{\mathrm{inf}}$ be the corresponding optimal informed runtime (with known $s^*$) on the same rank-one family. Then
 \begin{equation}
 \label{eq:separation-ratio}
 \frac{T_{\mathrm{unf}}}{T_{\mathrm{inf}}} = \Omega\!\left(\frac{s_R - s_L}{\Delta_*}\right).
@@ -88,7 +97,7 @@ For $n$-qubit unstructured search with $s_L, s_R$ bounded away from $0$ and $1$ 
 
 For the running example ($M = 2$, $d_0 = 1$, $N = 4$), the separation ratio is $(s_R - s_L)/\Delta_* = 1/(1/2) = 2 = \sqrt{N}$. Uninformed adiabatic evolution on this four-element instance takes twice as long as informed evolution, a discrepancy that grows exponentially with $n$.
 
-The logical structure is: NP-hardness forces the gap-uninformed model for any fixed schedule with polynomial-time classical preprocessing; the gap-uninformed model has the $\Omega(2^{n/2})$ minimax lower bound from the adversarial geometry of \autoref{lem:adversarial-gap}; therefore this class of algorithms pays the penalty. The penalty comes from the geometry, not from computational complexity directly.
+The logical structure is: NP-hardness forces the gap-uninformed model for any fixed schedule with polynomial-time classical preprocessing; within the uniformly RC-admissible class, the gap-uninformed model has the $\Omega(2^{n/2})$ minimax lower bound from the adversarial geometry of \autoref{lem:adversarial-gap}; therefore this class of algorithms pays the penalty. The penalty comes from the geometry, not from computational complexity directly.
 
 
 \section{Partial Knowledge and Hedging}
@@ -195,13 +204,22 @@ For an uncertainty interval $[0.4, 0.8]$, the hedging schedule achieves error $E
 
 The separation theorem and the interpolation theorem characterize the cost of ignorance within the fixed-schedule model. An adiabatic device, however, is a physical system that can be measured during execution. The original paper~\cite{braida2024unstructured} posed the question: ``Can this limitation be overcome when one only has access to a device operating in the adiabatic setting?''
 
-The answer is yes. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant geometric speed (CGS) schedule that traverses the eigenstate path at uniform arc length, using eigenstate overlaps computed on the fly via the quantum Zeno Monte Carlo method to adaptively adjust the parameter velocity. Their approach improves the gap scaling from $O(\Delta_*^{-2})$ to $O(\Delta_*^{-1})$ and demonstrates numerically that the quadratic speedup persists for adiabatic unstructured search without prior spectral knowledge. The binary-search protocol below differs in mechanism --- it uses phase estimation to actively locate the crossing before executing the informed schedule --- but achieves the same asymptotic scaling $O(T_{\mathrm{inf}})$ with a rigorous optimality proof. NP-hardness conflates two distinct tasks: \emph{computing} $s^*$ from the classical description of $H_z$ is hard, but \emph{detecting} $s^*$ by probing the quantum system $H(s)$ at selected parameter values is efficient. The mechanism is phase estimation: the ground and first excited energies of $H(s)$ differ by $g(s)$, and the initial state $\ket{\psi_0}$ transitions from ground-state-like to excited-state-like as $s$ crosses $s^*$. A binary search with phase estimation at each midpoint locates the crossing.
+The answer is yes in an adaptive measurement model. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant geometric speed (CGS) schedule that traverses the eigenstate path at uniform arc length, using eigenstate overlaps computed on the fly via the quantum Zeno Monte Carlo method to adaptively adjust the parameter velocity. Their approach improves the gap scaling from $O(\Delta_*^{-2})$ to $O(\Delta_*^{-1})$ and demonstrates numerically that the quadratic speedup persists for adiabatic unstructured search without prior spectral knowledge. The binary-search protocol below differs in mechanism: it uses branch probes to locate the crossing before executing the informed schedule, and in the ideal binary decision-probe model it achieves $O(T_{\mathrm{inf}})$.
 
-The protocol requires two ingredients: the overlap structure of $\ket{\psi_0}$ with the instantaneous eigenstates of $H(s)$, and the cost of phase estimation at each probe point.
+NP-hardness conflates two distinct tasks: \emph{computing} $s^*$ from the classical description of $H_z$ is hard, but \emph{detecting} $s^*$ by probing the quantum system $H(s)$ at selected parameter values can be efficient. We formalize this with a binary decision-probe oracle: a probe at parameter value $s$ returns whether $s$ lies to the left or right of the true crossing, and each probe costs $O(1/g(s))$.
 
-The state $\ket{\psi_0}$ is the exact ground state of $H(0) = -\ket{\psi_0}\!\bra{\psi_0}$. As $s$ increases from $0$ to $1$, the ground state $\ket{E_0(s)}$ of $H(s)$ evolves continuously within the two-dimensional symmetric subspace of Chapter~5. The effective two-level Hamiltonian has diagonal elements that cross near $s^*$ and off-diagonal coupling $|V(s)| = (1-s)\sqrt{d_0(N-d_0)}/N = \Theta(\sqrt{d_0/N})$. The overlap $|\!\braket{\psi_0}{E_0(s)}\!|^2$ is governed by the mixing angle $\theta(s)$ satisfying $\sin 2\theta(s) = 2|V(s)|/g(s)$, with $|\!\braket{\psi_0}{E_0(s)}\!|^2 = \cos^2\theta(s)$.
-
-For $s < s^*$ with $s^* - s \gg \delta_s$, the gap $g(s) \geq c_L(s^* - s)$ exceeds the coupling, so $\theta(s) = O(\sqrt{d_0/N}/(c_L(s^* - s))) = O(\delta_s/(s^* - s)) \ll 1$ and the overlap is $1 - O(\delta_s^2/(s^* - s)^2)$: close to $1$ everywhere except near the crossing window. At the crossing $s \approx s^*$, the diagonal elements are nearly degenerate, $\theta \approx \pi/4$, and the overlap is approximately $1/2$. For $s > s^*$ with $s - s^* \gg \delta_s$, the ground state has swapped character: $\ket{\psi_0}$ projects primarily onto the excited branch, and the overlap drops to $O(\delta_s^2/(s - s^*)^2)$. At $s = 1$, this gives $|\!\braket{\psi_0}{E_0(1)}\!|^2 = O(\delta_s^2) = O(d_0/N)$. This transition is what phase estimation detects.
+\begin{definition}[Binary decision probe]
+\label{def:binary-probe}
+For an instance $H$, let $D_H:[0,1]\to\{0,1\}$ be the idealized oracle
+\[
+D_H(s)=
+\begin{cases}
+0,& s < s^*(H),\\
+1,& s > s^*(H),
+\end{cases}
+\]
+with probe cost $O(1/g_H(s))$.
+\end{definition}
 
 \begin{definition}[Adaptive adiabatic protocol]
 \label{def:adaptive-protocol}
@@ -209,28 +227,23 @@ The protocol operates in two phases.
 
 \emph{Phase 1 (Location).} Initialize $s_{\mathrm{lo}} = 0$, $s_{\mathrm{hi}} = 1$. For $i = 1, \ldots, \lceil n/2 \rceil$:
 \begin{enumerate}
-\item Prepare the state $\ket{\psi_0} = \ket{+}^{\otimes n}$.
 \item Set $s_{\mathrm{mid}} = (s_{\mathrm{lo}} + s_{\mathrm{hi}})/2$.
-\item Apply phase estimation of the Hamiltonian $H(s_{\mathrm{mid}}) = -(1-s_{\mathrm{mid}})\ket{\psi_0}\!\bra{\psi_0} + s_{\mathrm{mid}} H_z$ to the state $\ket{\psi_0}$. This requires simulating the unitary $e^{-iH(s_{\mathrm{mid}})t}$ for time $t = O(1/g(s_{\mathrm{mid}}))$.
-\item If the measured energy corresponds to the ground state of $H(s_{\mathrm{mid}})$: the crossing has not yet occurred, so set $s_{\mathrm{lo}} = s_{\mathrm{mid}}$.
-\item If the measured energy corresponds to an excited state: the crossing has already occurred, so set $s_{\mathrm{hi}} = s_{\mathrm{mid}}$.
+\item Query $D_H(s_{\mathrm{mid}})$.
+\item If $D_H(s_{\mathrm{mid}})=0$ (left of crossing), set $s_{\mathrm{lo}} = s_{\mathrm{mid}}$.
+\item If $D_H(s_{\mathrm{mid}})=1$ (right of crossing), set $s_{\mathrm{hi}} = s_{\mathrm{mid}}$.
 \end{enumerate}
 After $\lceil n/2 \rceil$ iterations, $s^*$ is located to precision $O(2^{-n/2})$.
 
 \emph{Phase 2 (Execution).} Reset the state to $\ket{\psi_0}$. Evolve from $s = 0$ to $s = 1$ using the informed local schedule of \autoref{thm:aqo-runtime}, with the crossing position estimated in Phase~1.
 \end{definition}
 
-Phase estimation of $H(s_{\mathrm{mid}})$ projects $\ket{\psi_0}$ onto an eigenstate of $H(s_{\mathrm{mid}})$ and returns the corresponding energy. The Hamiltonian $H(s_{\mathrm{mid}})$ is a sum of two terms: the rank-one projector $-(1-s_{\mathrm{mid}})\ket{\psi_0}\!\bra{\psi_0}$ (implementable via a single-qubit rotation in the $\ket{\psi_0}/\ket{\psi_0^\perp}$ basis) and the diagonal operator $s_{\mathrm{mid}} H_z$ (implementable via the problem oracle). Their sum can be simulated via product formulas with $\mathrm{poly}(n)$ gate overhead per unit time. Efficient eigenvalue estimation from initial-state overlap is studied by Poulin and Wocjan~\cite{poulin2009preparing} and Ge, Tura, and Cirac~\cite{ge2019faster}; the binary search protocol above requires only constant-precision energy discrimination, which is simpler than the full eigenvalue estimation problem.
-
-For $s_{\mathrm{mid}} < s^*$, the state $\ket{\psi_0}$ has $\Theta(1)$ overlap with $\ket{E_0(s_{\mathrm{mid}})}$, so phase estimation returns the ground energy with constant probability. For $s_{\mathrm{mid}} > s^*$ with $|s_{\mathrm{mid}} - s^*| \gg \delta_s$, the overlap $|\!\braket{\psi_0}{E_0(s_{\mathrm{mid}})}\!|^2 = O(d_0/N)$, so phase estimation returns an excited energy with probability $1 - O(d_0/N) = 1 - o(1)$. The binary search tolerates $O(1)$ errors per level, so the constant success probability suffices.
-
-\begin{lemma}[Phase estimation cost]
+\begin{lemma}[Decision-probe cost]
 \label{lem:phase-estimation-cost}
-Distinguishing the ground state from the first excited state of $H(s_{\mathrm{mid}})$ via phase estimation requires time $O(1/g(s_{\mathrm{mid}}))$.
+Each call to $D_H(s_{\mathrm{mid}})$ costs $O(1/g(s_{\mathrm{mid}}))$.
 \end{lemma}
 
 \begin{proof}
-Phase estimation resolves energies separated by $\delta E$ using evolution under $e^{-iH(s_{\mathrm{mid}})t}$ for time $t = O(1/\delta E)$. The two lowest energies of $H(s_{\mathrm{mid}})$ differ by $g(s_{\mathrm{mid}})$, so $t = O(1/g(s_{\mathrm{mid}}))$.
+Immediate from Definition~\ref{def:binary-probe}.
 \end{proof}
 
 \begin{lemma}[Phase 1 cost]
@@ -244,7 +257,7 @@ Let $d_i = |s_{\mathrm{mid},i} - s^*|$ be the distance from the $i$-th midpoint 
 \label{eq:gap-lower-bound}
 g(s_{\mathrm{mid},i}) \geq \max(g_{\min},\; c_{\min} \cdot d_i).
 \end{equation}
-The phase estimation cost at iteration $i$ is therefore
+The probe cost at iteration $i$ is therefore
 \begin{equation}
 \label{eq:pe-cost}
 O\!\left(\frac{1}{g(s_{\mathrm{mid},i})}\right) \leq O\!\left(\min\!\left(\frac{1}{g_{\min}},\; \frac{1}{c_{\min} \cdot d_i}\right)\right).
@@ -268,7 +281,7 @@ There are $O(1)$ near shells (at most $O(1)$ midpoints can have $d_i \leq d_{\ma
 The state preparation cost is $O(n)$ per iteration and $O(n)$ iterations, giving $O(n^2) = o(T_{\mathrm{inf}})$.
 \end{proof}
 
-\begin{theorem}[Adaptive adiabatic optimality]
+\begin{theorem}[Adaptive adiabatic optimality in the decision-probe model]
 \label{thm:adaptive}
 The adaptive protocol of \autoref{def:adaptive-protocol} achieves runtime $T_{\mathrm{adapt}} = O(T_{\mathrm{inf}})$ with $\Theta(n)$ measurements.
 \end{theorem}
@@ -300,9 +313,9 @@ Fixed, informed & $O(T_{\mathrm{inf}})$ & 0 \\
 \end{tabular}
 \end{center}
 
-\noindent For the running example ($N = 4$, $d_0 = 1$, $n = 2$): Phase~1 performs $\lceil 1 \rceil = 1$ iteration, probing $s_{\mathrm{mid}} = 0.5$. The true crossing is at $s^* = 3/7 \approx 0.429$, and $s_{\mathrm{mid}}$ is past the crossing but within the crossing window ($|s_{\mathrm{mid}} - s^*| = |1/2 - 3/7| = |7/14 - 6/14| = 1/14 \ll \delta_s \approx 1/4$). To compute the exact overlap, restrict to the symmetric subspace spanned by $\ket{G} = \ket{z_0}$ and $\ket{B} = (1/\sqrt{3})\sum_{z \neq z_0}\ket{z}$, where $z_0$ is the marked item. At $s = 0.5$, the effective $2 \times 2$ Hamiltonian has diagonal elements $-1/8$ and $1/8$ and off-diagonal coupling $-\sqrt{3}/8$. The ground eigenvector is $(\sqrt{3}/2)\ket{G} + (1/2)\ket{B}$, and $\ket{\psi_0} = (1/2)\ket{G} + (\sqrt{3}/2)\ket{B}$. The overlap is $|(\sqrt{3}/2)(1/2) + (1/2)(\sqrt{3}/2)|^2 = |\sqrt{3}/2|^2 = 3/4$. The exact overlap is therefore $|\!\braket{\psi_0}{E_0(0.5)}\!|^2 = 3/4$, so phase estimation is probabilistic rather than decisive at this scale: it reports the ground energy with probability $3/4$ and an excited energy with probability $1/4$.
+\noindent For the running example ($N = 4$, $d_0 = 1$, $n = 2$): Phase~1 performs $\lceil 1 \rceil = 1$ probe at $s_{\mathrm{mid}} = 0.5$, so the location stage already achieves width $1/2 = O(2^{-n/2})$. The gap there is $g(0.5)=1/\sqrt{N}=1/2$, giving probe cost $O(1/g)=O(2)=O(T_{\mathrm{inf}})$.
 
-The small instance $n = 2$ illustrates the protocol's cost structure but not its asymptotic sharpness --- the overlap transition becomes increasingly sharp as $N$ grows and $\delta_s \to 0$, making each binary search step reliable with $\Theta(1)$ probability whenever $|s_{\mathrm{mid}} - s^*| \gg \delta_s$. The gap at $s_{\mathrm{mid}} = 0.5$ is $g(0.5) = 1/\sqrt{N} = 0.5$, so the phase estimation cost is $O(1/g(0.5)) = O(2) = O(T_{\mathrm{inf}})$.
+\noindent \emph{Implementation note.} A physical instantiation of $D_H$ can be attempted via phase-estimation-based branch tests on $H(s_{\mathrm{mid}})$. The theorem above is intentionally stated in the ideal decision-probe model; a full finite-sample reliability analysis for this instantiation is separate from the present minimax argument.
 
 The adaptive protocol acquires $A_1$ through measurement; the circuit model bypasses $A_1$ entirely. The D\"urr-H\o yer quantum minimum-finding algorithm~\cite{durr1996quantum} achieves $\Theta(\sqrt{N/d_0})$ by maintaining a threshold and iteratively lowering it using Grover search, never traversing an adiabatic path and never encountering an avoided crossing. The mechanism is amplitude amplification with iterative thresholding, which uses no spectral parameter --- no $A_1$, $s^*$, $\Delta$, or gap profile.
 
@@ -336,7 +349,7 @@ I(X_{\mathrm{DH}};\,A_1 \mid S_0,E_0) \le h_2(p_f) + p_f n = 2^{-\Omega(n)}.
 
 The circuit model does not merely avoid computing $A_1$; it is provably blind to it. The adiabatic model requires and leaks information about $A_1$: a schedule tuned to $A_1$ achieves success probability $\geq 1 - \varepsilon$, while the same schedule applied to a ground-equivalent instance with different $A_1$ yields low success probability. The adaptive adiabatic model sits between: it acquires $A_1$ through $O(n)$ quantum measurements, paying $O(T_{\mathrm{inf}})$ for the acquisition. The three models form a hierarchy of spectral information usage, from full blindness (circuit) through active acquisition (adaptive) to passive dependence (fixed schedule).
 
-The adaptive protocol relies on the rank-one gap profile, which grows linearly from the crossing ($\alpha = 1$). This linear growth is what makes each binary search step informative: the gap at distance $d$ from the crossing is $\Theta(d)$, so the phase estimation cost at distance $d$ is $O(1/d)$, and the geometric series converges. What happens when the gap approaches its minimum more gently?
+The adaptive protocol relies on the rank-one gap profile, which grows linearly from the crossing ($\alpha = 1$). This linear growth is what makes each binary search step informative: the gap at distance $d$ from the crossing is $\Theta(d)$, so the decision-probe cost at distance $d$ is $O(1/d)$, and the geometric series converges. What happens when the gap approaches its minimum more gently?
 
 
 \section{Gap Geometry and Schedule Optimality}

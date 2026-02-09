@@ -244,7 +244,7 @@ Here $\delta_0^+(s) > 0$ corresponds to the first excited state and $\delta_0^-(
 \label{eq:s-star-def}
 s^* = \frac{A_1}{A_1 + 1}.
 \end{equation}
-The problem Hamiltonian has $M$ eigenvalues and $M$ degeneracies --- $2M$ free parameters. Yet the crossing position depends on a single weighted average. That is what makes a closed-form schedule possible despite arbitrary spectral complexity. For the Ising Hamiltonian with $\Delta \geq 1/\text{poly}(n)$, we have $A_1 \geq \Theta(1)$, so $s^*$ is bounded away from both $0$ and $1$. In the limit $A_1 \to \infty$ (many levels near the ground state), $s^* \to 1$; when $A_1$ is small, $s^*$ is closer to $0$.
+The problem Hamiltonian has $M$ eigenvalues and $M$ degeneracies --- $2M$ free parameters. Yet the crossing position depends on a single weighted average. That is what makes a closed-form schedule possible despite arbitrary spectral complexity. For Ising Hamiltonians with $\Delta \geq 1/\text{poly}(n)$, $A_1$ is always polynomially bounded above; in the hard-search regime $d_0 \ll N$, one also has $A_1 = \Omega(1)$, so $s^*$ stays away from $0$. In the limit $A_1 \to \infty$ (many levels near the ground state), $s^* \to 1$; when $A_1$ is small, $s^*$ is closer to $0$.
 
 The crossing position marks a balance in the eigenvalue equation: $A_1/s^* = 1/(1 - s^*)$, where the left side is the aggregate spectral pull of the excited levels toward $sE_0$ and the right side is the projector strength. At $s = s^*$, the linear coefficient in the quadratic for $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) vanishes, and the two roots $\delta_0^\pm$ are symmetric about zero. The gap is determined entirely by the constant term $d_0/N$: the ground-state degeneracy is what opens the minimum gap.
 
