@@ -8,7 +8,7 @@
 
 In the circuit model, unstructured optimization is a solved problem. Given a black-box cost function on $N = 2^n$ bit-strings, Grover's algorithm and its generalizations find a minimizer in $O(\sqrt{N/d_0})$ queries, where $d_0$ is the number of optima \cite{Grover1996, BBHT1998}. The algorithm works without any prior knowledge of the cost function's structure: amplitude amplification gathers the needed information adaptively, one oracle query at a time. No spectral parameter must be computed in advance, no schedule must be tuned to a gap profile, and no pre-computation threatens to match the cost of the search itself.
 
-Adiabatic quantum computation is polynomially equivalent to the circuit model \cite{aharonov2007adiabatic}, so a matching speedup is achievable in principle. But the adiabatic approach operates under a different constraint: the evolution Hamiltonian $H(s)$ interpolates continuously between an initial Hamiltonian $H_0$ and the problem Hamiltonian $H_z$, and the runtime is controlled by the spectral gap of $H(s)$ along the entire path. The gap structure of the interpolated Hamiltonian --- where the avoided crossing occurs, how narrow it is, how fast the gap reopens --- introduces obstacles that the circuit model avoids entirely. Matching the Grover speedup in this setting requires understanding and controlling these spectral features, which depend on the cost function through the full degeneracy structure of $H_z$.
+Adiabatic quantum computation is polynomially equivalent to the circuit model \cite{aharonov2007adiabatic}, so a matching speedup is achievable in principle. But the adiabatic approach operates under a different constraint: the evolution Hamiltonian $H(s)$ interpolates continuously between an initial Hamiltonian $H_0$ and the problem Hamiltonian $H_z$, and the runtime is controlled by the spectral gap of $H(s)$ along the entire path. The gap structure of the interpolated Hamiltonian (where the avoided crossing occurs, how narrow it is, how fast the gap reopens) introduces obstacles that the circuit model avoids entirely. Matching the Grover speedup in this setting requires understanding and controlling these spectral features, which depend on the cost function through the full degeneracy structure of $H_z$.
 
 The adiabatic version of Grover's algorithm, due to Roland and Cerf \cite{roland2004quantum}, finds a single marked item among $N = 2^n$ by slowly interpolating between a uniform superposition and a problem Hamiltonian that penalizes all unmarked items. The crossing between the two lowest energy levels occurs at $s = 1/2$, its position independent of the Hamiltonian's spectrum. The minimum spectral gap scales as $1/\sqrt{N}$, and a schedule that slows near the crossing achieves the optimal $O(\sqrt{N})$ runtime.
 
@@ -18,7 +18,7 @@ The bound applies directly to our setup: Farhi et al.\ proved that when $H_0$ is
 
 The answer in full generality is yes. The spectrum of the interpolated Hamiltonian is far richer: instead of a two-level system plus a degenerate bulk, there are $M$ interacting energy levels in a symmetric subspace, with avoided crossings between higher excited states that obscure the gap between the two lowest. The position of the ground-state avoided crossing depends nontrivially on the degeneracy structure of the problem Hamiltonian. And the minimum gap, while still scaling as $\Theta(1/\sqrt{N})$ up to spectral factors, occurs at a position that must be known to exponential precision for the schedule to be correct.
 
-With a general diagonal problem Hamiltonian, $H(s)$ has a single avoided crossing at position $s^* = A_1/(A_1 + 1)$, where $A_1$ is a spectral parameter determined by the degeneracy structure. The minimum spectral gap at the crossing scales as $\Theta(\sqrt{d_0/(N A_2)})$, and the gap grows linearly on both sides. Chapter 6 establishes the gap bounds outside the crossing window. The optimal runtime follows in Chapter 7. That computing $s^*$ is itself NP-hard --- the subject of Chapter 8 --- is what gives the result its edge.
+With a general diagonal problem Hamiltonian, $H(s)$ has a single avoided crossing at position $s^* = A_1/(A_1 + 1)$, where $A_1$ is a spectral parameter determined by the degeneracy structure. The minimum spectral gap at the crossing scales as $\Theta(\sqrt{d_0/(N A_2)})$, and the gap grows linearly on both sides. Chapter 6 establishes the gap bounds outside the crossing window. The optimal runtime follows in Chapter 7. That computing $s^*$ is itself NP-hard (the subject of Chapter 8) is what gives the result its edge.
 
 \section{The Problem}
 \label{sec:aqo-problem}
@@ -42,7 +42,7 @@ For each level $k$, the set of bit-strings at that energy is
 \end{equation}
 with degeneracy $d_k = |\Omega_k|$. The degeneracies partition the full Hilbert space: $\sum_{k=0}^{M-1} d_k = 2^n = N$. The spectral gap of the problem Hamiltonian is $\Delta = E_1 - E_0$, the energy difference between the ground state and the first excited level.
 
-NP-hard optimization problems --- MaxCut, QUBO --- encode directly as ground states of the 2-local Ising Hamiltonian \cite{barahona1982computational, lucas2014ising}:
+NP-hard optimization problems such as MaxCut and QUBO encode directly as ground states of the 2-local Ising Hamiltonian \cite{barahona1982computational, lucas2014ising}:
 \begin{equation}
 \label{eq:Ising-Ham}
 H_\sigma = \sum_{\langle i,j \rangle} J_{ij} \sigma_z^i \sigma_z^j + \sum_{j=1}^{n} h_j \sigma_z^j,
@@ -75,7 +75,7 @@ In the unstructured case, $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + s(I - \ket{w}
 \section{Spectral Parameters}
 \label{sec:spectral-parameters}
 
-In the Roland-Cerf setting, the crossing position ($s^* = 1/2$), its width, and the minimum gap are all determined by a single quantity: $N$. For a general problem Hamiltonian $H_z$ with $M$ energy levels and arbitrary degeneracies, no single number suffices. The crossing position depends on the full eigenvalue structure of $H_z$ --- not just $E_0$ and $E_1$, but all $M$ levels and their degeneracies. We need quantities that distill this $M$-dimensional information into numbers that directly control the algorithm's behavior: where the crossing occurs, how sharp the gap minimum is, and how fast the gap reopens. The relevant information is captured by a family of spectral parameters that aggregate the degeneracy structure weighted by inverse energy gaps.
+In the Roland-Cerf setting, the crossing position ($s^* = 1/2$), its width, and the minimum gap are all determined by a single quantity: $N$. For a general problem Hamiltonian $H_z$ with $M$ energy levels and arbitrary degeneracies, no single number suffices. The crossing position depends on the full eigenvalue structure of $H_z$: not just $E_0$ and $E_1$, but all $M$ levels and their degeneracies. We need quantities that distill this $M$-dimensional information into numbers that directly control the algorithm's behavior: where the crossing occurs, how sharp the gap minimum is, and how fast the gap reopens. The relevant information is captured by a family of spectral parameters that aggregate the degeneracy structure weighted by inverse energy gaps.
 
 \begin{definition}[Spectral parameters]
 \label{def:spectral-parameters}
@@ -117,7 +117,7 @@ The problem Hamiltonian $H_z$ satisfies the spectral condition if there exists a
 \end{equation}
 \end{definition}
 
-The quantity on the left is the ratio of the crossing width parameter to the spectral gap, up to constant factors. When it is small, the two-level approximation near the crossing is accurate (the higher levels do not interfere), and the crossing window occupies a negligible fraction of $[0, 1]$. The appendix of \cite{braida2024unstructured} shows that $c \approx 0.02$ suffices. When the condition fails, the crossing window is no longer narrow, higher energy levels interfere with the two-level dynamics, and the gap bounds of this chapter no longer apply. The failure reflects a change in spectral structure: the eigenvalue equation still holds, but the truncation to a quadratic in $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) requires $|\delta| \ll s\Delta$, which fails when many excited levels crowd near the ground energy. The multi-crossing regime discussed above --- exemplified by the transverse-field driver on random NP-complete instances \cite{altshuler2010anderson} --- is precisely the setting where the spectral condition breaks down. The condition therefore marks a boundary between the single-crossing regime, where the framework of Chapters 5--7 applies and the Grover speedup is achievable, and the multi-crossing regime, where the spectral landscape is currently intractable \cite{arthurthesis}.
+The quantity on the left is the ratio of the crossing width parameter to the spectral gap, up to constant factors. When it is small, the two-level approximation near the crossing is accurate (the higher levels do not interfere), and the crossing window occupies a negligible fraction of $[0, 1]$. The appendix of \cite{braida2024unstructured} shows that $c \approx 0.02$ suffices. When the condition fails, the crossing window is no longer narrow, higher energy levels interfere with the two-level dynamics, and the gap bounds of this chapter no longer apply. The failure reflects a change in spectral structure: the eigenvalue equation still holds, but the truncation to a quadratic in $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) requires $|\delta| \ll s\Delta$, which fails when many excited levels crowd near the ground energy. The multi-crossing regime discussed above, exemplified by the transverse-field driver on random NP-complete instances \cite{altshuler2010anderson}, is precisely the setting where the spectral condition breaks down. The condition therefore marks a boundary between the single-crossing regime, where the framework of Chapters 5--7 applies and the Grover speedup is achievable, and the multi-crossing regime, where the spectral landscape is currently intractable \cite{arthurthesis}.
 
 For any $H_z$ with $\Delta > (1/c)\sqrt{d_0/N}$, the condition holds, using $A_2 \geq 1 - d_0/N$. For the Ising Hamiltonian with $\Delta \geq 1/\text{poly}(n)$ and $d_0$ not scaling with $N$, the left side is exponentially small in $n$, so the condition is easily satisfied. With $\Delta = 1$ and $d_0 = 1$ (unstructured search), the left side is $1/\sqrt{N}$, well below any constant $c$ for $N \geq 2$.
 
@@ -171,7 +171,7 @@ Henceforth, $H(s)$ denotes its restriction to the symmetric subspace $\mathcal{H
 \label{eq:H(s)-restricted}
 H(s) = -(1 - s)\ket{\psi_0}\bra{\psi_0} + s \sum_{k=0}^{M-1} E_k \ket{k}\bra{k}.
 \end{equation}
-This is a rank-one perturbation of the diagonal matrix $sH_z$ --- the setting of the Golub eigenvalue interlacing results \cite{golub1973modified}.
+This is a rank-one perturbation of the diagonal matrix $sH_z$, the setting of the Golub eigenvalue interlacing results \cite{golub1973modified}.
 
 \begin{lemma}[Eigenvalue equation]
 \label{lem:eigenvalue-equation}
@@ -225,7 +225,7 @@ which is minimized at $s = 1/2$ exactly, giving $g_{\min} = 1/\sqrt{N}$. This is
 
 The eigenvalue equation (Lemma \ref{lem:eigenvalue-equation}) characterizes the spectrum of $H(s)$ implicitly, but yields explicit formulas for $s^*$, $\delta_s$, and $g_{\min}$ when analyzed near the ground-state energy. Near the crossing, the ground and first excited states behave like a two-level system, with the higher levels acting as a perturbation controlled by the spectral condition.
 
-The two lowest eigenvalues have the form $\lambda(s) = s E_0 + \delta(s)$, where $\delta(s)$ is a correction to the trivial energy $s E_0$. Writing the eigenvalue as a perturbation of the nearest pole isolates the ground-state contribution and converts the implicit equation into an explicit power series --- a standard technique for rank-one updates of diagonal eigenvalue problems \cite{golub1973modified}. Substituting into Eq.~\eqref{eq:eigenvalue-equation}:
+The two lowest eigenvalues have the form $\lambda(s) = s E_0 + \delta(s)$, where $\delta(s)$ is a correction to the trivial energy $s E_0$. Writing the eigenvalue as a perturbation of the nearest pole isolates the ground-state contribution and converts the implicit equation into an explicit power series, a standard technique for rank-one updates of diagonal eigenvalue problems \cite{golub1973modified}. Substituting into Eq.~\eqref{eq:eigenvalue-equation}:
 \begin{equation}
 \label{eq:delta-equation}
 -\frac{d_0}{N \delta} + \frac{1}{N} \sum_{k=1}^{M-1} \frac{d_k}{s(E_k - E_0) - \delta} = \frac{1}{1 - s}.
@@ -244,7 +244,7 @@ Here $\delta_0^+(s) > 0$ corresponds to the first excited state and $\delta_0^-(
 \label{eq:s-star-def}
 s^* = \frac{A_1}{A_1 + 1}.
 \end{equation}
-The problem Hamiltonian has $M$ eigenvalues and $M$ degeneracies --- $2M$ free parameters. Yet the crossing position depends on a single weighted average. That is what makes a closed-form schedule possible despite arbitrary spectral complexity. For Ising Hamiltonians with $\Delta \geq 1/\text{poly}(n)$, $A_1$ is always polynomially bounded above; in the hard-search regime $d_0 \ll N$, one also has $A_1 = \Omega(1)$, so $s^*$ stays away from $0$. In the limit $A_1 \to \infty$ (many levels near the ground state), $s^* \to 1$; when $A_1$ is small, $s^*$ is closer to $0$.
+The problem Hamiltonian has $M$ eigenvalues and $M$ degeneracies: $2M$ free parameters. Yet the crossing position depends on a single weighted average. That is what makes a closed-form schedule possible despite arbitrary spectral complexity. For Ising Hamiltonians with $\Delta \geq 1/\text{poly}(n)$, $A_1$ is always polynomially bounded above; in the hard-search regime $d_0 \ll N$, one also has $A_1 = \Omega(1)$, so $s^*$ stays away from $0$. In the limit $A_1 \to \infty$ (many levels near the ground state), $s^* \to 1$; when $A_1$ is small, $s^*$ is closer to $0$.
 
 The crossing position marks a balance in the eigenvalue equation: $A_1/s^* = 1/(1 - s^*)$, where the left side is the aggregate spectral pull of the excited levels toward $sE_0$ and the right side is the projector strength. At $s = s^*$, the linear coefficient in the quadratic for $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) vanishes, and the two roots $\delta_0^\pm$ are symmetric about zero. The gap is determined entirely by the constant term $d_0/N$: the ground-state degeneracy is what opens the minimum gap.
 
@@ -341,7 +341,7 @@ The crossing is at $s^* \approx 1/2$, the minimum gap scales as $1/\sqrt{N}$, an
 \section{Gap Structure}
 \label{sec:gap-structure}
 
-The adiabatic schedule requires the gap everywhere, not just near the crossing. The local adaptive schedule speeds up where the gap is large and slows where it is small, so the runtime depends on the gap profile across the full interval $[0,1]$. Inside $\mathcal{I}_{s^*}$, the gap is $\Theta(g_{\min})$. Outside it, the gap grows linearly --- but proving this requires different techniques for the two sides.
+The adiabatic schedule requires the gap everywhere, not just near the crossing. The local adaptive schedule speeds up where the gap is large and slows where it is small, so the runtime depends on the gap profile across the full interval $[0,1]$. Inside $\mathcal{I}_{s^*}$, the gap is $\Theta(g_{\min})$. Outside it, the gap grows linearly. Proving this requires different techniques for the two sides.
 
 \begin{lemma}[Gap to the left of the crossing]
 \label{lem:gap-left-preview}
