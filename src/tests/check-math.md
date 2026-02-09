@@ -430,15 +430,17 @@ When checking a file for notation consistency:
 3. Check spectral parameters use canonical forms (A_1, A_2, Delta, g(s))
 4. Verify error terms use varepsilon not epsilon
 5. Check avoided crossing notation uses s^* and delta_s
+6. Do NOT flag standard symbol reuse across sections (e.g., varepsilon for error in one section and precision in another). Only flag when two meanings collide in the same proof, equation, or tightly coupled argument
 
 ## Criteria
 
 ### Notation Consistency
 
-1. Same symbol means same thing throughout all chapters
+1. Same symbol means same thing within a single proof or theorem statement
 2. Definitions appear before use
-3. No symbol redefined with different meaning
+3. No symbol redefined with different meaning in the same local context (proof, theorem, or tightly coupled argument)
 4. Standard notation from paper used
+5. Reusing standard letters (varepsilon, delta, mu, eta, C, etc.) across different sections with locally clear meaning is standard mathematical practice and should not be flagged
 
 ### Mathematical Correctness
 

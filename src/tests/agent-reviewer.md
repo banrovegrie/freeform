@@ -220,7 +220,7 @@ Original contributions beyond the paper.
 | Error | Description | Action |
 |-------|-------------|--------|
 | `missing_citations` | Important related papers not cited | List missing refs from `references/` |
-| `unclear_notation` | Inconsistent with paper notation | Defer to `check-math.md`; list violations |
+| `unclear_notation` | Inconsistent with paper notation within the same local context (proof, theorem, or tightly coupled argument). Standard reuse of common letters across sections is normal mathematical practice and should not be flagged | Defer to `check-math.md`; list violations |
 | `unmotivated_definition` | Definition appears before reader wants it | Require motivation paragraph |
 | `vague_claim` | "efficient"/"optimal" without bounds | Require O(?) or proof |
 | `disconnected_section` | Section serves no structural purpose | Require motivation or removal |

@@ -12,7 +12,7 @@
 
 The adiabatic algorithm of \autoref{thm:aqo-runtime} achieves the Grover speedup $\widetilde{O}(\sqrt{N/d_0})$, but its schedule depends on $s^* = A_1/(A_1+1)$, whose computation is NP-hard (\autoref{thm:np-hard-A1}). In the circuit model, Grover's algorithm achieves the same speedup without computing any spectral parameter. The adiabatic framework demands the schedule be fixed before evolution begins. What runtime is achievable by an adiabatic algorithm that knows nothing about the problem Hamiltonian beyond its dimension?
 
-The title of this chapter has three meanings. The spectral gap $g(s)$ determines the runtime: physics. The gap in knowledge about where the spectral gap reaches its minimum determines what runtime is achievable: information theory. And whether the gap in knowledge matters at all depends on the computational model: complexity theory. These three meanings converge to a single story, told through six sections that progressively resolve the tension created in Chapter~8.
+The title of this chapter has three meanings. The spectral gap $g(s)$ determines the runtime: physics. The gap in knowledge about where the spectral gap reaches its minimum determines what runtime is achievable: information theory. And whether the gap in knowledge matters at all depends on the computational model: complexity theory.
 
 Throughout this chapter, asymptotic notation ($O$, $\Omega$, $\Theta$) refers to the limit $N \to \infty$ (equivalently $n \to \infty$ with $N = 2^n$). The spectral parameters $d_0$, $M$, $\Delta$, $A_1$, $A_2$ and the target error $\varepsilon$ are treated as fixed positive constants independent of $n$ unless explicitly stated otherwise. When we write ``$O(T_{\mathrm{inf}})$,'' the implicit constant may depend on these spectral parameters but not on $n$.
 
@@ -22,14 +22,22 @@ Throughout this chapter, asymptotic notation ($O$, $\Omega$, $\Theta$) refers to
 
 The NP-hardness of $A_1$ is a statement about worst-case classical computation. It does not directly tell us how much runtime an adiabatic algorithm loses by not knowing $A_1$. If a fixed schedule that ignores $A_1$ still achieved $O(\sqrt{N/d_0})$, the hardness would be academic. It is not.
 
+The separation between informed and uninformed schedules is a minimax result: a two-player game where the schedule designer moves first, then an adversary selects the worst-case gap function. To formalize this, we need a class of gap functions broad enough that the adversary can place the gap minimum anywhere in an uncertainty interval $[s_L, s_R]$.
+
 \begin{definition}[Gap class]
 \label{def:gap-class}
 The gap class $\mathcal{G}(s_L, s_R, \Delta_*)$ consists of all gap functions $g: [0,1] \to \mathbb{R}_{>0}$ satisfying: the minimum $g(s^*) = \Delta_*$ is achieved at a unique point $s^* \in [s_L, s_R]$, and $g(s) > \Delta_*$ for all $s \neq s^*$.
 \end{definition}
 
-A fixed schedule is determined before the instance is revealed: it depends only on the problem size $n$ and the target error $\varepsilon$, not on spectral properties such as $s^*$ or $\Delta_*$. The schedule induces a velocity profile $v(s) > 0$ representing the rate at which the evolution traverses the parameter domain $[0,1]$. The total evolution time is $T = \int_0^1 v(s)^{-1}\,ds$. The JRS adiabatic error bound of \autoref{eq:jrs-bound} controls the transition probability through an integral involving $\lVert H'(s) \rVert^2/g(s)^3$. Since $H'(s) = \ket{\psi_0}\!\bra{\psi_0} + H_z$ has $\lVert H'(s) \rVert = O(1)$, the integrand is $O(g(s)^{-3})$, concentrated in a window of width $O(\Delta_*)$ around $s^*$ where $g = \Theta(\Delta_*)$. A schedule with local velocity $v(s)$ traverses this window in time $O(\Delta_*/v)$. The JRS error integral over the crossing window is $\int v(s) \lVert H'(s) \rVert^2 g(s)^{-3}\,ds = \Theta(v/\Delta_*^2)$, since the integrand is $\Theta(v/\Delta_*^3)$ over a window of width $\Theta(\Delta_*)$. Keeping the total transition probability below $\varepsilon$ requires the crossing contribution $\Theta(v^2/\Delta_*^2)$ to satisfy $v^2/\Delta_*^2 \leq \varepsilon$, giving the maximum allowable velocity at the crossing: $v \leq v_{\mathrm{slow}} = \sqrt{\varepsilon}\,\Delta_*$.
+\noindent For the running example ($M = 2$, $d_0 = 1$, $N = 4$), $s^* = A_1/(A_1+1) = 3/7$ and $\Delta_* = g_{\min} = 1/\sqrt{4} = 1/2$. Any gap function in $\mathcal{G}(0, 1, 1/2)$ has its minimum somewhere in $[0, 1]$ at value $1/2$; the adversary's freedom is in choosing where.
 
-The separation between informed and uninformed schedules is a minimax result: a two-player game where the schedule designer moves first, then an adversary selects the worst-case gap function.
+\noindent The parameter $\Delta_*$ denotes the minimum of the abstract gap function $g$; it should not be confused with $\Delta = E_1 - E_0$ (the spectral gap of $H_z$) or with $g_{\min}$ (the minimum gap of the rank-one Hamiltonian $H(s)$). For the rank-one gap profile, $\Delta_* = g_{\min} = \Theta(\sqrt{d_0/(NA_2)})$.
+
+A fixed schedule is determined before the instance is revealed: it depends only on the problem size $n$ and the target error $\varepsilon$, not on spectral properties such as $s^*$ or $\Delta_*$. The schedule induces a velocity profile $v(s) > 0$ representing the rate at which the evolution traverses the parameter domain $[0,1]$. The total evolution time is $T = \int_0^1 v(s)^{-1}\,ds$.
+
+The velocity bound at the crossing follows from the Roland-Cerf local adiabatic condition (Chapter~7): the schedule must satisfy $v(s) = |ds/dt| \leq \varepsilon\,g(s)^2/\lVert H'(s) \rVert$ at each $s$ to keep the transition probability below $\varepsilon$. Since $H'(s) = \ket{\psi_0}\!\bra{\psi_0} + H_z$ satisfies $\lVert H'(s) \rVert \leq \lVert \ket{\psi_0}\!\bra{\psi_0} \rVert + \lVert H_z \rVert \leq 1 + 1 = 2$ (using the eigenvalue normalization $E_{M-1} \leq 1$ from Chapter~5), the velocity is bounded by $v(s) \leq \varepsilon\,g(s)^2/2$. At the crossing where $g = \Delta_*$, this gives $v \leq \varepsilon\,\Delta_*^2/2$.
+
+The crossing window has width $\delta_s = \Theta(\Delta_*)$, so a schedule must be slow throughout this window. To see this, recall from Chapter~5 that $\delta_s = \hat{g}/c_L$ (\autoref{eq:gmin-deltas-relation}), where $\hat{g} = \frac{2A_1}{A_1+1}\sqrt{d_0/(NA_2)}$ is the leading-order minimum gap satisfying $g_{\min} = (1 \pm O(\eta))\hat{g}$; since $c_L = A_1(A_1+1)/A_2$ is a fixed constant, $\delta_s = \Theta(g_{\min}) = \Theta(\Delta_*)$. We define $v_{\mathrm{slow}} = \varepsilon\,\Delta_*^2/2$ as the maximum crossing velocity. In the ratio $T_{\mathrm{unf}}/T_{\mathrm{inf}}$, this velocity cancels: both runtimes are computed under the same Roland-Cerf condition, so $v_{\mathrm{slow}}$ appears in both denominators, and the separation depends only on the geometric ratio $(s_R - s_L)/\Delta_*$.
 
 \begin{lemma}[Adversarial gap construction]
 \label{lem:adversarial-gap}
@@ -42,11 +50,15 @@ The function satisfies $g_{\mathrm{adv}}(s_{\mathrm{adv}}) = \Delta_*$, $g_{\mat
 
 \begin{lemma}[Velocity bound for uninformed schedules]
 \label{lem:velocity-bound}
-Let $u$ be a fixed schedule achieving error $\leq \varepsilon$ for all $g \in \mathcal{G}(s_L, s_R, \Delta_*)$. Then $v(s) \leq v_{\mathrm{slow}}$ for all $s \in [s_L, s_R]$.
+Let $u$ be a fixed schedule achieving error $\leq \varepsilon$ for all $g \in \mathcal{G}(s_L, s_R, \Delta_*)$. Then $v(s) \leq v_{\mathrm{slow}}$ for all $s \in [s_L, s_R]$, provided $N$ is sufficiently large that $\Delta_* < \min(1 - s_R, s_L)$.
 \end{lemma}
 
 \begin{proof}
-Suppose $v(s') > v_{\mathrm{slow}}$ for some $s' \in [s_L, s_R]$. By \autoref{lem:adversarial-gap}, there exists $g' \in \mathcal{G}$ with minimum at $s' = s^*$. The crossing error is $v(s')^2/\Delta_*^2 > \varepsilon$, contradicting the assumption.
+Suppose $v(s') > v_{\mathrm{slow}}$ for some $s' \in [s_L, s_R]$. We construct a physical Hamiltonian in the rank-one family whose gap minimum occurs at $s'$, then show that the schedule violates the adiabatic condition on this instance.
+
+Since $s^* = A_1/(A_1+1)$ is a continuous, strictly increasing function of $A_1 \in (0,\infty)$ with range $(0,1)$, there exists $A_1$ placing the crossing at $s'$. On the two-level family with solution fraction $\rho = d_0/N$, the leading-order gap minimum is $\hat{g} = 2(1-s')\sqrt{\rho(1-\rho)}$ (\autoref{eq:gmin-formula}), so choosing $\rho$ to satisfy $\hat{g} = \Delta_*$ (feasible whenever $\Delta_* \leq 1 - s'$, which holds asymptotically since $\Delta_* = \Theta(2^{-n/2})$ and $s' \leq s_R < 1$) produces a problem Hamiltonian $H_z$ with crossing at $s'$ and $g_{\min} = \Theta(\Delta_*)$. The adversary in the minimax game selects this physical Hamiltonian, not merely an abstract gap function.
+
+The Roland-Cerf condition (\autoref{eq:roland-cerf-runtime}) on this Hamiltonian requires $v(s') \leq \varepsilon\,g_{\min}^2/\lVert H'(s') \rVert = \Theta(v_{\mathrm{slow}})$. Since $v(s') > v_{\mathrm{slow}}$ by assumption, the transition probability exceeds $\varepsilon$ for this instance (after absorbing the constant factor into $v_{\mathrm{slow}}$, which is defined only up to $\Theta$). Because the schedule is fixed before the instance is revealed, it must satisfy $v(s) \leq v_{\mathrm{slow}}$ at every $s \in [s_L, s_R]$.
 \end{proof}
 
 \begin{theorem}[Separation]
@@ -63,9 +75,9 @@ By \autoref{lem:velocity-bound}, $v(s) \leq v_{\mathrm{slow}}$ for all $s \in [s
 \begin{equation}
 T_{\mathrm{unf}} = \int_0^1 \frac{ds}{v(s)} \geq \int_{s_L}^{s_R} \frac{ds}{v(s)} \geq \frac{s_R - s_L}{v_{\mathrm{slow}}}.
 \end{equation}
-The informed schedule knows $s^*$ exactly and needs to be slow only in the crossing window of width $O(\Delta_*)$, giving $T_{\mathrm{inf}} = \Theta(\Delta_*/v_{\mathrm{slow}})$ by \autoref{thm:aqo-runtime} applied to any gap profile in the class (the minimax argument requires only the crossing-window scaling, which holds for all $g \in \mathcal{G}$ with $g(s) = \Delta_* + \Theta((s - s^*)^2)$ near $s^*$). The velocity factors cancel:
+The informed schedule knows $s^*$ exactly and needs to be slow only in the crossing window of width $O(\Delta_*)$, giving $T_{\mathrm{inf}} = \Theta(\Delta_*/v_{\mathrm{slow}})$ by \autoref{thm:aqo-runtime} applied to any gap profile in the class (here $T_{\mathrm{inf}}$ is the informed runtime for the rank-one gap profile, which has linear approach $\alpha = 1$ near $s^*$; the crossing window width is $\delta_s = \hat{g}/c_L = \Theta(\Delta_*)$ by \autoref{eq:gmin-deltas-relation}, giving $T_{\mathrm{inf}} = \Theta(\delta_s/v_{\mathrm{slow}}) = \Theta(\Delta_*/v_{\mathrm{slow}})$ via \autoref{thm:aqo-runtime}). The velocity factors cancel:
 \begin{equation}
-\frac{T_{\mathrm{unf}}}{T_{\mathrm{inf}}} \geq \Theta\!\left(\frac{s_R - s_L}{\Delta_*}\right). \qedhere
+\frac{T_{\mathrm{unf}}}{T_{\mathrm{inf}}} = \Omega\!\left(\frac{s_R - s_L}{\Delta_*}\right). \qedhere
 \end{equation}
 \end{proof}
 
@@ -74,9 +86,7 @@ The informed schedule knows $s^*$ exactly and needs to be slow only in the cross
 For $n$-qubit unstructured search, $\Delta_* = \Theta(2^{-n/2})$ and $s_R - s_L = \Theta(1)$, giving $T_{\mathrm{unf}}/T_{\mathrm{inf}} = \Omega(2^{n/2})$.
 \end{corollary}
 
-For the running example ($M = 2$, $d_0 = 1$, $N = 4$), the separation ratio is $\Theta(1)/\Theta(1/2) = \Theta(2) = \Theta(\sqrt{N})$. Uninformed adiabatic evolution on this four-element instance takes roughly twice as long as informed evolution, a gap that grows exponentially with $n$.
-
-\textbf{Remark.} The gap class $\mathcal{G}$ is defined abstractly: its members are positive functions with a unique minimum, not necessarily gap profiles of physical Hamiltonians. The separation theorem is therefore a minimax lower bound over an abstract function class, which is strictly stronger than a bound restricted to physically realizable gaps. Since the paper's Hamiltonian class produces gap profiles that belong to $\mathcal{G}$ (with $\alpha = 1$ near the minimum), the bound applies to the physically relevant setting.
+For the running example ($M = 2$, $d_0 = 1$, $N = 4$), the separation ratio is $(s_R - s_L)/\Delta_* = 1/(1/2) = 2 = \sqrt{N}$. Uninformed adiabatic evolution on this four-element instance takes twice as long as informed evolution, a discrepancy that grows exponentially with $n$.
 
 The separation theorem does not say that NP-hardness implies exponential slowdown. The logical structure is: NP-hardness forces the gap-uninformed model for any fixed schedule with polynomial-time classical preprocessing; the gap-uninformed model has the $\Omega(2^{n/2})$ minimax lower bound from the adversarial geometry of \autoref{lem:adversarial-gap}; therefore this class of algorithms pays the penalty. The penalty comes from the geometry, not from computational complexity directly.
 
@@ -125,7 +135,7 @@ where $\delta_{A_1} = 2\sqrt{d_0 A_2/N}$ is the precision threshold for optimali
 \end{equation}
 yields $T(\varepsilon)/T_{\mathrm{inf}} \geq \Theta(\varepsilon/\delta_{A_1})$. For $\varepsilon < \delta_{A_1}$, the trivial bound $T(\varepsilon) \geq T_{\mathrm{inf}}$ holds regardless of precision.
 
-\emph{Upper bound.} For $\varepsilon \geq \delta_{A_1}$, construct a schedule with velocity $v_{\mathrm{slow}} = \sqrt{\varepsilon}\,\Delta_*$ throughout the uncertainty interval $[s_L(\varepsilon), s_R(\varepsilon)]$ and fast velocity $v_{\mathrm{fast}} = O(1)$ outside. The slow region has width $W(\varepsilon) = \Theta(\varepsilon/\delta_{A_1}) \cdot \delta_s$, so the total time is $T = W(\varepsilon)/v_{\mathrm{slow}} + O(1) = \Theta(T_{\mathrm{inf}} \cdot \varepsilon/\delta_{A_1})$, since $T_{\mathrm{inf}} = \Theta(\delta_s/v_{\mathrm{slow}})$. For $\varepsilon < \delta_{A_1}$, the optimal informed schedule achieves $T = O(T_{\mathrm{inf}})$.
+\emph{Upper bound.} For $\varepsilon \geq \delta_{A_1}$, construct a schedule with crossing velocity $v_{\mathrm{slow}} = \Theta(\varepsilon\,\Delta_*^2)$ throughout the uncertainty interval $[s_L(\varepsilon), s_R(\varepsilon)]$ and fast velocity $v_{\mathrm{fast}} = O(1)$ outside. The slow region has width $W(\varepsilon) = \Theta(\varepsilon/\delta_{A_1}) \cdot \delta_s$, so the total time is $T = W(\varepsilon)/v_{\mathrm{slow}} + O(1) = \Theta(T_{\mathrm{inf}} \cdot \varepsilon/\delta_{A_1})$, since $T_{\mathrm{inf}} = \Theta(\delta_s/v_{\mathrm{slow}})$. For $\varepsilon < \delta_{A_1}$, the optimal informed schedule achieves $T = O(T_{\mathrm{inf}})$.
 \end{proof}
 
 The interpolation is linear: no threshold, no cliff, no phase transition. At precision $1/\mathrm{poly}(n)$ (NP-hard), the overhead is $\Theta(2^{n/2}/\mathrm{poly}(n))$, nearly the full exponential. At precision $2^{-n/2}$ (algorithmically relevant), the overhead is $\Theta(1)$. The space between these two precision scales is the ``information gap.'' For the running example, the explicit precision table is:
@@ -144,11 +154,11 @@ $1$ (no knowledge) & $\Theta(2^{n/2})$ \\
 \end{tabular}
 \end{center}
 
-The interpolation theorem treats $A_1$ precision as a continuous resource. A complementary question is operational: given that $s^*$ lies in a known interval $[u_L, u_R]$ but the exact position is unknown, what is the best fixed schedule? A hedging schedule distributes its slowdown across the entire uncertainty interval rather than concentrating at a single point: velocity $v_{\mathrm{slow}}$ for $s \in [u_L, u_R]$ and $v_{\mathrm{fast}}$ outside, subject to the normalization $(u_R - u_L)/v_{\mathrm{slow}} + (1 - u_R + u_L)/v_{\mathrm{fast}} = 1$. Write $w = u_R - u_L$ for the interval width. The JRS error integral becomes $v_{\mathrm{slow}} I_{\mathrm{slow}} + v_{\mathrm{fast}} I_{\mathrm{fast}}$, where $I_{\mathrm{slow}} = \int_{u_L}^{u_R} g(u)^{-3}\,du$ and $I_{\mathrm{fast}} = \int_{[0,1]\setminus[u_L,u_R]} g(u)^{-3}\,du$. Since the crossing lies within the slow region, $I_{\mathrm{slow}} \gg I_{\mathrm{fast}}$.
+The interpolation theorem treats $A_1$ precision as a continuous resource. A complementary question is operational: given that $s^*$ lies in a known interval $[u_L, u_R]$ but the exact position is unknown, what is the best fixed schedule? A hedging schedule distributes its slowdown across the entire uncertainty interval rather than concentrating at a single point: velocity $v_{\mathrm{slow}}$ for $s \in [u_L, u_R]$ and $v_{\mathrm{fast}}$ outside, subject to the normalization $(u_R - u_L)/v_{\mathrm{slow}} + (1 - u_R + u_L)/v_{\mathrm{fast}} = 1$. Write $w = u_R - u_L$ for the interval width. The JRS error functional integrates $\lVert H' \rVert^2/g^3$; since $\lVert H'(s) \rVert = O(1)$ for the rank-one family, the effective integrand is $g^{-3}$, in contrast to the Roland-Cerf condition which integrates $g^{-2}$. For a piecewise-constant velocity profile, the JRS error bound (\autoref{eq:jrs-bound}) gives a transition probability proportional to $v \cdot \int g^{-3}\,ds$ on each segment. The total error is $v_{\mathrm{slow}} I_{\mathrm{slow}} + v_{\mathrm{fast}} I_{\mathrm{fast}}$, where $I_{\mathrm{slow}} = \int_{u_L}^{u_R} g(u)^{-3}\,du$ and $I_{\mathrm{fast}} = \int_{[0,1]\setminus[u_L,u_R]} g(u)^{-3}\,du$. Since the crossing lies within the slow region, $I_{\mathrm{slow}} \gg I_{\mathrm{fast}}$.
 
 \begin{theorem}[Hedging]
 \label{thm:hedging}
-Let $R = I_{\mathrm{slow}}/I_{\mathrm{fast}} \gg 1$. The optimal hedging schedule for interval $[u_L, u_R]$ achieves $\mathrm{Error}_{\mathrm{hedge}}/\mathrm{Error}_{\mathrm{uniform}} \to u_R - u_L$ as $R \to \infty$, with optimal slow velocity $v_{\mathrm{slow}} = w + \sqrt{(1-w)w/R}$.
+Let $R = I_{\mathrm{slow}}/I_{\mathrm{fast}} \gg 1$. Under normalization $T = 1$, the optimal hedging schedule for interval $[u_L, u_R]$ achieves $\mathrm{Error}_{\mathrm{hedge}}/\mathrm{Error}_{\mathrm{uniform}} \to u_R - u_L$ as $R \to \infty$, with optimal slow velocity $v_{\mathrm{slow}} = w + \sqrt{(1-w)w/R}$.
 \end{theorem}
 
 \begin{proof}
@@ -168,20 +178,24 @@ Solving: $(v_{\mathrm{slow}} - w)^2 = (1-w)\,w\,I_{\mathrm{fast}}/I_{\mathrm{slo
 \begin{equation}
 v_{\mathrm{slow}} = w + \sqrt{(1-w)\,w/R}.
 \end{equation}
-At this optimum, $v_{\mathrm{fast}} = (1-w)/\sqrt{(1-w)\,w/R} = \sqrt{R(1-w)/w}$. The optimal error is $E_{\mathrm{opt}} = w\,I_{\mathrm{slow}} + 2\sqrt{(1-w)\,w\,I_{\mathrm{slow}}\,I_{\mathrm{fast}}} + (1-w)I_{\mathrm{fast}}/\sqrt{R(1-w)/w}$. Since $R = I_{\mathrm{slow}}/I_{\mathrm{fast}} \gg 1$, the dominant term is $w\,I_{\mathrm{slow}}$, while the uniform error is $E_{\mathrm{unif}} = I_{\mathrm{slow}} + I_{\mathrm{fast}} \approx I_{\mathrm{slow}}$. Therefore $E_{\mathrm{opt}}/E_{\mathrm{unif}} \to w = u_R - u_L$ as $R \to \infty$.
+At this optimum, $v_{\mathrm{fast}} = (1-w)\,v_{\mathrm{slow}}/\sqrt{(1-w)\,w/R} = \sqrt{R\,w\,(1-w)} + (1-w)$. The optimal error, substituting $v_{\mathrm{slow}} - w = \sqrt{(1-w)\,w/R}$, is
+\begin{equation}
+E_{\mathrm{opt}} = \bigl(w + \sqrt{(1-w)\,w/R}\bigr)\,I_{\mathrm{slow}} + \bigl(\sqrt{R\,w\,(1-w)} + (1-w)\bigr)\,I_{\mathrm{fast}}.
+\end{equation}
+Since $R = I_{\mathrm{slow}}/I_{\mathrm{fast}} \gg 1$, the terms involving $\sqrt{R}$ contribute $2\sqrt{w\,(1-w)\,I_{\mathrm{slow}}\,I_{\mathrm{fast}}} = o(I_{\mathrm{slow}})$, and the dominant term is $w\,I_{\mathrm{slow}}$, while the uniform error is $E_{\mathrm{unif}} = I_{\mathrm{slow}} + I_{\mathrm{fast}} \approx I_{\mathrm{slow}}$. Therefore $E_{\mathrm{opt}}/E_{\mathrm{unif}} \to w = u_R - u_L$ as $R \to \infty$.
 \end{proof}
 
-For an uncertainty interval $[0.4, 0.8]$, the hedging schedule achieves a 60\% error reduction compared to a uniform schedule at the same total runtime. The NP-hardness of $A_1$ is ``soft'' in the following sense: bounded uncertainty about $s^*$ translates to a constant-factor improvement, not an exponential overhead.
+For an uncertainty interval $[0.4, 0.8]$, the hedging schedule achieves error $E_{\mathrm{opt}}/E_{\mathrm{unif}} = 0.4$ compared to a uniform schedule at the same total runtime, a 60\% reduction in transition probability. The NP-hardness of $A_1$ is ``soft'' in the following sense: bounded uncertainty about $s^*$ translates to a constant-factor improvement, not an exponential overhead. The hedging schedule corresponds to Level~2 of the ignorance taxonomy developed in \autoref{sec:complexity-landscape}: bounded uncertainty about $s^*$ yields a constant-factor improvement proportional to the interval width.
 
 
 \section{Quantum Bypass}
 \label{sec:quantum-bypass}
 
-The separation theorem and the interpolation theorem characterize the cost of ignorance within the fixed-schedule model. Both assume the schedule is determined before evolution begins. An adiabatic device, however, is a physical system that can be measured during execution. This observation leads to the chapter's most important positive result, which directly answers the open question posed in the original paper~\cite{braida2024unstructured}: ``Can this limitation be overcome when one only has access to a device operating in the adiabatic setting?''
+The separation theorem and the interpolation theorem characterize the cost of ignorance within the fixed-schedule model. Both assume the schedule is determined before evolution begins. An adiabatic device, however, is a physical system that can be measured during execution. The original paper~\cite{braida2024unstructured} posed the question: ``Can this limitation be overcome when one only has access to a device operating in the adiabatic setting?''
 
-The answer is yes. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant-speed adaptive strategy that numerically achieves the quadratic speedup without prior spectral knowledge; the analysis below provides a rigorous proof of optimality for a binary-search protocol. The key insight separates two tasks that NP-hardness conflates: \emph{computing} the crossing position $s^*$ from the classical description of $H_z$ is NP-hard, but \emph{detecting} $s^*$ by probing the quantum system $H(s)$ at selected parameter values is efficient. The mechanism is phase estimation: the ground and first excited energies of $H(s)$ differ by $g(s)$, and the initial state $\ket{\psi_0}$ transitions from ground-state-like to excited-state-like as $s$ crosses $s^*$. A binary search with phase estimation at each midpoint locates the crossing.
+The answer is yes. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant geometric speed (CGS) schedule that traverses the eigenstate path at uniform arc length, using eigenstate overlaps computed on the fly via the quantum Zeno Monte Carlo method to adaptively adjust the parameter velocity. Their approach improves the gap scaling from $O(\Delta_*^{-2})$ to $O(\Delta_*^{-1})$ and demonstrates numerically that the quadratic speedup persists for adiabatic unstructured search without prior spectral knowledge. The binary-search protocol below differs in mechanism --- it uses phase estimation to actively locate the crossing before executing the informed schedule --- but achieves the same asymptotic scaling $O(T_{\mathrm{inf}})$ with a rigorous optimality proof. The key insight separates two tasks that NP-hardness conflates: \emph{computing} the crossing position $s^*$ from the classical description of $H_z$ is NP-hard, but \emph{detecting} $s^*$ by probing the quantum system $H(s)$ at selected parameter values is efficient. The mechanism is phase estimation: the ground and first excited energies of $H(s)$ differ by $g(s)$, and the initial state $\ket{\psi_0}$ transitions from ground-state-like to excited-state-like as $s$ crosses $s^*$. A binary search with phase estimation at each midpoint locates the crossing.
 
-To make this precise, we need two ingredients: the overlap structure of $\ket{\psi_0}$ with the instantaneous eigenstates of $H(s)$, and the cost of phase estimation at each probe point.
+The protocol requires two ingredients: the overlap structure of $\ket{\psi_0}$ with the instantaneous eigenstates of $H(s)$, and the cost of phase estimation at each probe point.
 
 The state $\ket{\psi_0}$ is the exact ground state of $H(0) = -\ket{\psi_0}\!\bra{\psi_0}$. As $s$ increases from $0$ to $1$, the ground state $\ket{E_0(s)}$ of $H(s)$ evolves continuously within the two-dimensional symmetric subspace of Chapter~5. The effective two-level Hamiltonian has diagonal elements that cross near $s^*$ and off-diagonal coupling $|V(s)| = (1-s)\sqrt{d_0(N-d_0)}/N = \Theta(\sqrt{d_0/N})$. The overlap $|\!\braket{\psi_0}{E_0(s)}\!|^2$ is governed by the mixing angle $\theta(s)$ satisfying $\sin 2\theta(s) = 2|V(s)|/g(s)$, with $|\!\braket{\psi_0}{E_0(s)}\!|^2 = \cos^2\theta(s)$.
 
@@ -204,7 +218,7 @@ After $\lceil n/2 \rceil$ iterations, $s^*$ is located to precision $O(2^{-n/2})
 \emph{Phase 2 (Execution).} Reset the state to $\ket{\psi_0}$. Evolve from $s = 0$ to $s = 1$ using the informed local schedule of \autoref{thm:aqo-runtime}, with the crossing position estimated in Phase~1.
 \end{definition}
 
-Phase estimation of $H(s_{\mathrm{mid}})$ projects $\ket{\psi_0}$ onto an eigenstate of $H(s_{\mathrm{mid}})$ and returns the corresponding energy. The Hamiltonian $H(s_{\mathrm{mid}})$ is a sum of two terms: the rank-one projector $-(1-s_{\mathrm{mid}})\ket{\psi_0}\!\bra{\psi_0}$ (implementable via a single-qubit rotation in the $\ket{\psi_0}/\ket{\psi_0^\perp}$ basis) and the diagonal operator $s_{\mathrm{mid}} H_z$ (implementable via the problem oracle). Their sum can be simulated via product formulas with $\mathrm{poly}(n)$ gate overhead per unit time.
+Phase estimation of $H(s_{\mathrm{mid}})$ projects $\ket{\psi_0}$ onto an eigenstate of $H(s_{\mathrm{mid}})$ and returns the corresponding energy. The Hamiltonian $H(s_{\mathrm{mid}})$ is a sum of two terms: the rank-one projector $-(1-s_{\mathrm{mid}})\ket{\psi_0}\!\bra{\psi_0}$ (implementable via a single-qubit rotation in the $\ket{\psi_0}/\ket{\psi_0^\perp}$ basis) and the diagonal operator $s_{\mathrm{mid}} H_z$ (implementable via the problem oracle). Their sum can be simulated via product formulas with $\mathrm{poly}(n)$ gate overhead per unit time. Efficient eigenvalue estimation from initial-state overlap is studied by Poulin and Wocjan~\cite{poulin2009preparing} and Ge, Tura, and Cirac~\cite{ge2019faster}; the binary search protocol above requires only constant-precision energy discrimination, which is simpler than the full eigenvalue estimation problem.
 
 For $s_{\mathrm{mid}} < s^*$, the state $\ket{\psi_0}$ has $\Theta(1)$ overlap with $\ket{E_0(s_{\mathrm{mid}})}$, so phase estimation returns the ground energy with constant probability. For $s_{\mathrm{mid}} > s^*$ with $|s_{\mathrm{mid}} - s^*| \gg \delta_s$, the overlap $|\!\braket{\psi_0}{E_0(s_{\mathrm{mid}})}\!|^2 = O(d_0/N)$, so phase estimation returns an excited energy with probability $1 - O(d_0/N) = 1 - o(1)$. The binary search tolerates $O(1)$ errors per level, so the constant success probability suffices.
 
@@ -235,7 +249,7 @@ O\!\left(\frac{1}{g(s_{\mathrm{mid},i})}\right) \leq O\!\left(\min\!\left(\frac{
 \end{equation}
 The two bounds in~\eqref{eq:pe-cost} cross at $d_i = g_{\min}/c_{\min}$. Since $g_{\min} = c_L \delta_s \cdot (1 - O(\eta))$ and $c_{\min} \leq c_L$, the crossover distance satisfies $d_{\mathrm{cross}} = g_{\min}/c_{\min} = (c_L/c_{\min})\,\delta_s \geq \delta_s$. The ratio $c_L/c_{\min}$ is a positive constant independent of $n$: both $c_L = A_1(A_1+1)/A_2$ and $c_R = \Delta/30$ are determined by the spectral parameters, so $c_{\min} = \min(c_L, c_R) > 0$ is a fixed constant. At most $O(\log(c_L/c_{\min}) + 1) = O(1)$ binary search midpoints fall in the near regime $d_i \leq d_{\mathrm{cross}}$.
 
-Group the $\lceil n/2 \rceil$ iterations by the distance $d_i$ in dyadic shells. For any fixed $s^*$, at most $O(1)$ binary search midpoints fall in each shell $d_i \in [2^{-j-1}, 2^{-j}]$.
+Group the $\lceil n/2 \rceil$ iterations by the distance $d_i$ in dyadic shells. For any fixed $s^*$, at most $O(1)$ binary search midpoints fall in each shell $d_i \in [2^{-j-1}, 2^{-j}]$ (binary search halves the search interval at each step, so consecutive distances satisfy $d_{i+1} \geq d_i/2$; hence at most two midpoints can have distances in any fixed dyadic interval $[2^{-j-1}, 2^{-j}]$).
 
 \emph{Far shells} ($j < \log_2(1/\delta_s) \approx n/2$): here $d_i > \delta_s$, so the binding bound in~\eqref{eq:pe-cost} is $O(1/(c_{\min} \cdot d_i)) = O(2^j/c_{\min})$, where $c_{\min}$ enters the implicit constant.
 
@@ -266,7 +280,7 @@ Any adaptive algorithm achieving $T = O(T_{\mathrm{inf}})$ requires $\Omega(n)$ 
 The crossing position $s^*$ can lie anywhere in an interval of width $\Theta(1)$. To achieve the informed runtime, the algorithm must locate $s^*$ to precision $\delta_s = O(2^{-n/2})$, since any larger uncertainty incurs the overhead of \autoref{thm:interpolation}. This means distinguishing among $\Omega(2^{n/2})$ possible positions. Each measurement yields $O(1)$ bits of information (the outcome is effectively binary: ground state or excited state). The information needed is $\log_2(2^{n/2}) = n/2$ bits, requiring $\Omega(n)$ measurements.
 \end{proof}
 
-The complete characterization of the three adiabatic regimes is now:
+The three adiabatic regimes:
 
 \begin{center}
 \begin{tabular}{lll}
@@ -280,15 +294,15 @@ Fixed, informed & $O(T_{\mathrm{inf}})$ & 0 \\
 \end{tabular}
 \end{center}
 
-\noindent For the running example ($N = 4$, $d_0 = 1$, $n = 2$): Phase~1 performs $\lceil 1 \rceil = 1$ iteration, probing $s_{\mathrm{mid}} = 0.5$. The true crossing is at $s^* = 3/7 \approx 0.429$, and $s_{\mathrm{mid}}$ is past the crossing but within the crossing window ($|s_{\mathrm{mid}} - s^*| = 1/14 \ll \delta_s \approx 1/4$). To compute the exact overlap, restrict to the symmetric subspace spanned by $\ket{G} = \ket{z_0}$ and $\ket{B} = (1/\sqrt{3})\sum_{z \neq z_0}\ket{z}$, where $z_0$ is the marked item. At $s = 0.5$, the effective $2 \times 2$ Hamiltonian has diagonal elements $-1/8$ and $1/8$ and off-diagonal coupling $-\sqrt{3}/8$. The ground eigenvector is $(\sqrt{3}/2)\ket{G} + (1/2)\ket{B}$, and $\ket{\psi_0} = (1/2)\ket{G} + (\sqrt{3}/2)\ket{B}$. The overlap is $|(\sqrt{3}/2)(1/2) + (1/2)(\sqrt{3}/2)|^2 = |\sqrt{3}/2|^2 = 3/4$. The exact overlap is therefore $|\!\braket{\psi_0}{E_0(0.5)}\!|^2 = 3/4$, so phase estimation is probabilistic rather than decisive at this scale: it reports the ground energy with probability $3/4$ and an excited energy with probability $1/4$. The small instance $n = 2$ illustrates the protocol's cost structure but not its asymptotic sharpness --- the overlap transition becomes increasingly sharp as $N$ grows and $\delta_s \to 0$, making each binary search step reliable with $\Theta(1)$ probability whenever $|s_{\mathrm{mid}} - s^*| \gg \delta_s$. The gap at $s_{\mathrm{mid}} = 0.5$ is $g(0.5) = 1/\sqrt{N} = 0.5$, so the phase estimation cost is $O(1/g(0.5)) = O(2) = O(T_{\mathrm{inf}})$.
+\noindent For the running example ($N = 4$, $d_0 = 1$, $n = 2$): Phase~1 performs $\lceil 1 \rceil = 1$ iteration, probing $s_{\mathrm{mid}} = 0.5$. The true crossing is at $s^* = 3/7 \approx 0.429$, and $s_{\mathrm{mid}}$ is past the crossing but within the crossing window ($|s_{\mathrm{mid}} - s^*| = |1/2 - 3/7| = |7/14 - 6/14| = 1/14 \ll \delta_s \approx 1/4$). To compute the exact overlap, restrict to the symmetric subspace spanned by $\ket{G} = \ket{z_0}$ and $\ket{B} = (1/\sqrt{3})\sum_{z \neq z_0}\ket{z}$, where $z_0$ is the marked item. At $s = 0.5$, the effective $2 \times 2$ Hamiltonian has diagonal elements $-1/8$ and $1/8$ and off-diagonal coupling $-\sqrt{3}/8$. The ground eigenvector is $(\sqrt{3}/2)\ket{G} + (1/2)\ket{B}$, and $\ket{\psi_0} = (1/2)\ket{G} + (\sqrt{3}/2)\ket{B}$. The overlap is $|(\sqrt{3}/2)(1/2) + (1/2)(\sqrt{3}/2)|^2 = |\sqrt{3}/2|^2 = 3/4$. The exact overlap is therefore $|\!\braket{\psi_0}{E_0(0.5)}\!|^2 = 3/4$, so phase estimation is probabilistic rather than decisive at this scale: it reports the ground energy with probability $3/4$ and an excited energy with probability $1/4$. The small instance $n = 2$ illustrates the protocol's cost structure but not its asymptotic sharpness --- the overlap transition becomes increasingly sharp as $N$ grows and $\delta_s \to 0$, making each binary search step reliable with $\Theta(1)$ probability whenever $|s_{\mathrm{mid}} - s^*| \gg \delta_s$. The gap at $s_{\mathrm{mid}} = 0.5$ is $g(0.5) = 1/\sqrt{N} = 0.5$, so the phase estimation cost is $O(1/g(0.5)) = O(2) = O(T_{\mathrm{inf}})$.
 
-Adaptivity provides an exponential improvement, fully matching the informed case. The adaptive protocol uses the paper's specific gap profile, which grows linearly from the crossing. The next section examines how gap geometry affects what schedules can achieve.
+Adaptivity provides an exponential improvement, fully matching the informed case. The adaptive protocol relies on the rank-one gap profile, which grows linearly from the crossing --- a geometric property that determines what schedules can achieve.
 
 
 \section{Gap Geometry and Schedule Optimality}
 \label{sec:gap-geometry}
 
-The previous sections analyzed the paper's specific gap profile, where the gap approaches its minimum linearly ($g(s) \approx c_L|s - s^*|$ for $|s - s^*| \gg g_{\min}/c_L$). Guo and An~\cite{GuoAn2025} independently studied how gap geometry affects the achievable runtime through the measure condition, a regularity condition on the gap function that controls whether the power-law schedule of exponent $p = 3/2$ achieves the optimal $O(1/g_{\min})$ scaling. Their work proves sufficiency: the measure condition implies $T = O(1/g_{\min})$. We prove the complementary direction --- necessity and full characterization --- and then build an explicit bridge between the two frameworks.
+The previous sections analyzed the rank-one gap profile, where the gap approaches its minimum linearly ($g(s) \approx c_L|s - s^*|$ for $|s - s^*| \gg g_{\min}/c_L$). Guo and An~\cite{GuoAn2025} independently studied how gap geometry affects the achievable runtime through the measure condition, a regularity condition on the gap function that controls whether the power-law schedule of exponent $p = 3/2$ achieves the optimal $O(1/g_{\min})$ scaling. Their work proves sufficiency: the measure condition implies $T = O(1/g_{\min})$. We prove a complementary degradation result: for $\alpha > 1$, the measure condition fails and the variationally optimal $p = 3/2$ schedule degrades from $T = O(1/\Delta_*)$ to $T = O(1/\Delta_*^{3-2/\alpha})$. Whether a non-power-law schedule family can still achieve $T = O(1/\Delta_*)$ when the measure condition fails remains open. The constant geometric speed (CGS) schedule of Han, Park, and Choi~\cite{HanParkChoi2025} achieves $O(1/g_{\min})$ by adaptively measuring the gap, but it is not a fixed schedule --- it uses runtime quantum feedback. Among fixed, non-adaptive schedules, no family is known to beat $O(1/\Delta_*^{3-2/\alpha})$ for $\alpha > 1$. We then build an explicit bridge between the two frameworks.
 
 Consider a gap function with flatness exponent $\alpha > 0$: near the minimum, $g(s) = \Delta_* + c|s - s^*|^\alpha$ for a constant $c > 0$. The measure condition requires that $\mu(\{s : g(s) \leq x\}) \leq Cx$ for all $x > 0$, where $C$ is independent of $\Delta_*$.
 
@@ -318,7 +332,7 @@ For $\beta \leq 1/\alpha$, the integral converges to a $\Delta_*$-independent co
 \end{lemma}
 
 \begin{proof}
-The substitution $u = (c|s-s^*|^\alpha)/\Delta_*$ transforms the integrand near $s^*$ to $\Delta_*^{-\beta}(1+u)^{-\beta} \cdot \alpha^{-1}(\Delta_*/c)^{1/\alpha}\, u^{1/\alpha - 1}\,du$, giving a factor $\Delta_*^{1/\alpha - \beta}$ times a convergent integral (convergent as $u \to \infty$ iff $\beta > 1/\alpha$, which is ensured by the hypothesis, and at $u = 0$ for all $\alpha > 0$). The contribution from outside a neighborhood of $s^*$ is $O(1)$.
+The substitution $u = (c|s-s^*|^\alpha)/\Delta_*$ transforms the integrand near $s^*$ to $\Delta_*^{-\beta}(1+u)^{-\beta} \cdot \alpha^{-1}(\Delta_*/c)^{1/\alpha}\, u^{1/\alpha - 1}\,du$, giving a factor $\Delta_*^{1/\alpha - \beta}$ times a convergent integral (convergent as $u \to \infty$ iff $\beta > 1/\alpha$, which is ensured by the hypothesis, and at $u = 0$ for all $\alpha > 0$). The contribution from outside a neighborhood of $s^*$ is $O(1)$: for $|s - s^*| \geq \delta$ with $\delta$ fixed, $g(s) \geq g_0 > 0$ for a constant $g_0$ independent of $\Delta_*$, so $\int_{|s-s^*| \geq \delta} g(s)^{-\beta}\,ds \leq g_0^{-\beta}$.
 \end{proof}
 
 \begin{theorem}[Scaling spectrum]
@@ -357,9 +371,13 @@ $\infty$ & $3$ & Fails & $\Theta(1/\Delta_*^3)$ \\
 
 The runtime exponents form a continuous spectrum from $1$ (V-shaped minimum, best case) to $3$ (flat minimum, worst case), refuting any binary dichotomy between ``easy'' and ``hard'' gap profiles.
 
+\begin{remark}
+The exponent $\gamma = 3$ at $\alpha = \infty$ reflects the $p = 3/2$ power-law schedule, which is variationally optimal within the JRS error functional but not universally optimal across all adiabatic bounds. The Roland-Cerf schedule ($p = 2$) gives $T = O(1/\Delta_*^2)$ at $\alpha = \infty$ via a tighter adiabatic condition for flat gaps. The table shows the scaling of the JRS-optimal schedule as the gap flattens; different schedule families and adiabatic bounds produce different exponent curves.
+\end{remark}
+
 \begin{proposition}[Structural $\alpha = 1$]
 \label{prop:structural-alpha}
-For the paper's Hamiltonian $H(s) = -(1-s)\ket{\psi_0}\!\bra{\psi_0} + sH_z$ with $d_1 \geq 1$ and $\Delta > 0$, the flatness exponent is $\alpha = 1$.
+For the rank-one Hamiltonian $H(s) = -(1-s)\ket{\psi_0}\!\bra{\psi_0} + sH_z$ with $d_1 \geq 1$ and $\Delta > 0$, the flatness exponent is $\alpha = 1$.
 \end{proposition}
 
 \begin{proof}
@@ -368,11 +386,11 @@ Near $s^*$, the two lowest eigenvalues form an avoided crossing described by the
 
 No choice of $H_z$ with $d_1 > 0$ and $\Delta > 0$ can produce $\alpha \neq 1$. Different values of $\alpha$ require different interpolation schemes (e.g., quantum phase transitions with $H(s)$ nonlinear in $s$, or systems with symmetry-enforced higher-order crossings). This structural $\alpha = 1$ explains why both the Roland-Cerf analysis and the Guo-An framework achieve the same asymptotic runtime.
 
-The paper~\cite{braida2024unstructured} and Guo and An~\cite{GuoAn2025} are independent works on the same problem class. The paper provides the spectral analysis ($A_1$, $s^*$, piecewise gap bounds), while Guo-An provides the variational optimization (power-law schedule, measure condition). The following results build the explicit bridge.
+Braida et al.~\cite{braida2024unstructured} and Guo and An~\cite{GuoAn2025} are independent works on the same problem class. The former provides the spectral analysis ($A_1$, $s^*$, piecewise gap bounds), while the latter provides the variational optimization (power-law schedule, measure condition). The following results build the explicit bridge.
 
-\begin{theorem}[Measure condition for the paper's gap profile]
+\begin{theorem}[Measure condition for the rank-one gap profile]
 \label{thm:measure-paper}
-Under the spectral condition of Chapter~5, the paper's piecewise-linear gap profile satisfies the measure condition with
+Under the spectral condition of Chapter~5, the piecewise-linear gap profile satisfies the measure condition with
 \begin{equation}
 \label{eq:measure-constant}
 C \leq \frac{3A_2}{A_1(A_1+1)} + \frac{30(1 - s_0)}{\Delta},
@@ -381,7 +399,7 @@ where $s_0$ is the right-arm basepoint defined in Chapter~6.
 \end{theorem}
 
 \begin{proof}
-Fix $x > 0$. For $x < g_{\min}$, the sublevel set is empty. For $x \geq g_{\min}$, bound the contribution from each piece of the gap profile. The left arm ($g(s) \geq c_L(s^* - s)$) contributes at most $x/c_L$. The crossing window ($|s - s^*| \leq \delta_s$) has width $2\delta_s = 2\hat{g}/c_L$, contributing at most $2x/c_L$ for $x \geq \hat{g}$ (for $g_{\min} \leq x < \hat{g}$, the window contribution $2\hat{g}/c_L$ is bounded by $3x/c_L$ since $\hat{g} \leq x/(1-2\eta) \leq 3x/2$ when $\eta \leq 1/6$, a condition satisfied in the paper's asymptotic regime where $\eta = O(\sqrt{d_0/(NA_2)}) \to 0$). The right arm ($g(s) \geq c_R(s - s_0)/(1 - s_0)$) contributes at most $x \cdot 30(1-s_0)/\Delta$. Combining and substituting $c_L = A_1(A_1+1)/A_2$ gives the bound.
+Fix $x > 0$. For $x < g_{\min}$, the sublevel set is empty. For $x \geq g_{\min}$, bound the contribution from each piece of the gap profile. The left arm ($g(s) \geq c_L(s^* - s)$) contributes at most $x/c_L$. The crossing window ($|s - s^*| \leq \delta_s$) has width $2\delta_s = 2\hat{g}/c_L$, contributing at most $2x/c_L$ for $x \geq \hat{g}$ (for $g_{\min} \leq x < \hat{g}$: since $g_{\min} \geq (1-2\eta)\hat{g}$ and $x \geq g_{\min}$, we have $\hat{g} \leq x/(1-2\eta)$; for $\eta \leq 1/6$, this gives $\hat{g} \leq 3x/2$, so the window contribution $2\hat{g}/c_L \leq 3x/c_L$; the condition $\eta \leq 1/6$ holds in the asymptotic regime where $\eta = O(\sqrt{d_0/(NA_2)}) \to 0$). The right arm ($g(s) \geq c_R(s - s_0)/(1 - s_0)$) contributes at most $x \cdot 30(1-s_0)/\Delta$. Combining and substituting $c_L = A_1(A_1+1)/A_2$ gives the bound.
 \end{proof}
 
 \begin{corollary}[Grover measure constant]
@@ -395,7 +413,7 @@ The exact gap is $g(s)^2 = (2s-1)^2(1 - 1/N) + 1/N$. Solving $g(s) \leq x$ gives
 
 For the Grover problem, the exact gap integral is $\int_0^1 g(s)^{-2}\,ds = (N/\sqrt{N-1})\arctan\sqrt{N-1} \to (\pi/2)\sqrt{N}$ as $N \to \infty$. This closed-form evaluation confirms the $O(\sqrt{N})$ runtime from the piecewise analysis and provides the exact constant.
 
-Both the paper's $p = 2$ schedule and Guo-An's $p = 3/2$ schedule achieve the same asymptotic runtime $T = O(\sqrt{NA_2/d_0}/\varepsilon)$. The paper's runtime involves the integral $I = \int_0^1 g(s)^{-2}\,ds$; Guo-An's involves $C^2/g_{\min}$.
+Both the Roland-Cerf $p = 2$ schedule and Guo-An's $p = 3/2$ schedule achieve the same asymptotic runtime $T = O(\sqrt{N/d_0}/\varepsilon)$ (where all spectral parameters $A_1$, $A_2$, $\Delta$ are absorbed into the implicit constant, as declared at the start of this chapter). The RC runtime involves the integral $I = \int_0^1 g(s)^{-2}\,ds$; Guo-An's involves $C^2/g_{\min}$.
 
 \begin{theorem}[Constant comparison]
 \label{thm:constant-comparison}
@@ -406,14 +424,13 @@ Write $a = 3/c_L$ and $r = 30(1-s_0)/\Delta$. Then $C^2 < I$ if and only if $(c_
 With $C = a + r$ and $I = a + r^2 c_L$: $I - C^2 = (c_L - 1)r^2 - 2ar + a(1-a)$. For $c_L > 1$ and $r \gg a$, the leading term $(c_L - 1)r^2$ dominates.
 \end{proof}
 
-\textbf{Remark.} The framework comparison extends across gap geometries. For $\alpha < 1$, the Roland-Cerf integral $\int g^{-2}\,ds = \Theta(g_{\min}^{1/\alpha - 2})$ grows slower than $1/g_{\min}$, making the RC analysis tighter. For $\alpha = 1$, both give $\Theta(1/g_{\min})$, and the JRS constant $C^2$ can be smaller than the RC integral $I$ (\autoref{thm:constant-comparison}). For $\alpha > 1$, the measure constant $C \to \infty$ as $g_{\min} \to 0$, so the JRS framework degrades and only the RC analysis applies. The paper's structural $\alpha = 1$ (\autoref{prop:structural-alpha}) sits at the exact boundary where both frameworks are valid and neither uniformly dominates.
+\begin{remark}
+The framework comparison extends across gap geometries. For $\alpha < 1$, the Roland-Cerf integral $\int g^{-2}\,ds = \Theta(g_{\min}^{1/\alpha - 2})$ grows slower than $1/g_{\min}$, making the RC analysis tighter. For $\alpha = 1$, both give $\Theta(1/g_{\min})$, and the JRS constant $C^2$ can be smaller than the RC integral $I$ (\autoref{thm:constant-comparison}). For $\alpha > 1$, the measure constant $C \to \infty$ as $g_{\min} \to 0$, so the JRS framework degrades and only the RC analysis applies. The structural $\alpha = 1$ (\autoref{prop:structural-alpha}) sits at the exact boundary where both frameworks are valid and neither uniformly dominates.
+\end{remark}
 
-For the Grover problem, $c_L \to 2$ as $N \to \infty$, and using exact values $C_{\mathrm{exact}} = 1$, $I_{\mathrm{exact}} \to (\pi/2)\sqrt{N}$, the ratio $C^2/I \to 2/(\pi\sqrt{N}) \to 0$: the JRS certification is asymptotically tighter. The explicit JRS prefactor for the $p = 3/2$ power-law schedule is
-\begin{equation}
-\label{eq:jrs-prefactor}
-B_{\mathrm{JRS}}(3/2) = 8A_H C_\mu + 63 A_H^2 C_\mu^2,
-\end{equation}
-where $A_H = \lVert H'(s) \rVert$ and $C_\mu$ is the measure constant, making the constant comparison quantitative rather than purely asymptotic. The two frameworks are complementary, not competing. The paper provides the spectral analysis that identifies $A_1$, $s^*$, and the piecewise gap structure. Guo-An provides the variational optimization that determines the optimal power-law exponent. Together they give a complete picture: the paper's $\alpha = 1$ gap sits at the exact boundary where both frameworks apply and the measure condition holds with a bounded constant.
+For the Grover problem, $c_L \to 2$ as $N \to \infty$, and using exact values $C_{\mathrm{exact}} = 1$, $I_{\mathrm{exact}} \to (\pi/2)\sqrt{N}$, the ratio $C^2/I \to 2/(\pi\sqrt{N}) \to 0$: the JRS certification is asymptotically tighter. The Grover gap has a closed-form expression that makes the exact measure constant computable. For structured Hamiltonians with richer spectra, the exact constants are not available analytically, and the bound-constant ratio from \autoref{thm:constant-comparison} provides the comparison. Evaluating the theorem for the open ferromagnetic Ising chain (\autoref{eq:Ising-Ham} with nearest-neighbor coupling $J = 1$ and uniform field $h = 1$, $n = 10$ spins) gives $C^2/I = 0.71$: the JRS advantage persists, though with a weaker margin than Grover. The two frameworks are complementary, not competing. The spectral analysis~\cite{braida2024unstructured} identifies $A_1$, $s^*$, and the piecewise gap structure. The variational optimization~\cite{GuoAn2025} determines the optimal power-law exponent. Together they give a complete picture: the rank-one $\alpha = 1$ gap sits at the exact boundary where both frameworks apply and the measure condition holds with a bounded constant.
+
+The complementarity extends to their sensitivity under partial spectral knowledge. The RC framework ($p = 2$) constructs its schedule from the crossing position $s^*$, so its runtime degrades on the crossing-localization scale: $T_{\mathrm{RC}}(\varepsilon_{A_1}) = T_{\mathrm{RC},\infty} \cdot \Theta(\max(1, \varepsilon_{A_1}/\delta_{A_1}))$, where $\delta_{A_1} = 2\sqrt{d_0 A_2/N}$ is the precision threshold from \autoref{thm:interpolation}. The JRS framework ($p = 3/2$) instead requires certified bounds $(C_+, g_-)$ on the measure constant and minimum gap, producing a multiplicative overhead $((1 + \delta_C/C)^2)/(1 - \delta_g/g_{\min})$ where $\delta_C$ and $\delta_g$ are the estimation errors. The two frameworks have qualitatively different sensitivity profiles: RC needs $s^*$ to exponentially small precision $\delta_s = \Theta(2^{-n/2})$, while JRS needs $C$ and $g_{\min}$ only to constant relative precision. When spectral parameters are partially known --- the situation forced by NP-hardness --- the JRS framework may be more robust to imprecise inputs, even though both frameworks achieve the same asymptotic scaling.
 
 
 \section{Anatomy of the Barrier}
@@ -421,7 +438,7 @@ where $A_H = \lVert H'(s) \rVert$ and $C_\mu$ is the measure constant, making th
 
 Sections~\ref{sec:cost-of-ignorance} through \ref{sec:quantum-bypass} established that the $A_1$ barrier is real for fixed schedules and navigable with adaptivity. Two questions remain. Can the barrier be removed by modifying the Hamiltonian itself --- adding ancillas, changing the initial state, or introducing intermediate Hamiltonians? And what kind of computational hardness does $A_1$ represent?
 
-The paper's Discussion explicitly asks whether modified Hamiltonians (ancillas, intermediate Hamiltonians) can shift $s^*$ to be spectrum-independent. We show that within the rank-one framework, no instance-independent modification can achieve this. The argument proceeds through four theorems that progressively close escape routes, culminating in a no-go theorem.
+Can modified Hamiltonians --- ancillas, changed initial states, intermediate Hamiltonians --- shift $s^*$ to be spectrum-independent? Within the rank-one framework, no instance-independent modification can achieve this. The argument proceeds through four theorems that progressively close escape routes, culminating in a no-go theorem.
 
 Recall from Chapter~5 that for any initial state $\ket{\psi} \in \mathbb{C}^N$, the weights $w_k(\psi) = \sum_{z \in \Omega_k} |\braket{z}{\psi}|^2$ determine the effective spectral parameter $A_1^{\mathrm{eff}}(\psi) = \sum_{k \geq 1} w_k(\psi)/(E_k - E_0)$ and the effective crossing position $s^*(\psi) = A_1^{\mathrm{eff}}(\psi)/(A_1^{\mathrm{eff}}(\psi) + 1)$. For the uniform superposition $\ket{\psi_0}$, $w_k = d_k/N$ and $A_1^{\mathrm{eff}} = A_1$.
 
@@ -434,7 +451,9 @@ For any product initial state $\ket{\Psi} = \ket{\psi_0} \otimes \ket{\phi}$ and
 Decompose the extended Hilbert space $\mathbb{C}^N \otimes \mathbb{C}^{2^m}$ into the subspace $\mathcal{V}_\phi = \mathbb{C}^N \otimes \ket{\phi}$ and its orthogonal complement. States $\ket{z} \otimes \ket{a}$ with $\braket{\phi}{a} = 0$ satisfy $\braket{\Psi}{z,a} = 0$, making them exact eigenstates of $H_{\mathrm{ext}}(s)$ with eigenvalue $sE(z)$. These $N(2^m - 1)$ states do not participate in the avoided crossing. The restriction of $H_{\mathrm{ext}}(s)$ to $\mathcal{V}_\phi$ is unitarily equivalent to the bare Hamiltonian $H(s)$ via the isomorphism $\ket{\psi} \otimes \ket{\phi} \mapsto \ket{\psi}$.
 \end{proof}
 
-\textbf{Remark.} The crossing position is invariant, but the gap of $H_{\mathrm{ext}}(s)$ is strictly smaller than the bare gap: for $d_0 = 1$, the extra eigenvalues at $sE_0$ (from states $\ket{z} \otimes \ket{a}$ with $z \in \Omega_0$, $a \perp \ket{\phi}$) sit between the ground eigenvalue $\lambda_0(s) < sE_0$ and the crossing branch. Uncoupled ancillas make the gap worse, not better.
+\begin{remark}
+The crossing position is invariant, but the gap of $H_{\mathrm{ext}}(s)$ is strictly smaller than the bare gap: for $d_0 = 1$, the extra eigenvalues at $sE_0$ (from states $\ket{z} \otimes \ket{a}$ with $z \in \Omega_0$, $a \perp \ket{\phi}$) sit between the ground eigenvalue $\lambda_0(s) < sE_0$ and the crossing branch. Uncoupled ancillas make the gap worse, not better.
+\end{remark}
 
 \begin{theorem}[Universality of uniform superposition]
 \label{thm:universality}
@@ -462,7 +481,7 @@ Consider an extended Hamiltonian $H_{\mathrm{ext}}(s) = -(1-s)\ket{\Psi}\!\bra{\
 \end{theorem}
 
 \begin{proof}
-Consider the two-level family parametrized by $\Delta > 0$: $E_0 = 0$, $E_1 = \Delta$, $d_0 = 1$, $d_1 = N - 1$. For $\Delta > 2\lVert V \rVert$, by Weyl's inequality the eigenvalues of $H_f(\Delta) = H_z(\Delta) \otimes I + V$ split into two well-separated clusters: one near energy $0$ (within $\lVert V \rVert$ of $0$) and one near energy $\Delta$ (within $\lVert V \rVert$ of $\Delta$). The excited cluster contributes $\Theta((N-1)/(N\Delta))$ to $A_1^{\mathrm{eff}}$, which varies with $\Delta$. Since the $\Theta(1/\Delta)$ term is non-constant, $A_1^{\mathrm{eff}}(\Delta)$ is non-constant.
+Consider the two-level family parametrized by $\Delta > 0$: $E_0 = 0$, $E_1 = \Delta$, $d_0 = 1$, $d_1 = N - 1$. For $\Delta > 2\lVert V \rVert$, by Weyl's inequality each eigenvalue of $H_f(\Delta) = H_z(\Delta) \otimes I + V$ lies within $\lVert V \rVert$ of an eigenvalue of $H_z(\Delta) \otimes I$, so the spectrum splits into two well-separated clusters: one near energy $0$ (within $\lVert V \rVert$ of $0$) and one near energy $\Delta$ (within $\lVert V \rVert$ of $\Delta$). Each eigenvalue $E_j$ in the excited cluster satisfies $|E_j - \Delta| \leq \lVert V \rVert$, so the excited contribution to $A_1^{\mathrm{eff}}$ is $\sum_{j \in \mathrm{excited}} |\!\braket{\Psi}{\phi_j}\!|^2/(E_j - E_0) = (1 - d_0/N)/(\Delta + O(\lVert V \rVert)) = \Theta(1/\Delta)$ for $\Delta \gg \lVert V \rVert$. Since $\lVert V \rVert$ is a fixed constant independent of $\Delta$, this contribution varies with $\Delta$, so $A_1^{\mathrm{eff}}(\Delta)$ is non-constant.
 \end{proof}
 
 \begin{theorem}[Multi-segment rigidity]
@@ -483,7 +502,7 @@ For any adiabatic algorithm using a rank-one initial Hamiltonian, a final Hamilt
 Combine Theorems~\ref{thm:product-ancilla}--\ref{thm:multi-segment}: \autoref{thm:universality} forces the uniform superposition; \autoref{thm:product-ancilla} shows uncoupled ancillas preserve $s^*$; \autoref{thm:coupled-ancilla} shows coupled ancillas shift $s^*$ but cannot make it constant; \autoref{thm:multi-segment} shows multi-segment paths within the rank-one framework cannot escape.
 \end{proof}
 
-The no-go theorem applies specifically to the rank-one framework with instance-independent design. Higher-rank initial Hamiltonians provide a potential escape route. For rank-$k$ projectors $P = UU^\dagger$, the secular equation generalizes to the $k \times k$ determinant condition $\det(I_k - (1-s)G(\lambda,s)) = 0$ where $G(\lambda,s) = U^\dagger(sH_z - \lambda I)^{-1}U$. On the two-level family ($E_0 = 0$, $E_1 = \Delta$), this reduces to $\det(I_k - (x/\Delta)B) = 0$ where $B = U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}$ and $x = (1-s)/s$. Each positive eigenvalue $\mu$ of $B$ gives a crossing branch $s(\Delta) = 1/(1+\Delta/\mu)$, non-constant in $\Delta$.
+The no-go theorem applies specifically to the rank-one framework with instance-independent design. Higher-rank initial Hamiltonians are a natural candidate for circumventing the rank-one obstruction. They do not succeed: the following propositions show that rank-$k$ projectors cannot make crossing positions spectrum-independent, first on two-level families and then on general multilevel families via a trace argument. For rank-$k$ projectors $P = UU^\dagger$, the secular equation generalizes to the $k \times k$ determinant condition $\det(I_k - (1-s)G(\lambda,s)) = 0$ where $G(\lambda,s) = U^\dagger(sH_z - \lambda I)^{-1}U$. On the two-level family ($E_0 = 0$, $E_1 = \Delta$), this reduces to $\det(I_k - (x/\Delta)B) = 0$ where $B = U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}$ and $x = (1-s)/s$. Each positive eigenvalue $\mu$ of $B$ gives a crossing branch $s(\Delta) = 1/(1+\Delta/\mu)$, which is non-constant as a function of $\Delta$.
 
 \begin{proposition}[Rank-$k$ two-level obstruction]
 \label{prop:rank-k-obstruction}
@@ -497,11 +516,21 @@ For the general multilevel case, the trace argument provides a clean obstruction
 For a rank-$k$ projector $P = UU^\dagger$ and the multilevel family with gaps $\Delta_1, \ldots, \Delta_{M-1}$, define the reduced matrix $A(\Delta) = \sum_{\ell=1}^{M-1} B_\ell/\Delta_\ell$ where $B_\ell = U_\ell^\dagger U_\ell \succeq 0$ collects the excited-level contributions. If $B_j \neq 0$ and $\Delta_j$ varies, then $\mathrm{tr}(A(\Delta)) = \sum_\ell \mathrm{tr}(B_\ell)/\Delta_\ell$ is non-constant in $\Delta_j$. By Weyl's eigenvalue monotonicity theorem, each eigenvalue of $A(\Delta)$ is a continuous function of $\Delta_j$, and the sum of the positive eigenvalues equals $\mathrm{tr}(A)$. Since the trace changes, at least one positive eigenvalue --- and hence at least one crossing position --- must change with $\Delta_j$.
 \end{proposition}
 
-\textbf{Remark.} When the excited blocks commute ($[B_\ell, B_m] = 0$ for all $\ell, m$), the reduced crossing equation admits simultaneous diagonalization, giving explicit per-branch formulas: each active branch $r$ with $G_r(\Delta) = \sum_\ell \mu_{\ell r}/\Delta_\ell > 0$ has crossing position $s_r = G_r/(1 + G_r)$, and varying any gap $\Delta_j$ gives $\partial s_r/\partial \Delta_j = -\mu_{jr}/(\Delta_j^2(1 + G_r)^2) \leq 0$, with strict inequality whenever the branch has support on the varied level ($\mu_{jr} > 0$). The commuting case thus provides explicit, quantitative non-constancy for each individual branch, complementing the trace argument's aggregate statement.
+\begin{remark}
+When the excited blocks commute ($[B_\ell, B_m] = 0$ for all $\ell, m$), the reduced crossing equation admits simultaneous diagonalization, giving explicit per-branch formulas: each active branch $r$ with $G_r(\Delta) = \sum_\ell \mu_{\ell r}/\Delta_\ell > 0$ has crossing position $s_r = G_r/(1 + G_r)$, and varying any gap $\Delta_j$ gives $\partial s_r/\partial \Delta_j = -\mu_{jr}/(\Delta_j^2(1 + G_r)^2) \leq 0$, with strict inequality whenever the branch has support on the varied level ($\mu_{jr} > 0$). The commuting case thus provides explicit, quantitative non-constancy for each individual branch, complementing the trace argument's aggregate statement.
+\end{remark}
 
-The barrier is structural within the rank-one framework and extends to higher-rank two-level and multilevel families. Whether time-dependent couplings $V(s)$ or non-rank-one intermediate Hamiltonians provide a genuine escape remains open.
+The barrier is structural within the rank-one framework and extends to higher-rank families. Whether time-dependent couplings or non-rank-one intermediate Hamiltonians provide a genuine escape remains open.
 
-The second face of the barrier concerns the computational nature of $A_1$ hardness. The paper proves that computing $A_1$ is NP-hard (at precision $1/\mathrm{poly}(n)$) and $\#$P-hard (exactly). These are different hardness classes: $\#$P counts solutions, while NP decides existence. The distinction matters because $A_1$ is fundamentally a counting quantity.
+
+\section{Computational Nature of $A_1$}
+\label{sec:computational-nature}
+
+The no-go theorems of the previous section characterize the barrier's structural face: no instance-independent Hamiltonian modification within the rank-one framework can remove the $A_1$ dependence. The computational face is equally revealing. The quantity $A_1$ is not merely NP-hard to compute --- its hardness is counting hardness, inherited from the partition function. The tractability boundary does not align with optimization hardness, is not determined by the number of solutions, and depends on structural properties of the energy landscape.
+
+The barrier is not merely about knowing $\Delta$. The quantity $A_1$ encodes spectral information beyond the minimum gap: consider three energy levels with $E_0 = 0$ ($d_0 = 1$), $E_1 = 1/n$ ($d_1 = 1$), $E_2 = 1$ ($d_2 = N-2$). Then $\Delta = 1/n \to 0$ but $A_1 = (n + N - 2)/N \to 1$, so $1/\Delta \to \infty$ while $A_1 = \Theta(1)$. The tail of $N-2$ states at energy $1$ contributes $(N-2)/N \approx 1$ to $A_1$, dominating the single state at the gap edge that contributes $n/N \approx 0$. The crossing position $s^* = A_1/(A_1+1) \approx 1/2$ is determined by the bulk of the spectrum, not by the gap, making $A_1$ fundamentally a whole-spectrum quantity that $\Delta$ alone cannot predict.
+
+Computing $A_1$ is NP-hard at precision $1/\mathrm{poly}(n)$ and $\#$P-hard exactly (\autoref{thm:np-hard-A1}, \autoref{thm:sharp-P-hard-A1}). These are different hardness classes: $\#$P counts solutions, while NP decides existence. The distinction matters because $A_1$ is fundamentally a counting quantity.
 
 \begin{proposition}[$A_1$ hardness is counting hardness]
 \label{prop:counting-hardness}
@@ -509,7 +538,7 @@ For Boolean CSPs where counting satisfying assignments is $\#$P-hard (including 
 \end{proposition}
 
 \begin{proof}
-Encode the CSP as $H_z = \sum_{j=1}^m C_j$ where each $C_j(x) = 1$ if assignment $x$ violates clause $j$. The paper's interpolation argument (\autoref{thm:sharp-P-hard-A1}) recovers all degeneracies $d_k$ from polynomially many evaluations of $A_1$ with shifted parameters, via Lagrange interpolation on the rational function $f(x) = \sum_k d_k/(\Delta_k + x/2)$. For satisfiable CSPs, $d_0$ counts satisfying assignments, and counting is $\#$P-hard by hypothesis.
+Encode the CSP as $H_z = \sum_{j=1}^m C_j$ where each $C_j(x) = 1$ if assignment $x$ violates clause $j$. The interpolation argument (\autoref{thm:sharp-P-hard-A1}) recovers all degeneracies $d_k$ from polynomially many evaluations of $A_1$ with shifted parameters, via Lagrange interpolation on the rational function $f(x) = \sum_k d_k/(\Delta_k + x/2)$. For satisfiable CSPs, $d_0$ counts satisfying assignments, and counting is $\#$P-hard by hypothesis.
 \end{proof}
 
 The partition function connection makes this precise. Shifting energies so that $E_0 = 0$ and defining the Laplace partition function $Z(\beta) = \sum_x e^{-\beta E(x)}$, the spectral parameter admits the integral representation
@@ -517,12 +546,12 @@ The partition function connection makes this precise. Shifting energies so that 
 \label{eq:A1-laplace}
 A_1 = \frac{1}{N}\int_0^\infty (Z(\beta) - d_0)\,d\beta.
 \end{equation}
-For integer spectra with $E(x) \in \{0,1,\ldots,m\}$, the ordinary generating function $Z(t) = \sum_x t^{E(x)}$ gives $A_1 = (1/N)\int_0^1 (Z(t) - d_0)/t\,dt$. Both representations appear to require knowing $d_0$, which is itself a counting-hard quantity for many CSPs. However, for additive approximation it suffices to replace $d_0$ by the single evaluation $Z(\varepsilon)$ at a small $\varepsilon > 0$. Define the $\varepsilon$-truncated proxy
+For integer spectra with $E(x) \in \{0,1,\ldots,m\}$, the ordinary generating function $Z(t) = \sum_x t^{E(x)}$ gives $A_1 = (1/N)\int_0^1 (Z(t) - d_0)/t\,dt$. Both representations appear to require knowing $d_0$, which is itself a counting-hard quantity for many CSPs. However, for additive approximation it suffices to replace $d_0$ by the single evaluation $Z(\tau)$ at a small $\tau > 0$. Define the $\tau$-truncated proxy
 \begin{equation}
 \label{eq:A1-proxy}
-A_1^{(\varepsilon)} = \frac{1}{N}\int_\varepsilon^1 \frac{Z(t) - Z(\varepsilon)}{t}\,dt.
+A_1^{(\tau)} = \frac{1}{N}\int_\tau^1 \frac{Z(t) - Z(\tau)}{t}\,dt.
 \end{equation}
-The additive error satisfies $0 \leq A_1 - A_1^{(\varepsilon)} \leq \varepsilon(1 + \ln(1/\varepsilon))$, so choosing $\varepsilon = O(\eta/\ln(1/\eta))$ gives an $\eta$-approximation to $A_1$ without direct access to $d_0$. These representations turn ``compute $A_1$'' into partition function evaluation, connecting tractability of $A_1$ directly to tractability of counting problems.
+The additive error satisfies $0 \leq A_1 - A_1^{(\tau)} \leq \tau(1 + \ln(1/\tau))$, so choosing $\tau = O(\eta/\ln(1/\eta))$ gives an $\eta$-approximation to $A_1$ without direct access to $d_0$. When $E_0$ is known, even the coarse version is useful: sampling from the Boltzmann distribution at inverse temperature $\beta$ gives an unbiased estimator of $Z(\beta)/Z(0) = Z(\beta)/N$, and integrating via~\eqref{eq:A1-laplace} yields an additive approximation of $A_1$ without computing $d_0$ directly. These representations turn ``compute $A_1$'' into partition function evaluation, connecting tractability of $A_1$ directly to tractability of counting problems.
 
 \begin{proposition}[Bounded treewidth tractability]
 \label{prop:treewidth}
@@ -532,6 +561,8 @@ For local energy functions $E(x) = \sum_j E_j(x_{S_j})$ with bounded locality $|
 \begin{proof}
 Write the partition function polynomial $Z(t) = \sum_x t^{E(x)} = \sum_{q=0}^m d_q t^q$ in factor-graph form: $Z(t) = \sum_x \prod_j t^{E_j(x_{S_j})}$. Variable elimination on the tree decomposition computes $Z(t)$ exactly. At each elimination step, factor tables have at most $2^{w+1}$ entries, each a polynomial of degree at most $m$; multiplying factors convolves the polynomials (cost $O(m^2)$ per entry), and summing out a variable adds two polynomials (cost $O(m)$). After $n$ elimination steps, the result is $Z(t) = \sum_q d_q t^q$. Then $A_1 = (1/N)\sum_{q > E_0} d_q/(q - E_0)$.
 \end{proof}
+
+The treewidth condition is sufficient but not necessary. A simpler criterion applies whenever the spectrum itself is simple: if $H_z$ has at most $\mathrm{poly}(n)$ distinct energy levels with known energies and degeneracies, then $A_1 = (1/N)\sum_{k \geq 1} d_k/(E_k - E_0)$ is directly computable in $\mathrm{poly}(n)$ time from the defining sum. This criterion is complementary to bounded treewidth --- it applies to spectra that are structurally simple regardless of the interaction graph. For instance, Hamming-distance cost functions $E(x) = |x \oplus z_0|$ for a fixed target $z_0$ have $M = n+1$ levels with degeneracies $d_k = \binom{n}{k}$ and energies $E_k = k$, so $A_1 = (1/N)\sum_{k=1}^n \binom{n}{k}/k$ depends only on $n$ and is trivially computable.
 
 The partition function bridge is one-directional: tractable $Z$ implies tractable $A_1$ (via the integral representations above), but exact $A_1$ does not determine low-temperature $Z(\beta)$.
 
@@ -575,12 +606,14 @@ Chapter~8 established the core query complexity results for $A_1$ estimation at 
 
 \begin{theorem}[Tight quantum query complexity]
 \label{thm:tight-quantum}
-The quantum query complexity of $A_1$ estimation at precision $\varepsilon$ is $\Theta(1/\varepsilon)$.
+The quantum query complexity of $A_1$ estimation at precision $\varepsilon$ is $\Theta(1/\varepsilon)$. The lower bound is achieved on two-level instances with $\Delta_1 = 1$.
 \end{theorem}
 
 \begin{proof}
-The upper bound $O(1/\varepsilon)$ follows from \autoref{thm:quantum-A1}. For the lower bound, consider $M = 2$ instances with $\Delta_1 = 1$: estimating $A_1 = (N-d_0)/N$ to precision $\varepsilon$ reduces to approximate counting. The Grover iterate $G = (2\ket{+}\!\bra{+} - I)(I - 2\Pi_S)$ has eigenphases $\pm 2\theta$ with $\sin^2\theta = d_0/N$. The adversary chooses $d_0 = N/2$ so that $\sin^2\theta = 1/2$, where $|d(\sin^2\theta)/d\theta| = |\sin 2\theta| = 1$. Estimating $A_1 = 1 - d_0/N$ to precision $\varepsilon$ then requires estimating $\theta$ to precision $\varepsilon$, and the quantum Cram\'er-Rao bound with Fisher information $F_Q \leq 4T^2$ gives $T \geq 1/(2\varepsilon)$ applications of $G$, each costing $O(1)$ oracle queries. At $\varepsilon = 2^{-n/2}$, the quantum complexity is $\Theta(2^{n/2})$.
+The upper bound $O(1/\varepsilon)$ follows from \autoref{thm:quantum-A1}. For the lower bound, consider $M = 2$ instances with $\Delta_1 = 1$: estimating $A_1 = (N-d_0)/N$ to precision $\varepsilon$ reduces to approximate counting. The Grover iterate $G = (2\ket{+}\!\bra{+} - I)(I - 2\Pi_S)$ has eigenphases $\pm 2\theta$ with $\sin^2\theta = d_0/N$. After $T$ sequential applications of $G$, the probe state acquires phase $T\phi$ where $\phi = 2\arcsin(\sqrt{d_0/N})$, and the quantum Fisher information for estimating $\phi$ from $T$ sequential applications is $F_Q = 4T^2$ (the standard Heisenberg limit for phase accumulation in sequential quantum metrology~\cite{braunstein1994statistical, giovannetti2006quantum}). The quantum Cram\'er-Rao bound gives $\mathrm{Var}(\hat{\phi}) \geq 1/F_Q = 1/(4T^2)$. The adversary chooses $d_0 = N/2$ so that $\sin^2\theta = 1/2$, where $|d(\sin^2\theta)/d\theta| = |\sin 2\theta| = 1$. Estimating $A_1 = 1 - \sin^2\theta$ to precision $\varepsilon$ at this operating point requires estimating $\theta$ to precision $\varepsilon$, hence $1/(4T^2) \leq \varepsilon^2$, giving $T \geq 1/(2\varepsilon)$ applications of $G$, each costing $O(1)$ oracle queries. At $\varepsilon = 2^{-n/2}$, the quantum complexity is $\Theta(2^{n/2})$.
 \end{proof}
+
+\noindent The lower bound is worst-case over the unknown parameter $d_0$: the adversary fixes $d_0 = N/2$ to maximize the estimation difficulty. The Heisenberg limit $F_Q = 4T^2$ for sequential unitary applications is a fundamental result of quantum metrology that applies to all quantum estimation strategies, not just phase estimation --- it follows from the unitarity of quantum evolution and the Cram\'er-Rao inequality, as shown by Braunstein and Caves~\cite{braunstein1994statistical} and extended to the sequential setting by Giovannetti, Lloyd, and Maccone~\cite{giovannetti2006quantum}. Alternatively, the $\Omega(1/\varepsilon)$ lower bound follows directly from quantum approximate counting: estimating $d_0/N$ to additive precision $\varepsilon$ requires $\Omega(1/\varepsilon)$ quantum queries~\cite{BrassardHoyerMoscaEtAl2002, NayakWu1999}, and the reduction to $A_1$ is immediate on $M = 2$ instances.
 
 This result connects directly to the adaptive protocol of \autoref{sec:quantum-bypass}: the adaptive protocol achieves $T_{\mathrm{adapt}} = O(T_{\mathrm{inf}}) = O(2^{n/2})$, which is the same order as the tight quantum query complexity $\Theta(2^{n/2})$ for $A_1$ estimation at the algorithmically relevant precision $\delta_{A_1} = \Theta(2^{-n/2})$. This is not a coincidence --- both tasks require distinguishing $\Omega(2^{n/2})$ possibilities with $O(1)$ information per quantum measurement.
 
@@ -601,7 +634,7 @@ Under the Exponential Time Hypothesis (ETH), any classical algorithm computing $
 \end{theorem}
 
 \begin{proof}[Proof sketch]
-The paper's Theorem~2 reduces 3-SAT on $n_{\mathrm{var}}$ variables to $A_1$ estimation of a 3-local Hamiltonian on $n = O(n_{\mathrm{var}})$ qubits at precision $1/\mathrm{poly}(n)$. An oracle at the finer precision $2^{-n/2} < 1/\mathrm{poly}(n)$ is strictly more powerful, so it also solves 3-SAT. Under ETH, 3-SAT on $n_{\mathrm{var}} = \Omega(n)$ variables requires $2^{\Omega(n_{\mathrm{var}})} = 2^{\Omega(n)}$ time.
+The NP-hardness reduction (\autoref{thm:np-hard-A1}) maps 3-SAT on $n_{\mathrm{var}}$ variables to $A_1$ estimation of a 3-local Hamiltonian on $n = O(n_{\mathrm{var}})$ qubits at precision $1/\mathrm{poly}(n)$. By the Impagliazzo-Paturi-Zane sparsification lemma~\cite{impagliazzo2001problems}, 3-SAT on $n_{\mathrm{var}}$ variables can be reduced to instances with $O(n_{\mathrm{var}})$ clauses, giving $n = O(n_{\mathrm{var}})$ qubits. Any algorithm computing $A_1$ at precision $2^{-n/2}$ can, in particular, compute $A_1$ at the coarser precision $1/\mathrm{poly}(n)$ (since $2^{-n/2} < 1/\mathrm{poly}(n)$ for large $n$), and thus solves 3-SAT by the reduction. Under ETH, 3-SAT on $n_{\mathrm{var}} = \Omega(n)$ variables requires $2^{\Omega(n_{\mathrm{var}})} = 2^{\Omega(n)}$ time.
 \end{proof}
 
 This upgrades the query complexity separation to a computational complexity separation: the quadratic quantum speedup for $A_1$ estimation holds not only in the query model but also in the computational model, conditional on ETH.
@@ -611,9 +644,9 @@ This upgrades the query complexity separation to a computational complexity sepa
 Estimating $A_1$ to the schedule-relevant precision $\delta_{A_1} = \Theta(2^{-n/2})$ via quantum amplitude estimation costs $\Theta(2^{n/2} \cdot \mathrm{poly}(n))$ time, matching the adaptive protocol's runtime. The classical pre-computation cost at the same precision is $\Omega(2^n)$.
 \end{corollary}
 
-The information cost of fixed-schedule adiabatic optimization matches the quantum speedup scale: estimating the missing $n/2$ bits of $A_1$ costs $\Theta(2^{n/2})$ quantumly, the same scale as Grover search and the informed adiabatic runtime. The circuit model achieves that scale without this pre-step because amplitude amplification directly solves the search task.
+In terms of parameterized complexity, the corollary places $A_1$ estimation at precision $2^{-n/2}$ in $\mathrm{FBQTIME}(2^{n/2} \cdot \mathrm{poly}(n))$: the problem is not polynomial-time in the standard sense but admits a quantum algorithm whose runtime matches the Grover scale. The information cost of fixed-schedule adiabatic optimization matches the quantum speedup scale: estimating the missing $n/2$ bits of $A_1$ costs $\Theta(2^{n/2})$ quantumly, the same scale as Grover search and the informed adiabatic runtime. The circuit model achieves that scale without this pre-step because amplitude amplification directly solves the search task.
 
-The generic extrapolation barrier (\autoref{thm:generic-barrier}) shows that the interpolation breakdown at precision $2^{-n/2}$ is not an artifact of the paper's specific construction. Any polynomial extrapolation scheme with $d = \mathrm{poly}(n)$ nodes faces Lebesgue amplification $\Lambda_d(x^*) \geq 2^{d-1}$, independent of node placement, so the entire class of polynomial-interpolation reductions for $A_1$ requires precision $2^{-\Omega(n)}$.
+The generic extrapolation barrier (\autoref{thm:generic-barrier}) shows that the interpolation breakdown at precision $2^{-n/2}$ is not an artifact of a specific construction. Any polynomial extrapolation scheme with $d = \mathrm{poly}(n)$ nodes faces Lebesgue amplification $\Lambda_d(x^*) \geq 2^{d-1}$ (provided $x^*$ lies at distance at least $b - a$ from the sample interval $[a, b]$, which holds at the schedule-relevant precision since $x^* = \Theta(2^{-n/2})$ and the interpolation nodes lie in $[0, 1/\mathrm{poly}(n)]$), so the entire class of polynomial-interpolation reductions for $A_1$ requires precision $2^{-\Omega(n)}$.
 
 \begin{theorem}[Structure irrelevance]
 \label{thm:structure-irrelevance}
@@ -624,9 +657,11 @@ $M = 2$ instances (where $A_1$ reduces to approximate counting) are worst-case f
 For general $M$, write $A_1 = d_1/(N\Delta_1) + R$ where $R = (1/N)\sum_{k \geq 2} d_k/(E_k - E_0)$. The remainder satisfies $0 \leq R \leq (1/N)\sum_{k \geq 2} d_k/\Delta_1 \leq 1/\Delta_1$ (since $E_k - E_0 \geq \Delta_1$ for all $k \geq 1$ and $\sum d_k \leq N$). Crucially, $R$ is a smooth function of the instance parameters: perturbing any single $d_k$ by $1$ changes $R$ by $1/(N(E_k - E_0)) \leq 1/(N\Delta_1)$. At the schedule precision $\delta_{A_1} = \Theta(2^{-n/2})$, this per-element sensitivity is $O(1/N) = o(\delta_{A_1})$, so the higher levels are individually invisible. The dominant contribution is $d_1/(N\Delta_1)$, which for $M = 2$ equals $A_1$ itself. The $M = 2$ reduction to approximate counting is therefore worst-case: any algorithm for general $A_1$ immediately gives an algorithm for $d_0$ estimation, and the quantum search lower bound of Bennett, Bernstein, Brassard, and Vazirani~\cite{bennett1997strengths}, transferred to approximate counting via standard reductions, applies.
 \end{proof}
 
-At the schedule precision, bounded-treewidth instances remain tractable for $A_1$ computation (\autoref{prop:treewidth}). For ferromagnetic Ising models, the partition function $Z(\beta)$ can be multiplicatively approximated in polynomial time~\cite{jerrum1993polynomial}, which gives an additive approximation of $A_1$ at coarse precision via the integral representations of \autoref{sec:barrier-anatomy}. However, achieving precision $\delta_{A_1} = \Theta(2^{-n/2})$ requires the multiplicative accuracy $\mu = O(2^{-n/2}/B)$ where $B = O(\log(1/\delta_{A_1})/\Delta_{\min})$, and the FPRAS runtime scales as $\mathrm{poly}(1/\mu)$, which is exponential. The ferromagnetic Ising approximation does not remain tractable at the algorithmically relevant precision.
+\noindent The worst-case hardness of $A_1$ estimation does not hide in complex spectra. Simple two-level instances, where $A_1$ reduces to counting, already saturate the query lower bound. Algorithms exploiting the sum-of-reciprocals structure of $A_1$ for multilevel spectra cannot beat algorithms for plain mean estimation.
 
-The $A_1$ barrier is specific to fixed-schedule adiabatic quantum optimization. It is model-dependent, not information-theoretic. The D\"urr-H\o yer quantum minimum-finding algorithm~\cite{durr1996quantum} achieves $\Theta(\sqrt{N/d_0})$ in the circuit model with zero spectral side information. It maintains a threshold and iteratively lowers it using Grover search, never computing, estimating, or using $A_1$, $s^*$, $\Delta$, or any spectral parameter. The mechanism is amplitude amplification with iterative thresholding, which does not traverse an adiabatic path and does not encounter an avoided crossing.
+At the schedule precision, bounded-treewidth instances remain tractable for $A_1$ computation (\autoref{prop:treewidth}). For ferromagnetic Ising models, the partition function $Z(\beta)$ can be multiplicatively approximated in polynomial time~\cite{jerrum1993polynomial}, which gives an additive approximation of $A_1$ at coarse precision via the integral representations of \autoref{sec:barrier-anatomy}. However, achieving precision $\delta_{A_1} = \Theta(2^{-n/2})$ requires the multiplicative accuracy $\mu = O(2^{-n/2}/B)$ where $B = O(\log(1/\delta_{A_1})/\Delta_{\min})$, and the FPRAS runtime scales as $\mathrm{poly}(1/\mu)$. Since $\mu = O(2^{-n/2}/B)$ with $B = O(n/\Delta_{\min})$, this gives $\mathrm{poly}(1/\mu) = 2^{\Omega(n)}$. The ferromagnetic Ising approximation does not remain tractable at the algorithmically relevant precision.
+
+The $A_1$ barrier is specific to fixed-schedule adiabatic quantum optimization. It is model-dependent, not information-theoretic. The D\"urr-H\o yer quantum minimum-finding algorithm~\cite{durr1996quantum} achieves $\Theta(\sqrt{N/d_0})$ in the circuit model without computing or using any spectral parameter --- no $A_1$, $s^*$, $\Delta$, or gap profile. It maintains a threshold and iteratively lowers it using Grover search, never computing, estimating, or using $A_1$, $s^*$, $\Delta$, or any spectral parameter. The mechanism is amplitude amplification with iterative thresholding, which does not traverse an adiabatic path and does not encounter an avoided crossing.
 
 \begin{proposition}[$A_1$-blindness]
 \label{prop:A1-blindness}
@@ -634,27 +669,31 @@ Let $X_{\mathrm{DH}}$ denote the output of the amplified D\"urr-H\o yer algorith
 \end{proposition}
 
 \begin{proof}
-Two problem Hamiltonians $H_z, H_z'$ are ground-equivalent if they share the same ground energy $E_0$ and ground space $S_0$. By symmetry of Grover's algorithm applied to the uniform initial state, the output distribution conditioned on success is $\mathrm{Uniform}(S_0)$, regardless of the excited spectrum. Since $A_1$ depends only on the excited spectrum (via $\{d_k, E_k\}_{k \geq 1}$), the conditional distribution carries zero information about $A_1$. The unconditional bound follows: with $r = O(n)$ repetitions using the Boyer-Brassard-H\o yer-Tapp amplification~\cite{BBHT1998}, the per-trial success probability is at least $2/3$, giving failure probability $(1/3)^r = 2^{-\Omega(n)}$. The output distributions on ground-equivalent instances agree on the success event and differ only on the failure event, so by Pinsker's inequality, the mutual information is $O(2^{-\Omega(n)})$.
+Two problem Hamiltonians $H_z, H_z'$ are ground-equivalent if they share the same ground energy $E_0$ and ground space $S_0$. By symmetry of Grover's algorithm applied to the uniform initial state, the output distribution conditioned on success is $\mathrm{Uniform}(S_0)$, regardless of the excited spectrum. Since $A_1$ depends only on the excited spectrum (via $\{d_k, E_k\}_{k \geq 1}$), the conditional distribution carries zero information about $A_1$. The unconditional bound follows: with $r = O(n)$ repetitions using the Boyer-Brassard-H\o yer-Tapp amplification~\cite{BBHT1998}, the per-trial success probability is at least $2/3$, giving failure probability $(1/3)^r = 2^{-\Omega(n)}$. The output distributions on ground-equivalent instances $H_z$ and $H_z'$ agree on the success event (both equal $\mathrm{Uniform}(S_0)$) and differ only on the failure event. The total variation distance between the output distributions is therefore $\mathrm{TV}(P_{H_z}, P_{H_z'}) \leq 2 \cdot \Pr[\text{failure}] \leq 2(1/3)^r = 2^{-\Omega(n)}$. By the data-processing inequality applied to mutual information, $I(X_{\mathrm{DH}};\,A_1 \mid S_0, E_0) \leq 2\ln 2 \cdot \mathrm{TV}^2 = 2^{-\Omega(n)}$.
 \end{proof}
 
-The circuit model does not merely avoid computing $A_1$; it is provably blind to it. The adiabatic model, by contrast, both requires and leaks information about $A_1$: a schedule tuned to $A_1$ achieves success probability $\geq 1 - \varepsilon$, while the same schedule applied to a ground-equivalent instance with different $A_1$ yields low success probability. The barrier is also specific to the monotone-schedule adiabatic framework. The following proposition shows that constant controls suffice on the restricted two-level family, refuting the conjecture that all continuous-time rank-one algorithms pay the $A_1$ barrier.
+The circuit model does not merely avoid computing $A_1$; it is provably blind to it. The adiabatic model, by contrast, both requires and leaks information about $A_1$: a schedule tuned to $A_1$ achieves success probability $\geq 1 - \varepsilon$, while the same schedule applied to a ground-equivalent instance with different $A_1$ yields low success probability. The communication-cost framework of \autoref{thm:bit-runtime} quantifies the information requirements of the monotone-schedule adiabatic model. A natural question is whether these requirements are inherent to all continuous-time quantum algorithms or specific to the adiabatic paradigm with monotone schedules.
+
+The barrier is specific to the monotone-schedule adiabatic framework. The following proposition shows that constant controls suffice on the restricted two-level family, refuting the conjecture that all continuous-time rank-one algorithms pay the $A_1$ barrier.
 
 \begin{proposition}[Constant-control optimality on two-level family]
 \label{prop:constant-control}
-For $H_z = I - P_0$ where $P_0$ projects onto the $d_0$-dimensional ground space, the continuous-time rank-one Hamiltonian $H = -\ket{\psi_0}\!\bra{\psi_0} + H_z$ with constant controls achieves $p_0(t^*) = 1$ at $t^* = (\pi/2)\sqrt{N/d_0}$, with controls independent of $A_1$.
+For $H_z = I - P_0$ where $P_0$ projects onto the $d_0$-dimensional ground space, the continuous-time rank-one Hamiltonian $H = -\ket{\psi_0}\!\bra{\psi_0} + H_z$ with constant controls achieves $p_0(t^*) = 1$ at $t^* = (\pi/2)\sqrt{N/d_0}$, with controls independent of $A_1$ (on the two-level family $H_z = I - P_0$).
 \end{proposition}
 
 \begin{proof}
-Let $\varepsilon = d_0/N$, $\ket{G} = d_0^{-1/2}\sum_{x \in S_0}\ket{x}$, and $\ket{B} = (N - d_0)^{-1/2}\sum_{x \notin S_0}\ket{x}$. The initial state is $\ket{\psi_0} = \sqrt{\varepsilon}\,\ket{G} + \sqrt{1-\varepsilon}\,\ket{B}$. Dropping the global identity term, the effective Hamiltonian in the $(\ket{G}, \ket{B})$ basis is
+Let $\mu = d_0/N$, $\ket{G} = d_0^{-1/2}\sum_{x \in S_0}\ket{x}$, and $\ket{B} = (N - d_0)^{-1/2}\sum_{x \notin S_0}\ket{x}$. The initial state is $\ket{\psi_0} = \sqrt{\mu}\,\ket{G} + \sqrt{1-\mu}\,\ket{B}$. Dropping the global identity term, the effective Hamiltonian in the $(\ket{G}, \ket{B})$ basis is
 \begin{equation}
-\widetilde{H} = -\begin{pmatrix} \varepsilon & \sqrt{\varepsilon(1-\varepsilon)} \\ \sqrt{\varepsilon(1-\varepsilon)} & -\varepsilon \end{pmatrix},
+\widetilde{H} = -\begin{pmatrix} \mu & \sqrt{\mu(1-\mu)} \\ \sqrt{\mu(1-\mu)} & -\mu \end{pmatrix},
 \end{equation}
-which satisfies $\widetilde{H}^2 = \varepsilon\,I_2$. The matrix exponential is $e^{-it\widetilde{H}} = \cos(\sqrt{\varepsilon}\,t)\,I_2 - i\sin(\sqrt{\varepsilon}\,t)\,\widetilde{H}/\sqrt{\varepsilon}$. Applying to $\ket{\psi_0}$ and computing the ground-state probability:
+which satisfies $\widetilde{H}^2 = \mu\,I_2$. The matrix exponential is $e^{-it\widetilde{H}} = \cos(\sqrt{\mu}\,t)\,I_2 - i\sin(\sqrt{\mu}\,t)\,\widetilde{H}/\sqrt{\mu}$. Applying to $\ket{\psi_0}$ and computing the ground-state probability:
 \begin{equation}
-p_0(t) = |\!\braket{G}{e^{-it\widetilde{H}}|\psi_0}\!|^2 = \varepsilon + (1 - \varepsilon)\sin^2(\sqrt{\varepsilon}\,t).
+p_0(t) = |\!\braket{G}{e^{-it\widetilde{H}}|\psi_0}\!|^2 = \mu + (1 - \mu)\sin^2(\sqrt{\mu}\,t).
 \end{equation}
-At $t^* = (\pi/2)/\sqrt{\varepsilon} = (\pi/2)\sqrt{N/d_0}$, $\sin^2(\sqrt{\varepsilon}\,t^*) = 1$, so $p_0(t^*) = 1$.
+At $t^* = (\pi/2)/\sqrt{\mu} = (\pi/2)\sqrt{N/d_0}$, $\sin^2(\sqrt{\mu}\,t^*) = 1$, so $p_0(t^*) = 1$.
 \end{proof}
+
+A natural alternative to the adiabatic schedule is the time-independent Hamiltonian $H_r = -\ket{\psi_0}\!\bra{\psi_0} + r \cdot H_z$ with a tunable coupling $r > 0$~\cite{eduardo}. The constant-control proposition shows that $r = 1$ achieves optimality on the two-level family without knowing $A_1$: the Hamiltonian self-calibrates via Rabi-like oscillation at frequency $\sqrt{\mu} = \sqrt{d_0/N}$. For general spectra, the resonance shifts to $r^* = A_1$~\cite{eduardo}, moving the calibration problem from computing $A_1$ classically to detecting a spectral resonance quantumly. A natural approach is Loschmidt echo measurement: evolve under $H_r$ and measure the return probability $|\!\braket{\psi_0}{e^{-iH_r t}\psi_0}\!|^2$, which oscillates with large amplitude near resonance and stays close to $1$ off resonance. On the two-level family, this works cleanly: a binary search over $r$ with $O(n)$ probe measurements, each of cost $O(1/g_{\min})$, locates $r^*$ with polynomial overhead; the details appear in~\cite{eduardo}. For general multilevel spectra, higher excited states contribute additional oscillation frequencies that mask the resonance signal. Whether the multilevel Loschmidt echo can be deconvolved efficiently, or whether a different calibration observable circumvents this interference, is open. The constant-control result shows that the barrier is not inherent to all continuous-time quantum algorithms --- it is specific to the monotone-schedule adiabatic framework.
 
 The counterexample applies only to the two-level family $H_z = I - P_0$ and not to general spectra.
 
@@ -664,7 +703,7 @@ Under normalized controls $|g(t)| \leq 1$ and the scaled family $H_z^{(\delta)} 
 \end{proposition}
 
 \begin{proof}
-The oracle-dependent term $g(t)H_z^{(\delta)} = \delta g(t)(I - P_0)$ has instantaneous oracle strength $\delta|g(t)|$. The total oracle action is $\mathcal{A} = \int_0^T \delta|g(t)|\,dt \leq \delta T$. The continuous-time query lower bound for unstructured search with $d_0$ marked items among $N$ gives $\mathcal{A} = \Omega(\sqrt{N/d_0})$, so $T = \Omega(\sqrt{N/d_0}/\delta)$.
+The oracle-dependent term $g(t)H_z^{(\delta)} = \delta g(t)(I - P_0)$ has instantaneous oracle strength $\delta|g(t)|$. The total oracle action is $\mathcal{A} = \int_0^T \delta|g(t)|\,dt \leq \delta T$. The continuous-time query lower bound for unstructured search with $d_0$ marked items among $N$ gives $\mathcal{A} = \Omega(\sqrt{N/d_0})$~\cite{farhi1998analog}, so $T = \Omega(\sqrt{N/d_0}/\delta)$.
 \end{proof}
 
 For $\delta = N^{-1/2}$, this gives $T = \Omega(N/\sqrt{d_0})$, the same exponential penalty as the fixed-schedule adiabatic model. The barrier reappears on worst-case instances even for general continuous-time rank-one algorithms, provided the controls are normalized.
