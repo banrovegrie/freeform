@@ -22,22 +22,22 @@
 \fancyhead[C]{\leftmark}
 
 \usepackage{graphicx}
-\usepackage[final]{hyperref}
 \usepackage{xcolor}
 \definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
 \definecolor{darkred}{rgb}{0.55, 0.0, 0.0}
+\usepackage{natbib} %%% https://www.overleaf.com/learn/latex/Bibliography_management_with_natbib
+\setcitestyle{square,compress,numbers,comma}
+\usepackage[final]{hyperref}
 \hypersetup{
            breaklinks=true,   % splits links across lines
            colorlinks=true,   % displays links as colored text instead of blocks
-           citecolor=darkblue,
+           citecolor=blue,
            linkcolor=darkred,
            urlcolor=darkblue,
         }
 \usepackage{physics}
 \usepackage{tikz}
 \usepackage{url}
-\usepackage{natbib} %%% https://www.overleaf.com/learn/latex/Bibliography_management_with_natbib
-\setcitestyle{square,compress,numbers,comma}
 \usepackage{tabularx}
 
 \usepackage{braket}
