@@ -90,12 +90,15 @@ The informed schedule knows $s^*$ exactly and needs to be slow only in the cross
 \end{equation}
 \end{proof}
 
-\begin{corollary}[Unstructured search]
+\begin{corollary}[Constant-width uncertainty family]
 \label{cor:separation-grover}
-For $n$-qubit unstructured search with $s_L, s_R$ bounded away from $0$ and $1$ (so that the condition of \autoref{lem:velocity-bound} holds for large $N$), $\Delta_* = \Theta(2^{-n/2})$ and $s_R - s_L = \Theta(1)$, giving $T_{\mathrm{unf}}/T_{\mathrm{inf}} = \Omega(2^{n/2})$.
+For any $n$-qubit rank-one family in which the minimum gap scales as $\Delta_* = \Theta(2^{-n/2})$, the crossing uncertainty interval has constant width $s_R - s_L = \Theta(1)$, and the endpoints are bounded away from the boundaries ($\exists\,\gamma>0$ independent of $n$ with $\gamma \le s_L < s_R \le 1-\gamma$), the minimax separation satisfies
+\[
+\frac{T_{\mathrm{unf}}}{T_{\mathrm{inf}}} = \Omega(2^{n/2}).
+\]
 \end{corollary}
 
-For the running example ($M = 2$, $d_0 = 1$, $N = 4$), the separation ratio is $(s_R - s_L)/\Delta_* = 1/(1/2) = 2 = \sqrt{N}$. Uninformed adiabatic evolution on this four-element instance takes twice as long as informed evolution, a discrepancy that grows exponentially with $n$.
+This corollary is a worst-case uncertainty statement. It does not apply to the standard Grover setting, where the crossing location is known a priori ($s^* = 1/2 + O(1/N)$). As an abstract-gap toy geometry with full uncertainty interval width $s_R - s_L = 1$ and $\Delta_* = 1/2$, the separation ratio is $(s_R - s_L)/\Delta_* = 2 = \sqrt{N}$ at $N=4$.
 
 The logical structure is: NP-hardness forces the gap-uninformed model for any fixed schedule with polynomial-time classical preprocessing; within the uniformly RC-admissible class, the gap-uninformed model has the $\Omega(2^{n/2})$ minimax lower bound from the adversarial geometry of \autoref{lem:adversarial-gap}; therefore this class of algorithms pays the penalty. The penalty comes from the geometry, not from computational complexity directly.
 
@@ -689,11 +692,11 @@ The proof of \autoref{prop:counting-hardness} applies to satisfiable instances w
 
 \begin{proposition}[Bounded degeneracy is vacuous]
 \label{prop:conjecture-bounded}
-If all $d_k \leq \mathrm{poly}(n)$ and $M \leq \mathrm{poly}(n)$, then $d_0 \geq N - \mathrm{poly}(n)^2$, and the optimization problem is trivially solvable by random sampling.
+If $d_k \leq \mathrm{poly}(n)$ for all excited levels $k \geq 1$, and $M \leq \mathrm{poly}(n)$, then $d_0 \geq N - \mathrm{poly}(n)^2$, and the optimization problem is trivially solvable by random sampling.
 \end{proposition}
 
 \begin{proof}
-The total state count satisfies $\sum_{k=0}^{M-1} d_k = N = 2^n$. If $d_k \leq \mathrm{poly}(n)$ for all $k$ and $M \leq \mathrm{poly}(n)$, then $\sum_{k \geq 1} d_k \leq (M-1) \cdot \mathrm{poly}(n) \leq \mathrm{poly}(n)^2$, so $d_0 \geq N - \mathrm{poly}(n)^2$. For $n$ large enough, $d_0/N \geq 1 - o(1)$, and a random sample finds a ground state with probability $1 - o(1)$.
+The total state count satisfies $\sum_{k=0}^{M-1} d_k = N = 2^n$. If $d_k \leq \mathrm{poly}(n)$ for all $k \geq 1$ and $M \leq \mathrm{poly}(n)$, then $\sum_{k \geq 1} d_k \leq (M-1) \cdot \mathrm{poly}(n) \leq \mathrm{poly}(n)^2$, so $d_0 \geq N - \mathrm{poly}(n)^2$. For $n$ large enough, $d_0/N \geq 1 - o(1)$, and a random sample finds a ground state with probability $1 - o(1)$.
 \end{proof}
 
 \begin{proposition}[Hard optimization does not imply hard $A_1$]
