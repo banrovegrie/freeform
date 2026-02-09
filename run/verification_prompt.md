@@ -1,26 +1,26 @@
-# Rigorous Verification and Novelty Assessment Prompt
+Hi, I need your help in reviewing my master's thesis on adiabatic quantum optimization.
 
-You are reviewing a master's thesis on adiabatic quantum optimization. The thesis is built on a single published paper: "Unstructured Adiabatic Quantum Optimization: Optimality with Limitations" by Braida, Martiel, and Music (arXiv:2411.05736). Chapters 5-8 exposit the published work with deeper motivation and fuller proofs. Chapter 9 contains original contributions by the thesis author. Chapter 10 is a placeholder for formal verification and is not part of this review.
+The thesis is built on the paper: "Unstructured Adiabatic Quantum Optimization: Optimality with Limitations" (arXiv:2411.05736) at @paper/v3-quantum.tex. Chapters 5-8 exposit the published work with deeper motivation and fuller proofs. Chapter 9 contains original contributions we tried building on top.
+
+The remaining chapters are yet to be written and not part of this review.
 
 Your task has two parts:
+- Part A: Mathematical Verification (Chapters 5-9)
+- Part B: Novelty Assessment (Chapter 9)
 
-**Part A: Mathematical Verification (Chapters 5-9)**
-**Part B: Novelty Assessment (Chapter 9)**
+Read everything explicitly, especially the chapters (line by line):
+- @src/chapters/chapter5.tex
+- @src/chapters/chapter6.tex
+- @src/chapters/chapter7.tex
+- @src/chapters/chapter8.tex
+- @src/chapters/chapter9.tex
+- @paper/v3-quantum.tex
+- @citations/guo2025adiabatic.tex (paper citing our published work)
 
-Read every chapter file before beginning. The files are:
-- `src/chapters/chapter5.tex` (Central AQO framework: rank-one Hamiltonian, eigenvalue equation, spectral parameters A_1, A_2, crossing position s*, Grover running example)
-- `src/chapters/chapter6.tex` (Gap bounds: left bound via variational principle, right bound via resolvent/Sherman-Morrison, piecewise-linear gap profile)
-- `src/chapters/chapter7.tex` (Adiabatic theorem application, adaptive schedule with power-law exponent p in (1,2), main runtime theorem, three schedule comparisons)
-- `src/chapters/chapter8.tex` (Hardness: NP-hardness of A_1 estimation at 1/poly(n) precision, #P-hardness of exact A_1, interpolation barrier via Lebesgue function, quantum algorithm for A_1 via amplitude estimation, classical lower bound via Le Cam's method, quantum-classical separation)
-- `src/chapters/chapter9.tex` (Novel contributions: information gap, barrier anatomy, computational nature of A_1, complexity landscape)
+In short:
 
-Also read:
-- `paper/paper.md` (the published paper, for comparison)
-- `src/references.bib` (bibliography)
-- `references/README.md` and relevant files in `references/mds/` (cited works)
-- `citations/` (papers citing the published work, especially Guo-An)
-
----
+1. We want to know that our thesis work is mathematically and theoretically robust, complete and correct (with open questions being well pointed out).
+2. We want to know how novel Chapter 9 is (whether it has content novel enough to be built into a paper that can get published in say Quantum Journal or Physical Review A).
 
 ## Part A: Mathematical Verification
 
@@ -79,7 +79,6 @@ These are specific areas where errors are easy to make in this subject:
 - **Weyl's inequality application**: In the coupled ancilla limitation proof, Weyl's inequality is used to bound eigenvalue perturbation. Verify the stated separation condition Delta > 2||V|| suffices.
 - **Product ancilla invariance**: The proof decomposes the extended Hilbert space. Verify that the unitarily equivalent restriction is exact, not approximate.
 
----
 
 ## Part B: Novelty Assessment (Chapter 9)
 
@@ -153,9 +152,8 @@ After classifying each result:
 2. Assess whether this core, taken together, constitutes a contribution at the level of Quantum or Physical Review A.
 3. Identify the single most novel result and the single weakest result.
 4. Suggest what additional results or experiments (if any) would strengthen a publication submission.
-5. Compare the depth and scope of Chapter 9's contributions against recent publications in the same area (Guo-An 2025, Han-Park-Choi, Braida-Martiel-Music 2024).
+5. Compare the depth and scope of Chapter 9's contributions against recent publications in the same area.
 
----
 
 ## Output Format
 
@@ -163,7 +161,7 @@ Structure your response as:
 
 ### Part A: Mathematical Verification
 For each chapter (5 through 9):
-- **Errors found**: List any mathematical errors with exact location (theorem/equation number and line)
+- **Errors found**: List any mathematical errors with exact location (theorem/equation no. and line)
 - **Gaps found**: List any logical gaps
 - **Warnings**: List any claims that are technically correct but potentially misleading or under-justified
 - **Source discrepancies**: (Chapters 5-8 only) List differences from the published paper
@@ -181,12 +179,10 @@ For each section of Chapter 9:
 - **Recommended additions**: What would strengthen submission
 - **Overall assessment**: One paragraph summary
 
----
 
 ## Important Notes
 
 - Do NOT flag explicitly stated open problems as gaps. The thesis acknowledges several open questions (multilevel Loschmidt echo deconvolution, time-dependent couplings escaping the no-go, general spectra constant-control calibration). These are intentional.
 - The notation absorbs spectral parameters (A_1, A_2, Delta) into implicit constants in Chapter 9's runtime expressions, as declared at the start of that chapter. Do not flag this as an error.
-- The thesis cites `eduardo` for some constant-control results. This is a reference to concurrent/forthcoming work by Eduardo. Treat it as a valid citation.
 - Chapters 1-4 are background chapters not included in this review.
 - The thesis is a first draft. Prose quality is not part of this review. Focus exclusively on mathematical correctness and novelty.
