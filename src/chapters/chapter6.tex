@@ -5,16 +5,28 @@
 %   gap in window (Lemma 5.3), gap-left-preview (Lemma 5.4),
 %   gap-right-preview (Lemma 5.5), Delta = E_1 - E_0.
 
-Chapter 5 established the crossing window $\mathcal{I}_{s^*}$ where the spectral gap satisfies $g(s) = \Theta(g_{\min})$, and stated two bounds for the regions outside: a linear lower bound to the left (\autoref{lem:gap-left-preview}) and a linear lower bound to the right (\autoref{lem:gap-right-preview}). This chapter proves both lemmas.
+Chapter 5 established the crossing window $\mathcal{I}_{s^*}$ where the spectral
+gap satisfies $g(s) = \Theta(g_{\min})$, and it stated the outer-region bounds.
+The left side has a linear lower bound (\autoref{lem:gap-left-preview}), and so
+does the right side (\autoref{lem:gap-right-preview}). This chapter proves both
+lemmas.
 
-The two proofs use different techniques, reflecting different spectral structures on each side of the crossing. To the left of $s^*$, the ground energy $\lambda_0(s)$ sits below $sE_0$ while the first excited energy $\lambda_1(s)$ sits above it. The variational principle bounds how far below $sE_0$ the ground energy can be, yielding a linear gap bound. To the right of $s^*$, the eigenvalues of $sH_z$ crowd the interval $[sE_0, sE_1]$, and the variational approach no longer applies. Instead, a resolvent identity combined with the Sherman-Morrison formula for rank-one perturbations tracks the gap through this congested region. The resulting piecewise linear profile (steep on the left, shallower on the right, flat in the window) feeds directly into the runtime calculation of Chapter 7.
+The two proofs use different tools because the spectrum behaves differently on
+the two sides of the crossing. To the left of $s^*$, the ground energy
+$\lambda_0(s)$ sits below $sE_0$ while the first excited energy $\lambda_1(s)$
+sits above it. A variational argument then gives a sharp linear gap bound. To
+the right of $s^*$, eigenvalues of $sH_z$ crowd the interval $[sE_0, sE_1]$,
+and that variational strategy loses traction. There we switch to a resolvent
+argument plus Sherman-Morrison for rank-one perturbations. The combined result
+is the piecewise profile needed in Chapter 7: steep on the left, flatter on the
+right, and nearly flat inside the window.
 
 \section{Gap to the Left of the Crossing}
 \label{sec:gap-left}
 
 The eigenvalue equation (\autoref{lem:eigenvalue-equation}) places the ground state energy at $\lambda_0(s) < sE_0$ and the first excited energy at $\lambda_1(s) \in (sE_0, sE_1)$. The gap $g(s) = \lambda_1(s) - \lambda_0(s)$ is therefore positive, but this ordering alone does not provide a useful quantitative bound for the runtime integral. We need a tight lower bound that captures the linear growth of the gap as $s$ decreases away from $s^*$.
 
-The strategy is to tighten the upper bound on $\lambda_0(s)$. Two approaches give the same result. The first uses the variational principle: for any normalized state $\ket{\phi}$, the ground energy satisfies $\lambda_0(s) \leq \bra{\phi}H(s)\ket{\phi}$, so a well-chosen ansatz produces a quantitative upper bound. The second uses concavity: since $\lambda_0(s) = \min_{\ket{\psi}} \bra{\psi} H(s) \ket{\psi}$ is the pointwise minimum of affine functions in $s$, it is concave, and any tangent line lies above it. The variational approach is more direct, producing the bound in a single calculation, so we present it here.
+The strategy is to tighten the upper bound on $\lambda_0(s)$. Two approaches give the same result. The first uses the variational principle. For any normalized state $\ket{\phi}$, the ground energy satisfies $\lambda_0(s) \leq \bra{\phi}H(s)\ket{\phi}$, so a well-chosen ansatz gives a quantitative bound. The second uses concavity. Since $\lambda_0(s) = \min_{\ket{\psi}} \bra{\psi} H(s) \ket{\psi}$ is the pointwise minimum of affine functions in $s$, it is concave, and any tangent line lies above it. The variational route is more direct, so we present it first.
 
 \begin{lemma}[Gap to the left of the crossing]
 \label{lem:gap-left}
@@ -83,7 +95,7 @@ using $A_1(A_1+1)\delta_s/A_2 = \hat{g}$ from Eq.~\eqref{eq:gmin-deltas-relation
 
 An alternative derivation uses concavity. Since $\lambda_0(s) = \min_{\ket{\psi}} \bra{\psi} H(s) \ket{\psi}$ is the pointwise minimum of affine functions in $s$, it is concave. The Hellmann-Feynman theorem \cite{Kato1950} gives the second derivative explicitly:
 $$\ddot{\lambda}_0(s) = -2\sum_{j \geq 1} \frac{|\bra{\phi_j(s)}\dot{H}\ket{\phi_0(s)}|^2}{\lambda_j(s) - \lambda_0(s)} \leq 0,$$
-where $\dot{H} = H_z + \ket{\psi_0}\bra{\psi_0}$ and $\ket{\phi_j(s)}$ are the instantaneous eigenstates. Concavity implies any tangent lies above the function: the tangent to $\lambda_0$ at $s^*$ gives $\lambda_0(s) \leq \lambda_0(s^*) + \lambda_0'(s^*)(s - s^*)$, an upper bound of the same form as~\eqref{eq:lambda0-upper}, though the variational approach gives slightly sharper constants.
+where $\dot{H} = H_z + \ket{\psi_0}\bra{\psi_0}$ and $\ket{\phi_j(s)}$ are the instantaneous eigenstates. Concavity implies that every tangent line lies above the function. In particular, the tangent at $s^*$ gives $\lambda_0(s) \leq \lambda_0(s^*) + \lambda_0'(s^*)(s - s^*)$, an upper bound of the same form as~\eqref{eq:lambda0-upper}, though the variational approach gives slightly sharper constants.
 
 When $M = 2$ ($d_0 = 1$, $d_1 = N-1$, $E_0 = 0$, $E_1 = 1$), the ansatz reduces to $\ket{\phi} = \ket{1}$, and the bound becomes
 \begin{equation}
@@ -96,7 +108,14 @@ The exact gap $g(s) = \sqrt{(2s-1)^2 + 4s(1-s)/N}$ at $s = 1/4$ equals $\sqrt{1/
 
 The variational principle cannot bound the gap to the right of $s^*$. It bounds ground energies from above, not excited energies from below, and what we need on the right is a lower bound on $\lambda_1(s) - \lambda_0(s)$ that captures the linear reopening of the gap.
 
-The obstacle is structural. On the left, the first excited eigenvalue $\lambda_1(s)$ is bounded below by $sE_0$ from the eigenvalue equation, giving a clean reference point. On the right, $\lambda_1(s)$ lies between $sE_0$ and $sE_1$, but so do eigenvalues from the higher levels of $sH_z$, which undergo their own avoided crossings with the first excited state. Tracking $\lambda_1(s)$ through this congested region requires a tool that bounds the distance from a given point to the spectrum without identifying individual eigenvalues. The eigenvalue equation (\autoref{lem:eigenvalue-equation}) characterizes the full spectrum implicitly, with each eigenvalue satisfying a transcendental equation, but it does not yield a closed-form bound on any individual eigenvalue that captures the gap's linear dependence on $s - s^*$.
+The obstacle is structural. On the left, $\lambda_1(s)$ is bounded below by
+$sE_0$ from the eigenvalue equation, which gives a clean anchor point. On the
+right, $\lambda_1(s)$ still lies between $sE_0$ and $sE_1$, but now many higher
+branches pass through the same interval and generate their own avoided
+crossings. We need a method that controls spectral distance without tracking
+individual branches one by one. The eigenvalue equation
+(\autoref{lem:eigenvalue-equation}) characterizes the full spectrum implicitly,
+but it does not directly give the linear-in-$(s-s^*)$ lower bound we need.
 
 The resolvent provides exactly this. For a self-adjoint operator $A$ with spectrum $\sigma(A)$ and any $\lambda \notin \sigma(A)$, the resolvent
 \begin{equation}
@@ -108,16 +127,32 @@ is a bounded operator whose norm equals the inverse distance from $\lambda$ to t
 \label{eq:resolvent-norm}
 \lVert R_A(\lambda) \rVert = \frac{1}{\mathrm{dist}(\lambda,\, \sigma(A))}.
 \end{equation}
-This follows from the spectral theorem: in the eigenbasis of $A$ with eigenvalues $\{\lambda_j\}$, the resolvent is diagonal with entries $1/(\lambda - \lambda_j)$, and its operator norm is the maximum absolute value $\max_j |1/(\lambda - \lambda_j)| = 1/\min_j|\lambda - \lambda_j|$. If a point $\gamma$ lies between two consecutive eigenvalues $\lambda_0$ and $\lambda_1$, then $\mathrm{dist}(\gamma, \sigma(A)) = \min(\gamma - \lambda_0, \lambda_1 - \gamma) \leq g/2$, since the minimum of two non-negative numbers summing to $g$ is at most $g/2$. Therefore $\lVert R_A(\gamma) \rVert = 1/\mathrm{dist}(\gamma, \sigma(A)) \geq 2/g$, and the useful contrapositive is
+This follows from the spectral theorem. In the eigenbasis of $A$ with
+eigenvalues $\{\lambda_j\}$, the resolvent is diagonal with entries
+$1/(\lambda - \lambda_j)$, so its operator norm is
+$\max_j |1/(\lambda - \lambda_j)| = 1/\min_j|\lambda - \lambda_j|$. If a point
+$\gamma$ lies between two consecutive eigenvalues $\lambda_0$ and $\lambda_1$,
+then $\mathrm{dist}(\gamma, \sigma(A)) = \min(\gamma - \lambda_0, \lambda_1 -
+\gamma) \leq g/2$, since the minimum of two non-negative numbers summing to $g$
+is at most $g/2$. Therefore $\lVert R_A(\gamma) \rVert =
+1/\mathrm{dist}(\gamma, \sigma(A)) \geq 2/g$, and the useful contrapositive is
 \begin{equation}
 \label{eq:gap-resolvent}
 g(s) \geq \frac{2}{\lVert R_{H(s)}(\gamma) \rVert}.
 \end{equation}
-The spectral gap problem has become a norm problem: bounding the gap from below reduces to bounding the resolvent norm from above.
+The spectral-gap problem has become a norm problem. A lower bound on the gap is
+now an upper bound on a resolvent norm.
 
-This resolvent approach to rank-one perturbations has precedent in the spatial search literature. Childs and Goldstone~\cite{childs2004spatial} showed that a continuous-time quantum walk on the complete graph finds a marked vertex in $O(\sqrt{N})$ time by analyzing the resolvent of the graph Laplacian perturbed by a rank-one oracle projector, the same algebraic structure as our adiabatic Hamiltonian $H(s) = sH_z - (1-s)\ket{\psi_0}\bra{\psi_0}$, with the Laplacian replaced by the diagonal problem Hamiltonian. Chakraborty, Novo, and Roland~\cite{chakraborty2016spatial, chakraborty2020optimality} extended this to general graphs, proving optimality of spatial search for almost all graphs using the Sherman-Morrison identity to bound the resolvent of rank-one perturbations. Their technique transfers directly to the adiabatic setting: the algebraic steps are identical, with the spectral parameters $A_1$, $A_2$ replacing the graph-theoretic quantities.
+This resolvent approach to rank-one perturbations has precedent in spatial
+search. Childs and Goldstone~\cite{childs2004spatial} used it to prove
+$O(\sqrt{N})$ search time on the complete graph. The algebra is the same as in
+our Hamiltonian $H(s) = sH_z - (1-s)\ket{\psi_0}\bra{\psi_0}$, with a graph
+Laplacian replaced by a diagonal cost Hamiltonian. Chakraborty, Novo, and
+Roland~\cite{chakraborty2016spatial, chakraborty2020optimality} then extended
+the method to broad graph families via Sherman-Morrison. Here we import that
+same mechanism, with graph parameters replaced by $A_1$ and $A_2$.
 
-Spatial search via continuous-time quantum walks solves the following problem: given a graph $G$ on $N$ vertices with a subset $S$ of marked vertices, find a marked vertex by evolving the initial state $\ket{s} = (1/\sqrt{N})\sum_v \ket{v}$ under the Hamiltonian $H_{\text{search}} = -\gamma L - \sum_{v \in S}\ket{v}\bra{v}$, where $L$ is the graph Laplacian and $\gamma > 0$ is a tunable parameter \cite{childs2004spatial}. The oracle term $-\sum_{v \in S}\ket{v}\bra{v}$ is a rank-one projector when $|S| = 1$ (or more generally a low-rank perturbation), and the Laplacian $L$ plays the role of the diagonal Hamiltonian $sH_z$: its eigenvalues are the graph's spectrum, and the spectral gap of $L$ determines the time scale of the walk. The mapping is: $L \leftrightarrow sH_z$, the oracle projector $\leftrightarrow (1-s)\ket{\psi_0}\bra{\psi_0}$, the algebraic connectivity of $G$ $\leftrightarrow$ the spectral gap $\Delta$ of $H_z$, and the effective resistance at the marked vertex $\leftrightarrow$ the spectral parameter $A_2$. The resolvent bound proceeds identically in both settings: place a line $\gamma(s)$ between the two lowest eigenvalues, apply the Sherman-Morrison formula to decompose the resolvent of the rank-one perturbation into the known resolvent of the diagonal operator plus a correction, and bound the correction using the spectral parameters. The reason this works is structural: rank-one perturbations of diagonal operators admit Sherman-Morrison inversion regardless of the dimension or the specific eigenvalue distribution, reducing the spectral gap problem to bounding a single rational function of the parameters.
+Spatial search via continuous-time quantum walks solves the following problem. Given a graph $G$ on $N$ vertices with a subset $S$ of marked vertices, one seeks a marked vertex by evolving the initial state $\ket{s} = (1/\sqrt{N})\sum_v \ket{v}$ under $H_{\text{search}} = -\gamma L - \sum_{v \in S}\ket{v}\bra{v}$, where $L$ is the graph Laplacian and $\gamma > 0$ is tunable \cite{childs2004spatial}. When $|S| = 1$, the oracle term is rank one (and low rank more generally). The correspondence with our setting is straightforward: $L$ plays the role of $sH_z$, the oracle projector plays the role of $(1-s)\ket{\psi_0}\bra{\psi_0}$, the graph spectral gap corresponds to $\Delta$, and the effective resistance plays the role of $A_2$. In both settings, one places a line $\gamma(s)$ between the two lowest eigenvalues, applies Sherman-Morrison to split the resolvent into a known diagonal part and a correction term, then bounds that correction. The method works because rank-one perturbations of diagonal operators always admit this inversion step, reducing the gap problem to one rational bound.
 
 The constants $k = 1/4$ and $f(s^*) = 4$ are not accidents of this particular Hamiltonian. They are artifacts of the line-placement optimization, balancing the denominator's positivity against the numerator's growth in the function $f(s)$, and depend only on the rank-one structure, not on whether the underlying operator is a graph Laplacian or a problem Hamiltonian. Any future application of this technique to a new rank-one perturbation will face the same optimization, with the same constants serving as a starting point.
 
@@ -130,7 +165,7 @@ provided $1 + \bra{v}A^{-1}\ket{u} \neq 0$. Applying this to the resolvent of $H
 
 Choose a line $\gamma(s)$ between $\lambda_0(s)$ and $\lambda_1(s)$ for all $s \geq s^*$, apply the Sherman-Morrison decomposition, bound each piece using the spectral parameters $A_1$ and $A_2$, and convert the resulting bound on $\lVert R_{H(s)}(\gamma)\rVert$ into a linear lower bound on $g(s)$.
 
-The simplest choice for $\gamma(s)$ is a line starting at $sE_0$ when $s = s^*$ and ending between $E_0$ and $E_1$ at $s = 1$: take $\beta(s) = a(s - s^*)/(1 - s^*)$ with $a < \Delta$ and set $\gamma(s) = sE_0 + \beta(s)$. With $a = \Delta/6$, the function $f(s)$ controlling the resolvent bound can be shown to satisfy $f(s) \leq 1$ for all $s \geq s^*$, giving $g(s) \geq \beta(s) = (\Delta/6)(s - s^*)/(1 - s^*)$. This bound has a problem: at the window boundary $s = s^* + \delta_s$, it gives $g(s^*+\delta_s) \geq (\Delta/6) \cdot \delta_s/(1-s^*) = (\Delta A_2)/(6A_1) \cdot g_{\min}$. Since $\Delta A_2 \leq A_1$, this is at most $g_{\min}/6$, and for Hamiltonians with $\Delta A_2 \ll A_1$, it can be polynomially smaller than $g_{\min}$. At $s = s^*$ itself, the bound gives $g(s^*) \geq 0$, missing the true gap entirely.
+The simplest choice for $\gamma(s)$ starts at $sE_0$ when $s=s^*$ and ends between $E_0$ and $E_1$ at $s=1$. Take $\beta(s)=a(s-s^*)/(1-s^*)$ with $a<\Delta$, and set $\gamma(s)=sE_0+\beta(s)$. With $a=\Delta/6$, one can show $f(s)\le 1$ for all $s\ge s^*$, which gives $g(s)\ge \beta(s)= (\Delta/6)(s-s^*)/(1-s^*)$. This is too weak near the crossing. At the window boundary $s=s^*+\delta_s$, it yields $g(s^*+\delta_s)\ge (\Delta/6)\cdot \delta_s/(1-s^*) = (\Delta A_2)/(6A_1)\cdot g_{\min}$. Since $\Delta A_2\le A_1$, this is at most $g_{\min}/6$, and it can be polynomially smaller when $\Delta A_2\ll A_1$. At $s=s^*$, the same bound gives only $g(s^*)\ge 0$, missing the true minimum gap.
 
 The failure has a geometric explanation. At $s^*$, the ground energy $\lambda_0(s^*)$ is not at $s^*E_0$ but rather $g_{\min}/2$ below it. The line $\gamma(s)$ passes through $s^*E_0$ at $s = s^*$, so it sits between the two eigenvalues but with zero margin below. The resolvent norm at a point equidistant from two eigenvalues has norm $2/g$, but at a point touching one eigenvalue, the norm diverges. The line must start with $O(g_{\min})$ separation from both eigenvalues at $s^*$.
 
@@ -209,7 +244,7 @@ g(s) \geq \frac{2\beta(s)}{1 + f(s)} \geq \frac{2\beta(s)}{1 + \max_{s \geq s^*}
 \end{equation}
 If $f$ is monotonically decreasing on $[s^*, 1]$, then $\max_{s \geq s^*} f(s) = f(s^*)$, and the bound becomes $g(s) \geq 2\beta(s)/(1 + f(s^*))$, which is linear in $s - s_0$.
 
-\textbf{Monotonicity of $f$.} We show $f'(s) < 0$ for $s \in [s^*, 1]$. Writing $f = u/v$, the sign of $f'$ is determined by $u'v - uv'$. After expanding and cancelling common terms, the expression reduces to three contributions: two are manifestly negative, while a third, positive and proportional to $(d_0/N)\,s_0$, arises from having shifted the line's origin below $s^*$. The proof amounts to showing the negative terms dominate. Write $f = u/v$ with
+\textbf{Monotonicity of $f$.} We show $f'(s) < 0$ for $s \in [s^*, 1]$. Write $f = u/v$, so the sign of $f'$ is the sign of $u'v - uv'$. After expansion and cancellation, three contributions remain. Two are manifestly negative. The third is positive and proportional to $(d_0/N)\,s_0$, which appears because the line origin is shifted below $s^*$. The key step is to prove the negative terms dominate. Write $f = u/v$ with
 \begin{align}
 \label{eq:uv-def}
 u &= \frac{d_0}{N}\,s^2(1-s) + 4A_2\beta^2(1-s), \\
@@ -237,7 +272,7 @@ Factor out $-4aA_2\beta/(1-s_0)$ from the sum of the first two terms:
 \label{eq:domination-argument}
 -\frac{4aA_2\beta}{1-s_0}\left(\frac{\beta}{1-s^*}\Big(s^2(1+s_0-s^*) - 2s\,s_0 + s^*s_0\Big) - \frac{3d_0}{N}\,s_0\,s(1-s)^2\right).
 \end{equation}
-The quadratic $s^2(1+s_0-s^*) - 2s\,s_0 + s^*s_0$ is a convex function of $s$ (the leading coefficient $1+s_0-s^* > 0$ since $s_0 < s^*$), minimized at some $s_m < s^*$, and positive for $s \geq s^*$: at $s = s^*$, it evaluates to $s^*(1-s^*)(s^*-s_0) > 0$. The cubic $s(1-s)^2$ is maximized at $s = 1/3 \leq s^*$. Therefore, on $[s^*, 1]$, the bracket in~\eqref{eq:domination-argument} is bounded below by its value at $s = s^*$:
+The quadratic $s^2(1+s_0-s^*) - 2s\,s_0 + s^*s_0$ is convex in $s$ because $1+s_0-s^* > 0$ (recall $s_0 < s^*$). Its minimizer lies at $s_m < s^*$, and the quadratic is positive for all $s \geq s^*$; at $s = s^*$ it equals $s^*(1-s^*)(s^*-s_0) > 0$. The cubic $s(1-s)^2$ is maximized at $s = 1/3 \leq s^*$. Therefore, on $[s^*, 1]$, the bracket in~\eqref{eq:domination-argument} is bounded below by its value at $s = s^*$:
 \begin{equation}
 \frac{a(s^*-s_0)^2}{1-s_0} - \frac{3d_0}{N}\, s_0(1-s^*)^2.
 \end{equation}
@@ -257,7 +292,7 @@ Replacing $g_{\min}$ by its leading-order expression $\hat{g} = 2s^*\sqrt{d_0/(N
 \label{eq:f-at-sstar}
 f(s^*) = \frac{1 + 16k^2}{1 - 8k^2}.
 \end{equation}
-For $k = 1/4$: $f(s^*) = (1 + 1)/(1 - 1/2) = 4$, so $1 + f(s^*) = 5$.
+For $k = 1/4$, $f(s^*) = (1 + 1)/(1 - 1/2) = 4$, so $1 + f(s^*) = 5$.
 
 \textbf{Final bound.} From~\eqref{eq:gap-via-f}:
 \begin{align}
@@ -306,7 +341,7 @@ The bounds match across region boundaries. At the left boundary $s = s^* - \delt
 \end{equation}
 so the left bound at the window boundary is $\Theta(g_{\min})$, consistent with the window bound. At $s = s^*$, the right bound gives $g(s^*) \geq 2\beta(s^*)/(1 + f(s^*)) = 2k\,g_{\min}/5 = g_{\min}/10$, which is below $g_{\min}$ by a constant factor but still $O(g_{\min})$. The window bound provides the tighter estimate $g(s^*) = g_{\min}$.
 
-The piecewise bounds are asymmetric: steep on the left, shallow on the right. The variational bound captures the true slope closely; the resolvent bound sacrifices tightness for uniform validity across a congested spectral landscape. The profile forms a broad V centered at $s^*$, with a narrow rounded minimum of width approximately $2\delta_s$. The left arm has slope $A_1(A_1+1)/A_2$, which is $O(\mathrm{poly}(n))$ for Ising Hamiltonians. The right arm has the shallower slope $\Delta/(30(1-s_0))$, controlled by the spectral gap $\Delta$ of the problem Hamiltonian. At the endpoints, $g(0) = 1$ (the initial gap between eigenvalues $-1$ and $0$ of $H_0$) and $g(1) = \Delta$ (the gap of $H_z$).
+The piecewise bounds are intentionally asymmetric. The left arm is steep, while the right arm is shallower. The variational method tracks the left slope closely, whereas the resolvent method trades tightness for uniform validity in a congested spectral region. Geometrically, the profile is a broad V centered at $s^*$ with a narrow rounded minimum of width about $2\delta_s$. The left slope is $A_1(A_1+1)/A_2$, which is $O(\mathrm{poly}(n))$ for Ising instances. The right slope is $\Delta/(30(1-s_0))$, set by the problem gap $\Delta$. At the endpoints, $g(0)=1$ for $H_0$ and $g(1)=\Delta$ for $H_z$.
 
 \begin{figure}[H]
 \centering
@@ -384,7 +419,7 @@ The piecewise bounds are asymmetric: steep on the left, shallow on the right. Th
 \label{fig:gap-profile}
 \end{figure}
 
-The gap depends on four numbers: $A_1$, $A_2$, $d_0$, and $\Delta$. For any problem Hamiltonian $H_z$ satisfying the spectral condition, the piecewise profile of \autoref{thm:complete-profile} bounds $g(s)$ across $[0,1]$ up to constant factors. The minimum gap $g_{\min} = \Theta(\sqrt{d_0/(NA_2)})$ occurs at $s^* = A_1/(A_1+1)$ and is exponentially small in $n$ when $d_0 = O(1)$. The crossing position depends only on $A_1$, not on $A_2$ or $d_0$. More solutions (larger $d_0$) widen the gap; richer spectral structure (larger $A_2$) narrows it. The gap reaches $\Delta$ at $s = 1$, the spectral gap of the problem Hamiltonian itself.
+The gap depends on four parameters: $A_1$, $A_2$, $d_0$, and $\Delta$. For any problem Hamiltonian $H_z$ satisfying the spectral condition, \autoref{thm:complete-profile} bounds $g(s)$ over all of $[0,1]$ up to constants. The minimum is $g_{\min}=\Theta(\sqrt{d_0/(NA_2)})$ at $s^*=A_1/(A_1+1)$, and it is exponentially small in $n$ when $d_0=O(1)$. The crossing location depends only on $A_1$. More solutions (larger $d_0$) widen the gap, while richer near-ground spectral structure (larger $A_2$) narrows it. At $s=1$, the gap returns to $\Delta$, the spectral gap of $H_z$ itself.
 
 For unstructured search, the exact gap $g(s) = \sqrt{(2s-1)^2 + 4s(1-s)/N}$ and the piecewise bound from \autoref{thm:complete-profile} can be compared directly. The left bound has slope $(2N-1)/N \approx 2$, matching the asymptotic slope of the exact gap, which approaches $2(1-1/N) \approx 2$ away from $s^*$. The window bound $g_{\min} = 1/\sqrt{N}$ is exact. The right bound has slope approximately $1/15$ near $s^*$, weaker than the true slope by a factor of $30$, but sufficient for the runtime integral since the window dominates.
 

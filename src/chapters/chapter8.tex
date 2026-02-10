@@ -1,29 +1,57 @@
 % Chapter 8: Hardness of Optimality
 
-The optimal schedule of the previous chapter achieves a quadratic speedup over classical brute-force search, but the schedule must be fixed before evolution begins. It depends on the spectral parameter $A_1$, the weighted sum of inverse gaps that determines where the avoided crossing occurs, and this parameter must be known to additive accuracy $O(2^{-n/2})$. Given the $N = 2^n$ diagonal entries of the problem Hamiltonian $H_z$, the brute-force approach to computing $A_1 = (1/N)\sum_{k=1}^{M-1} d_k/(E_k - E_0)$ by enumerating all eigenvalues, sorting, and summing takes $O(N)$ time, precisely the cost of classical unstructured search. If the pre-computation is as expensive as the problem itself, the quadratic speedup becomes conditional: the adiabatic algorithm is fast, provided someone has already done the slow part.
+The optimal schedule from Chapter 7 achieves a quadratic speedup over classical
+brute-force search, but the schedule must be fixed before evolution begins. It
+depends on the spectral parameter $A_1$, the weighted sum of inverse gaps that
+determines where the avoided crossing occurs. This parameter must be known to
+additive accuracy $O(2^{-n/2})$. Given the $N = 2^n$ diagonal entries of
+$H_z$, brute-force computation of
+$A_1 = (1/N)\sum_{k=1}^{M-1} d_k/(E_k - E_0)$ by enumerating eigenvalues,
+sorting, and summing takes $O(N)$ time. That is the same cost as classical
+unstructured search. If pre-computation costs as much as the task itself, the
+speedup is only conditional.
 
 The runtime of \autoref{thm:aqo-runtime},
 \[
 T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{\sqrt{A_2}}{\Delta^2\, A_1(A_1+1)}\cdot\sqrt{\frac{N}{d_0}}\right),
 \]
-makes this dependence explicit. The adaptive schedule places a slow phase in the window $[s^* - \delta_s,\, s^*)$ centered at the crossing position $s^* = A_1/(A_1+1)$, where the spectral gap reaches its minimum, and accelerates elsewhere. The parameters $A_2$ and $d_0$ enter only through the ratio $\sqrt{A_2/d_0}$. Using conservative bounds ($A_2 \geq 1 - d_0/N$ from Eq.~\eqref{eq:A2-lower-bound}, and $d_0 = 1$ for worst-case search) changes only polynomial prefactors in the hard-search regime $d_0 \ll N$. The critical parameter is $A_1$: it determines where the crossing occurs, and the window width $\delta_s = O(\sqrt{d_0 A_2/N}) = O(2^{-n/2})$ sets the required precision. An error larger than $\delta_s$ in the crossing position causes the algorithm to evolve rapidly through the gap minimum, destroying the ground-state fidelity. Throughout this chapter, we write $A_1(H)$ to make the dependence on the Hamiltonian explicit when multiple Hamiltonians are under consideration.
+makes this dependence explicit. The adaptive schedule places a slow phase in the
+window $[s^* - \delta_s,\, s^*)$ centered at $s^* = A_1/(A_1+1)$, where the
+gap is smallest, and accelerates elsewhere. The parameters $A_2$ and $d_0$
+enter only through $\sqrt{A_2/d_0}$. Using conservative bounds
+($A_2 \geq 1 - d_0/N$ from Eq.~\eqref{eq:A2-lower-bound}, and $d_0 = 1$ for
+worst-case search) changes only polynomial prefactors when $d_0 \ll N$. The
+decisive quantity is $A_1$. It sets crossing location, while
+$\delta_s = O(\sqrt{d_0 A_2/N}) = O(2^{-n/2})$ sets required precision. If the
+crossing estimate is wrong by more than $\delta_s$, evolution passes too quickly
+through the minimum and loses ground-state fidelity. Throughout this chapter, we
+write $A_1(H)$ when dependence on the Hamiltonian matters.
 
-The hardness of computing $A_1$ is not the only obstacle to adiabatic optimization for hard problems. Even if $A_1$ were known exactly, the single-crossing framework of Chapters 5--7 applies only to the rank-one projector $H_0 = -\ket{\psi_0}\bra{\psi_0}$. For the transverse-field driver (Chapter~5), the multi-crossing regime renders the single-crossing analysis inapplicable, and knowing $A_1$ does not help because the schedule would need to navigate exponentially many crossings rather than one. The information-theoretic barrier (computing $A_1$ is hard) and the spectral-structural barrier (the single-crossing framework does not apply) are complementary: the first limits the adiabatic approach with the rank-one driver when the problem Hamiltonian has rich spectral structure, while the second limits alternative drivers even when spectral information is available.
+The hardness of computing $A_1$ is not the only obstacle to adiabatic optimization for hard problems. Even if $A_1$ were known exactly, the single-crossing framework of Chapters 5--7 applies only to the rank-one projector $H_0 = -\ket{\psi_0}\bra{\psi_0}$. For the transverse-field driver (Chapter~5), the multi-crossing regime makes this framework inapplicable. Knowing $A_1$ no longer helps, because the schedule would need to navigate exponentially many crossings rather than one. These two barriers are complementary. Computing $A_1$ is hard even in the rank-one setting, and the single-crossing method fails for other drivers even when spectral information is available.
 
-NP-hardness holds at $1/\text{poly}(n)$: two queries to an $A_1$-oracle suffice to solve 3-SAT (\autoref{sec:np-hard-A1}), and $\#$P-hardness at $2^{-\text{poly}(n)}$: polynomial interpolation extracts all degeneracies from polynomially many queries (\autoref{sec:sharp-P-hard-A1}). The algorithmically relevant precision $2^{-n/2}$ sits between these regimes, close enough to matter but far enough that neither proof extends. At this precision, a quantum algorithm achieves $O(2^{n/2})$ queries while any classical algorithm requires $\Omega(2^n)$, yielding a Grover-type quadratic separation (\autoref{sec:intermediate-A1}).
+NP-hardness already appears at precision $1/\text{poly}(n)$. Two queries to an
+$A_1$-oracle then suffice to solve 3-SAT (\autoref{sec:np-hard-A1}). At
+precision $2^{-\text{poly}(n)}$, the problem becomes $\#$P-hard because
+polynomial interpolation can recover all degeneracies from polynomially many
+queries (\autoref{sec:sharp-P-hard-A1}). The algorithmically relevant precision
+$2^{-n/2}$ sits strictly between these scales. It is fine enough to matter for
+scheduling, but not fine enough for either existing hardness proof to transfer
+directly. At this precision, a quantum algorithm uses $O(2^{n/2})$ queries,
+while any classical algorithm needs $\Omega(2^n)$, yielding a Grover-type
+quadratic separation (\autoref{sec:intermediate-A1}).
 
 
 \section{NP-Hardness of Estimating \texorpdfstring{$A_1$}{A1}}
 \label{sec:np-hard-A1}
 
-The Hamiltonian $H_z$ encodes an optimization problem whose ground energy $E_0$ determines whether a solution exists. For a 3-SAT instance, $E_0 = 0$ when a satisfying assignment exists and $E_0 \geq 1/\text{poly}(n)$ otherwise. Distinguishing these two cases is the local Hamiltonian promise problem, known to be NP-hard \cite{kempe2006complexity}. The spectral parameter $A_1$ is not obviously related to this decision problem, since it aggregates information about all energy levels, not just the ground energy. A modified Hamiltonian $H'$ creates a bridge: comparing $A_1(H')$ with $A_1(H)$ reveals whether $E_0$ vanishes.
+The Hamiltonian $H_z$ encodes an optimization problem whose ground energy $E_0$ determines whether a solution exists. For a 3-SAT instance, $E_0 = 0$ when a satisfying assignment exists and $E_0 \geq 1/\text{poly}(n)$ otherwise. Distinguishing these two cases is the local Hamiltonian promise problem, known to be NP-hard \cite{kempe2006complexity}. The spectral parameter $A_1$ is not obviously tied to this decision problem, because it aggregates information across all energy levels rather than only the ground energy. A modified Hamiltonian $H'$ bridges the two tasks. Comparing $A_1(H')$ with $A_1(H)$ reveals whether $E_0$ vanishes.
 
 Define the $(n+1)$-qubit Hamiltonian
 \begin{equation}
 \label{eq:modified-ham}
 H' = H \otimes \frac{I + \sigma_z}{2}.
 \end{equation}
-The operator $(I+\sigma_z)/2$ is the projector onto $\ket{0}$ for the ancilla qubit: it has eigenvalue $1$ on $\ket{0}$ and eigenvalue $0$ on $\ket{1}$. On the $\ket{0}$ branch, $H'$ has the same spectrum as $H$: eigenvalues $E_k$ with degeneracies $d_k$. On the $\ket{1}$ branch, $H'$ annihilates every state, contributing $2^n$ eigenvalues at energy $0$. The ground energy of $H'$ is therefore always zero, regardless of $E_0(H)$. This invariance is the mechanism: $A_1(H')$ measures the spectrum from a fixed reference point $E_0' = 0$, while $A_1(H)$ measures from the variable reference $E_0(H)$. When $E_0(H) > 0$, the two measurements diverge, and the divergence is detectable.
+The operator $(I+\sigma_z)/2$ is the projector onto $\ket{0}$ for the ancilla qubit. It has eigenvalue $1$ on $\ket{0}$ and eigenvalue $0$ on $\ket{1}$. On the $\ket{0}$ branch, $H'$ has the same spectrum as $H$, with eigenvalues $E_k$ and degeneracies $d_k$. On the $\ket{1}$ branch, $H'$ annihilates every state, contributing $2^n$ eigenvalues at energy $0$. The ground energy of $H'$ is therefore always zero, regardless of $E_0(H)$. This is the key mechanism. $A_1(H')$ measures the spectrum from a fixed reference point $E_0' = 0$, while $A_1(H)$ measures from the variable reference $E_0(H)$. When $E_0(H) > 0$, the two values separate by a detectable amount.
 
 \begin{lemma}[Disambiguation {\cite{braida2024unstructured}}]
 \label{lem:disambiguation}
@@ -116,7 +144,7 @@ since $1/(6(6m-1)) \geq 1/(36(n_\text{var}+m-1))$ for $n_\text{var} \geq 1$ and 
 The Hamiltonian $H'$ from Eq.~\eqref{eq:modified-ham} acts on $n = 2n_\text{var}+2m+1$ qubits and is $3$-local (since $H$ is $2$-local and the tensor product with $(I+\sigma_z)/2$ adds one ancilla). Since $n_\text{var}+m \leq n$, the precision bound $\varepsilon < 1/(72(n-1))$ follows.
 \end{proof}
 
-When $M = 2$ (Grover search), the spectral parameter $A_1 = (N-1)/N$ is trivially known from the problem description: there are only two energy levels, and the degeneracies are determined by the number of marked items. The NP-hardness arises from Hamiltonians encoding combinatorial problems with polynomially many energy levels and exponentially small ground-energy gaps, where $A_1$ depends on the full degeneracy structure in a non-trivial way.
+When $M = 2$ (Grover search), the spectral parameter $A_1 = (N-1)/N$ is trivial to obtain from the instance description. There are only two levels, and their degeneracies are fixed by the number of marked items. NP-hardness appears only for Hamiltonians that encode combinatorial structure with polynomially many levels and exponentially small ground-energy gaps. In that regime, $A_1$ depends nontrivially on the full degeneracy profile.
 
 \textbf{Remark.} The disambiguation technique extends beyond 3-SAT. The MaxCut decision problem (given a graph $G = (V,E)$ and integer $k$, does $G$ have a cut of size at least $k$?) also reduces to $A_1$ estimation. The construction adds a weighted edge to $G$, creating an auxiliary Hamiltonian $H'$ whose $A_1$ value differs from a reference by at least $1/(|E|(|E|-1))$ between the two cases. This yields NP-hardness at precision $2/(5n^4)$ with a $2$-local Hamiltonian, sharpening the locality requirement from $3$-local to $2$-local at the cost of a slightly tighter precision bound.
 
@@ -124,7 +152,7 @@ When $M = 2$ (Grover search), the spectral parameter $A_1 = (N-1)/N$ is triviall
 \section{\texorpdfstring{$\#$P}{\#P}-Hardness of Computing \texorpdfstring{$A_1$}{A1} Exactly}
 \label{sec:sharp-P-hard-A1}
 
-NP-hardness captures the decision problem: is $E_0 = 0$? But $A_1$ encodes more than a single bit. The spectral parameter is a weighted sum over all energy levels, and its exact value determines every degeneracy $d_k$. Extracting these degeneracies solves counting problems ($d_0$ for an NP-complete Hamiltonian counts the number of satisfying assignments), and counting is harder than deciding: it is $\#$P-complete \cite{valiant1979complexity}.
+NP-hardness captures a decision question, namely whether $E_0 = 0$. But $A_1$ carries more than a single decision bit. It is a weighted sum over all energy levels, and its exact value determines every degeneracy $d_k$. Recovering these degeneracies solves counting problems. For NP-complete Hamiltonians, for example, $d_0$ counts satisfying assignments. Counting is harder than deciding, and it is $\#$P-complete \cite{valiant1979complexity}.
 
 The extraction uses a parametrized family of Hamiltonians that shifts the spectrum continuously, turning $A_1$ into a rational function whose poles carry the degeneracies as residues. For a parameter $x > 0$, define the $(n+1)$-qubit Hamiltonian
 \begin{equation}
@@ -146,14 +174,14 @@ Suppose $\mathcal{C}$ is a procedure that computes $A_1(H)$ exactly for any $n$-
 \end{lemma}
 
 \begin{proof}
-Each evaluation of $f(x_i)$ requires two calls to $\mathcal{C}$: one for $A_1(H)$ and one for $A_1(H'(x_i))$. Evaluate $f$ at $M$ distinct positive odd integers $x_i \in \{1, 3, \ldots, 2M-1\}$. These values avoid the poles: for each $k$, $\Delta_k + x_i/2 \geq 0 + 1/2 > 0$ since $\Delta_k \geq 0$ and $x_i \geq 1$. The total cost is $2M = O(\text{poly}(n))$ oracle calls.
+Each evaluation of $f(x_i)$ requires two calls to $\mathcal{C}$, one for $A_1(H)$ and one for $A_1(H'(x_i))$. Evaluate $f$ at $M$ distinct positive odd integers $x_i \in \{1, 3, \ldots, 2M-1\}$. These values avoid the poles. For each $k$, $\Delta_k + x_i/2 \geq 0 + 1/2 > 0$ because $\Delta_k \geq 0$ and $x_i \geq 1$. The total cost is $2M = O(\text{poly}(n))$ oracle calls.
 
 Define the reconstruction polynomial
 \begin{equation}
 \label{eq:recon-poly}
 P(x) = \prod_{k=0}^{M-1}\left(\Delta_k + \frac{x}{2}\right) f(x) = \frac{1}{N}\sum_{k=0}^{M-1} d_k \prod_{\ell \neq k}\left(\Delta_\ell + \frac{x}{2}\right).
 \end{equation}
-Multiplying $f(x)$ by the product of all denominators clears the poles, yielding a polynomial of degree at most $M - 1$ in $x$. Since the gaps $\Delta_k$ are known integers, the values $P(x_i) = \prod_k(\Delta_k + x_i/2) \cdot f(x_i)$ are computable from the oracle outputs. The $M$ values $P(x_1), \ldots, P(x_M)$ determine $P$ uniquely by Lagrange interpolation \cite{phillips2003interpolation}: a polynomial of degree at most $M - 1$ is determined by $M$ distinct evaluations.
+Multiplying $f(x)$ by the product of all denominators clears the poles, yielding a polynomial of degree at most $M - 1$ in $x$. Since the gaps $\Delta_k$ are known integers, the values $P(x_i) = \prod_k(\Delta_k + x_i/2) \cdot f(x_i)$ are computable from oracle outputs. The $M$ values $P(x_1), \ldots, P(x_M)$ determine $P$ uniquely by Lagrange interpolation \cite{phillips2003interpolation}. A polynomial of degree at most $M - 1$ is fixed by $M$ distinct evaluations.
 
 The degeneracies are recovered by evaluating $P$ at the poles. Setting $x = -2\Delta_k$ kills every factor $(\Delta_\ell + x/2)$ except the $k$-th, giving
 \begin{equation}
@@ -163,7 +191,7 @@ d_k = \frac{N \cdot P(-2\Delta_k)}{\displaystyle\prod_{\ell \neq k}(\Delta_\ell 
 The denominator is nonzero because the eigenvalues are distinct. The entire computation (oracle calls, Lagrange interpolation, pole evaluation) runs in $O(\text{poly}(n))$ time.
 \end{proof}
 
-Extracting $d_0$ from an Ising Hamiltonian encoding a 3-SAT formula counts the number of satisfying assignments, solving $\#$3-SAT. Since $\#$3-SAT is $\#$P-complete \cite{valiant1979complexity}, an exact $A_1$ oracle would solve every problem in $\#$P in polynomial time. The degeneracies also determine the output probability of an IQP circuit \cite{movassagh2023hardness}: from the $d_k$ and $\Delta_k$, one computes $|\langle 0^n | C_\text{IQP} | 0^n \rangle|^2 = |N^{-1}\sum_k d_k\, e^{i\Delta_k}|^2$, which is itself $\#$P-hard. The NP-hardness of \autoref{sec:np-hard-A1} uses a $3$-local Hamiltonian (the ancilla qubit raises the locality by one). The $\#$P-hardness holds for $2$-local Ising Hamiltonians, since the parametrized construction in Eq.~\eqref{eq:param-ham} preserves $2$-locality when $H$ is $2$-local.
+Extracting $d_0$ from an Ising Hamiltonian encoding a 3-SAT formula counts satisfying assignments and therefore solves $\#$3-SAT. Since $\#$3-SAT is $\#$P-complete \cite{valiant1979complexity}, an exact $A_1$ oracle would solve every problem in $\#$P in polynomial time. The same degeneracy data also determines IQP output probabilities \cite{movassagh2023hardness}. From $d_k$ and $\Delta_k$, one computes $|\langle 0^n | C_\text{IQP} | 0^n \rangle|^2 = |N^{-1}\sum_k d_k\, e^{i\Delta_k}|^2$, which is itself $\#$P-hard. The NP-hardness result of \autoref{sec:np-hard-A1} uses a $3$-local Hamiltonian because the ancilla raises locality by one. The $\#$P-hardness statement already holds for $2$-local Ising Hamiltonians, since Eq.~\eqref{eq:param-ham} preserves $2$-locality when $H$ is $2$-local.
 
 The exact oracle is unrealistic. A robust version of \autoref{lem:exact-degeneracy} must tolerate additive noise $\varepsilon$ in the oracle outputs. Paturi's amplification lemma controls how pointwise bounds on a polynomial propagate across an interval.
 
@@ -172,11 +200,11 @@ The exact oracle is unrealistic. A robust version of \autoref{lem:exact-degenera
 Let $P(x)$ be a polynomial of degree at most $M$ satisfying $|P(i)| \leq c$ for all integers $i \in \{0, 1, \ldots, M\}$. Then $|P(x)| \leq c \cdot 2^M$ for all $x \in [0, M]$.
 \end{lemma}
 
-Paturi's lemma bounds the growth of a polynomial between its sample points: a polynomial bounded by $c$ at $M+1$ integer points can exceed $c$ by at most a factor $2^M$ on the interval. When applied to the difference between the exact and approximate reconstruction polynomials, it yields a controlled error on the interpolation interval. The oracle noise $\varepsilon$ propagates to $f$ as $|\tilde{f}(x_i) - f(x_i)| \leq 3\varepsilon$ (three oracle calls contribute), then to the polynomial samples as $|\tilde{P}(x_i) - P(x_i)| \leq 3\varepsilon \prod_k(\Delta_k + x_i/2)$. The product is at most $B^M$ where $B = \Delta_{\max} + M = \text{poly}(n)$, so each sample has error at most $3\varepsilon B^M$.
+Paturi's lemma bounds polynomial growth between sample points. If a polynomial is bounded by $c$ at $M+1$ integer points, it can grow by at most a factor $2^M$ on the interval. Applied to the difference between exact and approximate reconstruction polynomials, this gives explicit control of interpolation error. Oracle noise $\varepsilon$ first propagates to $f$ as $|\tilde{f}(x_i) - f(x_i)| \leq 3\varepsilon$ (three oracle calls contribute), then to the polynomial samples as $|\tilde{P}(x_i) - P(x_i)| \leq 3\varepsilon \prod_k(\Delta_k + x_i/2)$. The product is at most $B^M$ with $B = \Delta_{\max} + M = \text{poly}(n)$, so each sample has error at most $3\varepsilon B^M$.
 
 \begin{lemma}[Approximate degeneracy extraction {\cite{braida2024unstructured}}]
 \label{lem:approx-degeneracy}
-Under the same hypotheses as \autoref{lem:exact-degeneracy}, but with an oracle $\mathcal{C}_\varepsilon$ satisfying $|\widetilde{A}_1(H) - A_1(H)| \leq \varepsilon$: for sufficiently small $\varepsilon \in O(2^{-\text{poly}(n)})$, all degeneracies $d_k$ can be computed exactly by $O(\text{poly}(n))$ calls to $\mathcal{C}_\varepsilon$.
+Under the same hypotheses as \autoref{lem:exact-degeneracy}, but with an oracle $\mathcal{C}_\varepsilon$ satisfying $|\widetilde{A}_1(H) - A_1(H)| \leq \varepsilon$, all degeneracies $d_k$ can be computed exactly by $O(\text{poly}(n))$ calls to $\mathcal{C}_\varepsilon$ for sufficiently small $\varepsilon \in O(2^{-\text{poly}(n)})$.
 \end{lemma}
 
 \begin{proof}[Proof sketch]
@@ -198,17 +226,25 @@ The proof extends to probabilistic oracles. If $\mathcal{C}_\varepsilon$ succeed
 Estimating $A_1(H)$ to additive accuracy $\varepsilon = O(2^{-\text{poly}(n)})$ is $\#$P-hard, even for $2$-local Ising Hamiltonians. The result holds for both deterministic and probabilistic estimation algorithms.
 \end{theorem}
 
-With $M = 2$, the reconstruction polynomial $P(x) = (d_0/N)(1 + x/2) + (d_1/N)(x/2)$ is linear. Two evaluations determine $d_0$ and $d_1$ exactly, and the Lagrange interpolation is trivial: a line through two points. The $\#$P-hardness arises from Hamiltonians with $M = O(n^2)$ levels, where the reconstruction polynomial has high degree and small errors amplify through the exponential Paturi factor. The error amplification from oracle noise to degeneracy error grows as $2^{O(M \log n)}$, a factor that the next section analyzes precisely.
+With $M = 2$, the reconstruction polynomial $P(x) = (d_0/N)(1 + x/2) + (d_1/N)(x/2)$ is linear. Two evaluations determine $d_0$ and $d_1$ exactly, and interpolation reduces to fitting a line through two points. The $\#$P-hardness comes from Hamiltonians with $M = O(n^2)$ levels, where the reconstruction polynomial has high degree and tiny oracle errors amplify through the exponential Paturi factor. The next section quantifies this amplification as $2^{O(M \log n)}$.
 
 
 \section{The Intermediate Regime}
 \label{sec:intermediate-A1}
 
-The adiabatic algorithm requires $A_1$ to precision $O(2^{-n/2})$. NP-hardness holds at $1/\text{poly}(n)$ (\autoref{thm:np-hard-A1}), and $\#$P-hardness holds at $2^{-\text{poly}(n)}$ (\autoref{thm:sharp-P-hard-A1}). The algorithmically relevant precision $2^{-n/2}$ sits strictly between these regimes. The interpolation technique does not extend to this precision: Braida et al.\ \cite{braida2024unstructured} left the intermediate regime as an open problem.
+The adiabatic algorithm requires $A_1$ to precision $O(2^{-n/2})$. NP-hardness holds at $1/\text{poly}(n)$ (\autoref{thm:np-hard-A1}), and $\#$P-hardness holds at $2^{-\text{poly}(n)}$ (\autoref{thm:sharp-P-hard-A1}). The algorithmically relevant precision $2^{-n/2}$ lies strictly between these regimes. The interpolation method does not reach this precision; Braida et al.\ \cite{braida2024unstructured} left the intermediate regime open.
 
 The interpolation technique extracts exact integers from approximate real evaluations. At precision $2^{-n/2}$, the error amplification inherent in polynomial extrapolation makes this extraction impossible.
 
-NP-hardness extends to $2^{-n/2}$ by monotonicity: an oracle at precision $2^{-n/2}$ is strictly more powerful than one at $1/\text{poly}(n)$ (since $2^{-n/2} < 1/\text{poly}(n)$ for large $n$), so it also solves 3-SAT. But $\#$P-hardness does not extend upward: an oracle at precision $2^{-n/2}$ is \emph{less} powerful than one at $2^{-\text{poly}(n)}$, and the interpolation technique that established the latter breaks down at the former. The error propagation has three stages: oracle noise enters the polynomial samples at rate $\varepsilon B^M$, the Lebesgue function amplifies this by a factor exponential in $M$, and the total amplification overwhelms the rounding margin when $\varepsilon = 2^{-n/2}$.
+NP-hardness extends to $2^{-n/2}$ by monotonicity. An oracle at precision
+$2^{-n/2}$ is strictly more powerful than one at $1/\text{poly}(n)$, so it
+still solves 3-SAT. The $\#$P-hardness argument does not extend the other way.
+An oracle at precision $2^{-n/2}$ is \emph{less} powerful than one at
+$2^{-\text{poly}(n)}$, and the interpolation proof for that regime fails here.
+The failure has a concrete source. Oracle noise enters polynomial samples at
+rate $\varepsilon B^M$, the Lebesgue function amplifies it exponentially in $M$,
+and the amplified error exceeds the rounding margin when
+$\varepsilon = 2^{-n/2}$.
 
 \begin{theorem}[Interpolation barrier]
 \label{thm:interpolation-barrier}
@@ -229,7 +265,7 @@ We trace the error propagation from oracle noise to degeneracy error through the
 \label{eq:interp-error}
 |\tilde{P}(x^*) - P(x^*)| \leq 3\varepsilon\, B^M \sum_{j=0}^{M-1}\prod_{i \neq j}\frac{|x^* - x_i|}{|x_j - x_i|} = 3\varepsilon\, B^M \cdot \Lambda_M(x^*),
 \end{equation}
-where $\Lambda_M(x^*) = \sum_j \prod_{i \neq j} |x^* - x_i|/|x_j - x_i|$ is the Lebesgue function at $x^*$, measuring the worst-case amplification of pointwise errors by Lagrange interpolation: if each sample has error $\delta$, the interpolated value at $x^*$ has error at most $\delta \cdot \Lambda_M(x^*)$. For extrapolation outside the sample interval, this amplification is exponential in $M$. For the odd-integer nodes $x_j = 2j+1$ and evaluation point $x^* = -2\Delta_k \leq 0$ (outside the interval $[1, 2M-1]$): each numerator factor $|x^* - x_i| = 2\Delta_k + 2i + 1 \leq 2B + 1$. For the denominator, $\prod_{i \neq j}|x_j - x_i| = \prod_{i \neq j} 2|j-i| = 2^{M-1}\, j!\,(M-1-j)!$, since the nodes are equally spaced with spacing $2$. The sum over $j$ evaluates to
+where $\Lambda_M(x^*) = \sum_j \prod_{i \neq j} |x^* - x_i|/|x_j - x_i|$ is the Lebesgue function at $x^*$. It measures worst-case amplification of pointwise interpolation errors. If each sample has error $\delta$, then the interpolated value at $x^*$ has error at most $\delta \cdot \Lambda_M(x^*)$. For extrapolation outside the sample interval, this amplification is exponential in $M$. Consider odd-integer nodes $x_j = 2j+1$ and evaluation point $x^* = -2\Delta_k \leq 0$, which lies outside $[1, 2M-1]$. Each numerator factor obeys $|x^* - x_i| = 2\Delta_k + 2i + 1 \leq 2B + 1$. For the denominator, $\prod_{i \neq j}|x_j - x_i| = \prod_{i \neq j} 2|j-i| = 2^{M-1}\, j!\,(M-1-j)!$ because the nodes are equally spaced with spacing $2$. The sum over $j$ becomes
 \begin{equation}
 \label{eq:lebesgue-bound}
 \Lambda_M(x^*) \leq \sum_{j=0}^{M-1}\frac{(2B+1)^{M-1}}{2^{M-1}\, j!\, (M-1-j)!} = \frac{(2B+1)^{M-1}}{(M-1)!},
@@ -254,9 +290,9 @@ Since $B = \text{poly}(n)$ and $M = \text{poly}(n)$, the amplification factor is
 Even for $c = 1$ (the most favorable case $M = n$), the exponent $n/2 + \Omega(n)$ diverges. The upper bound on the degeneracy error already exceeds $1/2$, so the rounding step cannot be guaranteed to succeed.
 \end{proof}
 
-The precision $\varepsilon = 2^{-n/2}$ is too coarse for interpolation but too fine for brute force: it sits in a gap that the existing proof techniques cannot reach from either side.
+The precision $\varepsilon = 2^{-n/2}$ is too coarse for interpolation but too fine for brute force. It sits in a window that existing techniques cannot reach from either side.
 
-This amplification is not specific to the construction above. The exponential growth is intrinsic to polynomial extrapolation: any $d$ nodes, any interval, any evaluation point sufficiently far from the interval.
+This amplification is not specific to the construction above. Exponential growth is intrinsic to polynomial extrapolation for any $d$ nodes, any interval, and any evaluation point sufficiently far outside that interval.
 
 \begin{theorem}[Generic extrapolation barrier]
 \label{thm:generic-barrier}
@@ -279,11 +315,18 @@ Choosing adversarial signs $e_j = \delta\,\mathrm{sign}(\ell_j(x^*))$ gives
 so the worst-case error can be at least $\delta \cdot 2^{d-1}$.
 \end{proof}
 
-\autoref{thm:generic-barrier} closes the door on rescuing the $\#$P-hardness argument through better interpolation schemes. No rearrangement of nodes (equispaced, Chebyshev, or otherwise), no alternative polynomial basis, and no change of variables can reduce the amplification below $2^{d-1}$. At $d = M = \text{poly}(n)$ levels, the required precision remains $\varepsilon = 2^{-\Omega(n)}$, exponentially below $2^{-n/2}$. The same structural obstacle appears in quantum computational advantage proposals: the polynomial interpolation techniques used to prove hardness of boson sampling \cite{aaronson2011bosonsampling}, IQP sampling \cite{bremner2017achievingquantum}, and random circuit sampling \cite{bouland2019complexity} face analogous amplification barriers when extending hardness from exponentially small to moderate error regimes.
+\autoref{thm:generic-barrier} rules out rescuing the $\#$P-hardness argument by tweaking interpolation details. Reordering nodes (equispaced, Chebyshev, or otherwise), changing polynomial bases, or reparameterizing variables cannot push amplification below $2^{d-1}$. At $d = M = \text{poly}(n)$, the needed precision stays at $\varepsilon = 2^{-\Omega(n)}$, far below $2^{-n/2}$. The same obstacle appears in quantum-advantage hardness arguments. Interpolation-based proofs for boson sampling \cite{aaronson2011bosonsampling}, IQP sampling \cite{bremner2017achievingquantum}, and random circuit sampling \cite{bouland2019complexity} face analogous amplification barriers when moving from exponentially small to moderate error.
 
-The interpolation barrier does not rule out $\#$P-hardness at $2^{-n/2}$ by other means. A proof that avoids polynomial extrapolation entirely, using direct algebraic reductions or information-theoretic arguments, might succeed. The barrier identifies where new proof techniques are needed: the challenge is to establish counting hardness without extracting exact integers from approximate real evaluations.
+The interpolation barrier does not rule out $\#$P-hardness at $2^{-n/2}$ by other methods. A proof that avoids polynomial extrapolation, for example through direct algebraic reductions or information-theoretic arguments, might still work. The barrier identifies the pressure point: we need a way to prove counting hardness without recovering exact integers from approximate real values.
 
-What can be computed at precision $2^{-n/2}$? We analyze the problem in the query model, where each query to a diagonal oracle $O_H\colon \ket{x}\ket{0} \mapsto \ket{x}\ket{E_x}$ reveals one diagonal entry of $H_z$ at unit cost. This framework cleanly separates quantum and classical capabilities. The interpolation barrier is a classical obstruction: it says that polynomial extrapolation cannot extract integers from evaluations at this precision. A quantum algorithm that avoids interpolation entirely, using amplitude estimation instead of polynomial reconstruction, circumvents the barrier.
+What can be computed at precision $2^{-n/2}$? We answer in the query model,
+where each query to a diagonal oracle
+$O_H\colon \ket{x}\ket{0} \mapsto \ket{x}\ket{E_x}$ reveals one diagonal entry
+of $H_z$ at unit cost. This model cleanly separates quantum and classical
+capabilities. The interpolation barrier is a classical obstruction: polynomial
+extrapolation cannot recover integers at this precision. A quantum algorithm can
+bypass that step entirely by using amplitude estimation rather than polynomial
+reconstruction.
 
 \begin{theorem}[Quantum algorithm for $A_1$]
 \label{thm:quantum-A1}
@@ -314,10 +357,10 @@ p = \frac{1}{N}\sum_x h(x) = \mu_h.
 \]
 Amplitude estimation \cite{BrassardHoyerMoscaEtAl2002} estimates $p$ to additive precision $\delta$ using $O(1/\delta)$ applications of $U_h$ and its inverse. Setting $\delta = \varepsilon\, \Delta_1$ ensures $|A_1 - \tilde{A}_1| = |\mu_h - \tilde{\mu}_h|/\Delta_1 \leq \varepsilon$. The number of $U_h$ applications is $O(1/(\varepsilon\, \Delta_1))$.
 
-Combining both stages: $O(\sqrt{N})$ queries for Stage~1 and $O(1/(\varepsilon\, \Delta_1))$ queries for Stage~2, giving the total in Eq.~\eqref{eq:quantum-complexity}. For $\varepsilon = 2^{-n/2}$ and $\Delta_1 = 1/\text{poly}(n)$: $O(2^{n/2} + 2^{n/2}\, \text{poly}(n)) = O(2^{n/2}\, \text{poly}(n))$.
+Combining both stages gives $O(\sqrt{N})$ queries for Stage~1 and $O(1/(\varepsilon\, \Delta_1))$ queries for Stage~2, yielding Eq.~\eqref{eq:quantum-complexity}. For $\varepsilon = 2^{-n/2}$ and $\Delta_1 = 1/\text{poly}(n)$, this becomes $O(2^{n/2} + 2^{n/2}\, \text{poly}(n)) = O(2^{n/2}\, \text{poly}(n))$.
 \end{proof}
 
-To confirm that the quantum algorithm's $O(2^{n/2})$ queries represent a genuine advantage, we need a classical lower bound. The natural approach is information-theoretic: how many samples does a classical algorithm need to distinguish two carefully chosen instances whose $A_1$ values differ by $\varepsilon$?
+To confirm that the quantum algorithm's $O(2^{n/2})$ query count is a genuine advantage, we need a classical lower bound. The natural route is information-theoretic. We ask how many samples a classical algorithm needs to distinguish two carefully chosen instances whose $A_1$ values differ by $\varepsilon$.
 
 \begin{theorem}[Classical lower bound for $A_1$ estimation]
 \label{thm:classical-lower-A1}
@@ -329,7 +372,7 @@ We construct an adversarial pair of instances that are indistinguishable without
 
 \textbf{Instance construction.} Fix $t = \lceil\varepsilon N\rceil$. Instance~$H_0$ has a hidden set $S \subseteq \{0,1\}^n$ with $|S| = N/2$, and eigenvalues $E_x = 0$ for $x \in S$, $E_x = 1$ otherwise. Instance~$H_1$ has $|S'| = N/2 + t$ ground states. The spectral parameters are $A_1(H_0) = 1/2$ and $A_1(H_1) = (N/2 - t)/N = 1/2 - t/N$, differing by $t/N \geq \varepsilon$. An algorithm estimating $A_1$ to precision $\varepsilon/2$ must distinguish the two instances.
 
-\textbf{Information-theoretic bound.} A classical query at string $x$ reveals $E_x \in \{0,1\}$, equivalent to learning whether $x \in S$. Under a uniform prior on $S$ (or $S'$), successive queries follow a hypergeometric sampling model. Conditioned on previous outcomes, the $j$-th query is a Bernoulli trial: $x$ is a ground state with probability $p_j^{(i)} = (|S_i| - g_{j-1})/(N - j + 1)$ under hypothesis $H_i$, where $g_{j-1}$ counts ground states already found. The parameter difference $p_j^{(1)} - p_j^{(0)} = t/(N - j + 1)$ is independent of $g_{j-1}$. Since both parameters are $\Theta(1)$, a Taylor expansion of the binary KL divergence $D(p \| p + \delta) = \delta^2/(p(1-p)) + O(\delta^3)$ with $\delta = t/(N-j+1)$ gives the conditional per-query divergence
+\textbf{Information-theoretic bound.} A classical query at string $x$ reveals $E_x \in \{0,1\}$, which is equivalent to learning whether $x \in S$. Under a uniform prior on $S$ (or $S'$), successive queries follow a hypergeometric sampling model. Conditioned on earlier outcomes, the $j$-th query is a Bernoulli trial. Under hypothesis $H_i$, $x$ is a ground state with probability $p_j^{(i)} = (|S_i| - g_{j-1})/(N - j + 1)$, where $g_{j-1}$ counts ground states already found. The difference $p_j^{(1)} - p_j^{(0)} = t/(N - j + 1)$ is independent of $g_{j-1}$. Since both parameters are $\Theta(1)$, a Taylor expansion of binary KL divergence $D(p \| p + \delta) = \delta^2/(p(1-p)) + O(\delta^3)$ with $\delta = t/(N-j+1)$ gives the conditional per-query divergence
 \[
 D_j = O\!\left(\frac{t^2}{(N-j)^2}\right) = O\!\left(\frac{t^2}{N^2}\right)
 \]
@@ -337,16 +380,16 @@ when $q \leq N/2$. By the chain rule for KL divergence, the total information fr
 \[
 D_\text{KL}^{(q)} \leq \sum_{j=1}^{q} D_j \leq q \cdot O\!\left(\frac{t^2}{N^2}\right).
 \]
-By Le Cam's two-point method \cite{lecam1973convergence}, reliable hypothesis testing requires $D_\text{KL}^{(q)} \geq \Omega(1)$ (via Pinsker's inequality: total variation distance $\leq \sqrt{D_\text{KL}/2}$, and distinguishing requires total variation $\Omega(1)$). Therefore
+By Le Cam's two-point method \cite{lecam1973convergence}, reliable hypothesis testing requires $D_\text{KL}^{(q)} \geq \Omega(1)$. Via Pinsker's inequality, total variation distance is at most $\sqrt{D_\text{KL}/2}$, and reliable distinguishing needs total variation $\Omega(1)$. Therefore
 \[
 q \geq \Omega\!\left(\frac{N^2}{t^2}\right) = \Omega\!\left(\frac{1}{\varepsilon^2}\right).
 \]
-At $\varepsilon = 2^{-n/2}$: $q \geq \Omega(2^n)$.
+At $\varepsilon = 2^{-n/2}$, this gives $q \geq \Omega(2^n)$.
 \end{proof}
 
 \begin{corollary}[Quadratic quantum-classical separation]
 \label{cor:quadratic-separation}
-In the query model, estimating $A_1(H_z)$ to precision $\varepsilon = 2^{-n/2}$ exhibits a quadratic quantum-classical separation: quantum complexity $O(2^{n/2}\, \text{poly}(n))$ versus classical complexity $\Omega(2^n)$.
+In the query model, estimating $A_1(H_z)$ to precision $\varepsilon = 2^{-n/2}$ exhibits a quadratic quantum-classical separation, with quantum complexity $O(2^{n/2}\, \text{poly}(n))$ and classical complexity $\Omega(2^n)$.
 \end{corollary}
 
 \begin{proof}
@@ -355,11 +398,17 @@ The upper bound is \autoref{thm:quantum-A1} with $\Delta_1 = 1$ for the adversar
 
 At the precision the adiabatic algorithm needs, quantum computation offers exactly the speedup the algorithm achieves.
 
-The quantum bound in \autoref{thm:quantum-A1} is not just an upper bound; it is tight. For $M = 2$ instances with $\Delta_1 = 1$, estimating $A_1 = (N - d_0)/N$ to precision $\varepsilon$ is equivalent to estimating the fraction $d_0/N$ to precision $\varepsilon$, which is an instance of approximate counting. The Grover iterate $G = (2\ket{+}\!\bra{+} - I)(I - 2\Pi_S)$, where $\Pi_S$ projects onto the $d_0$ ground states, has eigenphases $\pm 2\theta$ with $\sin^2\theta = d_0/N$. For $d_0 \approx N/2$, the derivative $dp/d\theta = \sin 2\theta = 1$, so precision $\varepsilon$ in $A_1$ requires precision $\varepsilon$ in $\theta$. The Heisenberg limit for quantum phase estimation \cite{giovannetti2006quantum}, the quantum Cram\'{e}r-Rao inequality \cite{braunstein1994statistical} with Fisher information $F_Q \leq 4T^2$, gives $T \geq 1/(2\varepsilon)$ applications of $G$, each costing $O(1)$ oracle queries. Combined with the upper bound: the quantum query complexity at precision $\varepsilon = 2^{-n/2}$ is $\Theta(2^{n/2})$. The next chapter formalizes this as a theorem and connects it to the broader question of what the quadratic quantum advantage means for the information cost of the adiabatic approach.
+The quantum bound in \autoref{thm:quantum-A1} is not only an upper bound; it is tight. For $M = 2$ instances with $\Delta_1 = 1$, estimating $A_1 = (N - d_0)/N$ to precision $\varepsilon$ is equivalent to estimating $d_0/N$ to precision $\varepsilon$, which is approximate counting. The Grover iterate $G = (2\ket{+}\!\bra{+} - I)(I - 2\Pi_S)$, where $\Pi_S$ projects onto the $d_0$ ground states, has eigenphases $\pm 2\theta$ with $\sin^2\theta = d_0/N$. For $d_0 \approx N/2$, we have $dp/d\theta = \sin 2\theta = 1$, so precision $\varepsilon$ in $A_1$ requires precision $\varepsilon$ in $\theta$. The Heisenberg limit for quantum phase estimation \cite{giovannetti2006quantum}, together with the quantum Cram\'{e}r-Rao inequality \cite{braunstein1994statistical} and Fisher bound $F_Q \leq 4T^2$, gives $T \geq 1/(2\varepsilon)$ applications of $G$, each with $O(1)$ oracle cost. Combining this with the upper bound yields quantum query complexity $\Theta(2^{n/2})$ at precision $\varepsilon = 2^{-n/2}$. The next chapter formalizes this theorem and ties it to the information cost of the adiabatic approach.
 
-Two complementary frameworks apply: computational complexity for the problem of estimating $A_1$ given an explicit Hamiltonian description, and query complexity for the problem given oracle access to the diagonal entries. The distinction matters because they answer different questions about the same bottleneck. Computational complexity asks: given the Hamiltonian's description (coupling constants $J_{ij}$, local fields $h_j$), can a classical computer extract $A_1$ efficiently? The input is fully specified and the difficulty lies in the computation itself. Query complexity asks: given black-box access to the diagonal entries $E_x$, how many evaluations does any algorithm, classical or quantum, need to estimate $A_1$? The input is hidden behind an oracle, and the difficulty lies in the information content. A problem can be computationally easy but query-hard (when the function evaluations are cheap but many are needed), or query-easy but computationally hard (when few evaluations suffice in principle but each requires solving a hard sub-problem). For the $A_1$ estimation problem, both frameworks yield hardness results, reinforcing the conclusion that the pre-computation cost is genuine rather than an artifact of a particular algorithmic approach.
+Two complementary frameworks apply here. Computational complexity asks whether a
+classical computer can extract $A_1$ from an explicit Hamiltonian description
+$(J_{ij}, h_j)$. Query complexity asks how many oracle evaluations are
+information-theoretically necessary when diagonal entries are hidden behind
+$O_H$. A problem can be easy in one model and hard in the other. For $A_1$
+estimation, both frameworks show hardness, which supports the same conclusion:
+the pre-computation barrier is structural, not an artifact of one proof style.
 
-In the computational model with an explicit Hamiltonian description, the complexity landscape across precision regimes is:
+In the computational model with an explicit Hamiltonian description, the precision-dependent hardness landscape is summarized below.
 
 \begin{center}
 \begin{tabular}{lll}
@@ -373,7 +422,7 @@ $2^{-\text{poly}(n)}$ & $\#$P-hard & \autoref{thm:sharp-P-hard-A1} \\
 \end{tabular}
 \end{center}
 
-\noindent In the query model with a diagonal oracle at the algorithmically relevant precision $\varepsilon = 2^{-n/2}$:
+\noindent In the query model with a diagonal oracle at the algorithmically relevant precision $\varepsilon = 2^{-n/2}$, the comparison is:
 
 \begin{center}
 \begin{tabular}{lll}
@@ -386,12 +435,12 @@ Classical & $\Omega(2^n)$ & \autoref{thm:classical-lower-A1} \\
 \end{tabular}
 \end{center}
 
-\noindent The precision $2^{-n/2}$ coincides with the algorithmic requirement: the adiabatic schedule needs $A_1$ to precision $O(\sqrt{d_0/N})$, which is $O(2^{-n/2})$ in the worst case $d_0 = O(1)$. It is also the interpolation barrier: the proof technique that establishes $\#$P-hardness breaks exactly at this threshold (\autoref{thm:interpolation-barrier}), while NP-hardness extends by monotonicity. And it marks a query complexity transition: at $2^{-n/2}$, the quantum algorithm achieves $O(2^{n/2})$ queries while classical sampling requires $\Omega(2^n)$, a Grover-type quadratic gap.
+\noindent The precision $2^{-n/2}$ is exactly the algorithmic target. The adiabatic schedule needs $A_1$ to precision $O(\sqrt{d_0/N})$, which is $O(2^{-n/2})$ in the worst case $d_0 = O(1)$. It is also where interpolation-based $\#$P-hardness proofs break (\autoref{thm:interpolation-barrier}), even though NP-hardness still follows by monotonicity. Finally, it is where query complexity separates sharply: the quantum algorithm uses $O(2^{n/2})$ queries, while classical sampling requires $\Omega(2^n)$.
 
 Classical sampling provides independent evidence for the hardness of $A_1$ estimation at the algorithmic precision. Given a procedure that samples eigenvalues $E_x$ according to the distribution $\{d_k/N\}$, estimating the mean $A_1 = \mathbb{E}[1/(E_x - E_0)]$ to precision $\delta_s$ requires $O(1/\delta_s^2) = \widetilde{O}(2^n/d_0)$ samples by Chebyshev's inequality. This matches the formal $\Omega(2^n)$ lower bound of \autoref{thm:classical-lower-A1} up to logarithmic factors, providing a consistency check between the query-complexity result and concrete sampling algorithms.
 
-The information barrier is not specific to adiabatic evolution. Consider the time-independent Hamiltonian $H = -\ket{\psi_0}\bra{\psi_0} + r\,H_\sigma$, where $r > 0$ is a fixed parameter and $H_\sigma$ is the problem Hamiltonian. Evolving the initial state $\ket{\psi_0}$ under $H$ for time $t$ produces oscillations between $\ket{\psi_0}$ and the ground state of $H_\sigma$, with a success probability that depends on $r$. The oscillation frequency is set by the spectral gap of $H$, which is maximized when $r$ places the system at the avoided crossing, precisely when $r = A_1$ (up to normalization). For the success probability to be non-negligible, $r$ must be within $O(2^{-n/2})$ of $A_1$ \cite{braida2024unstructured}. Any continuous-time algorithm based on this Hamiltonian therefore faces the same information barrier: the parameter $A_1$ must be known to exponential precision, and computing it is NP-hard. The barrier is not an artifact of the adiabatic framework but a consequence of the spectral structure of rank-one perturbations of diagonal Hamiltonians.
+The information barrier is not specific to adiabatic evolution. Consider the time-independent Hamiltonian $H = -\ket{\psi_0}\bra{\psi_0} + r\,H_\sigma$, where $r > 0$ is fixed and $H_\sigma$ is the problem Hamiltonian. Evolving $\ket{\psi_0}$ under $H$ for time $t$ produces oscillations between $\ket{\psi_0}$ and the ground state of $H_\sigma$, with success probability controlled by $r$. The oscillation frequency is set by the spectral gap of $H$, and this gap is maximized when $r$ is tuned to the avoided crossing, namely $r = A_1$ (up to normalization). To keep success probability non-negligible, $r$ must lie within $O(2^{-n/2})$ of $A_1$ \cite{braida2024unstructured}. Therefore the same barrier appears in this model as well. One still needs $A_1$ to exponential precision, and computing it remains NP-hard. The obstacle comes from spectral structure, not from adiabatic formalism itself.
 
-The results of this chapter create a tension. The adiabatic algorithm of \autoref{thm:aqo-runtime} achieves the Grover speedup $\widetilde{O}(\sqrt{N/d_0})$, matching the lower bound for unstructured search. But the algorithm's schedule requires a spectral parameter whose computation is NP-hard, even at a precision far coarser than what the algorithm needs. In the circuit model, Grover's algorithm achieves the same speedup without pre-computing any spectral parameter: oracle queries gather information adaptively during execution. The adiabatic framework demands the schedule be fixed before evolution begins.
+The results of this chapter create a tension. The adiabatic algorithm of \autoref{thm:aqo-runtime} achieves Grover scaling $\widetilde{O}(\sqrt{N/d_0})$, matching the unstructured-search lower bound. Yet the schedule depends on a spectral parameter whose computation is NP-hard, even at much coarser precision than the algorithm ultimately needs. In the circuit model, Grover achieves the same speedup without any spectral pre-computation because oracle queries gather information adaptively during execution. In the adiabatic framework, by contrast, the schedule must be fixed before evolution begins.
 
 This asymmetry raises a precise question. Does the information cost of the adiabatic approach represent a fundamental limitation, or can it be circumvented? What runtime is achievable by an adiabatic algorithm that knows nothing about the problem Hamiltonian beyond its dimension? The next chapter formalizes this as an information-runtime tradeoff, proving a separation theorem for uninformed schedules and exploring whether adaptive measurements can bypass the classical pre-computation barrier.
