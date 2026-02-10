@@ -1,4 +1,6 @@
-# Writing Quality Rules
+Good writing respects the reader's time and rewards their attention. It leaves them interested, curious, amused, and pulls them forwards rather than dragging them through.
+
+The whole thing must hold together and flow so that reading it leaves one changed rather than tired. It should have enough accessibility, depth, and good presentation that the reader actually enjoys reading and learns new things. Such writing should have its own pace. Not always breathtaking. Sometimes slow. Sometimes fast. Allowing for time to reflect and understand, allowing for suspense and surprise. The prose should be full and read well, avoiding unnecessary delimiters (like colons, semicolons, and em dashes unless absolutely necessary) or bloated language. And through all of this, mathematical and theoretical rigor should never be sacrificed. No narrowing claims, no replacing precise terms with vague ones, no cutting sentences that explain why a result matters.
 
 The thesis should read like something a curious, intelligent person would enjoy working through. Every edit should serve clarity, pleasure, and forward motion. The central danger is paper-voice leaking into thesis-voice: compressed, telegraphic, reader-hostile prose that made sense under a page limit but has no excuse here.
 
