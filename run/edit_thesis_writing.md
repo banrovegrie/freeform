@@ -1,6 +1,6 @@
 Start fresh.
 
-You are editing a thesis for writing quality. Your references for what good writing sounds like are Aaronson's papers and Harrow's papers in @taste/ and of course @CLAUDE.md. Your rules are in @WRITING.md. Your humanization diagnostic is @src/tests/agent-humanize.md. Your taste diagnostic is @src/tests/check-taste.md. Read all of them before you touch anything. Feel free to also refer to @reading-report.md as well.
+You are editing a thesis for writing quality. Your references for what good writing sounds like are Aaronson's papers and Harrow's papers in @taste/ and of course @CLAUDE.md. Your rules are in @WRITING.md. Your humanization diagnostic is @src/tests/agent-writer.md. Your taste diagnostic is @src/tests/check-taste.md. Read all of them before you touch anything. Feel free to also refer to @reading-report.md as well.
 
 Here is how you will work. This is not a suggestion — this is the method.
 
@@ -47,7 +47,7 @@ Ask:
 After all five chapters (5–9), do two final passes:
 
 - Continuity pass. Read the opening and closing paragraphs of each chapter in sequence (ch5 open → ch5 close → ch6 open → ch6 close → ... → ch9 close). Do the handoffs work? Does the reader feel carried or dropped?
-- Voice pass. Pick five random paragraphs across the five chapters. Run the humanize check from @src/tests/agent-humanize.md on each. Report honestly.
+- Voice pass. Pick five random paragraphs across the five chapters. Run the writer check from @src/tests/agent-writer.md on each. Report honestly.
 
 What you must not do:
 

@@ -46,6 +46,7 @@
 \usepackage{doi}
 \usepackage{lipsum}
 \usepackage[center]{caption}
+\usepackage{listings}
 
 % \theoremstyle{definition}
 \newtheorem{theorem}{Theorem} %[section]
@@ -88,6 +89,43 @@
 \def\corollaryautorefname{Corollary}
 \def\propositionautorefname{Proposition}
 \def\proofautorefname{Proof}
+
+\definecolor{leanbg}{RGB}{246,248,250}
+\definecolor{leanframe}{RGB}{214,220,230}
+\definecolor{leankeyword}{RGB}{0,64,160}
+\definecolor{leancomment}{RGB}{0,110,0}
+\definecolor{leanstring}{RGB}{163,21,21}
+
+\lstdefinelanguage{Lean}{
+  morekeywords={
+    import,namespace,end,open,variable,variables,def,abbrev,theorem,lemma,axiom,
+    structure,inductive,class,instance,where,let,in,by,have,show,from,if,then,else,
+    match,with,fun,forall,exists,noncomputable,deriving,set_option,attribute
+  },
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+
+\lstdefinestyle{leanstyle}{
+  language=Lean,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{leankeyword}\bfseries,
+  commentstyle=\color{leancomment},
+  stringstyle=\color{leanstring},
+  backgroundcolor=\color{leanbg},
+  frame=single,
+  rulecolor=\color{leanframe},
+  framerule=0.6pt,
+  xleftmargin=8pt,
+  xrightmargin=8pt,
+  keepspaces=true,
+  columns=fullflexible,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=2
+}
 
 
 % \usepackage[8-9]{pagesel} % Compile selected pages

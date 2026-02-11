@@ -1,1 +1,234 @@
 % Chapter 10: Formalization
+
+Formalization entered this thesis as a way to learn the subject. The UAQO argument is long---spectral statistics feed gap geometry, gap geometry feeds runtime, runtime pairs with hardness reductions---and I did not trust my own understanding of how the pieces fit together. Reading the paper convinced me that each step was correct. It did not convince me that I could reproduce the argument, modify it, or find its weak points. I wanted a setting where I could take the argument apart and put it back together, and where mistakes would surface immediately instead of hiding in the comfort of informal prose.
+
+Lean 4 \cite{moura2021lean4} with Mathlib \cite{mathlib2020} gave me that setting. I encoded the main UAQO paper \cite{braida2024unstructured} as a Lean development, not to certify the results but to see what happens when every dependency is typed, every hypothesis is named, and the difference between ``proved'' and ``assumed'' is decided by a kernel rather than by authorial emphasis. That process changed how I understood the argument. Statements that looked like single claims split into independent results with different hypotheses. Definitions that seemed equivalent turned out to carry different side conditions. Proof decompositions that seemed natural on paper failed in Lean because they required transporting conditions across interfaces that did not match. Other decompositions that looked awkward on paper turned out to be the clean ones, because they aligned with how the mathematics actually factors.
+
+The formal artifact lives in \texttt{src/lean/UAQO}. Restricting to the main-paper scope (excluding \texttt{Experiments} and \texttt{Test}), it contains 32 Lean files, 11,596 lines, zero active \texttt{sorry} terms, 15 explicit axioms, and 330 theorem and lemma declarations. It builds with \texttt{lake build}. The rest of this chapter describes what I learned from writing it.
+
+
+\section{What Formalization Taught Me}
+\label{sec:what-formalization-taught}
+
+UAQO has the structure of a relay. The spectral parameters $A_1$ and $A_2$ determine where the avoided crossing sits and how sharp it is. The gap profile $g(s)$ along the adiabatic path is built from those parameters. The runtime comes from $\int g(s)^{-2}\,ds$. And the hardness results connect $A_1$ to NP and $\#$P through reductions that use the spectral structure. Each handoff between these layers carries hypotheses, and in prose those hypotheses can drift. A condition established in one section gets applied three sections later with a slightly different scope, and nobody notices because the prose never forced the connection to be explicit.
+
+Lean makes the connection explicit. Every hypothesis a theorem uses appears in its type. If a gap bound requires the eigenvalues to be strictly ordered, that requirement is a function argument. If a runtime statement needs a spectral condition, any theorem that calls it must supply evidence for that condition. I found this useful in a specific way: it showed me where I had been mentally bundling independent claims. Results that I read as a single argument on paper turned out to have components with genuinely different hypotheses. Lean would not let me state the combined version, so I had to find the correct factoring. That factoring improved the mathematics.
+
+A concrete example: the spectral analysis in the paper treats the eigenvalue characterization and the gap bounds as parts of one argument. In Lean, they separate cleanly. The theorem \texttt{eigenvalue\_condition} (in \texttt{Spectral/GapBounds.lean}) is fully proved from the spectral structure: it characterizes when $\lambda$ is an eigenvalue of $H(s)$ via the secular equation, and needs only that $M > 0$ and $s \in (0,1)$. The regional gap bounds---\texttt{gap\_bound\_left}, \texttt{gap\_at\_avoided\_crossing}, \texttt{gap\_bound\_right} in the same file---additionally require \texttt{FullSpectralHypothesis}, which packages a spectral regularity condition ($A_1 > 1$ and $\sqrt{d_0 A_2 / N} < (A_1 + 1)/2$) that the eigenvalue condition does not need. The paper uses both the eigenvalue condition and the gap bounds together without separating their hypotheses. In Lean, a result that uses only the secular equation cannot accidentally import the spectral hypothesis, and a change to the gap analysis cannot break the eigenvalue characterization. This is the kind of structural insight that I could not have found by reading alone.
+
+The bigger payoff was that Lean let me experiment. I could try a candidate theorem shape, see whether it type-checked, and learn from the failure when it did not. On paper, discovering the right decomposition of a proof takes many failed attempts that leave no trace. In Lean, the failures are immediate and specific. A statement that looked elegant failed because a side condition could not be transported across a module boundary. A formulation that looked unnecessarily verbose turned out to be the right one because it matched a Mathlib interface I could reuse. I tested alternate decompositions of the secular equation analysis, tried different ways to package the spectral data, and ended up with interfaces that I would not have found without the type checker pushing back.
+
+Some of that experimentation lives in dedicated experiment modules outside the main scope. The experiment files explore directions beyond the paper: coupled schedules, structured tractability, circumventing the interpolation barrier. This chapter stays focused on the main-paper formalization, but the experiments were part of the same learning process.
+
+The idea that mathematical proofs should be fully explicit is old. Hilbert wanted it \cite{hilbert1902problems}. Homotopy type theory gave it computational content \cite{hottbook2013}. Lean 4 is a modern instance: a dependently typed language with a small trusted kernel and a growing mathematical library \cite{moura2021lean4,mathlib2020}. Large formalizations have already been carried through in other proof assistants---the odd-order theorem in Coq \cite{gonthier2013oddorder}, the Kepler conjecture in HOL Light and Isabelle \cite{hales2017kepler}. Those projects showed that the method scales to substantial mathematics.
+
+For UAQO, the formalization helps most at the interface between spectral analysis and complexity reductions. That interface is where the dependency chain is longest and where assumptions are hardest to track by hand. The spectral parameters feed into gap bounds, gap bounds feed into runtime, and runtime feeds into the hardness reductions. Each handoff carries conditions that must match, and in a typed system, mismatches surface as type errors rather than as silent bugs in a published proof.
+
+
+\section{Lean in Brief}
+\label{sec:lean-brief}
+
+In Lean, a proposition is a type and a proof is a term inhabiting that type. The trusted kernel checks that terms are well-typed. Everything else---tactics, automation, elaboration---must produce a kernel-accepted term before it counts as proved. Four pieces are enough to read the formal artifacts in this chapter. The \emph{kernel} is the final checker. The \emph{elaborator} fills in implicit arguments and typeclass instances. \emph{Tactic mode} builds proof terms incrementally: each tactic transforms a goal into simpler subgoals. And \emph{definitional equality} lets some identities reduce by computation, so that proofs of equalities between unfolded definitions can collapse to \texttt{rfl}.
+
+What makes this useful for mathematics is that every theorem carries its dependencies in its type. If a result needs an eigenvalue ordering, that ordering is a function argument. If a downstream theorem consumes a gap bound, it must supply the hypotheses that the gap bound requires. A change to the spectral data model breaks every theorem that depends on it, and the break shows up immediately. In UAQO, the same spectral interfaces get reused in gap bounds, runtime wrappers, and hardness reductions, so a single well-chosen interface saves a lot of repeated work.
+
+What makes Lean painful is the overhead. Typeclass search can fail far from the source of the problem. Elaboration errors are often nonlocal. Coercing between \texttt{Nat}, \texttt{Int}, and \texttt{Real} is tedious in analysis-heavy files. I kept an abstraction only when it reduced total proof effort across the development. When it did not, I removed it.
+
+A reader who wants to check any claim in this chapter can do so independently.
+
+\begin{lstlisting}[style=leanstyle,caption={Rebuilding the development and inspecting axiom dependencies.},label={lst:minimal-loop}]
+-- From the repository root:
+cd src/lean
+lake update
+lake build
+
+#print axioms UAQO.Complexity.mainResult2
+#print axioms UAQO.Complexity.mainResult3
+#print axioms UAQO.Adiabatic.adiabaticTheorem
+\end{lstlisting}
+
+The \texttt{\#print axioms} command lists every axiom a theorem depends on, transitively. A theorem with no domain axioms is fully kernel-checked. A theorem that lists domain axioms depends on exactly those assumptions and no others.
+
+
+\section{How the Encoding Is Organized}
+\label{sec:encoding}
+
+The first design I tried was wrong. I modeled Hamiltonians at the matrix level, carrying full operator data through every theorem. This was faithful to the linear-algebraic picture but useless for the proofs I actually needed. Gap bounds, crossing positions, and runtime integrals depend on spectral data---eigenvalues and degeneracies---not on matrix entries. Carrying matrix-level detail through spectral arguments added clutter without content and made it hard to reuse lemmas across modules.
+
+The design that worked models instances through spectral structure. The central record is \texttt{EigenStructure}. It packages ordered eigenvalues, degeneracies, an assignment map from basis states to energy levels, and consistency invariants.
+
+\begin{lstlisting}[style=leanstyle,caption={Core spectral data model reused across UAQO modules.},label={lst:eigenstructure-core}]
+structure EigenStructure (n : Nat) (M : Nat) where
+  eigenvalues : Fin M -> Real
+  degeneracies : Fin M -> Nat
+  assignment : Fin (qubitDim n) -> Fin M
+  eigenval_bounds : forall k, 0 <= eigenvalues k /\ eigenvalues k <= 1
+  eigenval_ordered : forall i j, i < j -> eigenvalues i < eigenvalues j
+  ground_energy_zero : (hM : M > 0) -> eigenvalues (Fin.mk 0 hM) = 0
+  deg_positive : forall k, degeneracies k > 0
+  deg_sum : Finset.sum Finset.univ degeneracies = qubitDim n
+  deg_count : forall k, degeneracies k =
+    (Finset.filter (fun z => assignment z = k) Finset.univ).card
+\end{lstlisting}
+
+Eigenvalues are bounded in $[0,1]$ and strictly ordered. Ground energy is zero. Degeneracies are positive and sum to $N = 2^n$. The assignment map and count field enforce that every basis state belongs to exactly one level. These invariants are checked once at construction time. Every downstream theorem inherits them for free, which eliminates a class of errors where a proof silently assumes an ordering that was never verified.
+
+This interface turned out to be a genuine improvement over what I started with. Theorem statements got shorter. Hypotheses transported cleanly across modules. Complexity lemmas could reuse spectral facts without re-establishing them. The spectral parameters $A_1$, $A_2$, and the gap quantities are defined directly on \texttt{EigenStructure}, and bridge theorems connect them to alternative representations.
+
+\begin{lstlisting}[style=leanstyle,caption={Direct encoding of $A_1$ with bridge theorem to partial representation.},label={lst:spectralparam-bridge}]
+noncomputable def spectralParam {n M : Nat} (es : EigenStructure n M)
+    (hM : M > 0) (p : Nat) : Real :=
+  let E0 := es.eigenvalues (Fin.mk 0 hM)
+  let N := qubitDim n
+  (1 / N) * Finset.sum (Finset.filter (fun k => k.val > 0) Finset.univ)
+    (fun k => (es.degeneracies k : Real) / (es.eigenvalues k - E0)^p)
+
+noncomputable def A1 {n M : Nat} (es : EigenStructure n M) (hM : M > 0) : Real :=
+  spectralParam es hM 1
+
+theorem A1_partial_eq_A1 {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
+    A1_partial es.toPartial hM = A1 es hM := by
+  simp only [A1_partial, A1, spectralParam, EigenStructure.toPartial, pow_one]
+\end{lstlisting}
+
+The bridge theorem \texttt{A1\_partial\_eq\_A1} is typical. Two representations of $A_1$---the full spectral definition and a partial-information variant---are defined independently and proved equal. The proof is a single-line simplification, meaning the equality holds by unfolding definitions. Downstream code uses whichever representation is more convenient, and the bridge guarantees that results transfer.
+
+\autoref{tab:formalization-scope-deep} gives the size of the main-paper development.
+
+\begin{table}[H]
+\centering
+\caption{Main-paper scope in \texttt{src/lean/UAQO} (excluding \texttt{Experiments} and \texttt{Test}).}
+\label{tab:formalization-scope-deep}
+\begin{tabular}{|l|c|c|p{6.8cm}|}
+\hline
+Component & Files & Approx. LOC & Role in proof architecture \\
+\hline
+Foundations & 5 & 1,067 & Hilbert-space and operator preliminaries consumed by later layers \\
+Spectral & 4 & 1,348 & $A_p$ definitions, crossing quantities, and gap-facing interfaces \\
+Adiabatic & 4 & 1,254 & Schedule and runtime interfaces for adiabatic statements \\
+Complexity & 5 & 2,428 & SAT and counting encodings, hardness interfaces, extraction contracts \\
+Proofs & 14 & 5,499 & Lemma layer for secular analysis, interpolation, combinatorics, and verification support \\
+\hline
+Total & 32 & 11,596 & Zero active \texttt{sorry} terms and 15 explicit \texttt{axiom} declarations \\
+\hline
+\end{tabular}
+\end{table}
+
+Within this scope, the development contains 330 theorem and lemma declarations. The five components mirror the dependency structure of the UAQO argument itself: foundations feeds spectral, spectral feeds adiabatic and complexity, and proofs supports all four.
+
+\autoref{tab:formalization-claim-map} pairs each headline claim of the chapter with the Lean artifacts that back it and their epistemic status.
+
+\begin{table}[H]
+\centering
+\caption{Claim-to-artifact map for the Chapter 10 argument.}
+\label{tab:formalization-claim-map}
+\begin{tabular}{|p{4.1cm}|p{4.7cm}|p{3.8cm}|}
+\hline
+Chapter claim & Primary Lean artifact & Epistemic status \\
+\hline
+Paper formulas for $A_p$, $s^*$, $\delta_s$, $g_{\min}$ are represented faithfully & \texttt{Spectral/SpectralParameters}, \texttt{Test/Verify} & Definitional equality checks (\texttt{rfl}) \\
+\hline
+Two-query NP-hardness core is formally encoded & \texttt{Complexity/Hardness} (\texttt{mainResult2}) & Proved modulo \texttt{gareyJohnsonEncoding} axiom \\
+\hline
+Counting extraction bridge to \#P statement is formalized & \texttt{Complexity/Hardness} (\texttt{mainResult3}) & Machine-checked theorem core \\
+\hline
+Global gap-profile runtime claims require additional spectral interface & \texttt{Proofs/Spectral/GapBoundsProofs} & Conditional via \texttt{FullSpectralHypothesis} \\
+\hline
+Adiabatic transfer theorems are wrappers over explicit physics interfaces & \texttt{Adiabatic/Theorem} & Axiom-mediated \\
+\hline
+\end{tabular}
+\end{table}
+
+Rows mentioning \texttt{Test/Verify} refer to audit wrappers, not to the proofs themselves. The definitions and proofs live in the main-scope modules listed in the same row.
+
+
+\section{Two Proof Paths}
+\label{sec:proof-paths}
+
+Tables describe what is proved. To see how a proof moves through the formal system, it helps to trace two concrete paths: the NP reduction from Chapter 8, and the counting bridge behind the $\#$P extraction.
+
+The theorem \texttt{mainResult2} formalizes the two-query reduction. Given a 3-CNF formula $f$, it constructs a Garey-Johnson encoding, computes the two-query difference $D$, and proves $D = 0$ if and only if $f$ is satisfiable.
+
+\begin{lstlisting}[style=leanstyle,caption={Proof skeleton of \texttt{mainResult2}.},label={lst:mainresult2-full}]
+theorem mainResult2 (f : CNFFormula) (hf : is_kCNF 3 f) :
+    let enc := gareyJohnsonEncoding f hf
+    let D := twoQueryDifference enc.es enc.hLevels
+    (D = 0) <-> isSatisfiable f := by
+  intro enc D
+  constructor
+  intro hD
+  by_contra hunsat
+  have hE0_pos := enc.unsat_ground_pos hunsat
+  have hexcited := enc.unsat_excited_pop hunsat
+  have hD_pos := twoQuery_unsat enc.es enc.hLevels hE0_pos enc.excited_pos hexcited
+  linarith
+  intro hsat
+  have hE0_zero := enc.sat_ground_zero hsat
+  exact twoQuery_sat enc.es enc.hLevels hE0_zero
+\end{lstlisting}
+
+The script is short because the work lives in helper lemmas. The satisfiable branch: \texttt{sat\_ground\_zero} shows a satisfying assignment forces $E_0 = 0$, then \texttt{twoQuery\_sat} shows $D = 0$. The unsatisfiable branch: \texttt{unsat\_ground\_pos} gives $E_0 > 0$, \texttt{unsat\_excited\_pop} gives populated excited levels, \texttt{twoQuery\_unsat} gives $D > 0$, and \texttt{linarith} closes the contradiction. The only axiom in the chain is the Garey-Johnson encoding interface, which packages a classical graph-coloring reduction that Mathlib does not yet cover. Once that interface is fixed, everything else is checked.
+
+The second path is the counting bridge behind $\#$P extraction. Informal proofs compress the step from satisfying assignments to a counting identity into a sentence. I made it a separate theorem.
+
+\begin{lstlisting}[style=leanstyle,caption={Bridge theorem from semantic satisfiability to counting identity.},label={lst:countzero-bridge}]
+private theorem countZeroUnsatisfied_eq_numSatisfying (f : CNFFormula) :
+    countAssignmentsWithKUnsatisfied f 0 = numSatisfyingAssignments f := by
+  simp only [countAssignmentsWithKUnsatisfied, numSatisfyingAssignments]
+  congr 1
+  ext z
+  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  rw [<- satisfies_iff_countUnsatisfied_zero]
+  rfl
+\end{lstlisting}
+
+The statement looks trivial: assignments with zero unsatisfied clauses are satisfying assignments. But formally, the two filtering predicates must be shown extensionally equal, which requires unfolding both definitions and using a separately proved equivalence. Once this bridge exists, every downstream theorem imports it mechanically instead of re-arguing the point. The extraction chain from satisfiability to counting polynomial to $\#$P is stabilized because each link is a named, proved artifact.
+
+Both paths have the same shape. High-level scripts are five to fifteen lines. The real work is in interface lemmas with explicit hypotheses. The type checker enforces that hypotheses match at every call site. If they do not match, the proof fails to compile. This is the main reason formalization was worth the effort: not that it makes proofs more clever, but that it catches mismatches I would have missed.
+
+The type checker enforces what is proved. The next question is what is not proved, and how the development marks that boundary.
+
+
+\section{Assumptions and Boundaries}
+\label{sec:assumptions}
+
+The formalization does not prove the full UAQO argument from first principles. It proves the NP-hardness and $\#$P-hardness reductions in full (modulo one classical encoding axiom), and it proves the spectral parameter identities by definitional equality. But the spectral gap analysis that connects these parameters to an actual runtime bound---the resolvent-based argument of the paper's Sections 2--3---is not formalized. Instead, it enters the development through \texttt{FullSpectralHypothesis}, which is carried as an explicit hypothesis rather than buried as an axiom.
+
+\begin{lstlisting}[style=leanstyle,caption={Explicit hypothesis for full spectral-gap profile claims.},label={lst:full-spectral-hypothesis}]
+structure FullSpectralHypothesis {n M : Nat} (es : EigenStructure n M) (hM : M >= 2) : Prop where
+  cond : spectralConditionForBounds es hM
+  gap : forall (s : Real) (hs : 0 <= s /\ s <= 1) (E0 E1 : Real),
+    IsEigenvalue (adiabaticHam es s hs) E0 ->
+    IsEigenvalue (adiabaticHam es s hs) E1 ->
+    E0 < E1 -> E1 - E0 >= minimumGap es hM
+\end{lstlisting}
+
+It packages a spectral regularity condition and a uniform gap lower bound. Any theorem that needs the full gap profile must supply this hypothesis. Any reader can check whether a given theorem actually supplies it or only assumes it.
+
+The development declares 15 explicit axioms, grouped in \autoref{tab:axiom-ledger-deep}.
+
+\begin{table}[H]
+\centering
+\caption{Axiom groups in the UAQO main-paper formalization.}
+\label{tab:axiom-ledger-deep}
+\begin{tabular}{|l|c|p{7.8cm}|}
+\hline
+Group & Count & Representative content \\
+\hline
+Primitive interfaces & 3 & Polynomial-time predicate, Schrodinger-evolution predicate, degeneracy-count interface \\
+Standard complexity interfaces & 3 & Membership and hardness interfaces for 3-SAT and \#3-SAT classes \\
+Quantum dynamics interfaces & 6 & Adiabatic transfer bounds, local-schedule transfer, phase-randomization transfer, unstructured-search lower-bound interface \\
+Paper-specific interfaces & 3 & Garey-Johnson encoding and reduction bridges used in UAQO hardness statements \\
+\hline
+Total & 15 & Every assumption is declared by \texttt{axiom} and inspectable via \texttt{\#print axioms} \\
+\hline
+\end{tabular}
+\end{table}
+
+The primitive interfaces axiomatize concepts that current Lean libraries cannot define natively: polynomial-time computation, Schrodinger evolution, degeneracy counting. The complexity interfaces encode standard results---Cook-Levin for 3-SAT \cite{cook1971complexity}, Valiant for $\#$3-SAT \cite{valiant1979complexity}. The quantum dynamics interfaces package results like the Jansen-Ruskai-Seiler adiabatic bound \cite{jansen2007bounds}. As Lean libraries grow, individual axioms can be discharged and replaced by proofs. The development is structured so that discharging an axiom narrows the trust boundary without requiring any downstream theorem to be rewritten.
+
+AI helped with the exploratory phase. I used it to propose theorem shapes, suggest decompositions, and draft bridge lemmas. But AI suggestions needed checking, because they often solved a local goal by importing stronger assumptions than necessary. A tactic script that closes the current goal is not the same as a tactic script that closes it under the right hypotheses. The discipline was simple: temporary \texttt{sorry} during design, no \texttt{sorry} in the delivered code, and \texttt{\#print axioms} on every result before accepting it. Anything that could not be proved became a named axiom with a citation.
+
+Formal methods for quantum computing have mostly focused on circuit-level verification: QWIRE \cite{rand2018qwire} and SQIR \cite{hietala2021sqir} verify gate-level programs, CoqQ \cite{zhou2023coqq} reasons about quantum program semantics, and Isabelle-based work \cite{boender2015coqquantum} targets quantum protocols. None of these tools handle spectral analysis or complexity reductions---they operate at the circuit abstraction, where the relevant objects are gates and registers rather than eigenvalues and spectral gaps. This development works at a different layer. It carries spectral structure through to hardness reductions in a single typed system. The cost is that the quantum dynamics (the adiabatic theorem, the transfer bounds) enter as axioms rather than as proved results, because formalizing the resolvent calculus underlying those bounds is a separate project. The approach follows the pattern of earlier large formalizations \cite{gonthier2013oddorder,hales2017kepler}: quantitative scope, reproducible build, explicit assumption ledger, honest boundary between proved and assumed.
+
+The mathematics in the source paper belongs to its authors \cite{braida2024unstructured}. The Lean code, the experiments, and the workflow described here are my path through their argument. A reader who finishes this chapter can rebuild the artifact, inspect any theorem's dependencies, and start extending the formal interfaces for new problems in adiabatic quantum optimization.

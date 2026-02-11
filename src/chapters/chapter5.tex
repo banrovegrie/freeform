@@ -10,7 +10,7 @@ In the circuit model, unstructured optimization is already understood. Given a b
 
 Adiabatic quantum computation is polynomially equivalent to the circuit model \cite{aharonov2007adiabatic}, so the same speedup exists in principle. The obstruction is different. The evolution Hamiltonian $H(s)$ interpolates continuously between an initial Hamiltonian $H_0$ and the problem Hamiltonian $H_z$, and the runtime is controlled by the spectral gap of $H(s)$ along the entire path. The location of the avoided crossing, the sharpness of the minimum gap, and the reopening rate all matter. Matching the Grover speedup now requires controlling spectral features that depend on the full degeneracy structure of $H_z$.
 
-The adiabatic version of Grover's algorithm, due to Roland and Cerf \cite{roland2004quantum}, finds a single marked item among $N = 2^n$ by slowly interpolating between a uniform superposition and a problem Hamiltonian that penalizes all unmarked items. The crossing between the two lowest energy levels occurs at $s = 1/2$, its position independent of the Hamiltonian's spectrum. The minimum spectral gap scales as $1/\sqrt{N}$, and a schedule that slows near the crossing achieves the optimal $O(\sqrt{N})$ runtime.
+The adiabatic version of Grover's algorithm, due to Roland and Cerf \cite{roland2002quantum}, finds a single marked item among $N = 2^n$ by slowly interpolating between a uniform superposition and a problem Hamiltonian that penalizes all unmarked items. The crossing between the two lowest energy levels occurs at $s = 1/2$, its position independent of the Hamiltonian's spectrum. The minimum spectral gap scales as $1/\sqrt{N}$, and a schedule that slows near the crossing achieves the optimal $O(\sqrt{N})$ runtime.
 
 Consider a cost function encoded in an $n$-qubit Hamiltonian diagonal in the computational basis, with $M$ distinct energy levels, arbitrary degeneracies, and a spectral gap that may vary with the number of qubits. The ground states encode solutions to a combinatorial optimization problem. Can the adiabatic approach still match the $\Theta(\sqrt{N})$ lower bound for unstructured search \cite{farhi2008fail}?
 
@@ -81,7 +81,7 @@ A rank-one $H_0$ produces exactly one avoided crossing between the two lowest en
 
 The standard alternative to the rank-one projector is the transverse-field driver $H_0 = -\sum_{j=1}^n \sigma_x^j$, which is the default in quantum annealing hardware and in much of the AQC literature \cite{albash2018adiabatic}. It couples every pair of computational basis states that differ in a single qubit, producing a dense web of avoided crossings throughout the interpolation. For random instances of NP-complete problems, Altshuler, Krovi, and Roland~\cite{altshuler2010anderson} showed that the resulting spectrum exhibits Anderson localization. One then gets exponentially many avoided crossings with exponentially small gaps, and no known analytical technique yields tight gap bounds in that regime. The rank-one projector avoids this entirely. Because $\ket{\psi_0}\bra{\psi_0}$ has a single non-zero eigenvalue, all coupling between eigenstates of $sH_z$ flows through one channel, producing one crossing that can be analyzed exactly. The tractability of Chapters 5--7 is a direct consequence of this choice. Whether comparable results can be obtained for the transverse-field driver remains open. The Discussion of \cite{braida2024unstructured} identifies this as a central challenge.
 
-In the unstructured case, $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + s(I - \ket{w}\bra{w})$, where $\ket{w}$ is the marked item. Up to a global energy shift of $s$, this is the Roland-Cerf Hamiltonian \cite{roland2004quantum}. The spectrum has $N - 2$ states at energy $s$ (degenerate, orthogonal to both $\ket{\psi_0}$ and $\ket{w}$) and two states whose energies depend on $s$ and undergo an avoided crossing near $s = 1/2$.
+In the unstructured case, $H(s) = -(1-s)\ket{\psi_0}\bra{\psi_0} + s(I - \ket{w}\bra{w})$, where $\ket{w}$ is the marked item. Up to a global energy shift of $s$, this is the Roland-Cerf Hamiltonian \cite{roland2002quantum}. The spectrum has $N - 2$ states at energy $s$ (degenerate, orthogonal to both $\ket{\psi_0}$ and $\ket{w}$) and two states whose energies depend on $s$ and undergo an avoided crossing near $s = 1/2$.
 
 
 \section{Spectral Parameters}
@@ -471,7 +471,7 @@ $g(s^*) \geq 2k\, g_{\min}/(1 + f(s^*)) = O(g_{\min})$ since
 $f(s^*) = \Theta(1)$. The gap profile is therefore continuous across region
 boundaries. It dips to $g_{\min}$ at $s^*$ and rises linearly on both sides.
 
-With the gap profile in hand, runtime follows from the optimal local adaptive schedule \cite{vandam2001powerful, roland2004quantum}, where $ds/dt \propto g(s)^2$. Evolution therefore slows quadratically as the gap decreases. The total runtime is
+With the gap profile in hand, runtime follows from the optimal local adaptive schedule \cite{vandam2001powerful, roland2002quantum}, where $ds/dt \propto g(s)^2$. Evolution therefore slows quadratically as the gap decreases. The total runtime is
 \begin{equation}
 \label{eq:runtime-integral-preview}
 T \propto \int_0^1 \frac{ds}{g(s)^2},

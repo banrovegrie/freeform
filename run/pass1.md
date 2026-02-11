@@ -14,7 +14,7 @@ Significant issues:
 - ch5:80-82 "Higher $p$ emphasizes levels closer to ground" stated but not unpacked. Explain what this means for $A_1$ controlling crossing position vs $A_2$ controlling gap width.
 - ch5:62-63 "Single avoided crossing" asserted without mechanism. Explain how rank-one structure decouples antisymmetric subspaces.
 
-Taste/Humanize: PASS with notes. No AI lexical tells. Good "we" usage. Could use more intellectual engagement ("this is surprising," "the elegance here is...").
+Taste/Writer: PASS with notes. No AI lexical tells. Good "we" usage. Could use more intellectual engagement ("this is surprising," "the elegance here is...").
 
 ## Chapter 6: Spectral Analysis
 
@@ -29,7 +29,7 @@ Significant issues:
 - ch6:84-86 Concavity alternative proof mentioned but not developed. Either expand or remove.
 - ch6:186 $\epsilon_0 = d_0/N$ introduced abruptly. Add one defining sentence.
 
-Taste/Humanize: PASS. Author perspective visible throughout. Natural rhythmic variation. No AI tells.
+Taste/Writer: PASS. Author perspective visible throughout. Natural rhythmic variation. No AI tells.
 
 ## Chapter 7: Optimal Schedule
 
@@ -46,7 +46,7 @@ Significant issues:
 - ch7:354 $\Delta A_2 \leq A_1$ used without justification. Add brief derivation.
 - ch7:44 Roland-Cerf "requires knowing the exact gap" slightly imprecise. Could be tight lower bound.
 
-Taste/Humanize: PASS. Excellent motivation. No AI tells. Good intellectual engagement.
+Taste/Writer: PASS. Excellent motivation. No AI tells. Good intellectual engagement.
 
 ## Chapter 8: Hardness of Optimality
 

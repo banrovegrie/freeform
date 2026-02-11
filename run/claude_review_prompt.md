@@ -14,7 +14,7 @@ Read these test specifications first — they define the review criteria:
 - @src/tests/agent-reviewer.md (peer review: technical soundness, presentation, originality, significance, literature, reproducibility)
 - @src/tests/check-math.md (math correctness, notation consistency, hallucination detection)
 - @src/tests/check-taste.md (prose quality: scaffolding, filler, vague claims, fake intuition, depth, structural coherence)
-- @src/tests/agent-humanize.md (voice, rhythm, lexical tells, intellectual engagement, intellectual history)
+- @src/tests/agent-writer.md (voice, rhythm, lexical tells, intellectual engagement, intellectual history)
 - @src/tests/check-format.md (ASCII, delimiters, LaTeX basics)
 - @CLAUDE.md (thesis guidelines)
 
@@ -29,7 +29,7 @@ Spawn four parallel subagents, one per chapter. Each subagent must:
    a. **agent-reviewer.md** — Full peer review with scores for all 6 dimensions. For paper-related content, do line-by-line formula verification against paper/v3-quantum.tex
    b. **check-math.md** — Verify every theorem statement, every bound, every constant against the paper. Flag hallucinated math. Check notation consistency using the reference table in check-math.md
    c. **check-taste.md** — Check all 15 failure modes. Pay special attention to #14 (insufficient depth vs. paper) and #11 (fake intuition). For each section, apply the floor test: is the thesis thinner than the paper anywhere?
-   d. **agent-humanize.md** — Full 5-pass humanization check. Does the writing have a discernible author? Check rhythm, lexical tells, intellectual engagement, intellectual history
+   d. **agent-writer.md** — Full 5-pass humanization check. Does the writing have a discernible author? Check rhythm, lexical tells, intellectual engagement, intellectual history
    e. **check-format.md** — ASCII compliance, delimiter balance, LaTeX issues
 
 5. For each chapter, also evaluate:
@@ -67,7 +67,7 @@ One-sentence justification.
 ### Taste Check (check-taste.md)
 [PASS/WARN/FAIL with specific line references and failure mode IDs]
 
-### Humanize Check (agent-humanize.md)
+### Writer Check (agent-writer.md)
 [PASS/WARN/FAIL with specific line references]
 
 ### Format Check (check-format.md)

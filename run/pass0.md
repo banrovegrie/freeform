@@ -3,7 +3,7 @@ A holistic review of chapters 5–8 identified issues at three severity levels. 
 Read these first:
 - @CLAUDE.md (writing guidelines — every sentence must carry information, no scaffolding, no filler)
 - @src/tests/check-taste.md (failure modes to avoid when writing new text)
-- @src/tests/agent-humanize.md (voice calibration — de Wolf level: technically precise AND personally present)
+- @src/tests/agent-writer.md (voice calibration — de Wolf level: technically precise AND personally present)
 - @taste/README.md (style guide with author patterns)
 - @paper/v3-quantum.tex (source of truth for all math)
 
@@ -123,7 +123,7 @@ Run these checks:
 1. Compile the thesis: `cd src && make` — verify LaTeX builds cleanly
 2. Run @src/tests/check-math.md on all four chapters — verify no new math errors
 3. Run @src/tests/check-taste.md on ch5 and ch8 — verify no scaffolding or filler was added
-4. Run @src/tests/agent-humanize.md on ch8 — verify voice improved, not worsened
+4. Run @src/tests/agent-writer.md on ch8 — verify voice improved, not worsened
 5. Spot-check cross-chapter notation: verify $A_p$, $s^*$, $\delta_s$, $g_{\min}$, $\varepsilon$ (never $\epsilon$) are still consistent
 
 ## Global constraints

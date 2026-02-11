@@ -91,7 +91,7 @@ tests to self-evaluate.
   introduces must be consistent.
 - `src/tests/check-taste.md` -- prose quality failure modes
 - `src/tests/check-format.md` -- formatting rules
-- `src/tests/agent-humanize.md` -- voice and authenticity. Read the
+- `src/tests/agent-writer.md` -- voice and authenticity. Read the
   failure modes and the passing examples (de Wolf, Aaronson).
 - `src/tests/agent-reviewer.md` -- holistic peer review criteria
 
@@ -267,7 +267,7 @@ For each of `chapter2.tex`, `chapter3.tex`, `chapter4.tex`, run:
 1. `src/tests/check-format.md`
 2. `src/tests/check-math.md`
 3. `src/tests/check-taste.md`
-4. `src/tests/agent-humanize.md`
+4. `src/tests/agent-writer.md`
 
 Record results in `progress.md` with specific line references.
 
