@@ -183,7 +183,7 @@ where $\delta_{A_1} = 2\sqrt{d_0 A_2/N}$ is the precision threshold for optimali
 \end{equation}
 yields $T(\varepsilon)/T_{\mathrm{inf}} \geq \Theta(\varepsilon/\delta_{A_1})$. For $\varepsilon < \delta_{A_1}$, the trivial bound $T(\varepsilon) \geq T_{\mathrm{inf}}$ holds regardless of precision.
 
-\emph{Upper bound.} For $\varepsilon \geq \delta_{A_1}$, construct a schedule with crossing velocity $v_{\mathrm{slow}} = \Theta(\epsilon_{\mathrm{ad}}\,\Delta_*^2)=\Theta(\Delta_*^2)$ throughout the uncertainty interval $[s_L(\varepsilon), s_R(\varepsilon)]$, where $\epsilon_{\mathrm{ad}}$ is the fixed adiabatic error parameter from \autoref{def:rc-admissible}. Use fast velocity $v_{\mathrm{fast}} = O(1)$ outside this interval. The slow region has width $W(\varepsilon) = \Theta(\varepsilon/\delta_{A_1}) \cdot \delta_s$, so the total time is $T = W(\varepsilon)/v_{\mathrm{slow}} + O(1) = \Theta(T_{\mathrm{inf}} \cdot \varepsilon/\delta_{A_1})$, since $T_{\mathrm{inf}} = \Theta(\delta_s/v_{\mathrm{slow}})$. For $\varepsilon < \delta_{A_1}$, the optimal informed schedule achieves $T = O(T_{\mathrm{inf}})$.
+\emph{Upper bound.} For $\varepsilon \geq \delta_{A_1}$, construct a schedule with crossing velocity $v_{\mathrm{slow}} = \Theta(\varepsilon_{\mathrm{ad}}\,\Delta_*^2)=\Theta(\Delta_*^2)$ throughout the uncertainty interval $[s_L(\varepsilon), s_R(\varepsilon)]$, where $\varepsilon_{\mathrm{ad}}$ is the fixed adiabatic error parameter from \autoref{def:rc-admissible}. Use fast velocity $v_{\mathrm{fast}} = O(1)$ outside this interval. The slow region has width $W(\varepsilon) = \Theta(\varepsilon/\delta_{A_1}) \cdot \delta_s$, so the total time is $T = W(\varepsilon)/v_{\mathrm{slow}} + O(1) = \Theta(T_{\mathrm{inf}} \cdot \varepsilon/\delta_{A_1})$, since $T_{\mathrm{inf}} = \Theta(\delta_s/v_{\mathrm{slow}})$. For $\varepsilon < \delta_{A_1}$, the optimal informed schedule achieves $T = O(T_{\mathrm{inf}})$.
 \end{proof}
 
 The interpolation is linear. There is no threshold, cliff, or phase transition. At precision $1/\mathrm{poly}(n)$ (NP-hard), the overhead is $\Theta(2^{n/2}/\mathrm{poly}(n))$, which is close to the full exponential penalty. At precision $2^{-n/2}$ (algorithmically relevant), the overhead is $\Theta(1)$. The region between these scales is the ``information gap.'' For the running example, the precision table is:
@@ -603,7 +603,11 @@ For Grover ($M = 2$, $d_0 = 1$, $d_1 = N - 1$, $E_0 = 0$, $E_1 = 1$), the exact 
 \end{corollary}
 
 \begin{proof}
-The exact gap is $g(s)^2 = (2s-1)^2(1 - 1/N) + 1/N$. Solving $g(s) \leq x$ gives $\mu(\{g \leq x\}) = \sqrt{(Nx^2 - 1)/(N-1)}$ for $x \in [1/\sqrt{N}, 1]$, with $\mu = 1$ for $x > 1$. The ratio $\mu/x$ is increasing on $[1/\sqrt{N}, 1]$ and equals $1$ at $x = 1$.
+The exact gap is $g(s)^2 = (2s-1)^2(1 - 1/N) + 1/N$. Solving $g(s) \leq x$ gives
+\[
+\mu(\{g \leq x\}) = \sqrt{\frac{Nx^2 - 1}{N-1}}
+\]
+for $x \in [1/\sqrt{N}, 1]$, with $\mu = 1$ for $x > 1$. The ratio $\mu/x$ is increasing on $[1/\sqrt{N}, 1]$ and equals $1$ at $x = 1$.
 \end{proof}
 
 For the Grover problem, the exact gap integral is $\int_0^1 g(s)^{-2}\,ds = (N/\sqrt{N-1})\arctan\sqrt{N-1} \to (\pi/2)\sqrt{N}$ as $N \to \infty$. This closed-form evaluation confirms the $O(\sqrt{N})$ runtime from the piecewise analysis and provides the exact constant. For the running example ($N = 4$), $\int_0^1 g(s)^{-2}\,ds = (4/\sqrt{3})\arctan\sqrt{3} = 4\pi/(3\sqrt{3}) \approx 2.42$, consistent with the runtime $T_{\mathrm{inf}} = O(\sqrt{4}) = O(2)$.
@@ -656,7 +660,9 @@ where $\delta_C$ and $\delta_g$ are estimation errors. The sensitivity profiles 
 
 The gap geometry and optimality analysis above assumes the rank-one
 interpolation
-$H(s) = -(1-s)\ket{\psi_0}\!\bra{\psi_0} + sH_z$.
+\[
+H(s) = -(1-s)\ket{\psi_0}\!\bra{\psi_0} + sH_z.
+\]
 The rank-one structure is a design choice, not a physical constraint. Can a
 different design, with a different initial state, ancilla qubits, or a
 multi-segment path, avoid the $A_1$ dependence entirely?
@@ -768,12 +774,16 @@ The natural objection is that rank one may simply be too narrow. We next move
 to rank-$k$ projectors and show that the same dependence persists.
 
 For rank-$k$ projectors $P = UU^\dagger$, the secular equation becomes a
-$k \times k$ determinant condition,
-$\det(I_k - (1-s)G(\lambda,s)) = 0$, where
-$G(\lambda,s) = U^\dagger(sH_z - \lambda I)^{-1}U$.
+$k \times k$ determinant condition
+\[
+\det(I_k - (1-s)G(\lambda,s)) = 0, \qquad
+G(\lambda,s) = U^\dagger(sH_z - \lambda I)^{-1}U.
+\]
 On the two-level family ($E_0 = 0$, $E_1 = \Delta$), this reduces to
-$\det(I_k - (x/\Delta)B) = 0$, with
-$B = U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}$ and $x = (1-s)/s$.
+\[
+\det(I_k - (x/\Delta)B) = 0, \qquad
+B = U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}, \quad x = (1-s)/s.
+\]
 
 Each positive eigenvalue $\mu$ of $B$ gives a crossing branch $s(\Delta) = 1/(1+\Delta/\mu)$, and this branch is non-constant in $\Delta$.
 
@@ -1056,7 +1066,9 @@ Estimating $A_1$ to the schedule-relevant precision $\delta_{A_1} = \Theta(2^{-n
 
 From a parameterized-complexity viewpoint, the corollary places $A_1$
 estimation at precision $2^{-n/2}$ in
-$\mathrm{FBQTIME}(2^{n/2} \cdot \mathrm{poly}(n))$.
+\[
+\mathrm{FBQTIME}(2^{n/2} \cdot \mathrm{poly}(n)).
+\]
 The problem is therefore not polynomial-time in the usual sense, but it does
 admit a quantum algorithm at the Grover scale. This also clarifies the
 information cost of fixed-schedule adiabatic optimization. Recovering the

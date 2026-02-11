@@ -15,7 +15,12 @@ The runtime of \autoref{thm:aqo-runtime},
 \[
 T = O\!\left(\frac{1}{\varepsilon}\cdot\frac{\sqrt{A_2}}{\Delta^2\, A_1(A_1+1)}\cdot\sqrt{\frac{N}{d_0}}\right),
 \]
-makes this dependence explicit. The adaptive schedule places a slow phase in the
+makes this dependence explicit. The paper also states an $A_1^2$ denominator in
+its headline theorem form. We keep the proof-level
+$A_1(A_1+1)$ expression, which is the tighter form used in the derivation. In
+the normalized regime $E_k\in[0,1]$, $A_1\ge 1-d_0/N$, so both forms differ only
+by a constant-factor normalization for the asymptotic statements used here. The
+adaptive schedule places a slow phase in the
 window $[s^* - \delta_s,\, s^*)$ centered at $s^* = A_1/(A_1+1)$, where the
 gap is smallest, and accelerates elsewhere. The parameters $A_2$ and $d_0$
 enter only through $\sqrt{A_2/d_0}$. Using conservative bounds
@@ -469,7 +474,7 @@ Classical & $\Omega(2^n)$ & \autoref{thm:classical-lower-A1} \\
 
 \noindent The precision $2^{-n/2}$ is exactly the algorithmic target. The adiabatic schedule needs $A_1$ to precision $O(\sqrt{d_0/N})$, which is $O(2^{-n/2})$ in the worst case $d_0 = O(1)$. It is also where interpolation-based $\#$P-hardness proofs break (\autoref{thm:interpolation-barrier}), even though NP-hardness still follows by monotonicity. It is also where query complexity separates sharply. The quantum algorithm uses $O(2^{n/2})$ queries, while classical sampling requires $\Omega(2^n)$.
 
-Classical sampling provides independent evidence for the hardness of $A_1$ estimation at the algorithmic precision. Given a procedure that samples eigenvalues $E_x$ according to the distribution $\{d_k/N\}$, estimating the mean $A_1 = \mathbb{E}[1/(E_x - E_0)]$ to precision $\delta_s$ requires $O(1/\delta_s^2) = \widetilde{O}(2^n/d_0)$ samples by Chebyshev's inequality. This matches the formal $\Omega(2^n)$ lower bound of \autoref{thm:classical-lower-A1} up to logarithmic factors, providing a consistency check between the query-complexity result and concrete sampling algorithms.
+Classical sampling provides independent evidence for the hardness of $A_1$ estimation at the algorithmic precision. Given a procedure that samples eigenvalues $E_x$ according to the distribution $\{d_k/N\}$, estimating the mean $A_1 = \mathbb{E}[1/(E_x - E_0)]$ to precision $\delta_s$ requires $O(1/\delta_s^2) = \widetilde{O}(2^n/d_0)$ samples by Chebyshev's inequality \cite{gurvitz2005mixed}. This matches the formal $\Omega(2^n)$ lower bound of \autoref{thm:classical-lower-A1} up to logarithmic factors, providing a consistency check between the query-complexity result and concrete sampling algorithms.
 
 The information barrier is not specific to adiabatic evolution. Consider the time-independent Hamiltonian $H = -\ket{\psi_0}\bra{\psi_0} + r\,H_\sigma$, where $r > 0$ is fixed and $H_\sigma$ is the problem Hamiltonian. Evolving $\ket{\psi_0}$ under $H$ for time $t$ produces oscillations between $\ket{\psi_0}$ and the ground state of $H_\sigma$, with success probability controlled by $r$.
 

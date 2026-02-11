@@ -1,1 +1,292 @@
-% Chapter 4: Adiabatic Quantum Computation
+Chapter 3 closed one model cleanly. In the circuit-query setting, unstructured
+optimization is characterized by a sharp frontier,
+$\Theta(\sqrt{N/d_0})$. The next question is not whether quantum mechanics helps
+in principle. The next question is what happens when the same objective is
+implemented by continuous Hamiltonian evolution instead of discrete oracle calls.
+
+Adiabatic quantum computation answers that question in a physically direct way.
+Prepare a ground state that is easy to initialize, deform the Hamiltonian, and
+try to stay in the instantaneous ground space until the final Hamiltonian encodes
+the solution. This sounds conceptually simple, and that simplicity is exactly why
+it is so attractive. The technical reality is sharper. ``Slowly'' is not a vague
+instruction. It is the runtime law, and the spectral gap along the interpolation
+path is the central resource.
+
+This chapter builds that framework from first principles and then narrows to the
+AQO regime used in Chapters 5--8. The story has four steps. Define the model.
+State the quantitative adiabatic control law. Understand avoided crossings and the
+Roland-Cerf benchmark. Then confront the central tension: universality of model
+power does not remove information bottlenecks in schedule design.
+
+\section{Model}
+\label{sec:ch4-aqc-model}
+
+An adiabatic algorithm is specified by a Hamiltonian path and a monotone schedule.
+The standard interpolation is
+\begin{equation}
+\label{eq:ch4-interpolation}
+H(s) = (1-s)H_0 + sH_P, \qquad s \in [0,1],
+\end{equation}
+where physical time $t\in[0,T]$ is mapped to $s$ by increasing function $s(t)$
+\cite{farhi2000adiabatic, farhi2001adiabatic}. In normalized time,
+\begin{equation}
+\label{eq:ch4-schrodinger-s}
+\frac{i}{T}\frac{d}{ds}\ket{\psi(s)} = H(s)\ket{\psi(s)}.
+\end{equation}
+The algorithm starts in a ground state of $H_0$ and attempts to end with large
+overlap on the ground space of $H_P$.
+
+Adiabatic quantum optimization is the special case where $H_P$ is a classical
+cost Hamiltonian diagonal in the computational basis:
+\begin{equation}
+\label{eq:ch4-aqo-path}
+H(s) = (1-s)H_0 + sH_z.
+\end{equation}
+This is the regime analyzed in Chapters 5 through 9.
+
+The word ``unstructured'' must be pinned down before proceeding. In the circuit
+model, unstructured search means black-box oracle access with no exploitable
+regularity promised in labels. In this thesis, ``unstructured adiabatic'' refers
+to a Grover-type driver design: a uniform initial state, rank-one driver, and no
+instance-specific structure injected into $H_0$
+\cite{roland2004quantum, farhi2008fail, braida2024unstructured}. It does not
+mean that the problem Hamiltonian $H_z$ itself lacks combinatorial structure.
+
+The concrete family used later is
+\begin{equation}
+\label{eq:ch4-rank-one-driver}
+H_0 = -\ket{\psi_0}\bra{\psi_0}, \qquad
+\ket{\psi_0}=\ket{+}^{\otimes n}=
+\frac{1}{\sqrt{N}}\sum_{z\in\{0,1\}^n}\ket{z}.
+\end{equation}
+This choice is mathematically consequential. With diagonal $H_z$, rank-one
+$H_0$ creates a single dominant low-energy avoided crossing that can be analyzed
+explicitly \cite{braida2024unstructured}. By contrast, transverse-field drivers
+can produce many narrow crossings and localization effects that obstruct generic
+runtime control \cite{altshuler2010anderson, albash2018adiabatic}.
+
+\section{Gap and Schedules}
+\label{sec:ch4-adiabatic-theorem}
+
+The adiabatic theorem began with Born and Fock and was formalized in modern
+operator form by Kato \cite{BornFock1928, Kato1950}. For algorithms, qualitative
+statements are insufficient. One needs explicit error scaling with runtime and
+gap profile.
+
+The finite-dimensional quantitative form used in the paper follows Jansen,
+Ruskai, and Seiler \cite{jansen2007bounds}. Let $P(s)$ project onto the followed
+eigenspace of dimension $d$, let $g(s)$ be the spectral gap from that eigenspace
+to the rest of the spectrum, and assume $H$ is twice differentiable. Then
+\begin{equation}
+\label{eq:ch4-jrs}
+\left|1-\bra{\psi(s)}P(s)\ket{\psi(s)}\right| \leq \nu^2(s),
+\end{equation}
+with
+\begin{equation}
+\label{eq:ch4-jrs-structure}
+\nu(s)=
+C\left\{
+\frac{1}{T}\frac{d\|H'(0)\|}{g(0)^2}
+\;+
+\frac{1}{T}\frac{d\|H'(s)\|}{g(s)^2}
+\;+
+\frac{1}{T}\int_0^s
+\left(
+\frac{d\|H''(s')\|}{g(s')^2}
+\;+
+\frac{d^{3/2}\|H'(s')\|}{g(s')^3}
+\right)ds'
+\right\},
+\end{equation}
+where $C$ is an $s$-independent constant fixed by theorem conventions.
+
+The constants are less important here than the structure. Small gaps amplify
+adiabatic error. Therefore, for fixed target accuracy, runtime must be concentrated
+near small-gap regions. This is the first place where spectral gap becomes a
+computational resource rather than a descriptive statistic.
+
+Schedule design makes that resource explicit:
+\begin{equation}
+\label{eq:ch4-runtime-integral}
+T = \int_0^1 \frac{ds}{ds/dt}.
+\end{equation}
+A linear schedule spends equal time per unit $s$, regardless of gap profile.
+Local schedules spend time where it is needed. In a two-level reduction, the
+standard local control law is
+\begin{equation}
+\label{eq:ch4-local-rate}
+\left|\frac{ds}{dt}\right|
+\lesssim
+\frac{\varepsilon\,g(s)^2}{\chi(s)},
+\qquad
+\chi(s)=\left|\bra{e_1(s)}\frac{dH}{ds}\ket{e_0(s)}\right|,
+\end{equation}
+so the evolution slows near bottlenecks and accelerates where the path is safe
+\cite{vandam2001powerful, roland2004quantum}.
+
+This local-gap logic now has broader scheduling theory behind it. Guo and An
+analyze power-law families $u'(s)\propto g(u(s))^p$ with $p\in(1,2)$ and show,
+under a measure condition on small-gap regions, improvement from inverse-square
+to inverse-linear gap dependence \cite{GuoAn2025}. Their framework is
+complementary to ours. It explains structurally why nonlinear schedules help.
+Our later chapters instead exploit explicit spectral formulas for a specific
+rank-one AQO family.
+
+One warning belongs here. Gap-aware schedules require gap information. In general
+local-Hamiltonian settings, low-energy estimation is QMA-hard
+\cite{kempe2006complexity}. Schedule design and spectral inference are therefore
+not separate subproblems in general.
+
+\section{Avoided Crossings and Roland-Cerf}
+\label{sec:ch4-roland-cerf}
+
+For AQO, runtime is usually controlled by an avoided crossing between the lowest
+two levels. Near that region, dynamics is effectively two-level. Landau-Zener
+analysis gives the right physical picture. For a linear sweep through an
+anticrossing,
+\begin{equation}
+\label{eq:ch4-landau-zener}
+P_{\mathrm{dia}}
+\approx
+\exp\!\left(-\frac{\pi g_{\min}^2}{2v}\right),
+\end{equation}
+where $v$ is effective sweep rate and $g_{\min}$ is minimum gap
+\cite{Landau1932, Zener1932}. Passing too fast through the pinch creates
+leakage.
+
+Roland and Cerf converted this physical intuition into the first adiabatic
+search construction matching Grover scaling \cite{roland2004quantum}. For one
+marked state $\ket{w}$ among $N=2^n$ basis states,
+\begin{equation}
+\label{eq:ch4-rc-hamiltonian}
+H_{\mathrm{RC}}(s)
+=
+-(1-s)\ket{\psi_0}\bra{\psi_0}
++
+s\left(I-\ket{w}\bra{w}\right),
+\qquad
+\ket{\psi_0}=
+\frac{1}{\sqrt{N}}\sum_x \ket{x}.
+\end{equation}
+The evolution lives in a two-dimensional invariant subspace, mirroring the
+geometric simplification behind Grover in Chapter 3.
+
+The spectral gap is
+\begin{equation}
+\label{eq:ch4-rc-gap}
+g(s)=\sqrt{(2s-1)^2+\frac{4s(1-s)}{N}},
+\end{equation}
+so $g_{\min}=1/\sqrt{N}$ near $s=1/2$. With local schedule
+$\dot{s}=\varepsilon g(s)^2$,
+\begin{equation}
+\label{eq:ch4-rc-runtime}
+T
+=
+\frac{1}{\varepsilon}\int_0^1 \frac{ds}{g(s)^2}
+=
+\frac{N}{\varepsilon\sqrt{N-1}}\arctan\!\sqrt{N-1}
+=
+\Theta\!\left(\frac{\sqrt{N}}{\varepsilon}\right).
+\end{equation}
+So adiabatic evolution can match the quadratic circuit speedup in this
+one-marked-item setting.
+
+The qualifier is crucial. The success relies on explicit knowledge of where the
+gap pinches and how sharply. In the same rank-one unstructured setting, Farhi
+et al. showed no adiabatic schedule can asymptotically beat this scaling
+\cite{farhi2008fail}. So the Roland-Cerf runtime is optimal within that model.
+
+This benchmark also reveals the generalization challenge. In Grover, crossing
+location and width are fixed by $N$. In general diagonal $H_z$, both depend on
+the full spectral profile.
+
+\section{Universality, Restrictions, and Information Cost}
+\label{sec:ch4-tension}
+
+AQC is polynomially equivalent to the circuit model \cite{aharonov2007adiabatic}.
+This resolves a model-power question. It says each model can simulate the other
+with polynomial overhead. It does not resolve the algorithm-design question
+relevant here: for a fixed interpolation family, can one realize the target
+speedup with feasible spectral information?
+
+That distinction is visible across the literature. One line of work uses
+adiabatic evolution for tasks beyond optimization, including state generation,
+Markov-chain speedups, and ranking
+\cite{aharonov2003stategeneration, krovi2010adiabatic, somma2012quantum,
+garnerone2012pagerank}. A second line shows how adiabatic reasoning interfaces
+with gate-model primitives through Hamiltonian simulation and discretization
+\cite{subacsi2019qlsadiabatic, an2022qlstimeoptimal, berry2020timedependent}.
+
+The same literature also shows why universality is not a runtime guarantee.
+Filtering and endpoint strategies can outperform strictly gap-limited adiabatic
+paths in some settings \cite{ge2019faster, lin2020nearoptimalground,
+dalzell2023mind}. Hard instances can exhibit localization and path obstructions
+that destroy naive adiabatic optimism \cite{hastings2013obstructions,
+altshuler2010anderson}. Practical annealing studies point to the same
+conclusion: path design and spectral structure dominate performance
+\cite{johnson2011quantum, reichardt2004adiabatic, choi2011different,
+callison2019finding, Hastings2021powerofadiabatic, gilyen2021subexponential}.
+
+Our AQO family is deliberately narrower:
+\begin{equation}
+H(s)=-(1-s)\ket{\psi_0}\bra{\psi_0}+sH_z,
+\qquad
+H_z\ \text{diagonal in the computational basis}.
+\end{equation}
+This restriction is natural for classical cost functions and analytically sharp
+enough for explicit runtime and hardness theorems
+\cite{braida2024unstructured}. It is narrower than general AQC, and this
+tradeoff is intentional.
+
+For the rank-one diagonal AQO family satisfying the spectral regularity
+condition used in \cite{braida2024unstructured},
+\[
+\frac{1}{\Delta}\sqrt{\frac{d_0}{A_2N}}<c
+\]
+for sufficiently small constant $c$, write distinct eigenvalues of $H_z$ as
+$E_0<E_1<\cdots<E_{M-1}$ with degeneracies $d_k$, let $N=2^n$, and define
+\begin{equation}
+A_p=\frac{1}{N}\sum_{k=1}^{M-1}\frac{d_k}{(E_k-E_0)^p},
+\qquad p\in\mathbb{N}.
+\end{equation}
+Then $d_0$ is ground-state degeneracy, and the crossing geometry is governed by
+\cite{braida2024unstructured}
+\begin{equation}
+\label{eq:ch4-sstar}
+s^*=\frac{A_1}{A_1+1},
+\end{equation}
+\begin{equation}
+\label{eq:ch4-deltas}
+\delta_s=\frac{2}{(A_1+1)^2}\sqrt{\frac{d_0A_2}{N}},
+\end{equation}
+\begin{equation}
+\label{eq:ch4-gmin}
+g_{\min}=\frac{2A_1}{A_1+1}\sqrt{\frac{d_0}{A_2N}}.
+\end{equation}
+These are crossing location, crossing width scale, and minimum-gap scale.
+Increasing $d_0$ widens the crossing region and increases $g_{\min}$. Increasing
+$A_2$ narrows the gap as $1/\sqrt{A_2}$. Increasing $A_1$ pushes $s^*$ toward $1$
+and narrows $\delta_s$ through $(A_1+1)^{-2}$.
+
+The runtime consequence is immediate. An optimal local schedule must target the
+crossing window, so $s^*$ must be known to additive precision $O(\delta_s)$. For
+$d_0=O(1)$ with polynomial spectral prefactors, this is roughly $2^{-n/2}$
+precision up to polynomial factors \cite{braida2024unstructured}. The
+information demand is the bottleneck.
+
+This is where Chapters 5--8 connect tightly. Chapter 5 builds the AQO problem
+formalism around this rank-one path. Chapter 6 derives global gap bounds outside
+and near the crossing window. Chapter 7 constructs the optimal local schedule and
+runtime in this regime. Chapter 8 shows the computational price of the required
+spectral information: approximating $A_1$ to additive precision
+$\varepsilon<1/(72(n-1))$ is NP-hard, while near-exact estimation at
+$\varepsilon=2^{-\mathrm{poly}(n)}$ is \#P-hard
+\cite{braida2024unstructured}. Combined with the
+unstructured adiabatic lower bound \cite{farhi2008fail}, this gives the central
+tension of the thesis. The Grover-like scaling is achievable, but the
+instance-specific information needed to realize it can itself be hard to compute.
+
+That is the exact handoff to Chapter 5. In the circuit model, unstructured
+minimum finding is already characterized. In AQO, matching the same asymptotic
+law requires controlling crossing geometry and schedule design under nontrivial
+information constraints.

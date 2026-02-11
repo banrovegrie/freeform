@@ -46,6 +46,7 @@
 \usepackage{doi}
 \usepackage{lipsum}
 \usepackage[center]{caption}
+\usepackage{subcaption}
 
 % \theoremstyle{definition}
 \newtheorem{theorem}{Theorem} %[section]
@@ -124,7 +125,7 @@
 \input{frontmatter/acknowledgement.tex}
 
 \tableofcontents
-\listoftheorems
+\begingroup\hfuzz=3pt\listoftheorems\endgroup
 \listofalgorithms
 \listoffigures
 
@@ -168,6 +169,9 @@
 \appendix
 
 \bibliographystyle{unsrtnat}
+\begingroup
+\raggedright
 \bibliography{references.bib}
+\endgroup
 
 \end{document}
