@@ -31,7 +31,7 @@ For a general diagonal problem Hamiltonian, $H(s)$ has a single avoided crossing
 \section{From Cost Function to Adiabatic Path}
 \label{sec:aqo-problem}
 
-The adiabatic path is determined entirely by the spectrum of the problem Hamiltonian: its distinct energy levels and their degeneracies. Because $H_0 = -\ket{\psi_0}\bra{\psi_0}$ is a rank-one projector onto the uniform superposition, it treats all computational basis states symmetrically, and only the energy values and the number of states at each energy affect the crossing structure. The definitions below parameterize this spectral data. Permutation symmetry then confines the dynamics to a polynomial-dimensional subspace indexed by these levels (Section~\ref{sec:symmetry-reduction}), making the full analysis tractable.
+The adiabatic path is determined entirely by the spectrum of the problem Hamiltonian, specifically its distinct energy levels and their degeneracies. Because $H_0 = -\ket{\psi_0}\bra{\psi_0}$ is a rank-one projector onto the uniform superposition, it treats all computational basis states symmetrically, and only the energy values and the number of states at each energy affect the crossing structure. The definitions below parameterize this spectral data. Permutation symmetry then confines the dynamics to a polynomial-dimensional subspace indexed by these levels (Section~\ref{sec:symmetry-reduction}), making the full analysis tractable.
 
 Consider an $n$-qubit Hamiltonian $H_z$ that is diagonal in the computational basis.
 \begin{equation}
@@ -309,8 +309,8 @@ state), $s^*\to 1$. For small $A_1$, $s^*$ moves toward $0$.
 
 The crossing position is the balance point in the eigenvalue equation, $A_1/s^* = 1/(1 - s^*)$. The left side is the aggregate pull of the excited spectrum toward $sE_0$, and the right side is the projector contribution. At $s=s^*$, the linear coefficient in the quadratic for $\delta$ (Eq.~\eqref{eq:delta-pm-formula}) vanishes, so the roots $\delta_0^\pm$ are symmetric about zero. The minimum gap is then set by the constant term $d_0/N$, which is why ground-state degeneracy controls the opening size.
 
-How good is the truncation? The actual roots $\delta_\pm(s)$ of the full
-equation differ from $\delta_0^\pm(s)$ by a relative error controlled by the
+The truncation is remarkably accurate. The actual roots $\delta_\pm(s)$ of the
+full equation differ from $\delta_0^\pm(s)$ by a relative error controlled by the
 spectral condition. The next result makes this precise. Its proof uses the
 intermediate value theorem on the full equation after bounding the remainder
 with $A_3$ and the spectral condition. The technique was developed for optimal
@@ -430,7 +430,7 @@ g(s) \geq \frac{A_1(A_1 + 1)}{A_2} (s^* - s).
 \end{equation}
 \end{lemma}
 
-Why does this hold? One route uses the variational principle. An explicit ansatz
+The bound admits two proofs. One route uses the variational principle. An explicit ansatz
 $\ket{\phi}$ gives an upper bound $\lambda_0(s) \leq \bra{\phi} H(s) \ket{\phi}$,
 while the eigenvalue equation gives the lower bound
 $\lambda_1(s) \geq sE_0$. The ansatz is

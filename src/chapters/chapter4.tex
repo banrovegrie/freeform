@@ -19,14 +19,14 @@ exponent is settled.
 But the exponent is not the whole story. Grover's algorithm requires knowledge
 of $N$ and $d_0$ to set its iteration count, and nothing else. The algorithm is
 a fixed two-reflection circuit repeated a computable number of times. An
-adiabatic algorithm matching the same scaling requires something fundamentally
-different: a schedule adapted to the spectral gap profile along a Hamiltonian
+adiabatic algorithm matching the same scaling faces a different challenge. It
+requires a schedule adapted to the spectral gap profile along a Hamiltonian
 interpolation path. Whether the information needed for that adaptation is easy
 or hard to obtain is a question the circuit model never had to face.
 
 This chapter builds the adiabatic framework and makes that question precise.
 What is the adiabatic idea, and what does it formalize? How slow must ``slow''
-be---quantitatively, not just qualitatively? Can the resulting algorithm match
+be, in quantitative terms and not just qualitative ones? Can the resulting algorithm match
 the circuit-model frontier? And if it can, what does the matching cost?
 
 
@@ -111,7 +111,7 @@ incidental. With diagonal $H_z$ and rank-one $H_0$, the low-energy spectrum
 of $H(s)$ is dominated by a single avoided crossing that admits explicit
 analysis~\cite{braida2024unstructured}. The entire runtime of the algorithm
 is controlled by the geometry of that crossing. By contrast, transverse-field
-drivers---the standard choice in quantum annealing hardware---can produce
+drivers, which are the standard choice in quantum annealing hardware, can produce
 cascades of narrow crossings and Anderson-localization effects that obstruct
 generic runtime control~\cite{altshuler2010anderson, albash2018adiabatic}.
 The rank-one restriction buys analytical tractability at the cost of
@@ -123,15 +123,15 @@ generality, and that tradeoff is deliberate.
 \label{sec:ch4-adiabatic-theorem}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The qualitative adiabatic theorem says: go slowly enough and you stay near the
-ground state. For algorithm design, ``slowly enough'' must be a number, not an
+The qualitative adiabatic theorem is simple. Go slowly enough and you stay
+near the ground state. For algorithm design, ``slowly enough'' must be a number, not an
 aspiration. The quantitative version needed here is due to Jansen, Ruskai, and
 Seiler~\cite{jansen2007bounds}, with complementary bounds from Elgart and
 Hagedorn~\cite{ElgartHagedorn2012}. The JRS formulation makes the gap dependence
 fully explicit.
 
-Let $P(s)$ project onto the followed eigenspace of $H(s)$---in the AQO
-application, this is the instantaneous ground-state subspace---which has
+Let $P(s)$ project onto the followed eigenspace of $H(s)$. In the AQO
+application, this is the instantaneous ground-state subspace. Assume it has
 dimension $d$ and is separated from the rest of the spectrum by a gap
 $g(s) > 0$ for all $s \in [0,1]$. Assume $H$ is twice differentiable as a
 function of $s$ and that the initial state satisfies
@@ -169,8 +169,8 @@ these contributions are negligible. Where the gap shrinks, they dominate.
 
 This structure converts the spectral gap from a descriptive property of the
 Hamiltonian into a computational bottleneck. The minimum gap along the path is not
-the only quantity that matters---the full gap profile enters through the
-integral---but the minimum gap sets the scale. If $g_{\min} = \min_s g(s)$
+the only quantity that matters. The full gap profile enters through the
+integral. But the minimum gap sets the scale. If $g_{\min} = \min_s g(s)$
 is the bottleneck, then a linear schedule requires
 $T = \Omega(1/g_{\min}^2)$ for constant fidelity, and this scaling is tight
 for the worst case over gap profiles. Faster schedules leak probability into
@@ -181,7 +181,7 @@ $T = \int_0^1 ds/\dot{s}$ across the interpolation path to match the gap
 profile. A linear schedule sets $\dot{s} = 1/T$, spending equal time per unit
 $s$ regardless of spectral structure. This is the choice Farhi et~al.\ used in
 their original adiabatic search construction, and it yields runtime
-$O(N)$---no better than classical exhaustive search---because the linear
+$O(N)$. This is no better than classical exhaustive search. The linear
 schedule wastes most of its budget in regions where the gap is wide and starves
 the narrow bottleneck near $s = 1/2$~\cite{farhi2000adiabatic}.
 
@@ -200,7 +200,7 @@ to the squared gap:
 where $\ket{e_0(s)}$ and $\ket{e_1(s)}$ are the instantaneous ground and first
 excited states, $\varepsilon$ is the target adiabatic error, and $\chi(s)$ is
 the matrix element of the Hamiltonian derivative between them. This law is
-derived from the adiabatic condition applied locally at each $s$: the
+derived from the adiabatic condition applied locally at each $s$. The
 transition amplitude from ground to first excited state, accumulated over an
 infinitesimal interval $ds$, must remain below $\varepsilon$. The general AQO
 analysis in Chapters~6 and~7 uses a simplified adiabatic theorem where the
@@ -210,8 +210,8 @@ scaling for the Roland-Cerf benchmark but differ in how the schedule is
 parameterized for general problem Hamiltonians.
 
 The physical content is immediate. Near gap bottlenecks, $g(s)$ is small and
-$\dot{s}$ must be small: the evolution crawls through the dangerous region.
-Where the gap is wide, $\dot{s}$ can be large: the evolution sprints through
+$\dot{s}$ must be small. The evolution crawls through the dangerous region.
+Where the gap is wide, $\dot{s}$ can be large. The evolution sprints through
 safe territory. The total runtime is then
 \begin{equation}
 \label{eq:ch4-runtime-integral}
@@ -219,15 +219,14 @@ T = \int_0^1 \frac{ds}{\dot{s}(s)}
 \sim \frac{1}{\varepsilon}\int_0^1 \frac{\chi(s)}{g(s)^2}\,ds.
 \end{equation}
 The runtime integral concentrates its weight at the gap minimum. If the
-bottleneck is a narrow avoided crossing---a region of width $\delta_s$ where
-$g(s)$ dips to $g_{\min}$---then the integral is dominated by the contribution
+bottleneck is a narrow avoided crossing of width $\delta_s$ where
+$g(s)$ dips to $g_{\min}$, then the integral is dominated by the contribution
 from that region, and the rest of the path contributes lower-order terms.
 
 Guo and An have recently placed this local-gap logic in a broader framework,
 showing that power-law schedule families $u'(s) \propto g(u(s))^p$ can improve
-the gap dependence from inverse-square to inverse-linear, provided the gap
-function satisfies a measure condition: the Lebesgue measure of
-$\{s : g(s) \leq t\}$ must grow at most linearly in
+the gap dependence from inverse-square to inverse-linear, provided the
+Lebesgue measure of $\{s : g(s) \leq t\}$ grows at most linearly in
 $t$~\cite{GuoAn2025}. The later chapters take a different route, exploiting
 explicit spectral formulas for the rank-one AQO family.
 
@@ -236,8 +235,8 @@ Gap-aware schedules require gap information. The local control
 law~\eqref{eq:ch4-local-rate} uses $g(s)$ and $\chi(s)$ as functions of $s$,
 and these are not free. Computing the gap of a general local Hamiltonian at a
 single point is QMA-hard~\cite{kempe2006complexity}. Schedule design and
-spectral inference are therefore entangled problems, and treating them as
-independent---first compute the gap, then design the schedule---is valid only
+spectral inference are therefore entangled problems. The sequential approach
+of first computing the gap and then designing the schedule is valid only
 when the spectral structure is analytically known or efficiently computable.
 For the rank-one AQO family, it happens to be analytically known. For general
 problem Hamiltonians, it is not.
@@ -248,8 +247,8 @@ problem Hamiltonians, it is not.
 \label{sec:ch4-roland-cerf}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-In the rank-one AQO setting, the gap profile along the interpolation path has
-a characteristic shape: it is wide at both endpoints and pinches to a minimum
+In the rank-one AQO setting, the gap profile along the interpolation path is wide at both endpoints
+and pinches to a minimum
 at a single avoided crossing between the two lowest energy levels. Near that
 crossing, the dynamics is effectively two-dimensional, and the physics is
 captured by the Landau-Zener model from the theory of atomic
@@ -278,8 +277,8 @@ $\mathrm{span}\{\ket{w},\ket{r}\}$, and the algorithm was a rotation in that
 plane. Here, the effective dynamics collapses to the two-dimensional subspace
 spanned by the instantaneous ground and first excited states of $H(s)$, and
 the algorithm is a slow traversal of an avoided crossing in that subspace. The
-structural motif---low-dimensional effective dynamics controlling an
-exponentially large system---is the same. The parameterization changes from a
+structural motif is the same. In both settings, low-dimensional effective
+dynamics controls an exponentially large system. The parameterization changes from a
 discrete iteration count $k$ to a continuous schedule variable $s$.
 
 Roland and Cerf were the first to convert this physical picture into an
@@ -311,9 +310,8 @@ g(s)=\sqrt{(2s-1)^2+\frac{4s(1-s)}{N}}.
 \end{equation}
 At $s = 0$ and $s = 1$, the gap is $1$. At $s = 1/2$, it reaches its minimum
 $g_{\min} = 1/\sqrt{N}$. The gap profile is a smooth arch with a single
-narrow dip, and everything about the crossing---its location, its width, its
-minimum value---is determined by $N$ alone. No instance-specific information
-is needed.
+narrow dip. The location, width, and minimum value of the crossing are all
+determined by $N$ alone. No instance-specific information is needed.
 
 \begin{figure}[ht]
 \centering
@@ -394,7 +392,7 @@ feature that will not survive generalization.
 \label{sec:ch4-tension}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The Roland-Cerf construction is a proof of concept: adiabatic evolution can
+The Roland-Cerf construction is a proof of concept. Adiabatic evolution can
 match the circuit-model speedup for unstructured search. The question for the
 rest of the thesis is whether this matching extends to general diagonal
 problem Hamiltonians, and at what cost.
@@ -407,8 +405,8 @@ a natural interpolation between a simple initial Hamiltonian and a problem
 Hamiltonian will achieve the optimal runtime with a feasible schedule.
 
 The distinction is visible throughout the literature. One line of work uses
-adiabatic evolution for tasks beyond optimization---state generation,
-Markov-chain speedups,
+adiabatic evolution beyond optimization, applying it to state generation,
+Markov-chain speedups, and
 ranking~\cite{aharonov2003stategeneration, krovi2010adiabatic, somma2012quantum,
 garnerone2012pagerank}. A second line connects adiabatic reasoning to
 gate-model primitives through Hamiltonian simulation and
@@ -486,11 +484,11 @@ minimum gap $g_{\min}$ decreases with $N$ as $1/\sqrt{N}$ up to spectral
 prefactors, reproducing the Roland-Cerf scaling when the prefactors are
 $O(1)$.
 
-The parameter dependencies reveal the physics. Increasing $d_0$---having more
-ground states---widens the crossing and increases $g_{\min}$, because more
-amplitude is concentrated in the ground subspace. Increasing $A_2$---having
-excited eigenvalues closer to the ground energy---narrows the gap as
-$1/\sqrt{A_2}$, because near-degenerate levels create a tighter pinch.
+The parameter dependencies reveal the physics. A larger $d_0$ means more states
+share the ground energy, which widens the crossing and increases $g_{\min}$
+by concentrating more amplitude in the ground subspace. A larger $A_2$ means
+excited eigenvalues sit closer to the ground energy, which narrows the gap as
+$1/\sqrt{A_2}$ because near-degenerate levels create a tighter pinch.
 Increasing $A_1$ pushes $s^*$ toward $1$ and compresses $\delta_s$ through the
 $(A_1+1)^{-2}$ factor, concentrating the dangerous region into a narrower
 interval that the schedule must target more precisely.
@@ -519,17 +517,16 @@ Combined with the lower bound $T = \Omega(\sqrt{N/d_0})$ from Farhi
 et~al.~\cite{farhi2008fail}, these hardness results give a precise picture.
 The Grover-like scaling $\Theta(\sqrt{N/d_0})$ is achievable in principle:
 there exists a schedule that realizes it, and the spectral formulas above
-describe its structure. But the instance-specific information needed to
-construct that schedule---the spectral moments $A_1$ and $A_2$---can
+describe its structure. But the spectral moments $A_1$ and $A_2$ that the schedule requires can
 themselves be computationally hard to obtain. The adiabatic model relocates the
 difficulty from algorithm execution to algorithm specification.
 
 This is where the parallel with Grover breaks down most sharply. Grover's
 algorithm is specified by two integers, $N$ and $d_0$. Its iteration count
 $k^* \approx (\pi/4)\sqrt{N/d_0}$ depends on nothing else. The adiabatic
-algorithm matching the same runtime is specified by continuous functions---the
-gap profile, the crossing location, the schedule---that depend on the full
-spectrum of the problem Hamiltonian. The circuit model achieves its frontier
+algorithm matching the same runtime requires the gap profile, the crossing
+location, and the schedule, all of which depend on the full spectrum of the
+problem Hamiltonian. The circuit model achieves its frontier
 with minimal information. The adiabatic model achieves the same frontier with
 maximal information.
 

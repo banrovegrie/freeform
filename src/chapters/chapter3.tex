@@ -7,20 +7,20 @@
 % after Grover motivates the transition to adiabatic computation in Chapter 4.
 
 Chapter~2 translated combinatorial optimization into ground-state energy
-minimization. The translation is exact and natural: a cost function becomes a
+minimization. The translation is exact and natural. A cost function becomes a
 diagonal Hamiltonian, and the optimal solutions become its lowest-energy
 eigenstates. But a Hamiltonian that encodes an answer is not a procedure that
 finds it. For that, one needs a computational model with definite operations and
 countable resources.
 
 Quantum mechanics provides such a model, and it provides it with a distinctive
-tension. A system of $n$ qubits carries $2^n$ complex amplitudes---an
+tension. A system of $n$ qubits carries $2^n$ complex amplitudes, an
 exponentially large internal description. Yet measurement returns a single
 sampled outcome, and the superposition that supported the computation is
 destroyed. The entire theory of quantum algorithms lives in the gap between what
 the system maintains privately and what it reveals upon observation. Bridging
-that gap for a specific computational task---arranging interference so that the
-measured outcome is likely to be useful---is what algorithm design amounts to.
+that gap for a specific computational task by arranging interference so that the
+measured outcome is likely to be useful is what algorithm design amounts to.
 
 This chapter builds the computational baseline and derives its sharpest
 consequence for unstructured problems. The main result is a tight
@@ -37,7 +37,7 @@ every later adiabatic claim must be measured.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The simplest quantum system distinguishes two states. Call them $\ket{0}$ and
-$\ket{1}$---a quantum bit, or qubit. The state space of a single qubit is
+$\ket{1}$, the two basis states of a quantum bit, or qubit. The state space of a single qubit is
 \begin{equation}
 \label{eq:ch3-qubit-space}
 \mathcal{H}_1 = \mathbb{C}^2 = \mathrm{span}\{\ket{0},\ket{1}\}.
@@ -71,8 +71,7 @@ canonical operator-state formalism used here~\cite{Dirac1930, vonNeumann1955};
 Nielsen and Chuang~\cite{NielsenChuang2010} provide a modern computational
 treatment.
 
-Why does the state space grow exponentially? The answer lies in the
-tensor-product structure. A two-qubit system does not merely carry the state of
+The culprit is the tensor product. A two-qubit system does not merely carry the state of
 qubit $A$ and the state of qubit $B$ side by side; it carries every possible
 correlation between them. Some of these correlations have no classical
 counterpart. A bipartite state $\ket{\psi_{AB}}$ is called entangled when it
@@ -82,7 +81,7 @@ cannot be written as a product
 \ket{\psi_{AB}} \neq \ket{\psi_A}\otimes\ket{\psi_B}
 \end{equation}
 for any choice of single-system states. The Bell state
-$(\ket{00}+\ket{11})/\sqrt{2}$ is the canonical example: measuring one qubit
+$(\ket{00}+\ket{11})/\sqrt{2}$ is the canonical example. Measuring one qubit
 determines the outcome of measuring the other, regardless of spatial separation.
 Entanglement is not, by itself, a speedup theorem. But it expands the reachable
 space of correlations, and therefore the space of algorithmic strategies.
@@ -95,8 +94,8 @@ $e^{i\phi}$ multiplying the entire state vector is unobservable:
 \end{equation}
 Relative phases between components are a different matter entirely. The states
 $(\ket{0}+\ket{1})/\sqrt{2}$ and $(\ket{0}-\ket{1})/\sqrt{2}$ produce
-identical statistics when measured in the $\{\ket{0},\ket{1}\}$ basis---each
-yields $0$ or $1$ with probability $1/2$---but they are perfectly
+identical statistics when measured in the $\{\ket{0},\ket{1}\}$ basis. Both
+yield $0$ or $1$ with probability $1/2$. Yet they are perfectly
 distinguishable in the $\{\ket{+},\ket{-}\}$ basis. The sign between components
 is physical, and it is the mechanism through which quantum amplitudes interfere
 constructively or destructively. Interference is where quantum algorithms get
@@ -123,8 +122,8 @@ The thesis works primarily with pure-state dynamics, but adiabatic evolution
 through a small gap can leak probability into excited states, making the
 pure-state description insufficient. The overlap
 $\bra{\psi(s)}P(s)\ket{\psi(s)}$ between the evolved state and the
-instantaneous ground-state projector---the central figure of merit in later
-chapters---generalizes naturally to mixed states. The appropriate description
+instantaneous ground-state projector (the central figure of merit in later
+chapters) generalizes naturally to mixed states. The appropriate description
 of a system that has interacted with an unmonitored environment is a density
 operator
 \begin{equation}
@@ -142,7 +141,7 @@ $x$, drawn with probability $|\alpha_x|^2$. There is no physical operation that
 reads out the full amplitude table. A quantum computer is not a device that
 explores $2^n$ possibilities in parallel and then reports all the answers. It is
 a device that, through controlled unitary evolution, arranges constructive
-interference on desired outcomes and destructive interference on the rest---and
+interference on desired outcomes and destructive interference on the rest, and
 then bets everything on a single measurement. Algorithmic advantage is the art
 of making that bet pay off with high probability.
 
@@ -154,7 +153,7 @@ of making that bet pay off with high probability.
 
 Between preparation and measurement, quantum mechanics is entirely
 deterministic. The state vector evolves by a norm-preserving rotation in Hilbert
-space---not a rotation in physical space, but a rotation in the abstract space of
+space. This rotation acts not in physical space but in the abstract space of
 amplitudes. The generator of this rotation is the Hamiltonian.
 
 The fundamental single-qubit operators are the Pauli matrices
@@ -170,8 +169,8 @@ Each is Hermitian, unitary, and has eigenvalues $\pm 1$. On an $n$-qubit
 system, $\sigma_\alpha^j$ denotes the Pauli-$\alpha$ operator acting on qubit
 $j$ with identity on all other qubits. Tensor products of Pauli operators
 generate the full algebra of observables on $\mathcal{H}_n$, and every
-Hamiltonian in this thesis---Ising couplings, diagonal cost functions,
-transverse-field drivers---is expressed in this language.
+Hamiltonian in this thesis (Ising couplings, diagonal cost functions,
+transverse-field drivers) is expressed in this language.
 
 A Hamiltonian $H$ is a Hermitian operator on $\mathcal{H}_n$. Hermiticity
 guarantees real eigenvalues and a complete orthonormal eigenbasis. The spectral
@@ -282,7 +281,7 @@ computationally harmless convention, used freely in the chapters that follow.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Quantum mechanics provides the physical substrate. To do computer science with
-it, one needs a formal model of computation---a specification of what counts as
+it, one needs a formal model of computation that specifies what counts as
 an algorithm, what counts as a step, and what counts as efficient. The circuit
 model serves this role for quantum computation, just as the Turing machine
 serves it for classical computation.
@@ -366,7 +365,7 @@ threshold decision problem
 \label{eq:ch3-threshold-decision}
 D_\tau(C) = \mathbf{1}[\exists\, x:\, C(x) \leq \tau].
 \end{equation}
-Optimization---finding $\arg\min_x C(x)$---reduces to repeated calls to
+Optimization (finding $\arg\min_x C(x)$ in this context) reduces to repeated calls to
 $D_\tau$ with varying threshold $\tau$. D\"{u}rr and H{\o}yer exploited this
 reduction with Grover subroutines, achieving unstructured minimum finding in
 $\Theta(\sqrt{N/d_0})$ queries, where $d_0$ is the number of minimizers
@@ -522,8 +521,8 @@ near~$\ket{w}$.}
 The two-dimensional picture deserves a moment of reflection, because it is a
 structural motif that will reappear in a different guise. A problem defined over
 $2^n$ basis states might seem to require $2^n$-dimensional analysis. But the
-symmetry of the unstructured oracle---treating all marked items equally and all
-unmarked items equally---collapses the relevant dynamics to a plane. The full
+symmetry of the unstructured oracle (treating all marked items equally and all
+unmarked items equally) collapses the relevant dynamics to a plane. The full
 Hilbert space serves as a stage, but only two directions participate in the
 performance. The runtime is determined entirely by the angular geometry in
 $\mathcal{V}$: how far the initial state is from the target, and how fast the
@@ -588,18 +587,18 @@ the exponent.
 
 The same $\Omega(\sqrt{N})$ barrier survives the transition from discrete
 queries to continuous-time Hamiltonian evolution. Farhi, Goldstone, and Gutmann
-proved that any adiabatic algorithm using a rank-one projector driver---the
-driver $H_0 = -\ket{\psi_0}\bra{\psi_0}$ used throughout Chapter~4---for
+proved that any adiabatic algorithm using a rank-one projector driver (the
+driver $H_0 = -\ket{\psi_0}\bra{\psi_0}$ used throughout Chapter~4) for
 unstructured search requires time $\Omega(\sqrt{N/d_0})$, matching the BBBV
 bound in the circuit-query model~\cite{farhi2008fail}. Changing the physical
 implementation from gates to Hamiltonians does not remove the
 information-theoretic barrier.
 
-What does the word ``unstructured'' mean across these two settings? In the
-circuit model, it means black-box oracle access: the only way to learn about
+The word ``unstructured'' carries precise but different meanings in the two
+settings. In the circuit model, it means black-box oracle access: the only way to learn about
 $f$ is to query it, and no exploitable regularity in the labels is promised or
 assumed. In the adiabatic model, it means that the problem Hamiltonian is a
-diagonal cost map $z \mapsto E_z$ with no additional promised structure---no
+diagonal cost map $z \mapsto E_z$ with no additional promised structure and no
 locality, sparsity, or algebraic pattern that an algorithm could exploit. The two
 models enforce the same absence of exploitable information through different
 physical primitives.

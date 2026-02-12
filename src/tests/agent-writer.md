@@ -10,7 +10,6 @@ This file is the primary writing gate. It carries the burden of both writing qua
 
 Use these files as the style and quality baseline:
 
-- `WRITING.md`
 - `README.md` (On Writing section)
 - `taste/README.md` and the papers/theses in `taste/`
 

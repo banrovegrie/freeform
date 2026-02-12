@@ -15,10 +15,11 @@ piece earns its place by answering a question the previous piece leaves open.
 \section{Reality}
 \label{sec:ch2-reality}
 
-What does it mean to choose a formalization? It means committing to which
-aspects of physical reality the mathematics captures. This thesis needs one
-such commitment: mathematics models regularities in the physical world but
-does not replace the world itself.
+The reach of a proof is bounded by the formalization behind it. Choosing a
+formalization means committing to which aspects of physical reality the
+mathematics captures. This thesis needs one such commitment. Mathematics
+models regularities in the physical world but does not replace the world
+itself.
 
 The consequence is immediate. A complexity claim is meaningful only after the
 computational model and the resource accounting are fixed. If access to the
@@ -39,7 +40,7 @@ and inefficient.
 The dependence on model choice will recur throughout this thesis. Physical
 assumptions determine a computational model. The model determines a resource
 accounting. And the resource accounting supports, or fails to support, a
-complexity claim. Chapters~3 and~4 will put this chain under pressure: the
+complexity claim. Chapters~3 and~4 will put this chain under pressure. The
 optimization objective stays fixed while the computational model shifts from
 query circuits to continuous Hamiltonian evolution.
 
@@ -78,7 +79,7 @@ distribution assigns probabilities
 Z_\beta=\sum_z e^{-\beta C(z)}.
 \end{equation}
 As $\beta\to\infty$, mass concentrates on the minimizers of $C$. The mechanism
-is direct: for any non-optimal configuration $z$, the ratio
+is direct. For any non-optimal configuration $z$, the ratio
 $\pi_\beta(z)/\pi_\beta(z^*)=e^{-\beta(C(z)-C_{\min})}$ vanishes
 exponentially as $\beta$ grows. Finding the ground state is what thermal
 equilibrium does at zero temperature. The partition function $Z_\beta$ encodes
@@ -104,7 +105,7 @@ and~\ref{sec:ch2-adiabaticity} develop this connection.
 \label{sec:ch2-computation}
 
 The spectral gap determines how long the adiabatic algorithm runs. But ``long''
-needs a yardstick, and that yardstick comes from complexity theory: a precise
+needs a yardstick, and that yardstick comes from complexity theory, the precise
 framework for measuring hardness across computational models. Without it,
 saying that an adiabatic algorithm is fast or slow would be meaningless.
 
@@ -113,7 +114,7 @@ language $L\subseteq\{0,1\}^*$ is decidable if some Turing machine halts on
 every input and accepts exactly the strings in $L$. Decidability separates what
 can be computed from what cannot. The Church--Turing thesis asserts that every
 physically realizable computation can be performed by a Turing machine. The
-extended Church--Turing thesis goes further, adding an efficiency claim: every
+extended Church--Turing thesis goes further, adding an efficiency claim that every
 physically realizable computation can be simulated by a probabilistic classical
 machine with at most polynomial overhead \cite{arora2009computational}. Quantum
 computation challenges this efficiency claim while leaving computability
@@ -127,8 +128,8 @@ A decision problem is in $\mathrm{P}$ if a deterministic Turing machine solves
 it in time polynomial in input length.
 \end{definition}
 
-Evaluating a cost function $C(z)$ at a given $z$ is typically in $\mathrm{P}$:
-substitute values and compute. But minimizing $C$ over all of $\{0,1\}^n$
+Evaluating a cost function $C(z)$ at a given $z$ is typically in $\mathrm{P}$
+by direct substitution. But minimizing $C$ over all of $\{0,1\}^n$
 appears to require searching an exponentially large space. Boolean
 satisfiability makes the difficulty concrete. A 3-SAT formula has the form
 \begin{equation}
@@ -137,7 +138,7 @@ F(x_1,\ldots,x_n)=\bigwedge_{j=1}^{m}(\ell_{j,1}\lor\ell_{j,2}\lor\ell_{j,3}),
 \end{equation}
 with each literal $\ell_{j,k}$ being either $x_i$ or $\overline{x}_i$. Given a
 candidate assignment $x$, checking whether $F(x)=1$ takes time linear in the
-formula: evaluate each clause and confirm all are satisfied. A first-year
+formula, since one need only evaluate each clause and confirm all are satisfied. A first-year
 student can verify a solution. But finding a satisfying assignment from scratch,
 or proving that none exists, appears to require effort that grows exponentially
 with $n$. This asymmetry between finding and checking is not an accident of
@@ -159,7 +160,7 @@ What makes 3-SAT remarkable is not just that it appears hard, but that it
 captures the full difficulty of $\mathrm{NP}$. Cook proved that every
 efficiently verifiable problem can be translated into an instance of SAT
 through a polynomial-time computable function that preserves yes and no answers
-\cite{cook1971complexity}. Such a function is called a reduction: it converts
+\cite{cook1971complexity}. Such a function is called a reduction. It converts
 one problem into another while preserving the answer.
 
 \begin{definition}[Polynomial-time many-one reduction]
@@ -171,7 +172,7 @@ x\in A \iff r(x)\in B.
 \end{equation}
 \end{definition}
 
-A reduction from $A$ to $B$ means that $B$ is at least as hard as $A$: any
+A reduction from $A$ to $B$ means that $B$ is at least as hard as $A$. Any
 algorithm for $B$ immediately yields one for $A$ by composing with $r$, so
 hardness flows upward through a hierarchy of problems. A problem to which all
 of $\mathrm{NP}$ reduces is NP-hard; if it also lies in $\mathrm{NP}$, it is
@@ -221,7 +222,7 @@ Decision SAT asks whether this count is nonzero. But computing the exact count
 is far harder. $\#\mathrm{P}$ is at least as hard as every class in the
 polynomial hierarchy \cite{toda1991pp, arora2009computational}, placing counting strictly
 above NP-hard decision problems in a strong structural sense. The permanent of
-a $0$-$1$ matrix provides a vivid example: computing it is
+a $0$-$1$ matrix is the canonical example. Computing it is
 $\#\mathrm{P}$-complete \cite{valiant1979complexity}, yet the closely related
 determinant is computable in polynomial time. A single sign change in the
 summation separates efficient computation from intractability.
@@ -230,18 +231,18 @@ The ground-state degeneracy $d_0=|\{z:C(z)=C_{\min}\}|$ is exactly such a
 counting object. Adiabatic runtime depends on the full degeneracy spectrum
 through spectral parameters defined in Chapter~5. Chapter~8 proves that
 approximating the key parameter $A_1$ to additive precision
-$\varepsilon<1/(72(n-1))$ is NP-hard. The $\#\mathrm{P}$-hardness result is
-stronger: $O(\mathrm{poly}(n))$ exact oracle queries to the spectral parameter
-suffice to extract the degeneracy $d_0$ by polynomial interpolation, and
-computing $d_0$ is $\#\mathrm{P}$-hard. Near-exact estimation at precision
-$\varepsilon\in O(2^{-\mathrm{poly}(n)})$ therefore inherits
-$\#\mathrm{P}$-hardness \cite{braida2024unstructured}.
+$\varepsilon<1/(72(n-1))$ is NP-hard. The $\#\mathrm{P}$-hardness result is stronger. Given
+$O(\mathrm{poly}(n))$ exact oracle queries to the spectral parameter,
+polynomial interpolation suffices to extract the degeneracy $d_0$. Since
+computing $d_0$ is $\#\mathrm{P}$-hard, near-exact estimation at precision
+$\varepsilon\in O(2^{-\mathrm{poly}(n)})$ inherits $\#\mathrm{P}$-hardness
+\cite{braida2024unstructured}.
 
 \section{Spectral Complexity}
 \label{sec:ch2-spectral-complexity}
 
-Where does counting complexity meet quantum dynamics? In the eigenvalue
-structure of the Hamiltonian. The Schr\"{o}dinger
+Counting complexity enters quantum dynamics not through the evolution equation
+but through the spectrum. The Schr\"{o}dinger
 equation~\eqref{eq:ch2-schrodinger-linear} is linear in the state vector,
 without approximation. For a time-independent Hamiltonian it has the explicit
 solution $\ket{\psi(t)}=e^{-iHt}\ket{\psi(0)}$, and even for time-dependent
@@ -254,7 +255,7 @@ $H_0$ (whose ground state is easy to prepare; Chapter~4 specifies the concrete
 choice) and a problem Hamiltonian $H_z$ diagonal in the computational basis,
 with $s$ ranging from $0$ to $1$. As $s$ varies, the eigenvalues of $H(s)$
 trace curves. When two of these curves approach each other, they generically do
-not cross. Instead they undergo an avoided crossing: the curves repel, reaching
+not cross. Instead they undergo an avoided crossing. The curves repel, reaching
 a minimum separation before diverging again
 (Figure~\ref{fig:ch2-avoided-crossing}). The width of this avoided crossing
 and the value of $s$ at which it occurs depend on the global structure of both
@@ -298,7 +299,7 @@ Section~\ref{sec:ch2-adiabaticity} makes precise how it controls runtime.}
 \end{figure}
 
 This is where computational hardness enters. Small perturbations to a
-Hamiltonian can rearrange its eigenvalue structure entirely: spectral gaps can
+Hamiltonian can rearrange its eigenvalue structure entirely. Spectral gaps can
 close exponentially, avoided crossings can narrow or widen, degenerate
 subspaces can split. These spectral rearrangements control algorithmic runtime,
 and predicting them is NP-hard in general (Chapter~8). The interpolation
@@ -311,9 +312,9 @@ evolution is simple. The geometry it must navigate is not.
 \section{Optimization}
 \label{sec:ch2-optimization}
 
-How does a combinatorial cost function become an energy spectrum? The
-translation is exact, requires no relaxation or rounding, and preserves every
-feature that makes the problem hard.
+The translation from combinatorial cost function to energy spectrum is exact.
+It requires no relaxation or rounding, and preserves every feature that makes
+the problem hard.
 
 Write the optimization objective as
 \begin{equation}
@@ -374,8 +375,8 @@ and under the spin substitution $\sigma_i=(-1)^{x_i}$ this becomes
 \label{eq:ch2-maxcut-ising}
 C_{\mathrm{cut}}(\sigma)=\frac{1}{2}\sum_{(i,j)\in E}w_{ij}(1-\sigma_i \sigma_j).
 \end{equation}
-The correspondence is $J_{ij}=-w_{ij}/2$ and $h_j=0$: the total weight of
-edges crossing the cut is an antiferromagnetic Ising interaction energy. Any
+Under the correspondence $J_{ij}=-w_{ij}/2$ and $h_j=0$, the total weight of
+edges crossing the cut becomes an antiferromagnetic Ising interaction energy. Any
 graph optimization objective expressible as pairwise interactions maps to an
 Ising model with no auxiliary variables, making the spectral analysis of
 Chapter~5 directly applicable. Combinatorial objectives and spin Hamiltonians
@@ -403,7 +404,7 @@ competing timescales. Every adiabatic process has an external timescale, set by
 how rapidly conditions change, and an internal timescale, set by how rapidly
 the system can respond. Adiabaticity holds when external change is slow
 relative to internal response. In thermodynamics, the internal timescale is the
-relaxation time to local equilibrium: compress a gas slowly enough and it
+relaxation time to local equilibrium. If a gas is compressed slowly enough, it
 remains in equilibrium throughout. In quantum mechanics, the internal timescale
 is the inverse spectral gap. There is no absolute meaning of ``slow.'' Slow is
 always slow compared to something.
@@ -418,8 +419,8 @@ Hamiltonian changes too rapidly, the state develops overlap with other
 eigenstates and the system has made a transition \cite{BornFock1928, Kato1950}.
 In the context of an algorithm, this transition is a failure.
 
-Why does the gap control transitions? The physical mechanism comes from
-first-order time-dependent perturbation theory. When the Hamiltonian changes,
+The mechanism is visible in first-order time-dependent perturbation theory.
+When the Hamiltonian changes,
 the amplitude for transitioning from the instantaneous ground state
 $\ket{e_0(t)}$ to an excited state $\ket{e_n(t)}$ acquires a factor
 \begin{equation}
@@ -430,8 +431,8 @@ The energy denominator tells the story. Transitions to nearby energy levels are
 enhanced while transitions to distant levels are suppressed. The dominant
 leakage channel is the nearest excited state, and the gap
 $g(t)=E_1(t)-E_0(t)$ sets the relevant scale. The inverse gap $1/g(t)$ is the
-internal response timescale: the natural oscillation period between the two
-lowest eigenstates. For the Hamiltonian to change negligibly over this period,
+internal response timescale. It sets the natural oscillation period between
+the two lowest eigenstates. For the Hamiltonian to change negligibly over this period,
 the fractional change per oscillation must be small compared to the gap itself.
 
 This reasoning yields the adiabatic heuristic condition
@@ -463,9 +464,9 @@ where $g_{\min}$ is the minimum gap and $v$ is the effective sweep rate
 \cite{Landau1932, Zener1932}. The formula is exact for an isolated two-level
 system with linear sweep and serves as the leading approximation whenever a
 crossing is traversed at approximately constant speed. A fast sweep through a
-narrow gap gives transition probability close to $1$: the system jumps levels
+narrow gap gives transition probability close to $1$. The system jumps levels
 and the algorithm fails. A slow sweep gives exponentially suppressed transition
-probability: the system tracks the ground state and the algorithm succeeds.
+probability. The system tracks the ground state and the algorithm succeeds.
 
 One caveat belongs here, and it is not minor. For generic families of local
 Hamiltonians, even the ground-energy promise problem is QMA-complete
@@ -509,7 +510,7 @@ For an adiabatic quantum algorithm, the bottleneck is different. The system
 does not hop over barriers. It follows a continuous eigenstate trajectory
 through Hilbert space, and the obstacle is an avoided crossing where the
 spectral gap narrows. At the crossing, the ground state changes character
-rapidly over a small interval of the interpolation parameter: the eigenstate
+rapidly over a small interval of the interpolation parameter. The eigenstate
 that was spread uniformly must concentrate on a small set of computational
 basis states, and the gap measures how abruptly this rearrangement occurs. The
 barrier height that governs classical runtime is replaced by the minimum gap
@@ -519,8 +520,8 @@ structurally analogous but physically distinct, and instances where one is
 severe while the other is mild do exist \cite{crosson2016simulated}.
 
 Unstructured search calibrates the stakes. Among $N=2^n$ configurations with a
-single marked item, classical query complexity is $\Theta(N)$: essentially no
-shortcut beyond exhaustive evaluation. Quantum query complexity is
+single marked item, classical query complexity is $\Theta(N)$, with
+essentially no shortcut beyond exhaustive evaluation. Quantum query complexity is
 $\Theta(\sqrt{N})$ \cite{Grover1996, bennett1997strengths}. This quadratic gap
 is the benchmark. The question is not whether quantum methods outperform all
 classical heuristics on all instances, but whether they achieve better
@@ -537,7 +538,7 @@ dynamics and as optimization objective, and the diagonal Hamiltonian $H_z$
 encodes any combinatorial cost function exactly. The complexity classes P, NP,
 and $\#\mathrm{P}$ measure the difficulty of deciding, verifying, and counting,
 and the spectral parameters that control adiabatic runtime live in the counting
-regime. The spectral gap is the bottleneck parameter: it sets the internal
+regime. The spectral gap is the bottleneck parameter. It sets the internal
 timescale of the quantum system and determines, through
 condition~\eqref{eq:ch2-adiabatic-heuristic}, how long the algorithm must run.
 

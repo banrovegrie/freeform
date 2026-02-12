@@ -34,69 +34,18 @@ The chapters should be written in this order:
 
 ## On Writing
 
-One must imagine the writer at work. The cycle is always the same: study, think, act, reflect, begin again. There are no shortcuts. To do something new, one must know the old intimately, and then be willing to betray it.
+What makes a thesis worth reading, as opposed to merely correct, is that the reader finishes each chapter able to do something they could not do before. Not just knowing a new fact, but seeing how it connects, what it controls, where it breaks. That is the test. After every section, ask: what can the reader now predict, construct, or critique? If the answer is nothing new, the section fails regardless of how polished the prose.
 
-Writing is the act that makes the rest visible. A proof in a notebook changes nothing. A proof that others can follow changes the field. Good writing is about holding a conversation with the readers and nourishing them with perspective. The conversation is the questions they actually have. The nourishment is how your answers rearrange what they see.
+The central danger for this thesis is specific: paper-voice leaking into thesis-voice. The published paper was written under page constraints, for an audience that already knew the landscape. The thesis has room to breathe. It should use that room not to pad but to teach. Every argument the paper compresses, the thesis expands until a graduate student new to adiabatic quantum optimization can follow it unaided. If the paper gives more detail on some point than the thesis does, something has gone wrong.
 
-A thesis is not a diary of labor. It is an experience designed to end in understanding. When it works, the reader finishes able to predict what happens when parameters shift, what breaks when assumptions weaken, where the real obstacles hide. This is the only honest measure: not what the writer did, but what the reader can now do.
+The hardest skill in mathematical exposition is making the reader want each definition before it arrives. Build the tension first. What are you trying to say, and why does current language fail? Only then introduce the new concept, and use it immediately. The same pattern holds at every scale: before a theorem, say plainly what it will mean and what it will enable. After a proof, say what you actually used, which hypotheses bore weight, which were along for the ride. Do not leave a proof and move on. A proof that is merely correct teaches less than one that reveals its own structure.
 
-Every thesis needs a spine --- a few questions that determine the order of everything else. Without this, you default to chronology or taxonomy: locally readable, globally dead. The difference between a thesis and a stack of results is the spine.
+None of this means softening the mathematics. Accessibility and rigor are not in tension; a vague claim is harder to learn from than a precise one. State results with explicit bounds, named assumptions, and honest scope. Never replace a precise term with an approximate one for readability, never narrow a claim to avoid explaining a subtlety, never omit the sentence that says why a result matters. If a bound has a parameter dependence, show it. If a theorem requires a hypothesis that might surprise, say so upfront.
 
-Before writing anything, write one page. Name the tension: what you want to prove and what obstructs you. State what is fixed and what you control. State the main results with explicit hypotheses. Say what changes because they hold. One sentence per chapter, naming its question. If you cannot write this page, the thesis does not exist yet. Writing the page forces the decision.
+The prose should feel written, not produced. Have a voice: opinions about which results matter, which lemma does the real work, where you got stuck and why. Curious, not arrogant. Vary the rhythm, a short sentence after a long one, a direct claim after a complex argument, room to breathe after a dense proof. Let transitions carry content ("the bound breaks down when the gap closes polynomially, and understanding why requires a different decomposition") rather than navigation ("we now turn to spectral analysis"). State honestly what the thesis does not achieve. Anticipate objections rather than hoping no one notices. Own judgments in first person rather than hiding behind passive hedging.
 
-Then say the rules. What you will and will not do. Where you are headed. Readers who see the destination read proofs differently --- they allocate attention, forgive necessary detours, and recognize when you are stalling.
+Do not signal technique. Never write "to provide intuition," just provide it. Never write "we now make a crucial observation," just make it. Do not announce what you are doing. Do it. And do not mistake depth for length: a ten-line motivated derivation beats two lines of compressed algebra when those ten lines are where the insight lives. But a ten-line derivation that could be three is just slow.
 
-Build a skeleton before prose. Each chapter's question. The definitions its claims require. The theorems with hypotheses. The lemmas each theorem needs. Unused background means the story wandered.
+Failures in mathematical writing tend to cluster at section boundaries and around formal statements. Openings go wrong when they start cold with formalism before the reader has any reason to care; every opening must first say why we are here and what question drives this section. Middles go wrong when proofs chain without interpretation, when "it is shown that" and "it can be verified that" pile up until the prose goes lifeless, when "clearly" is used where the claim is neither clear nor easy. Closings go wrong when they stop at the QED with nothing after: every section should land what was established and what question it opens next. Throughout, watch for pronoun fog after displayed equations, notation introduced in bulk before any of it is needed, colons and em dashes doing work that connective thought should do, nominalizations draining every verb, "recall that" where natural re-introduction would do, and bland titles that name a topic without making a claim.
 
-Definitions come from failure. You try to state your goal and find the language insufficient. You introduce the smallest concept that clears the obstruction. Use it immediately. A definition that sits unused for pages arrived too early.
-
-Exposition needs two passes. First explain plainly: what the statement means, what the parameters control, what the theorem lets you do that you could not do before. Then state and prove. The plain pass cannot be vague. Readers should be able to predict the scaling before seeing algebra.
-
-A proof is not scratchwork but a guided path. State the strategy upfront. Decompose into lemmas matching logical moves, not algebraic accidents. Mark where the key inequalities enter. After proving, say what you actually used. Readers learn structure by seeing which assumptions bear weight.
-
-Clarity is correctness. Ambiguous prose plants false theorems in the reader's mind. Short sentences. Write for intelligence that is not inside your head. A paragraph requiring rereading is not deep; it is unfinished. Rewriting is thinking.
-
-Revise in passes. Structure: align the order of sections with the order of dependencies. Clarity: each paragraph advances the argument. Precision: replace vague words with explicit conditions. Style: cut scaffolding. If a sentence does no work, delete it.
-
-Write out of order. Begin where you are surest. Introduction last. Written early, it promises what later chapters may not deliver.
-
-Sometimes the spine does not hold. The proof stays broken. The theorem you wanted is false. This is not failure of effort but discovery of terrain. Document what you learned. The thesis that honestly maps a dead end serves the field better than the thesis that pretends the path was always clear.
-
-Agents generate fast and err without grounding. They simulate understanding without possessing it. Asking for pages and hoping they are true is the fastest way to destroy a thesis. Give them artifacts: the one-page story, a theorem skeleton, claims paired with proofs. Feed sources and demand lifted statements, not invention. Require explicit assumptions, named failure modes, forward references. Reject "it is known" without pointers. You may outsource production. You cannot outsource judgment.
-
-The only question that matters is what the reader can do afterward that they could not do before. When you doubt a section, ask this. If the answer is nothing, delete it. What remains after the cutting is the work. The cycle begins again.
-
-### Summary
-
-The writing should:
-
-- Read as though written by someone who spent months inside the problem — with opinions about which results matter, who knows where they got stuck, which lemma is the real engine and which theorem is packaging
-- Make an argument, not catalog results — the chapter title is the claim, each experiment is evidence in that argument, and the reader should feel the thread connecting them
-- Be specific and concrete — state exact bounds, name techniques, give scalings. A person who did the work knows the numbers
-- Build intuition before formalism: the concrete example that makes the reader want the abstraction, then the abstraction as relief not overhead
-- Separate the intuitive story from full technical detail when both are needed, and be explicit about which you're doing
-- Slow down where the actual insight lives and compress routine verification — taste is knowing which is which
-- Make definitions and proofs illuminate, not just verify — why this is the right definition, what goes wrong otherwise, what the proof teaches beyond the truth of the statement
-- State what it doesn't achieve as clearly as what it does — gaps, limitations, failed approaches presented with the same care as results
-- Anticipate objections head-on ("there is a catch, though") rather than hoping the reader won't notice
-- Carry content in transitions: what changed, what we now know, what question that opens
-- Distinguish contributions from tools — say plainly when using a known technique, slow down when doing something new with it
-- Own editorial judgments in first person ("in our view," "as we see it") — the alternative is passive hedging where no one seems responsible for the claims
-- Treat notation as interface design: consistent across chapters, never introduced for single use
-- Say each thing once, well — not restated across introduction, body, and conclusion in three slightly different phrasings
-- Vary the rhythm — short sentence after long, direct claim after complex argument, informal aside after formal passage
-- Let negative results in when they sharpen understanding of why the approach that works is the right one
-- Let moments of genuine surprise land — sparingly, without decoration, only when warranted
-
-The writing should NOT have:
-
-- Structure failures: no coherent narrative arc, premature formalism, uniform template and pacing regardless of the material, equal weight given to everything when some results are harder and some contributions more significant
-- Rigor failures: hand-waving past the hard parts, appearing complete while eliding the most interesting pieces, shallow or circular motivation ("X is important because X is widely studied"), over-attribution to convention, vague claims hedged into vapor where a clean claim with stated conditions would serve
-- Voice failures: signaling rather than showing, narrating its own rhetorical moves ("we now make a crucial observation"), hedging filler where insight should be ("it is worth noting"), treating a surprising result and a routine calculation at identical emotional temperature, sycophantic citation language ("the seminal work of") — just state the result and cite it, symmetric treatment of related work where every citation gets the same template
-- Taste failures: throat-clearing openings that could appear in any thesis on the topic, redundant previews of what's two paragraphs away (chapter-level orientation is fine — section-level "we will now show" is not), generic transitions carrying no content, notation introduced once and never reused, rhythmic monotony — uniform sentence structure, paragraph length, and register — that reads as generated rather than written
-
-The standard is simple: correctness, completeness, and depth that remains accessible. No hallucinated mathematics, no hedged claims standing in for real ones, no cheap prose: the kind that signals effort without containing any. The reader should finish each chapter able to do something they could not do before.
-
-Any piece of writing (irrespective of origin or whether it is generated) can be good writing if and only if it holds a conversation with the reader and leaves them nourished with perspective, not just information.
-
-What survives revision against that test is the thesis we intend to write.
+On agents: they produce fast and hallucinate invisibly, especially in notation and mathematical detail. Feed them source material and demand lifted statements, not invention. Require explicit assumptions, named failure modes, and citations for every "it is known." You may outsource production. You cannot outsource judgment.

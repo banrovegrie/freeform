@@ -14,7 +14,7 @@ The adiabatic algorithm works. Chapter~7 proves it reaches the Grover speedup $\
 
 The discrepancy between these two facts is the subject of this chapter. The adiabatic approach to unstructured search pays an information cost that the circuit approach does not. That cost turns out to have precise mathematical structure. An uninformed fixed schedule loses a factor of $\Omega(2^{n/2})$ in runtime. Each additional bit of $A_1$ knowledge halves the penalty, with no abrupt phase transition. Quantum measurement during evolution recovers the full speedup with $\Theta(n)$ binary probes. No instance-independent modification within the rank-one framework can eliminate the spectrum dependence. And the hardness of $A_1$ is counting hardness, not optimization hardness, connected to partition functions rather than satisfiability. The information gap is a property of the computational model, not of the computational task.
 
-The same phenomenon may arise whenever a quantum algorithm navigates a parametrized energy landscape: the mechanism itself creates an information requirement absent from the raw problem specification. Variational algorithms need good initial parameters, quantum annealing needs an appropriate cooling schedule, and adiabatic algorithms need the crossing position. In each case, the bottleneck is not the hardness of the underlying problem but the cost of learning where, in parameter space, the algorithm must concentrate its effort. The rank-one unstructured search studied here is the setting where this cost admits exact quantification, and the results are sharp enough to yield a complete taxonomy.
+The same phenomenon may arise whenever a quantum algorithm navigates a parametrized energy landscape. The mechanism itself creates an information requirement absent from the raw problem specification. Variational algorithms need good initial parameters, quantum annealing needs an appropriate cooling schedule, and adiabatic algorithms need the crossing position. In each case, the bottleneck is not the hardness of the underlying problem but the cost of learning where, in parameter space, the algorithm must concentrate its effort. The rank-one unstructured search studied here is the setting where this cost admits exact quantification, and the results are sharp enough to yield a complete taxonomy.
 
 
 \section{The Cost of Ignorance}
@@ -176,7 +176,7 @@ If classical preprocessing runs in polynomial time, NP-hardness forces a gap-uni
 \section{Partial Knowledge and Hedging}
 \label{sec:partial-knowledge}
 
-The separation theorem gives the extremes: perfect knowledge yields $T_{\mathrm{inf}}$, and total ignorance yields $\Omega(2^{n/2}) \cdot T_{\mathrm{inf}}$. But NP-hardness does not mean total ignorance. A polynomial-time heuristic might approximate $A_1$ to some finite precision. A brute-force search over a fraction of the state space might narrow the uncertainty. The natural question is: what is partial knowledge worth? Is there a threshold precision below which the penalty suddenly drops, or does each additional digit buy a proportional improvement?
+The separation theorem gives the extremes. Perfect knowledge yields $T_{\mathrm{inf}}$, and total ignorance yields $\Omega(2^{n/2}) \cdot T_{\mathrm{inf}}$. But NP-hardness does not mean total ignorance. A polynomial-time heuristic might approximate $A_1$ to some finite precision. A brute-force search over a fraction of the state space might narrow the uncertainty. Partial knowledge must interpolate between the extremes, and the shape of that interpolation determines whether classical preprocessing is worth the effort.
 
 Throughout this section, $\varepsilon$ denotes precision in $A_1$ estimation (distinct from the adiabatic target error $\varepsilon$ in Definition~\ref{def:rc-admissible}, which is fixed and absorbed into the implicit constants of Section~\ref{sec:cost-of-ignorance}).
 
@@ -267,7 +267,7 @@ For $\varepsilon < \delta_{A_1}$, the informed schedule gives
 $T=O(T_{\mathrm{inf}})$.
 \end{proof}
 
-The structure is explicit: linear interpolation with a smooth crossover at
+The structure is a linear interpolation with a smooth crossover at
 $\varepsilon \sim \delta_{A_1}$, not a discontinuous phase transition. At
 precision $1/\mathrm{poly}(n)$ (NP-hard to achieve), the overhead is
 $\Theta(2^{n/2}/\mathrm{poly}(n))$, close to the full exponential penalty. At
@@ -427,7 +427,7 @@ fixed-runtime fidelity gain.
 
 The separation and interpolation theorems characterize the cost of ignorance within the fixed-schedule model, where the designer commits to a velocity profile before the evolution begins. But an adiabatic device is a physical system. It can be measured during execution. Measurements yield information about the spectrum, and that information can be used to adjust the schedule on the fly. The question, posed in~\cite{braida2024unstructured}, is whether this adaptive access can close the information gap entirely.
 
-It can. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant geometric speed (CGS) schedule that traverses the eigenstate path at uniform arc length: the velocity $v(s)$ is set so that the instantaneous eigenstate moves at a constant rate in Hilbert space, which automatically slows the schedule near the crossing where the eigenstate changes rapidly. Overlap estimates from quantum Zeno Monte Carlo measurements provide the needed feedback during evolution. Their method improves the runtime scaling from $O(1/\Delta_*^{2})$ to $O(1/\Delta_*^{1})$ and numerically preserves the quadratic speedup without prior spectral knowledge. The binary-search protocol below uses a different mechanism: rather than adapting continuously, it first locates the crossing through discrete branch probes and then runs the informed schedule. In the ideal decision-probe model, it achieves $O(T_{\mathrm{inf}})$.
+It can. Han, Park, and Choi~\cite{HanParkChoi2025} independently proposed a constant geometric speed (CGS) schedule that traverses the eigenstate path at uniform arc length: the velocity $v(s)$ is set so that the instantaneous eigenstate moves at a constant rate in Hilbert space, which automatically slows the schedule near the crossing where the eigenstate changes rapidly. Overlap estimates from quantum Zeno Monte Carlo measurements provide the needed feedback during evolution. Their method improves the runtime scaling from $O(1/\Delta_*^{2})$ to $O(1/\Delta_*^{1})$ and numerically preserves the quadratic speedup without prior spectral knowledge. The binary-search protocol below uses a different mechanism. Rather than adapting continuously, it first locates the crossing through discrete branch probes and then runs the informed schedule. In the ideal decision-probe model, it achieves $O(T_{\mathrm{inf}})$.
 
 The key distinction is between \emph{computing} and \emph{detecting}. Computing $s^*$ from the classical description of $H_z$ is NP-hard. Detecting $s^*$ by probing the quantum system $H(s)$ at selected parameter values can be efficient, because each probe extracts a bit of information about the spectrum at a cost proportional to the inverse gap at the probe point. We model this with a binary decision-probe oracle: a probe at parameter $s$ returns whether $s$ is at or left of the true crossing, and costs $O(1/g(s))$.
 
@@ -588,7 +588,7 @@ The circuit model does not merely avoid computing $A_1$. It is provably blind to
 
 The three models form a hierarchy of spectral information usage. The circuit model is blind to $A_1$ and does not need it. The adaptive adiabatic model acquires $A_1$ through $O(n)$ measurements during execution, paying $O(T_{\mathrm{inf}})$ to do so. The fixed adiabatic model requires $A_1$ as classical input and faces NP-hard recovery. This hierarchy is the operational content of the ``information gap'': the same computational task admits three qualitatively different information profiles depending on the model.
 
-The adaptive protocol's efficiency rests on a structural feature of the rank-one gap profile: the gap grows linearly away from the crossing ($\alpha = 1$), so a probe at distance $d$ costs $O(1/d)$ and the geometric sum converges. But the rank-one case is special. What changes when the gap approaches its minimum more gently?
+The adaptive protocol's efficiency rests on a structural feature of the rank-one gap profile. The gap grows linearly away from the crossing ($\alpha = 1$), so a probe at distance $d$ costs $O(1/d)$ and the geometric sum converges. But the rank-one case is special. Flatter gap profiles widen the danger zone, and the degradation turns out to be continuous rather than binary.
 
 
 \section{Gap Geometry and Schedule Optimality}
@@ -707,7 +707,7 @@ $\infty$ & $3$ & Fails & $\Theta(1/\Delta_*^3)$ \\
 \end{tabular}
 \end{center}
 
-The exponents in the table are specific to the JRS-optimal $p = 3/2$ schedule; other schedule families produce different curves. In particular, the exponent $\gamma = 3$ at $\alpha = \infty$ is not universal: the Roland-Cerf schedule ($p = 2$) gives $T = O(1/\Delta_*^2)$ for flat gaps via a tighter adiabatic condition. The table shows the JRS-optimal scaling as the gap flattens.
+The exponents in the table are specific to the JRS-optimal $p = 3/2$ schedule; other schedule families produce different curves. In particular, the exponent $\gamma = 3$ at $\alpha = \infty$ is not universal. The Roland-Cerf schedule ($p = 2$) gives $T = O(1/\Delta_*^2)$ for flat gaps via a tighter adiabatic condition. The table shows the JRS-optimal scaling as the gap flattens.
 
 The runtime exponent $\gamma = 3 - 2/\alpha$ interpolates continuously from $1$ (V-shaped gap, best case) to $3$ (flat gap, worst case). There is no sharp boundary between ``easy'' and ``hard'' gap profiles, only a gradual degradation as the minimum flattens. For the running example ($M = 2$, $d_0 = 1$, $N = 4$), $\alpha = 1$, and $\gamma = 1$, confirming the optimal $T = \Theta(1/\Delta_*)$ scaling. The formula $\gamma = 3 - 2/\alpha$ also explains why the transition is one-sided: as $\alpha \to \infty$ (perfectly flat gap), $\gamma \to 3$ and the exponent saturates; as $\alpha \to 2/3$ from above, the interval of valid power-law exponents shrinks to zero and the variational framework loses its grip entirely.
 
@@ -732,7 +732,7 @@ $|s-s^*|\gg\delta_s$ the square-root term is $\Theta(|s-s^*|)$ and hence
 $g(s)=\Theta(|s-s^*|)$. This is exactly $\alpha=1$.
 \end{proof}
 
-The linearity is structural: the coupling between the ground and first excited
+The linearity is structural. The coupling between the ground and first excited
 branches is proportional to $|\!\braket{\psi_0}{\phi_1}\!|^2 = d_1/N > 0$, so
 the avoided crossing is simple. A higher-order tangency ($\alpha > 1$) would
 require this coupling to vanish, which cannot happen when $d_1 > 0$.
@@ -892,10 +892,10 @@ Decompose the extended Hilbert space $\mathbb{C}^N \otimes \mathbb{C}^{2^m}$ int
 \end{proof}
 
 \begin{remark}[Gap degradation from ancillas]
-The crossing position is invariant, but the gap of $H_{\mathrm{ext}}(s)$ is strictly smaller than the bare gap: for $d_0 = 1$, the extra eigenvalues at $sE_0$ (from states $\ket{z} \otimes \ket{a}$ with $z \in \Omega_0$, $a \perp \ket{\phi}$) sit between the ground eigenvalue $\lambda_0(s) < sE_0$ and the crossing branch. Uncoupled ancillas make the gap worse, not better.
+The crossing position is invariant, but the gap of $H_{\mathrm{ext}}(s)$ is strictly smaller than the bare gap. For $d_0 = 1$, the extra eigenvalues at $sE_0$ (from states $\ket{z} \otimes \ket{a}$ with $z \in \Omega_0$, $a \perp \ket{\phi}$) sit between the ground eigenvalue $\lambda_0(s) < sE_0$ and the crossing branch. Uncoupled ancillas make the gap worse, not better.
 \end{remark}
 
-Extra qubits by themselves do not move the bottleneck. They add spectators and can even shrink the usable gap, because the ancilla's excited states crowd the spectrum near the crossing. If the hardware cannot help, perhaps the initial state can. The rank-one framework uses the uniform superposition $\ket{\psi_0}$ because it is the natural starting point for unstructured search. But any state $\ket{\psi}$ defines weights $w_k(\psi)$ and hence a crossing position $s^*(\psi)$. Could a different initial state make $s^*$ independent of the spectrum?
+Extra qubits by themselves do not move the bottleneck. They add spectators and can even shrink the usable gap, because the ancilla's excited states crowd the spectrum near the crossing. If the hardware cannot help, perhaps the initial state can. The rank-one framework uses the uniform superposition $\ket{\psi_0}$ because it is the natural starting point for unstructured search. But any state $\ket{\psi}$ defines weights $w_k(\psi)$ and hence a crossing position $s^*(\psi)$. A state whose crossing position does not depend on the spectrum would bypass the barrier entirely.
 
 \begin{theorem}[Universality of uniform superposition]
 \label{thm:universality}
@@ -1084,15 +1084,15 @@ time-independent Hamiltonian
 $H_r = -\ket{\psi_0}\!\bra{\psi_0} + r \cdot H_z$, the resonance condition
 $r = A_1$ depends on the problem spectrum. Since $A_1$ varies across instances
 (\autoref{thm:coupled-ancilla}), no instance-independent choice of $r$ achieves
-resonance universally. The same structural ingredients used above---uniform
+resonance universally. The same structural ingredients used above apply to the oscillation
+parameter $r$ exactly as they apply to the crossing position $s^*$. Uniform
 instance-independent driver weights and secular-equation dependence on spectral
-data---apply to the oscillation parameter $r$ exactly as they apply to the
-crossing position $s^*$. Thus the barrier governs both adiabatic schedules
+data govern both settings. Thus the barrier governs both adiabatic schedules
 (which need $s^* = A_1/(A_1 + 1)$) and non-adiabatic oscillation (which needs
 $r \approx A_1$).
 \end{remark}
 
-A natural approach is Loschmidt-echo measurement. Evolve under $H_r$ and measure return probability $|\!\braket{\psi_0}{e^{-iH_r t}\psi_0}\!|^2$, which oscillates with large amplitude near resonance and stays close to $1$ away from resonance. On two-level families this works cleanly: binary search over $r$ with $O(n)$ probe measurements, each costing $O(1/g_{\min})$, locates $r^*$ with polynomial overhead (details in~\cite{eduardo}). For general multilevel spectra, additional excited-state frequencies can mask the resonance signal. Whether one can efficiently deconvolve this multilevel echo, or replace it with a better observable, remains open.
+A natural approach is Loschmidt-echo measurement. Evolve under $H_r$ and measure return probability $|\!\braket{\psi_0}{e^{-iH_r t}\psi_0}\!|^2$, which oscillates with large amplitude near resonance and stays close to $1$ away from resonance. On two-level families this works cleanly. Binary search over $r$ with $O(n)$ probe measurements, each costing $O(1/g_{\min})$, locates $r^*$ with polynomial overhead (details in~\cite{eduardo}). For general multilevel spectra, additional excited-state frequencies can mask the resonance signal. Whether one can efficiently deconvolve this multilevel echo, or replace it with a better observable, remains open.
 
 The constant-control counterexample applies only to the two-level family $H_z = I - P_0$. Under normalized controls, the barrier reappears.
 
@@ -1108,7 +1108,7 @@ probability $\geq 2/3$ requires $T = \Omega(\sqrt{N/d_0}/\delta)$.
 The oracle-dependent term $g(t)H_z^{(\delta)} = \delta g(t)(I - P_0)$ has instantaneous oracle strength $\delta|g(t)|$. The total oracle action is $\mathcal{A} = \int_0^T \delta|g(t)|\,dt \leq \delta T$. The continuous-time query lower bound for unstructured search with $d_0$ marked items among $N$ gives $\mathcal{A} = \Omega(\sqrt{N/d_0})$~\cite{farhi1998analog}, so $T = \Omega(\sqrt{N/d_0}/\delta)$.
 \end{proof}
 
-For $\delta = N^{-1/2}$, this yields $T = \Omega(N/\sqrt{d_0})$, the same exponential penalty as the fixed-schedule adiabatic model. The barrier reappears whenever controls are normalized. The scope of the obstruction is now precise: it comes from bounded, instance-independent controls on rank-one Hamiltonians. It does not come from continuous-time quantum computation itself, as the constant-control counterexample on two-level families demonstrates. The gap between these statements, general spectra with unbounded controls, remains open.
+For $\delta = N^{-1/2}$, this yields $T = \Omega(N/\sqrt{d_0})$, the same exponential penalty as the fixed-schedule adiabatic model. The barrier reappears whenever controls are normalized. The scope of the obstruction is now precise. It comes from bounded, instance-independent controls on rank-one Hamiltonians. It does not come from continuous-time quantum computation itself, as the constant-control counterexample on two-level families demonstrates. The gap between these statements, general spectra with unbounded controls, remains open.
 
 
 \section{Computational Nature of \texorpdfstring{$A_1$}{A1}}
@@ -1191,7 +1191,7 @@ Write $Z(\beta) - d_0 = \sum_{x : E(x) > 0} e^{-\beta E(x)}$ and compute
 which is nonnegative. Since $E(x) \geq \Delta_{\min}$, we have $e^{-B E(x)} \leq e^{-B\Delta_{\min}}$ and $1/E(x) \leq 1/\Delta_{\min}$, so the sum is at most $N\,e^{-B\Delta_{\min}}(B + 1/\Delta_{\min})$.
 \end{proof}
 
-The tail decays as $Be^{-B\Delta_{\min}}$, so additive error $\eta$ requires $B = \Theta((1/\Delta_{\min})\log(1/\eta))$. At schedule-relevant precision $\eta = 2^{-n/2}$, this forces $B = \Theta(n/\Delta_{\min})$: low-temperature partition functions are unavoidable.
+The tail decays as $Be^{-B\Delta_{\min}}$, so additive error $\eta$ requires $B = \Theta((1/\Delta_{\min})\log(1/\eta))$. At schedule-relevant precision $\eta = 2^{-n/2}$, this forces $B = \Theta(n/\Delta_{\min})$. Low-temperature partition functions are unavoidable.
 
 When $E_0$ and a lower bound $\Delta_{\min}$ are both known, even the simplest estimator suffices at coarse precision.
 
@@ -1200,7 +1200,7 @@ When $E_0$ and a lower bound $\Delta_{\min}$ are both known, even the simplest e
 Define $G(x) = 0$ if $E(x) = E_0$ and $G(x) = 1/(E(x) - E_0)$ otherwise. Then $A_1 = \mathbb{E}_{x \sim \mathrm{Unif}}[G(x)]$ with $0 \leq G(x) \leq 1/\Delta_{\min}$. By Hoeffding's inequality~\cite{hoeffding1963probability}, the empirical mean of $T$ i.i.d.\ uniform samples satisfies $\Pr[|\widehat{A}_1 - A_1| > \eta] \leq \delta$ for $T \geq (1/(2\eta^2\Delta_{\min}^2))\ln(2/\delta)$. In particular, additive inverse-polynomial approximation of $A_1$ is in $\mathrm{BPP}$ under the promise that $E_0$ and $\Delta_{\min}$ are known and inverse-polynomially bounded.
 \end{remark}
 
-This stands in sharp contrast to the NP-hardness of $A_1$ estimation without the $E_0$ promise (\autoref{thm:np-hard-A1}). The promise boundary is the ground energy itself: once the counting problem is partially solved by revealing $E_0$, the remaining estimation is a standard mean-estimation task.
+This stands in sharp contrast to the NP-hardness of $A_1$ estimation without the $E_0$ promise (\autoref{thm:np-hard-A1}). The promise boundary is the ground energy itself. Once the counting problem is partially solved by revealing $E_0$, the remaining estimation is a standard mean-estimation task.
 
 The proxies above reduce $A_1$ to a weighted integral of partition-function values. An approximate partition-function oracle therefore yields an approximate $A_1$.
 
@@ -1229,7 +1229,7 @@ Consider a ferromagnetic Ising model with nonnegative couplings $J_{ij}$ and fie
 Apply \autoref{prop:laplace-proxy} with $B = O(W\log(W/\eta))$ to make the tail at most $\eta/3$. The midpoint-rule quadrature with $K = \Theta(RB^2/\eta)$ points introduces error at most $\eta/3$. At each point, the FPRAS provides multiplicative accuracy $\mu = O(\eta/B)$, contributing at most $2\mu B \leq \eta/3$. The FPRAS runtime per query is $\mathrm{poly}(n, 1/\mu, \log(1/\delta_q))$, and union-bounding over $K + 1$ queries gives overall success probability $1 - \delta$.
 \end{proof}
 
-The tractability does not survive at schedule-relevant precision. At $\eta = \Theta(2^{-n/2})$, the required multiplicative accuracy $\mu = O(2^{-n/2}/B)$ forces FPRAS runtime $\mathrm{poly}(1/\mu) = 2^{\Omega(n)}$, restoring the exponential cost. This is a precision barrier, not a model barrier: the algorithmic machinery works at every precision, but the cost crosses the polynomial-to-exponential boundary exactly at the schedule-relevant scale.
+The tractability does not survive at schedule-relevant precision. At $\eta = \Theta(2^{-n/2})$, the required multiplicative accuracy $\mu = O(2^{-n/2}/B)$ forces FPRAS runtime $\mathrm{poly}(1/\mu) = 2^{\Omega(n)}$, restoring the exponential cost. This is a precision barrier, not a model barrier. The algorithmic machinery works at every precision, but the cost crosses the polynomial-to-exponential boundary exactly at the schedule-relevant scale.
 
 The partition-function chain above handles the generic case. For structured families, stronger results are possible. The most direct positive example is bounded treewidth, where variable elimination computes $A_1$ exactly without any precision limitation.
 
@@ -1258,7 +1258,7 @@ $d_k = \binom{n}{k}$, and energies $E_k = k$. Then
 $A_1 = (1/N)\sum_{k=1}^n \binom{n}{k}/k$ depends only on $n$ and is trivial to
 compute.
 
-The bridge between $A_1$ and $Z$ is one-directional. Tractable $Z$ implies tractable $A_1$, because the integral representations above reduce $A_1$ to a weighted integral of partition-function values. But exact $A_1$ does not determine low-temperature $Z(\beta)$: the single number $A_1$ compresses the entire degeneracy sequence $\{d_k\}$ into one weighted sum, losing the individual terms.
+The bridge between $A_1$ and $Z$ is one-directional. Tractable $Z$ implies tractable $A_1$, because the integral representations above reduce $A_1$ to a weighted integral of partition-function values. But exact $A_1$ does not determine low-temperature $Z(\beta)$. The single number $A_1$ compresses the entire degeneracy sequence $\{d_k\}$ into one weighted sum, losing the individual terms.
 
 \begin{proposition}[Reverse bridge obstruction]
 \label{prop:reverse-bridge}
@@ -1336,7 +1336,7 @@ degeneracies trivialize the problem for the wrong reason (the optimization
 itself becomes easy). Easy optimization can coexist with hard $A_1$ (2-SAT),
 and hard optimization can coexist with easy $A_1$ (Grover with a promise). The
 parameter that controls $A_1$ tractability is the partition-function structure
-of the energy landscape: treewidth of the interaction graph, availability of
+of the energy landscape, specifically treewidth of the interaction graph, availability of
 polynomial-time sampling algorithms, and the algebraic properties of the
 degeneracy sequence. This is a counting-theoretic boundary, not an
 optimization-theoretic one.
@@ -1345,7 +1345,7 @@ optimization-theoretic one.
 \section{Complexity Landscape}
 \label{sec:complexity-landscape}
 
-We now have the full cost structure of ignorance within the adiabatic framework: uninformed schedules pay exponentially, partial knowledge helps linearly, adaptive measurement restores optimality, and the barrier is structural. The remaining question is quantitative: at the algorithmically relevant precision $\varepsilon = 2^{-n/2}$, what are the tight complexity bounds for estimating $A_1$ itself? The answer pins down the information cost of fixed-schedule optimization in both the query model and the computational model.
+We now have the full cost structure of ignorance within the adiabatic framework. Uninformed schedules pay exponentially, partial knowledge helps linearly, adaptive measurement restores optimality, and the barrier is structural. The tight complexity bounds at the algorithmically relevant precision $\varepsilon = 2^{-n/2}$ pin down the information cost of fixed-schedule optimization in both the query model and the computational model.
 
 \begin{theorem}[Tight quantum query complexity at schedule precision]
 \label{thm:tight-quantum}
@@ -1420,7 +1420,7 @@ These bounds assume that $A_1$ is estimated directly. One might hope that polyno
 
 \begin{proposition}[Two-level worst-case reduction]
 \label{prop:structure-irrelevance}
-The two-level family ($M = 2$) is a worst-case subclass for $A_1$ estimation at schedule-relevant precision: any worst-case lower bound for approximate counting on this subclass applies to general $A_1$ estimation.
+The two-level family ($M = 2$) is a worst-case subclass for $A_1$ estimation at schedule-relevant precision. Any worst-case lower bound for approximate counting on this subclass applies to general $A_1$ estimation.
 \end{proposition}
 
 \begin{proof}
@@ -1505,7 +1505,7 @@ Level & Information available & Overhead $T/T_{\mathrm{inf}}$ \\
 \end{tabular}
 \end{center}
 
-\noindent Levels~0 through~3 are monotone within the adiabatic framework: each strictly refines the previous one by adding information about the spectrum. Level~4 is qualitatively different because it reflects a change in computational model rather than additional spectral information, so its inclusion in the hierarchy represents a model comparison rather than a refinement.
+\noindent Levels~0 through~3 are monotone within the adiabatic framework. Each strictly refines the previous one by adding information about the spectrum. Level~4 is qualitatively different because it reflects a change in computational model rather than additional spectral information, so its inclusion in the hierarchy represents a model comparison rather than a refinement.
 
 The adiabatic approach to unstructured search works, reaches Grover scaling, and is optimal within its schedule class. Its information requirements are a structural consequence of the rank-one interpolation path: the crossing position $s^*$ encodes $\Theta(n)$ bits of spectral data, that data is NP-hard to compute classically, and no instance-independent design within the framework can eliminate the dependence. These are not fundamental limits of quantum computation. They are limits of this specific model. The circuit model, which does not traverse an interpolation path, neither needs nor reveals the spectral parameter $A_1$. The adaptive adiabatic model, which does traverse the path but can measure during evolution, acquires the missing information at the Grover scale. The fixed-schedule model, forced to commit before execution, pays for ignorance at a rate of one bit per factor of two in runtime.
 
