@@ -167,7 +167,7 @@ Both theorems have no custom axiom dependencies. Running `#print axioms` on eith
 
 ### The Quantifier Bug-Catch
 
-The formalization of Theorem 4 caught a wrong quantifier ordering in an earlier draft of the paper. The original claim had the form "for all instances, there exist parameters such that ..." which is trivially true (just pick parameters matching each instance individually). The correct claim is "for all parameters, there exists an instance such that the parameters fail" -- or equivalently, no fixed parameters work for all instances. Lean's type checker rejected the original quantifier ordering because the proof obligation dissolved into triviality. This is a concrete instance of formalization catching a mathematical error that survived informal review.
+The formalization of Theorem 4 caught a wrong quantifier ordering in an earlier draft of the paper. The original claim had the form "for all instances, there exist parameters such that ..." which is trivially true (just pick parameters matching each instance individually). The correct claim is "for all parameters, there exists an instance such that the parameters fail" (equivalently, no fixed parameters work for all instances). Lean's type checker rejected the original quantifier ordering because the proof obligation dissolved into triviality. This is a concrete instance of formalization catching a mathematical error that survived informal review.
 
 ## FullSpectralHypothesis
 
@@ -187,14 +187,14 @@ This design choice is deliberate. Carrying the gap bound as a hypothesis rather 
 
 | Item | Paper Reference | Status |
 |------|----------------|--------|
-| H(s) = -(1-s)\|psi_0><psi_0\| + s H_z | Eq. 1 | EXACT |
-| A_p = (1/N) sum d_k/(E_k-E_0)^p | Eq. 5 | EXACT |
-| s* = A_1/(A_1+1) | Eq. 6 | EXACT |
-| delta_s = 2/(A_1+1)^2 sqrt(d_0 A_2/N) | Eq. 7 | EXACT |
-| g_min = (1-2eta) * 2A1/(A1+1) * sqrt(d0/(A2*N)) | Eq. 311 (eta=0.1) | EXACT |
+| $H(s) = -(1-s)\lvert\psi_0\rangle\langle\psi_0\rvert + s H_z$ | Eq. 1 | EXACT |
+| $A_p = (1/N) \sum d_k/(E_k-E_0)^p$ | Eq. 5 | EXACT |
+| $s^* = A_1/(A_1+1)$ | Eq. 6 | EXACT |
+| $\delta_s = 2/(A_1+1)^2 \sqrt{d_0 A_2/N}$ | Eq. 7 | EXACT |
+| $g_{\min} = (1-2\eta) \cdot 2A_1/(A_1+1) \cdot \sqrt{d_0/(A_2 N)}$ | Eq. 311 ($\eta=0.1$) | EXACT |
 | EigenStructure | Definition 1 | EXACT |
 | Gap region formulas | Eqs. 317, 347 | EXACT |
-| Extraction: d_k = N*P(-2Delta_k)/prod(Delta_l-Delta_k) | Line 912 | EXACT |
+| Extraction: $d_k = N P(-2\Delta_k)/\prod(\Delta_l-\Delta_k)$ | Line 912 | EXACT |
 | mainResult1 statement | Theorem 1 | EXACT |
 | mainResult2 (two-query protocol) | Theorem 2 | GENUINE |
 | mainResult3 extraction | Theorem 3 | GENUINE |
@@ -205,7 +205,7 @@ The `Test/Verify.lean` file contains definitional equality tests (`rfl` proofs) 
 
 The axioms exist because certain mathematical infrastructure lies outside Lean 4/Mathlib.
 
-**Quantum dynamics.** The Schrodinger equation `i/T * d|psi>/ds = H(s)|psi>` is an operator-valued PDE. Lean/Mathlib has no framework for time-dependent operator differential equations. Six of the fifteen axioms (the quantum physics group) stem from this limitation.
+**Quantum dynamics.** The Schrodinger equation $i/T \cdot d|\psi\rangle/ds = H(s)|\psi\rangle$ is an operator-valued PDE. Lean/Mathlib has no framework for time-dependent operator differential equations. Six of the fifteen axioms (the quantum physics group) stem from this limitation.
 
 **Polynomial-time computation.** Lean can express that a function exists, but the predicate "runs in polynomial time" requires a computational model (Turing machines or circuits). The `IsPolynomialTime` axiom and the three complexity results that depend on it exist because Lean/Mathlib lacks a formalized complexity theory library.
 

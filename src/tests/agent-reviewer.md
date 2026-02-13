@@ -154,7 +154,7 @@ The core of the thesis: explaining the published paper deeply.
 
 **Compare against paper:**
 - Line-by-line verification of key formulas
-- All constants correct (A_1, A_2, Delta, g_min, s^*, delta_s)
+- All constants correct ($A_1$, $A_2$, $\Delta$, $g_{\min}$, $s^*$, $\delta_s$)
 - All conditions stated
 - Bounds not simplified without justification
 
@@ -188,18 +188,18 @@ Original contributions beyond the paper.
 
 | Check | Description | Severity |
 |-------|-------------|----------|
-| `spectral_parameters` | A_p defined and used correctly per paper | critical |
-| `gap_bounds` | g_min, s^*, delta_s formulas match paper exactly | critical |
+| `spectral_parameters` | $A_p$ defined and used correctly per paper | critical |
+| `gap_bounds` | $g_{\min}$, $s^*$, $\delta_s$ formulas match paper exactly | critical |
 | `complexity_claims` | NP/#P hardness claims match paper conditions | critical |
 | `adiabatic_theorem` | Runtime bounds stated with all conditions | critical |
-| `approximation_errors` | Error terms (varepsilon) properly bounded | significant |
-| `hamiltonian_definitions` | H_0, H_z, H(s) match paper conventions | significant |
+| `approximation_errors` | Error terms ($\varepsilon$) properly bounded | significant |
+| `hamiltonian_definitions` | $H_0$, $H_z$, $H(s)$ match paper conventions | significant |
 
 ### Algorithmic Work
 
 | Check | Description | Severity |
 |-------|-------------|----------|
-| `schedule_analysis` | Schedule function K(s) derivation correct | critical |
+| `schedule_analysis` | Schedule function $K(s)$ derivation correct | critical |
 | `resource_bounds` | Query complexity, time complexity stated | significant |
 | `optimality_claims` | Lower bounds properly established | critical |
 
@@ -393,12 +393,12 @@ On revision:
 ### Key Results to Verify
 
 From the paper:
-- Runtime: T = O((1/varepsilon) * (sqrt(A_2)/(A_1^2 * Delta^2)) * sqrt(N/d_0))
-- Gap: g_min = (2*A_1/(A_1+1)) * sqrt(d_0/(A_2*N))
-- Position: s^* = A_1/(A_1+1)
-- Width: delta_s = (2/(A_1+1)^2) * sqrt(d_0*A_2/N)
-- NP-hardness: precision varepsilon < 1/(72(n-1))
-- #P-hardness: O(poly(n)) exact queries
+- Runtime: $T = O((1/\varepsilon) \cdot (\sqrt{A_2}/(A_1^2 \Delta^2)) \cdot \sqrt{N/d_0})$
+- Gap: $g_{\min} = (2A_1/(A_1+1)) \cdot \sqrt{d_0/(A_2 N)}$
+- Position: $s^* = A_1/(A_1+1)$
+- Width: $\delta_s = (2/(A_1+1)^2) \cdot \sqrt{d_0 A_2/N}$
+- NP-hardness: precision $\varepsilon < 1/(72(n-1))$
+- #P-hardness: $O(\text{poly}(n))$ exact queries
 
 ## Usage
 
