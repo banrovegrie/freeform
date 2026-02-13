@@ -72,7 +72,7 @@ with $\Theta(n)$ measurements.
 **Phase 2: Execution** ($O(T_{\text{inf}})$ time)
 1. Use knowledge of $s^*$ to construct informed schedule
 2. Evolve carefully, slow only near $[s^* - \Delta_*, s^* + \Delta_*]$
-3. Achieve fidelity $1 - \epsilon$ in time $O(T_{\text{inf}})$
+3. Achieve fidelity $1 - \varepsilon$ in time $O(T_{\text{inf}})$
 
 **Key Insight**: Phase estimation can distinguish ground from excited state with
 cost $O(1/\Delta(s))$. Summing over binary search iterations gives total $O(T_{\text{inf}})$.
@@ -89,7 +89,7 @@ cost $O(1/\Delta(s))$. Summing over binary search iterations gives total $O(T_{\
    This means measurements far from $s^*$ are cheap.
 
 3. **Dyadic Structure**: Binary search midpoints form a dyadic grid. For any $s^*$,
-   only $O(1)$ midpoints are within distance $\epsilon$ for each scale $\epsilon$.
+   only $O(1)$ midpoints are within distance $\varepsilon$ for each scale $\varepsilon$.
 
 4. **Geometric Sum**: Total phase estimation cost is $\sum_j O(2^j) = O(2^{n/2})$,
    where $j$ indexes the distance scale.

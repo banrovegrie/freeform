@@ -4,9 +4,9 @@
 
 ### 1. Higher-rank investigation (Gap 1)
 - [x] Derive the rank-k secular determinant
-  - Target: \(\det(I_k - (1-s)U^\dagger(sH_z-\lambda I)^{-1}U)=0\).
-- [x] Specialize to rank-2 projector \(P = |\psi_0\rangle\langle\psi_0| + |\phi\rangle\langle\phi|\)
-  - Target: explicit 2x2 reduced equation and crossing proxy at \(\lambda=sE_0\).
+  - Target: $\det(I_k - (1-s)U^\dagger(sH_z-\lambda I)^{-1}U)=0$.
+- [x] Specialize to rank-2 projector $P = |\psi_0\rangle\langle\psi_0| + |\phi\rangle\langle\phi|$
+  - Target: explicit 2x2 reduced equation and crossing proxy at $\lambda=sE_0$.
 - [x] Resolve outcome honestly
   - Outcome obtained: negative result on fixed-degeneracy two-level families.
   - New result in `proof.md`: Proposition 6.
@@ -72,7 +72,7 @@
     - `README.md` (build + axiom boundary)
     - `lakefile.lean`, `lean-toolchain`
   - Lean build status: `lake build` succeeds.
-  - Reduced one avoidable Lean axiom: uncoupled crossing injectivity is now proved in `NoGo.lean` for the physical regime \(A_1>0\).
+  - Reduced one avoidable Lean axiom: uncoupled crossing injectivity is now proved in `NoGo.lean` for the physical regime $A_1>0$.
   - Removed the previous Theorem 2 axiom by proving the theorem-2 core in `Universality.lean` (singleton-assignment permutation form).
   - Added Lean proofs for Proposition 6A algebraic core in `RankKTwoLevel.lean` (branch rewrite and non-constancy in Delta).
   - Added Lean proofs for Proposition 6 algebraic scaling core in `Rank2TwoLevel.lean` (reduced/normalized equivalence and root scaling form).
@@ -88,40 +88,40 @@
   - Executed deep randomized stress verification for Proposition 6A (1296 random cases): all checks pass.
   - Hardened deep residual checks with scale-normalized metrics (rank-2 and rank-k reduced equations) to remove ill-conditioning artifacts from raw polynomial/determinant magnitudes.
   - Added a post-deep robustness sweep across seeds `1,2,3,4,5,11,13,17,19,23` for both Proposition 6 and 6A stress tests: all passes.
-  - Added explicit branchwise checks of the closed-form identity \(s=A_1/(A_1+\kappa(N-d_0)/N)\) in both Proposition 6 and Proposition 6A verification (standard and deep modes): all passes.
+  - Added explicit branchwise checks of the closed-form identity $s=A_1/(A_1+\kappa(N-d_0)/N)$ in both Proposition 6 and Proposition 6A verification (standard and deep modes): all passes.
 
 ## Findings
 
 ### A. Higher-rank result (new)
 - Rank-k case is governed by a matrix secular condition, not a scalar one.
-- For rank-2, the reduced crossing proxy is a quadratic in \(x=(1-s)/s\):
+- For rank-2, the reduced crossing proxy is a quadratic in $x=(1-s)/s$:
   \[
   1 - x(A_1+B_1) + x^2(A_1B_1-|C_1|^2)=0.
   \]
-- On two-level family \((E_0=0, E_1=\Delta, 1 \le d_0 < N)\), each positive root has form \(x(\Delta)=\kappa\Delta\), so
+- On two-level family $(E_0=0, E_1=\Delta, 1 \le d_0 < N)$, each positive root has form $x(\Delta)=\kappa\Delta$, so
   \[
   s(\Delta)=\frac{1}{1+\kappa\Delta}=
   \frac{A_1}{A_1+\kappa\frac{N-d_0}{N}}.
   \]
   Therefore crossing remains spectrum-dependent for fixed instance-independent rank-2 projectors.
-- Rank-k extension (Proposition 6A): with \(B=U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}\), reduced roots satisfy
+- Rank-k extension (Proposition 6A): with $B=U_{\mathrm{exc}}^\dagger U_{\mathrm{exc}}$, reduced roots satisfy
   \[
   \det(I_k - xB/\Delta)=0,\quad x_i(\Delta)=\Delta/\mu_i,\ \mu_i>0.
   \]
-  So every excited-support branch depends nontrivially on \(\Delta\) and \(A_1\).
-- Commuting multilevel extension (Proposition 6B): with commuting excited blocks \(B_\ell\),
+  So every excited-support branch depends nontrivially on $\Delta$ and $A_1$.
+- Commuting multilevel extension (Proposition 6B): with commuting excited blocks $B_\ell$,
   \[
   \det\!\Big(I_k - x\sum_{\ell\ge 1}(E_\ell-E_0)^{-1}B_\ell\Big)=0
   \]
   decouples branchwise after simultaneous diagonalization, and any branch with support on a varied level stays spectrum-dependent.
-- General noncommuting extension (Proposition 6C): if a varied level has nonzero trace weight, \(\mathrm{tr}(A)\) drifts strictly with that gap, so the full positive-root multiset cannot stay invariant.
-- Remaining open multilevel obstruction now narrowed to branch-level decoupling for non-commuting \(B_\ell\).
+- General noncommuting extension (Proposition 6C): if a varied level has nonzero trace weight, $\mathrm{tr}(A)$ drifts strictly with that gap, so the full positive-root multiset cannot stay invariant.
+- Remaining open multilevel obstruction now narrowed to branch-level decoupling for non-commuting $B_\ell$.
 
 ### B. Circumvention landscape (new synthesis)
 - CAN circumvent:
   - circuit model (Exp 10, Theorem 2),
   - adaptive measurement (Exp 05, Theorem 1),
-  - quantum pre-estimation of \(A_1\) (Exp 13, Theorem 2),
+  - quantum pre-estimation of $A_1$ (Exp 13, Theorem 2),
   - structured tractability regimes (Exp 08, Propositions 8/9/13).
 - CANNOT circumvent inside fixed instance-independent Hamiltonian engineering:
   - product ancillas, non-uniform fixed initial states, fixed couplings, multi-segment rank-one paths, full rank-one class (Theorems 1-5), rank-2 on fixed-degeneracy two-level families (Proposition 6), rank-k excited-support branches on fixed-degeneracy two-level families (Proposition 6A), and commuting multilevel block families with varied supported levels (Proposition 6B).
@@ -153,6 +153,6 @@
 ### E. Residual formalization gap (for full operator-level certainty)
 - Not yet formalized in Lean at full Hilbert-space/operator level:
   - tensor-product subspace decomposition proof of Theorem 1,
-  - large-\(\Delta\) coupled-ancilla asymptotic proof of Theorem 3,
+  - large-$\Delta$ coupled-ancilla asymptotic proof of Theorem 3,
   - full multi-segment operator-level reduction for Theorem 4.
 - Current package proves algebraic/model-level cores with zero axioms; full physics-level mechanization remains future work.

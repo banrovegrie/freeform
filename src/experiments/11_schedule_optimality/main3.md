@@ -16,7 +16,7 @@ In `proof3.md` we analyze the schedule class
 $$
 \frac{ds}{dt}
 =
-\frac{\epsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},
+\frac{\varepsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},
 \quad \Phi(g)\ge 1,
 $$
 

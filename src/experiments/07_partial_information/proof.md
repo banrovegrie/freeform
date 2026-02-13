@@ -8,10 +8,10 @@ This extends the gap-uninformed separation theorem (experiment 04) to the case o
 We inherit definitions from experiment 04. Additionally:
 
 **Definition ($A_1$ Precision).**
-An algorithm has $A_1$ precision $\epsilon$ if it has access to an estimate $A_{1,\text{est}}$ satisfying $|A_{1,\text{est}} - A_1| \leq \epsilon$.
+An algorithm has $A_1$ precision $\varepsilon$ if it has access to an estimate $A_{1,\text{est}}$ satisfying $|A_{1,\text{est}} - A_1| \leq \varepsilon$.
 
 **Definition (Crossing Position Uncertainty).**
-Given $A_1$ precision $\epsilon$, the uncertainty in the crossing position $s^* = A_1/(A_1+1)$ is:
+Given $A_1$ precision $\varepsilon$, the uncertainty in the crossing position $s^* = A_1/(A_1+1)$ is:
 $$\delta_{s^*} := |s^*_{\text{est}} - s^*| \quad \text{where} \quad s^*_{\text{est}} = A_{1,\text{est}}/(A_{1,\text{est}} + 1)$$
 
 **Definition (Crossing Width).**
@@ -28,11 +28,11 @@ This is $\Theta(2^{-n/2})$ for unstructured search.
 ## Part I: Precision Propagation
 
 **Lemma 1 ($A_1$ to $s^*$ Precision).**
-If $|A_{1,\text{est}} - A_1| \leq \epsilon$, then:
-$$|s^*_{\text{est}} - s^*| \leq \frac{\epsilon}{(A_1 + 1)^2} \cdot (1 + O(\epsilon/A_1))$$
+If $|A_{1,\text{est}} - A_1| \leq \varepsilon$, then:
+$$|s^*_{\text{est}} - s^*| \leq \frac{\varepsilon}{(A_1 + 1)^2} \cdot (1 + O(\varepsilon/A_1))$$
 
-For $\epsilon \ll A_1$, this simplifies to:
-$$|s^*_{\text{est}} - s^*| \leq \frac{\epsilon}{(A_1 + 1)^2}$$
+For $\varepsilon \ll A_1$, this simplifies to:
+$$|s^*_{\text{est}} - s^*| \leq \frac{\varepsilon}{(A_1 + 1)^2}$$
 
 *Proof.*
 The function $f(x) = x/(x+1)$ has derivative $f'(x) = 1/(x+1)^2$.
@@ -40,33 +40,33 @@ The function $f(x) = x/(x+1)$ has derivative $f'(x) = 1/(x+1)^2$.
 By the mean value theorem, there exists $\xi$ between $A_1$ and $A_{1,\text{est}}$ such that:
 $$|s^* - s^*_{\text{est}}| = |f(A_1) - f(A_{1,\text{est}})| = |f'(\xi)| \cdot |A_1 - A_{1,\text{est}}|$$
 
-Since $|A_{1,\text{est}} - A_1| \leq \epsilon$, we have $\xi \in [A_1 - \epsilon, A_1 + \epsilon]$.
+Since $|A_{1,\text{est}} - A_1| \leq \varepsilon$, we have $\xi \in [A_1 - \varepsilon, A_1 + \varepsilon]$.
 
-For the upper bound, we need the maximum of $|f'(\xi)| = 1/(\xi+1)^2$ over this interval. Since $f'$ is decreasing for $\xi > 0$, the maximum occurs at $\xi = A_1 - \epsilon$:
-$$|f'(\xi)| \leq \frac{1}{(A_1 - \epsilon + 1)^2} = \frac{1}{(A_1 + 1)^2} \cdot \frac{1}{(1 - \epsilon/(A_1+1))^2} = \frac{1}{(A_1 + 1)^2} \cdot (1 + O(\epsilon/A_1))$$
+For the upper bound, we need the maximum of $|f'(\xi)| = 1/(\xi+1)^2$ over this interval. Since $f'$ is decreasing for $\xi > 0$, the maximum occurs at $\xi = A_1 - \varepsilon$:
+$$|f'(\xi)| \leq \frac{1}{(A_1 - \varepsilon + 1)^2} = \frac{1}{(A_1 + 1)^2} \cdot \frac{1}{(1 - \varepsilon/(A_1+1))^2} = \frac{1}{(A_1 + 1)^2} \cdot (1 + O(\varepsilon/A_1))$$
 
 Therefore:
-$$|s^*_{\text{est}} - s^*| \leq \frac{\epsilon}{(A_1 + 1)^2} \cdot (1 + O(\epsilon/A_1))$$
+$$|s^*_{\text{est}} - s^*| \leq \frac{\varepsilon}{(A_1 + 1)^2} \cdot (1 + O(\varepsilon/A_1))$$
 
-For $\epsilon \ll A_1$ (which holds for any useful precision since $A_1 = \Theta(1)$):
-$$|s^*_{\text{est}} - s^*| \leq \frac{\epsilon}{(A_1 + 1)^2}$$
+For $\varepsilon \ll A_1$ (which holds for any useful precision since $A_1 = \Theta(1)$):
+$$|s^*_{\text{est}} - s^*| \leq \frac{\varepsilon}{(A_1 + 1)^2}$$
 QED.
 
 
 ## Part II: The Effective Gap Class
 
-**Definition ($\epsilon$-Informed Gap Class).**
-Given estimate $A_{1,\text{est}}$ with precision $\epsilon$, define the uncertainty interval:
-$$s_L(\epsilon) = s^*_{\text{est}} - \frac{\epsilon}{(A_{1,\text{est}} + 1)^2}, \quad s_R(\epsilon) = s^*_{\text{est}} + \frac{\epsilon}{(A_{1,\text{est}} + 1)^2}$$
+**Definition ($\varepsilon$-Informed Gap Class).**
+Given estimate $A_{1,\text{est}}$ with precision $\varepsilon$, define the uncertainty interval:
+$$s_L(\varepsilon) = s^*_{\text{est}} - \frac{\varepsilon}{(A_{1,\text{est}} + 1)^2}, \quad s_R(\varepsilon) = s^*_{\text{est}} + \frac{\varepsilon}{(A_{1,\text{est}} + 1)^2}$$
 
-The $\epsilon$-informed gap class is:
-$$\mathcal{G}_\epsilon := \mathcal{G}(s_L(\epsilon), s_R(\epsilon), \Delta_*)$$
+The $\varepsilon$-informed gap class is:
+$$\mathcal{G}_\varepsilon := \mathcal{G}(s_L(\varepsilon), s_R(\varepsilon), \Delta_*)$$
 
-By Lemma 1, the true crossing position $s^*$ lies in $[s_L(\epsilon), s_R(\epsilon)]$.
+By Lemma 1, the true crossing position $s^*$ lies in $[s_L(\varepsilon), s_R(\varepsilon)]$.
 
 **Lemma 2 (Uncertainty Interval Width).**
 The width of the uncertainty interval is:
-$$W(\epsilon) := s_R(\epsilon) - s_L(\epsilon) = \frac{2\epsilon}{(A_1 + 1)^2} \cdot (1 + O(\epsilon/A_1))$$
+$$W(\varepsilon) := s_R(\varepsilon) - s_L(\varepsilon) = \frac{2\varepsilon}{(A_1 + 1)^2} \cdot (1 + O(\varepsilon/A_1))$$
 
 *Proof.* Direct from the definition and Lemma 1. QED.
 
@@ -74,17 +74,17 @@ $$W(\epsilon) := s_R(\epsilon) - s_L(\epsilon) = \frac{2\epsilon}{(A_1 + 1)^2} \
 ## Part III: Lower Bound from Separation Theorem
 
 **Theorem 1 (Partial Information Lower Bound).**
-Any fixed schedule achieving error $\leq \delta$ for all gap functions in $\mathcal{G}_\epsilon$ requires time:
-$$T(\epsilon) \geq \frac{W(\epsilon)}{\sqrt{\delta} \cdot \Delta_*} = \frac{2\epsilon}{(A_1+1)^2 \cdot \sqrt{\delta} \cdot \Delta_*} \cdot (1 + O(\epsilon/A_1))$$
+Any fixed schedule achieving error $\leq \delta$ for all gap functions in $\mathcal{G}_\varepsilon$ requires time:
+$$T(\varepsilon) \geq \frac{W(\varepsilon)}{\sqrt{\delta} \cdot \Delta_*} = \frac{2\varepsilon}{(A_1+1)^2 \cdot \sqrt{\delta} \cdot \Delta_*} \cdot (1 + O(\varepsilon/A_1))$$
 
 *Proof.*
 By Theorem 1 of experiment 04 (the separation theorem), any fixed schedule achieving error $\leq \delta$ for all gap functions in $\mathcal{G}(s_L, s_R, \Delta_*)$ requires:
 $$T \geq \frac{s_R - s_L}{\sqrt{\delta} \cdot \Delta_*}$$
 
-Applying this to $\mathcal{G}_\epsilon$ with interval width $W(\epsilon)$:
-$$T(\epsilon) \geq \frac{W(\epsilon)}{\sqrt{\delta} \cdot \Delta_*}$$
+Applying this to $\mathcal{G}_\varepsilon$ with interval width $W(\varepsilon)$:
+$$T(\varepsilon) \geq \frac{W(\varepsilon)}{\sqrt{\delta} \cdot \Delta_*}$$
 
-Substituting $W(\epsilon)$ from Lemma 2 gives the result. QED.
+Substituting $W(\varepsilon)$ from Lemma 2 gives the result. QED.
 
 
 ## Part IV: Trivial Lower Bound
@@ -106,8 +106,8 @@ This is the informed lower bound $T_{\inf}$ (up to constants). QED.
 ## Part V: The Interpolation Theorem
 
 **Theorem 3 (Interpolation).**
-For $A_1$ precision $\epsilon$, the optimal time satisfies:
-$$T(\epsilon) = \Theta\left(T_{\inf} \cdot \max\left(1, \frac{\epsilon}{\delta_{A_1}}\right)\right)$$
+For $A_1$ precision $\varepsilon$, the optimal time satisfies:
+$$T(\varepsilon) = \Theta\left(T_{\inf} \cdot \max\left(1, \frac{\varepsilon}{\delta_{A_1}}\right)\right)$$
 
 where $\delta_{A_1} = 2\sqrt{d_0 A_2 / N}$ is the required precision.
 
@@ -115,37 +115,37 @@ where $\delta_{A_1} = 2\sqrt{d_0 A_2 / N}$ is the required precision.
 
 **Lower bound:**
 
-Case 1: $\epsilon \geq \delta_{A_1}$.
+Case 1: $\varepsilon \geq \delta_{A_1}$.
 From Theorem 1:
-$$T(\epsilon) \geq \frac{2\epsilon}{(A_1+1)^2 \cdot \sqrt{\delta} \cdot \Delta_*}$$
+$$T(\varepsilon) \geq \frac{2\varepsilon}{(A_1+1)^2 \cdot \sqrt{\delta} \cdot \Delta_*}$$
 
 The informed time is $T_{\inf} = \Theta(\delta_s / (\sqrt{\delta} \cdot \Delta_*))$.
 
 Taking the ratio:
-$$\frac{T(\epsilon)}{T_{\inf}} \geq \Theta\left(\frac{\epsilon}{(A_1+1)^2 \cdot \delta_s}\right)$$
+$$\frac{T(\varepsilon)}{T_{\inf}} \geq \Theta\left(\frac{\varepsilon}{(A_1+1)^2 \cdot \delta_s}\right)$$
 
 Now, $\delta_s = 2\sqrt{d_0 A_2 / N} / (A_1+1)^2$, so:
 $$(A_1+1)^2 \cdot \delta_s = 2\sqrt{d_0 A_2 / N} = \delta_{A_1}$$
 
 Therefore:
-$$\frac{T(\epsilon)}{T_{\inf}} \geq \Theta\left(\frac{\epsilon}{\delta_{A_1}}\right)$$
+$$\frac{T(\varepsilon)}{T_{\inf}} \geq \Theta\left(\frac{\varepsilon}{\delta_{A_1}}\right)$$
 
-Case 2: $\epsilon < \delta_{A_1}$.
-From Theorem 2, $T(\epsilon) \geq T_{\inf}$ regardless of precision.
+Case 2: $\varepsilon < \delta_{A_1}$.
+From Theorem 2, $T(\varepsilon) \geq T_{\inf}$ regardless of precision.
 
-Combining: $T(\epsilon) \geq \Theta(T_{\inf} \cdot \max(1, \epsilon / \delta_{A_1}))$.
+Combining: $T(\varepsilon) \geq \Theta(T_{\inf} \cdot \max(1, \varepsilon / \delta_{A_1}))$.
 
 **Upper bound (achievability):**
 
-For $\epsilon \geq \delta_{A_1}$: A schedule that is uniformly slow (velocity $\sqrt{\delta} \cdot \Delta_*$) over the uncertainty interval $[s_L(\epsilon), s_R(\epsilon)]$ and fast elsewhere achieves:
-$$T = O\left(\frac{W(\epsilon)}{\sqrt{\delta} \cdot \Delta_*}\right) = O\left(T_{\inf} \cdot \frac{\epsilon}{\delta_{A_1}}\right)$$
+For $\varepsilon \geq \delta_{A_1}$: A schedule that is uniformly slow (velocity $\sqrt{\delta} \cdot \Delta_*$) over the uncertainty interval $[s_L(\varepsilon), s_R(\varepsilon)]$ and fast elsewhere achieves:
+$$T = O\left(\frac{W(\varepsilon)}{\sqrt{\delta} \cdot \Delta_*}\right) = O\left(T_{\inf} \cdot \frac{\varepsilon}{\delta_{A_1}}\right)$$
 
-For $\epsilon < \delta_{A_1}$: The optimal informed schedule achieves $T = O(T_{\inf})$.
+For $\varepsilon < \delta_{A_1}$: The optimal informed schedule achieves $T = O(T_{\inf})$.
 
-Combining: $T(\epsilon) \leq O(T_{\inf} \cdot \max(1, \epsilon / \delta_{A_1}))$.
+Combining: $T(\varepsilon) \leq O(T_{\inf} \cdot \max(1, \varepsilon / \delta_{A_1}))$.
 
 **Conclusion:**
-$$T(\epsilon) = \Theta\left(T_{\inf} \cdot \max\left(1, \frac{\epsilon}{\delta_{A_1}}\right)\right)$$
+$$T(\varepsilon) = \Theta\left(T_{\inf} \cdot \max\left(1, \frac{\varepsilon}{\delta_{A_1}}\right)\right)$$
 QED.
 
 
@@ -156,13 +156,13 @@ For $n$-qubit unstructured search with $d_0 = O(1)$, $A_1 = \Theta(1)$, $A_2 = \
 $$\delta_{A_1} = 2\sqrt{d_0 A_2 / N} = \Theta(2^{-n/2})$$
 
 Therefore:
-$$T(\epsilon) = T_{\inf} \cdot \Theta\left(\max\left(1, \epsilon \cdot 2^{n/2}\right)\right)$$
+$$T(\varepsilon) = T_{\inf} \cdot \Theta\left(\max\left(1, \varepsilon \cdot 2^{n/2}\right)\right)$$
 
 *Proof.* Direct substitution of $N = 2^n$ and the constant bounds on $d_0$, $A_1$, $A_2$. QED.
 
 **Explicit values:**
 
-| Precision $\epsilon$ | $T(\epsilon) / T_{\inf}$ |
+| Precision $\varepsilon$ | $T(\varepsilon) / T_{\inf}$ |
 |----------------------|--------------------------|
 | $2^{-n/2}$           | $\Theta(1)$              |
 | $2^{-n/3}$           | $\Theta(2^{n/6})$        |
@@ -175,18 +175,18 @@ $$T(\epsilon) = T_{\inf} \cdot \Theta\left(\max\left(1, \epsilon \cdot 2^{n/2}\r
 ## Summary
 
 **Main Result:**
-$$T(\epsilon) = T_{\inf} \cdot \Theta\left(\max\left(1, \frac{\epsilon}{\delta_{A_1}}\right)\right)$$
+$$T(\varepsilon) = T_{\inf} \cdot \Theta\left(\max\left(1, \frac{\varepsilon}{\delta_{A_1}}\right)\right)$$
 
 where:
 - $T_{\inf}$ = optimal informed time
 - $\delta_{A_1} = \Theta(2^{-n/2})$ = required precision for optimality
-- $\epsilon$ = precision in $A_1$
+- $\varepsilon$ = precision in $A_1$
 
 **Key Properties:**
-1. Linear interpolation in $\epsilon$ (not sqrt, not threshold)
+1. Linear interpolation in $\varepsilon$ (not sqrt, not threshold)
 2. $T \geq T_{\inf}$ always (trivial lower bound)
-3. $T = \Theta(T_{\inf})$ when $\epsilon \leq \delta_{A_1}$ (sufficient precision)
-4. $T = \Theta(T_{\inf} \cdot \epsilon/\delta_{A_1})$ when $\epsilon > \delta_{A_1}$ (insufficient precision)
+3. $T = \Theta(T_{\inf})$ when $\varepsilon \leq \delta_{A_1}$ (sufficient precision)
+4. $T = \Theta(T_{\inf} \cdot \varepsilon/\delta_{A_1})$ when $\varepsilon > \delta_{A_1}$ (insufficient precision)
 
 **Implications:**
 - NP-hardness at precision $1/\text{poly}(n)$ gives $T = \Theta(T_{\inf} \cdot 2^{n/2}/\text{poly}(n))$

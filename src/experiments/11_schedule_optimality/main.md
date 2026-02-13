@@ -34,7 +34,7 @@ Specifically:
 
 **Theorem B (Grover Case).** $C_{\mathrm{Grover}} = 1$ for all $N \geq 2$.
 
-**Theorem C (Runtime Recovery).** Both the paper's $p = 2$ and Guo-An's $p = 3/2$ schedules achieve $T = O(1/(\epsilon \cdot g_{\min})) = O(\sqrt{NA_2/d_0}/\epsilon)$.
+**Theorem C (Runtime Recovery).** Both the paper's $p = 2$ and Guo-An's $p = 3/2$ schedules achieve $T = O(1/(\varepsilon \cdot g_{\min})) = O(\sqrt{NA_2/d_0}/\varepsilon)$.
 
 ### Extensions (Theorems D--H, Proposition I, Remark J)
 
@@ -49,7 +49,7 @@ Specifically:
 **Proposition H (Framework Comparison).** For $\alpha < 1$: RC tighter. For $\alpha = 1$: comparable, JRS constant smaller by factor $c_L$. For $\alpha > 1$: JRS fails.
 
 **Proposition I (Partial Information Schedule Selection).** Importing experiment 07, RC obeys
-$T_{\mathrm{RC}}(\epsilon_{A_1}) = T_{\mathrm{RC},\infty}\cdot\Theta(\max(1,\epsilon_{A_1}/\delta_{A_1}))$ with
+$T_{\mathrm{RC}}(\varepsilon_{A_1}) = T_{\mathrm{RC},\infty}\cdot\Theta(\max(1,\varepsilon_{A_1}/\delta_{A_1}))$ with
 $\delta_{A_1}=2\sqrt{d_0A_2/N}$, while JRS with certified $(C_+,g_-)$ has multiplicative overhead
 $((1+\delta_C/C)^2)/(1-\delta_g/g_{\min})$. RC degrades on the exponentially small
 crossing-localization scale; JRS degrades with relative estimation errors in $(C,g_{\min})$.
@@ -110,7 +110,7 @@ Experiment 06 proved $T = \Theta(1/\Delta_*^{3 - 2/\alpha})$ where $\alpha$ is t
    $\alpha>1$ measure-condition failure yields computational phase changes.
 3. **Resolved for multiplicative penalty class in continuation (`main3.md`, `proof3.md`)**:
    on the alpha=1 model, schedules
-   $ds/dt=(\epsilon_{\mathrm{ad}}/A_H)g(s)^2/\Phi(g(s))$ satisfy
+   $ds/dt=(\varepsilon_{\mathrm{ad}}/A_H)g(s)^2/\Phi(g(s))$ satisfy
    $T_{\Phi}/T_{\mathrm{RC}} \geq \Phi(g_{\min})/[2(1-g_{\min}/c)]$.
    The earlier exponential result from `proof2.md` is a corollary. Open scope is now
    outside this class/model.

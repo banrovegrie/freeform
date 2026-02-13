@@ -104,13 +104,13 @@ The bound overshoots by a factor of about 16.5. This is expected: the right-arm 
 ## Theorem C: Runtime Recovery
 
 **Theorem C.** Both the paper's $p = 2$ schedule and Guo-An's $p = 3/2$ schedule achieve
-$$T = O\!\left(\frac{1}{\epsilon \cdot g_{\min}}\right) = O\!\left(\frac{(A_1+1)\sqrt{NA_2}}{2\epsilon A_1 \sqrt{d_0}}\right)$$
-with spectral-parameter-dependent constants. For Grover, both give $T = O(\sqrt{N}/\epsilon)$.
+$$T = O\!\left(\frac{1}{\varepsilon \cdot g_{\min}}\right) = O\!\left(\frac{(A_1+1)\sqrt{NA_2}}{2\varepsilon A_1 \sqrt{d_0}}\right)$$
+with spectral-parameter-dependent constants. For Grover, both give $T = O(\sqrt{N}/\varepsilon)$.
 
 *Proof.* We analyze each schedule separately.
 
 **Paper's $p = 2$ schedule.** The paper's local adiabatic condition yields the runtime
-$$T = \frac{\|H'\|}{\epsilon} \int_0^1 g(s)^{-2}\,ds$$
+$$T = \frac{\|H'\|}{\varepsilon} \int_0^1 g(s)^{-2}\,ds$$
 where $\|H'\| = \|H_z + |\psi_0\rangle\langle\psi_0|\| \leq 2$ is the operator norm of the Hamiltonian derivative. We bound the integral using the piecewise gap profile.
 
 We express bounds in terms of $\hat{g} = c_L \delta_s = \frac{2A_1}{A_1+1}\sqrt{\frac{d_0}{NA_2}}$, which has an exact algebraic formula. The true minimum gap satisfies $g_{\min} \geq (1-2\eta)\hat{g}$, so $\hat{g} = \Theta(g_{\min})$.
@@ -133,10 +133,10 @@ $$\int_0^1 g(s)^{-2}\,ds \leq \frac{1}{\hat{g}}\left(\frac{1 + 2/(1-2\eta)^2}{c_
 Define the integral constant (absorbing the $(1-2\eta)^{-2}$ correction which is $1 + O(\eta)$):
 $$I = \frac{3}{c_L} + \frac{900(1-s_0)^2 c_L}{\Delta^2} = \frac{3A_2}{A_1(A_1+1)} + \frac{900(1-s_0)^2 A_1(A_1+1)}{A_2 \Delta^2}.$$
 
-Then $T_{\text{paper}} = \|H'\| I / (\epsilon \hat{g})$ up to the $(1+O(\eta))$ correction. Since $\hat{g} = \Theta(g_{\min})$:
-$$T_{\text{paper}} = O\!\left(\frac{\|H'\| I}{\epsilon \hat{g}}\right) = O\!\left(\frac{1}{\epsilon g_{\min}}\right).$$
+Then $T_{\text{paper}} = \|H'\| I / (\varepsilon \hat{g})$ up to the $(1+O(\eta))$ correction. Since $\hat{g} = \Theta(g_{\min})$:
+$$T_{\text{paper}} = O\!\left(\frac{\|H'\| I}{\varepsilon \hat{g}}\right) = O\!\left(\frac{1}{\varepsilon g_{\min}}\right).$$
 
-In the Grover case ($A_1 = A_2 = (N-1)/N$, $\Delta = 1$, $1-s_0 \to 1/(A_1+1) \approx 1/2$, $\hat{g} = 1/\sqrt{N}(1+O(1/N))$), the constant $I$ is $O(1)$, giving $T = O(\sqrt{N}/\epsilon)$.
+In the Grover case ($A_1 = A_2 = (N-1)/N$, $\Delta = 1$, $1-s_0 \to 1/(A_1+1) \approx 1/2$, $\hat{g} = 1/\sqrt{N}(1+O(1/N))$), the constant $I$ is $O(1)$, giving $T = O(\sqrt{N}/\varepsilon)$.
 
 **Guo-An's $p = 3/2$ schedule.** Under the measure condition with constant $C$, Guo-An's framework (Theorem 3.8) provides the error bound
 $$\eta(1) \leq \frac{B_0}{T \cdot g_{\min}}$$
@@ -145,17 +145,17 @@ $$B_0 = O(\|H'\| \cdot C^2).$$
 
 The constant $C^2$ dependence arises from the second-order terms in the JRS error functional: the integral $\int (u')^2/g^3$ generates terms proportional to $C^2$ through the measure condition.
 
-Setting $\eta(1) \leq \epsilon$ requires
-$$T \geq \frac{B_0}{\epsilon \cdot g_{\min}} = O\!\left(\frac{\|H'\| C^2}{\epsilon \cdot g_{\min}}\right).$$
+Setting $\eta(1) \leq \varepsilon$ requires
+$$T \geq \frac{B_0}{\varepsilon \cdot g_{\min}} = O\!\left(\frac{\|H'\| C^2}{\varepsilon \cdot g_{\min}}\right).$$
 
 Since $C = O(A_2/(A_1(A_1+1)) + 1/\Delta)$ is a constant (depending on spectral parameters but not on $N$), this gives
-$$T_{\text{Guo-An}} = O\!\left(\frac{1}{\epsilon \cdot g_{\min}}\right).$$
+$$T_{\text{Guo-An}} = O\!\left(\frac{1}{\varepsilon \cdot g_{\min}}\right).$$
 
-**Asymptotic matching.** Both schedules achieve $T = O(1/(\epsilon \cdot g_{\min}))$. Since $g_{\min} = \Theta(\hat{g})$ and
+**Asymptotic matching.** Both schedules achieve $T = O(1/(\varepsilon \cdot g_{\min}))$. Since $g_{\min} = \Theta(\hat{g})$ and
 $$\frac{1}{\hat{g}} = \frac{(A_1+1)}{2A_1}\sqrt{\frac{NA_2}{d_0}},$$
 both recover the paper's Theorem 2.5 scaling $T = O(\sqrt{NA_2/d_0})$ (with spectral-parameter prefactors).
 
-For Grover: $g_{\min} = 1/\sqrt{N}$, so $T = O(\sqrt{N}/\epsilon)$, matching the known optimal Grover runtime.
+For Grover: $g_{\min} = 1/\sqrt{N}$, so $T = O(\sqrt{N}/\varepsilon)$, matching the known optimal Grover runtime.
 
 This confirms Conjecture 2. $\square$
 
@@ -164,15 +164,15 @@ This confirms Conjecture 2. $\square$
 
 Conjecture 3 claimed that $p = 3/2$ gives an "improved constant prefactor" over $p = 2$. The situation is more subtle than a straightforward comparison.
 
-**Different analytical frameworks.** The paper analyzes $p = 2$ using the Roland-Cerf local adiabatic condition: the schedule velocity satisfies $|ds/dt| \leq \epsilon g(s)^2 / \|H'\|$, leading to $T = (\|H'\|/\epsilon) \int_0^1 g^{-2}\,ds$. The integral constant $I = 3/c_L + 900(1-s_0)^2 c_L/\Delta^2$ depends on spectral parameters but not on $N$.
+**Different analytical frameworks.** The paper analyzes $p = 2$ using the Roland-Cerf local adiabatic condition: the schedule velocity satisfies $|ds/dt| \leq \varepsilon g(s)^2 / \|H'\|$, leading to $T = (\|H'\|/\varepsilon) \int_0^1 g^{-2}\,ds$. The integral constant $I = 3/c_L + 900(1-s_0)^2 c_L/\Delta^2$ depends on spectral parameters but not on $N$.
 
 Guo-An analyzes $p \in (1,2)$ (excluding $p = 2$) using the JRS error functional, proving that $p = 3/2$ is variationally optimal within this class. The runtime bound involves $C^2$ (the $B_0$ constant contains $C^2$ from the measure condition).
 
 **Bound comparison.** In terms of the proven bounds:
-- Paper ($p = 2$): $T = O(\|H'\| I / (\epsilon g_{\min}))$ where $I$ is the integral constant from Theorem C.
-- Guo-An ($p = 3/2$): $T = O(\|H'\| C^2 / (\epsilon g_{\min}))$ where $C$ is the measure condition constant.
+- Paper ($p = 2$): $T = O(\|H'\| I / (\varepsilon g_{\min}))$ where $I$ is the integral constant from Theorem C.
+- Guo-An ($p = 3/2$): $T = O(\|H'\| C^2 / (\varepsilon g_{\min}))$ where $C$ is the measure condition constant.
 
-Both $I$ and $C^2$ are $O(1)$ constants for any fixed spectral parameters, so both bounds give $T = O(1/(\epsilon g_{\min}))$. The constants $I$ and $C^2$ depend differently on spectral parameters; neither uniformly dominates the other.
+Both $I$ and $C^2$ are $O(1)$ constants for any fixed spectral parameters, so both bounds give $T = O(1/(\varepsilon g_{\min}))$. The constants $I$ and $C^2$ depend differently on spectral parameters; neither uniformly dominates the other.
 
 **Why $p = 3/2$ is still meaningful.** Guo-An's optimality is within the class $p \in (1,2)$, analyzed via the JRS error functional. The endpoint $p = 2$ lies outside this class and is analyzed by a different method (local adiabatic condition). The two frameworks bound different error quantities:
 - JRS bounds the total transition probability out of the ground state.
@@ -181,10 +181,10 @@ Both $I$ and $C^2$ are $O(1)$ constants for any fixed spectral parameters, so bo
 These are complementary. The correct interpretation is: *among schedules analyzed by the JRS framework, $p = 3/2$ is optimal.* The paper's $p = 2$ schedule is analyzed by a different technique that happens to produce a tighter bound when $C$ is large.
 
 **Asymptotic equivalence.** For the paper's specific gap profile, both schedules achieve
-$$T = O\!\left(\frac{1}{\epsilon \cdot g_{\min}}\right) = O\!\left(\frac{1}{\epsilon}\sqrt{\frac{NA_2}{d_0}}\right),$$
+$$T = O\!\left(\frac{1}{\varepsilon \cdot g_{\min}}\right) = O\!\left(\frac{1}{\varepsilon}\sqrt{\frac{NA_2}{d_0}}\right),$$
 which is the best possible scaling given the minimum gap. The constant prefactors differ but the scaling with $N$ and $d_0$ is identical.
 
-**Conjecture 3: preliminary assessment.** The asymptotic scaling $T = O(1/(\epsilon g_{\min}))$ matches. The claim of "improved constants" from $p = 3/2$ requires comparing $I$ and $C^2$ quantitatively, which is done in Extension E below.
+**Conjecture 3: preliminary assessment.** The asymptotic scaling $T = O(1/(\varepsilon g_{\min}))$ matches. The claim of "improved constants" from $p = 3/2$ requires comparing $I$ and $C^2$ quantitatively, which is done in Extension E below.
 
 
 ## Sanity Checks: Grover $N = 4$
@@ -222,7 +222,7 @@ At $x = 0.6$: $\mu = \sqrt{(4 \cdot 0.36 - 1)/3} = \sqrt{0.44/3} \approx 0.383$.
 
 At $x = 2$ (beyond $g_{\max} = 1$): $\mu = 1$ (entire interval). Ratio: $1/2 = 0.5 < 1$. $\checkmark$
 
-**Runtime (Grover).** Both schedules give $T = O(\sqrt{4}/\epsilon) = O(2/\epsilon)$. The known Grover runtime for $N = 4$ is 1 query (exact), so for $\epsilon = 1$: $T_{\text{bound}} = O(2)$, consistent with the constant in $O(\cdot)$. $\checkmark$
+**Runtime (Grover).** Both schedules give $T = O(\sqrt{4}/\varepsilon) = O(2/\varepsilon)$. The known Grover runtime for $N = 4$ is 1 query (exact), so for $\varepsilon = 1$: $T_{\text{bound}} = O(2)$, consistent with the constant in $O(\cdot)$. $\checkmark$
 
 
 ## Extension D: Exact Grover Integral
@@ -239,7 +239,7 @@ The asymptotic follows from $\arctan\sqrt{N-1} \to \pi/2$ and $N/\sqrt{N-1} \to 
 
 **Sanity check ($N = 4$).** Numerical quadrature gives $\int_0^1 g^{-2}\,ds = 2.41839915$. The formula gives $4\arctan(\sqrt{3})/\sqrt{3} = 4(\pi/3)/\sqrt{3} = 4\pi/(3\sqrt{3}) = 2.41839915$. $\checkmark$
 
-The paper's $p = 2$ runtime for Grover is $T_2 = (\|H'\|/\epsilon) \cdot I_{\mathrm{exact}} = 2I_{\mathrm{exact}}/\epsilon \to \pi\sqrt{N}/\epsilon$. The known continuous-time Grover bound is $(\pi/2)\sqrt{N}$ (for probability 1), and the adiabatic version has an overhead of $2/\epsilon$ from the local adiabatic condition.
+The paper's $p = 2$ runtime for Grover is $T_2 = (\|H'\|/\varepsilon) \cdot I_{\mathrm{exact}} = 2I_{\mathrm{exact}}/\varepsilon \to \pi\sqrt{N}/\varepsilon$. The known continuous-time Grover bound is $(\pi/2)\sqrt{N}$ (for probability 1), and the adiabatic version has an overhead of $2/\varepsilon$ from the local adiabatic condition.
 
 
 ## Extension E: The Constant Comparison (Conjecture 3 Resolution)
@@ -277,7 +277,7 @@ $(c_L-1)r^2$ dominates the lower-order terms, so $C^2<I$.
 
 (d) $C_{\mathrm{exact}} = 1$ (Theorem B). $I_{\mathrm{exact}}$ from Theorem D. Their ratio is $1/I_{\mathrm{exact}} = \sqrt{N-1}/(N\arctan\sqrt{N-1}) \to 2/(\pi\sqrt{N})$. $\square$
 
-**Interpretation.** Both $C^2$ and $I$ enter their respective runtime bounds in the same role: $T_{\mathrm{RC}} = \|H'\| I / (\epsilon \hat{g})$ and $T_{\mathrm{JRS}} = K\|H'\| C^2/(\epsilon g_{\min})$ for some universal constant $K$ from the JRS framework. Since $\hat{g} = \Theta(g_{\min})$, the ratio $T_{\mathrm{JRS}}/T_{\mathrm{RC}}$ is governed by $C^2/I$ (up to the constant $K$). Theorem E shows $C^2/I < 1$ for Grover and, more generally, throughout the right-arm-dominated regime with $c_L>1$, meaning the JRS analysis certifies a tighter runtime than the RC analysis there.
+**Interpretation.** Both $C^2$ and $I$ enter their respective runtime bounds in the same role: $T_{\mathrm{RC}} = \|H'\| I / (\varepsilon \hat{g})$ and $T_{\mathrm{JRS}} = K\|H'\| C^2/(\varepsilon g_{\min})$ for some universal constant $K$ from the JRS framework. Since $\hat{g} = \Theta(g_{\min})$, the ratio $T_{\mathrm{JRS}}/T_{\mathrm{RC}}$ is governed by $C^2/I$ (up to the constant $K$). Theorem E shows $C^2/I < 1$ for Grover and, more generally, throughout the right-arm-dominated regime with $c_L>1$, meaning the JRS analysis certifies a tighter runtime than the RC analysis there.
 
 The improvement factor is approximately $c_L = A_1(A_1+1)/A_2$. For Grover, $c_L \to 2$: the JRS bound is roughly twice as tight. For the exact Grover values, the improvement grows as $\sqrt{N}$ (since $C^2 = 1$ while $I \sim \sqrt{N}$), but this overstates the practical advantage because the JRS constant $K$ is not computed here.
 
@@ -346,7 +346,7 @@ The crossing is simple (not higher-order) because the coupling between the two l
 
 **Corollary.** The paper's Hamiltonian class always sits at $\alpha = 1$, the boundary of Theorem F where:
 - The measure condition holds (so Guo-An's JRS framework applies).
-- Both RC and JRS give $T = O(1/(\epsilon \cdot g_{\min}))$.
+- Both RC and JRS give $T = O(1/(\varepsilon \cdot g_{\min}))$.
 - The JRS constant $C^2$ can be strictly smaller than the RC integral $I$ (Theorem E).
 
 No choice of $H_z$ (with $d_1 > 0$, $\Delta > 0$) can produce $\alpha \neq 1$. Different $\alpha$ values require different Hamiltonian interpolation schemes (e.g., quantum phase transitions with $H(s)$ nonlinear in $s$, or systems with symmetry-enforced higher-order crossings).
@@ -366,11 +366,11 @@ No choice of $H_z$ (with $d_1 > 0$, $\Delta > 0$) can produce $\alpha \neq 1$. D
 
 *Proof sketch.* The integral asymptotics follow from a standard computation: near $s^*$, the gap is $\max(g_{\min}, c|s-s^*|^\alpha)$, and the integral $\int g^{-2}\,ds$ splits into a window term $2\delta \cdot g_{\min}^{-2} = 2c^{-1/\alpha} g_{\min}^{1/\alpha - 2}$ and a tail term of the same or smaller order (with a logarithmic correction when $2\alpha = 1$).
 
-The JRS runtime is $T_{\mathrm{JRS}} = O(\|H'\| C^2/(\epsilon g_{\min}))$. For $\alpha \leq 1$: $C = O(1)$, so $T_{\mathrm{JRS}} = O(1/(\epsilon g_{\min}))$.
+The JRS runtime is $T_{\mathrm{JRS}} = O(\|H'\| C^2/(\varepsilon g_{\min}))$. For $\alpha \leq 1$: $C = O(1)$, so $T_{\mathrm{JRS}} = O(1/(\varepsilon g_{\min}))$.
 
-For $\alpha < 1$: $1/\alpha - 2 > -1$, so $g_{\min}^{1/\alpha-2} = g_{\min}^{-1} \cdot g_{\min}^{1/\alpha - 1}$ with $1/\alpha - 1 > 0$, giving $g_{\min}^{1/\alpha-2} \ll 1/g_{\min}$. The RC bound $O(g_{\min}^{1/\alpha - 2}/\epsilon)$ is strictly tighter.
+For $\alpha < 1$: $1/\alpha - 2 > -1$, so $g_{\min}^{1/\alpha-2} = g_{\min}^{-1} \cdot g_{\min}^{1/\alpha - 1}$ with $1/\alpha - 1 > 0$, giving $g_{\min}^{1/\alpha-2} \ll 1/g_{\min}$. The RC bound $O(g_{\min}^{1/\alpha - 2}/\varepsilon)$ is strictly tighter.
 
-For $\alpha = 1$: $g_{\min}^{1/\alpha-2} = g_{\min}^{-1}$. Both frameworks give $O(1/(\epsilon g_{\min}))$. Theorem E shows the JRS constant is smaller by a factor of $c_L$.
+For $\alpha = 1$: $g_{\min}^{1/\alpha-2} = g_{\min}^{-1}$. Both frameworks give $O(1/(\varepsilon g_{\min}))$. Theorem E shows the JRS constant is smaller by a factor of $c_L$.
 
 For $\alpha > 1$: $C \to \infty$ (Theorem F), and the JRS bound degrades. The RC integral $\Theta(g_{\min}^{1/\alpha-2})$ grows faster than $1/g_{\min}$ (since $1/\alpha - 2 < -1$), but slower than the JRS bound $C^2/g_{\min} = \Theta(g_{\min}^{2/\alpha - 3})$ (since $2/\alpha - 3 < 1/\alpha - 2$ for $\alpha > 1$). $\square$
 
@@ -390,12 +390,12 @@ The ratios stabilize, confirming the theoretical scaling.
 We connect this experiment to experiment 07 (partial information) and quantify how the
 $p=2$ and $p=3/2$ schedules degrade when schedule inputs are uncertain.
 
-**Proposition I.** Let $\epsilon_{A_1}$ denote additive precision in $A_1$.
+**Proposition I.** Let $\varepsilon_{A_1}$ denote additive precision in $A_1$.
 
 (a) **RC schedule ($p=2$).** By experiment 07, Theorem 3:
-$$T_{\mathrm{RC}}(\epsilon_{A_1})
+$$T_{\mathrm{RC}}(\varepsilon_{A_1})
 = T_{\mathrm{RC},\infty}\cdot
-\Theta\!\left(\max\!\left(1,\frac{\epsilon_{A_1}}{\delta_{A_1}}\right)\right),$$
+\Theta\!\left(\max\!\left(1,\frac{\varepsilon_{A_1}}{\delta_{A_1}}\right)\right),$$
 with $\delta_{A_1}=2\sqrt{d_0A_2/N}$.
 
 (b) **JRS schedule ($p=3/2$).** Write the ideal JRS-certified runtime as
@@ -411,15 +411,15 @@ $$\frac{T_{\mathrm{JRS}}(\delta_C,\delta_g)}{T_{\mathrm{JRS},\infty}}
 =1+\frac{2\delta_C}{C}+\frac{\delta_g}{g_{\min}}
 +O\!\left(\left(\frac{\delta_C}{C}\right)^2+\left(\frac{\delta_g}{g_{\min}}\right)^2\right).$$
 
-(c) **Comparison.** If $\delta_C$ and $\delta_g$ are $O(\epsilon_{A_1})$ (for example,
+(c) **Comparison.** If $\delta_C$ and $\delta_g$ are $O(\varepsilon_{A_1})$ (for example,
 from Lipschitz propagation of $A_1$ estimation error into $(C,g_{\min})$), then
-$$T_{\mathrm{JRS}}(\epsilon_{A_1})=T_{\mathrm{JRS},\infty}\cdot(1+O(\epsilon_{A_1})),$$
+$$T_{\mathrm{JRS}}(\varepsilon_{A_1})=T_{\mathrm{JRS},\infty}\cdot(1+O(\varepsilon_{A_1})),$$
 while
-$$T_{\mathrm{RC}}(\epsilon_{A_1})/T_{\mathrm{RC},\infty}
-=\Theta\!\left(\max\!\left(1,\frac{\epsilon_{A_1}}{\delta_{A_1}}\right)\right).$$
+$$T_{\mathrm{RC}}(\varepsilon_{A_1})/T_{\mathrm{RC},\infty}
+=\Theta\!\left(\max\!\left(1,\frac{\varepsilon_{A_1}}{\delta_{A_1}}\right)\right).$$
 Since $\delta_{A_1}=\Theta(2^{-n/2})$ for unstructured families (experiment 07,
 Part VI, Corollary "Unstructured Search"), RC degrades much faster once
-$\epsilon_{A_1}\gg \delta_{A_1}$.
+$\varepsilon_{A_1}\gg \delta_{A_1}$.
 
 *Proof.* Part (a) is exactly experiment 07, Theorem 3 (plus the definition of
 $\delta_{A_1}$ from experiment 07 setup). For part (b), substitute $(C_+,g_-)$ into
@@ -428,7 +428,7 @@ $$\frac{C_+^2/g_-}{C^2/g_{\min}}
 =\left(\frac{C+\delta_C}{C}\right)^2\frac{g_{\min}}{g_{\min}-\delta_g}
 =\frac{(1+\delta_C/C)^2}{1-\delta_g/g_{\min}}.$$
 The first-order expansion is a Taylor expansion at $(\delta_C,\delta_g)=(0,0)$.
-Part (c) follows by substituting $\delta_C,\delta_g=O(\epsilon_{A_1})$ and comparing
+Part (c) follows by substituting $\delta_C,\delta_g=O(\varepsilon_{A_1})$ and comparing
 with part (a). $\square$
 
 **Corollary I.1 (Explicit $A_1 \to (\delta_C,\delta_g)$ propagation under fixed side parameters).**
@@ -439,38 +439,38 @@ and surrogate functions
 $$g_{\mathrm{mod}}(A):=\frac{2\kappa A}{A+1},\qquad
 C_{\mathrm{mod}}(A):=\frac{\beta}{A(A+1)}+\rho.$$
 Assume $\rho$ is independently certified (or fixed by a separate estimator), and
-$\widetilde{A}=A+e$ with $|e| \le \epsilon < A$.
+$\widetilde{A}=A+e$ with $|e| \le \varepsilon < A$.
 
 Then:
 $$\frac{g_{\mathrm{mod}}(\widetilde{A})}{g_{\mathrm{mod}}(A)} - 1
 = \frac{e}{A(A+e+1)},$$
 so
 $$\frac{|g_{\mathrm{mod}}(\widetilde{A})-g_{\mathrm{mod}}(A)|}{g_{\mathrm{mod}}(A)}
-\le \chi_g(\epsilon)
-:= \frac{\epsilon}{A(A+1-\epsilon)}.$$
+\le \chi_g(\varepsilon)
+:= \frac{\varepsilon}{A(A+1-\varepsilon)}.$$
 
 For the $A$-dependent part of $C_{\mathrm{mod}}$:
 $$\frac{C_{\mathrm{mod}}(\widetilde{A})-\rho}{C_{\mathrm{mod}}(A)-\rho} - 1
 = -\frac{(2A+1)e + e^2}{(A+e)(A+e+1)},$$
 hence
 $$\frac{|C_{\mathrm{mod}}(\widetilde{A})-C_{\mathrm{mod}}(A)|}{C_{\mathrm{mod}}(A)}
-\le \chi_C(\epsilon)
-:= \frac{\epsilon(2A+1+\epsilon)}{(A-\epsilon)(A+1-\epsilon)}.$$
+\le \chi_C(\varepsilon)
+:= \frac{\varepsilon(2A+1+\varepsilon)}{(A-\varepsilon)(A+1-\varepsilon)}.$$
 
 Substituting into Proposition I(b):
-$$\frac{T_{\mathrm{JRS}}(\epsilon)}{T_{\mathrm{JRS},\infty}}
-\le \frac{(1+\chi_C(\epsilon))^2}{1-\chi_g(\epsilon)}.$$
-For $\epsilon \ll A$, this is
-$$1 + \frac{(4A+3)\epsilon}{A(A+1)} + O(\epsilon^2).$$
+$$\frac{T_{\mathrm{JRS}}(\varepsilon)}{T_{\mathrm{JRS},\infty}}
+\le \frac{(1+\chi_C(\varepsilon))^2}{1-\chi_g(\varepsilon)}.$$
+For $\varepsilon \ll A$, this is
+$$1 + \frac{(4A+3)\varepsilon}{A(A+1)} + O(\varepsilon^2).$$
 
-Thus Proposition I(c)'s $O(\epsilon_{A_1})$ degradation is not only asymptotic: it has
+Thus Proposition I(c)'s $O(\varepsilon_{A_1})$ degradation is not only asymptotic: it has
 an explicit certified constant in this parameterization.
 
 **Practical schedule rule.** If $A_1$ is only coarsely known
-($\epsilon_{A_1}\gg\delta_{A_1}$), use $p=3/2$ with conservative $(C_+,g_-)$: the
+($\varepsilon_{A_1}\gg\delta_{A_1}$), use $p=3/2$ with conservative $(C_+,g_-)$: the
 runtime overhead is controlled by relative errors in $(C,g_{\min})$, not by the
 exponentially small crossing-localization scale $\delta_{A_1}$. If
-$\epsilon_{A_1}\lesssim\delta_{A_1}$, both schedules are constant-factor optimal and
+$\varepsilon_{A_1}\lesssim\delta_{A_1}$, both schedules are constant-factor optimal and
 the constant-level comparison reduces to $I$ versus $C^2$ (Theorem E and Remark J).
 
 
@@ -539,7 +539,7 @@ All values are reproduced in `lib/verify_extensions.py`.
 
 | Result | Statement | Reference |
 |---|---|---|
-| Partial-information comparison | RC degrades as $\max(1,\epsilon_{A_1}/\delta_{A_1})$ (Exp 07), while JRS degrades as $((1+\delta_C/C)^2)/(1-\delta_g/g_{\min})$ under certified parameter uncertainty | Proposition I |
+| Partial-information comparison | RC degrades as $\max(1,\varepsilon_{A_1}/\delta_{A_1})$ (Exp 07), while JRS degrades as $((1+\delta_C/C)^2)/(1-\delta_g/g_{\min})$ under certified parameter uncertainty | Proposition I |
 | Structured-family constant benchmark | Ferromagnetic Ising chain instance gives $C^2/I = 0.7122$, larger than Grover's $0.6033$ benchmark | Remark J |
 
 All four conjectures fully resolved. Conjecture 3 is now proved in the precise form

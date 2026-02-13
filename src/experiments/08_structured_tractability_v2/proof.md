@@ -35,7 +35,7 @@ To keep statements precise, we distinguish a few input/algorithm models:
   time.
 - **Partition-function oracle model:** the algorithm can query (exactly or
   approximately) $Z(t)=\sum_x t^{E(x)}$ or $Z(\beta)=\sum_x e^{-\beta E(x)}$ at points
-  of its choice. Propositions 10–12 explain how such access translates into additive
+  of its choice. Propositions 10-12 explain how such access translates into additive
   approximations of $A_1$.
 
 Approximation guarantees below are **additive** unless stated otherwise.
@@ -129,7 +129,7 @@ can bypass the need for individual $d_k$.
 
 This is not a complexity result by itself, but it is a useful *structural* fact: it
 re-expresses $A_1$ as a transform of the density of states / partition function. This
-often turns “compute $A_1$” into a familiar counting / partition-function task.
+often turns "compute $A_1$" into a familiar counting / partition-function task.
 
 Throughout, shift energies so that $E_0 = 0$ (this does not change $A_1$).
 
@@ -340,7 +340,7 @@ are easy. $\square$
 ## Proposition 8: Bounded Treewidth (Exact $A_1$ via Partition Functions)
 
 This is the first concrete positive tractability result that goes beyond the
-tautological sufficient condition “given all $(E_k,d_k)$, compute the sum”.
+tautological sufficient condition "given all $(E_k,d_k)$, compute the sum".
 
 It formalizes the heuristic: if the spectrum is simple because the *energy function*
 has low graphical complexity, then $A_1$ is efficiently computable.
@@ -374,7 +374,7 @@ tree decomposition of width $w$). Variable elimination computes $Z(t)$ by repeat
 (i) multiplying all factors that contain the next variable $v$ into a single factor
 $\Phi$ on at most $w{+}1$ variables, and (ii) summing $v\in\{0,1\}$ out of $\Phi$ to
 produce a new factor on the remaining at most $w$ variables. This is the standard
-sum–product algorithm; the only difference here is that factor values are *polynomials*
+sum-product algorithm; the only difference here is that factor values are *polynomials*
 in $t$ whose coefficients count how many partial assignments realize each energy.
 
 Concretely, every factor table entry is a polynomial of degree at most $m$, and:
@@ -466,7 +466,7 @@ evaluation $Z(\varepsilon)$ at a small $\varepsilon>0$.
 Assume $E_0=0$ and integer energies $E(x)\in\{0,1,\ldots,m\}$, so
 $$Z(t)=\sum_{q=0}^m d_q t^q,\qquad d_0 = Z(0).$$
 
-For $\varepsilon\in(0,1)$ define the “$\varepsilon$-truncated” proxy
+For $\varepsilon\in(0,1)$ define the "$\varepsilon$-truncated" proxy
 $$A_1^{(\varepsilon)} \;\defeq\; \frac{1}{N}\int_{\varepsilon}^1 \frac{Z(t)-Z(\varepsilon)}{t}\,dt.$$
 
 **Proposition.** For all $\varepsilon\in(0,1)$,
@@ -569,7 +569,7 @@ so the exponential tail bound is again achieved up to the factor $(N-d_0)/N$.
 
 ## Proposition 12: Oracle Reduction (Approximate $Z$ $\Rightarrow$ Additive Approximation of $A_1$)
 
-Propositions 10–11 turn $A_1$ into a *log-scale integral* of partition-function
+Propositions 10-11 turn $A_1$ into a *log-scale integral* of partition-function
 evaluations. This section makes the algorithmic consequence explicit: any method for
 (approximately) evaluating $Z$ over a temperature window yields an additive approximation
 to $A_1$.
@@ -732,36 +732,36 @@ longer polynomial. This matches the low-temperature precision barrier.
 ## Proposition 14: Schedule-Relevant Precision for $A_1$
 
 Let $s^*(A)\defeq A/(1+A)$ for $A>0$. Suppose we estimate $A_1$ by
-$\widehat{A}_1=A_1+\epsilon$ with $\widehat{A}_1>-1$, and define
+$\widehat{A}_1=A_1+\varepsilon$ with $\widehat{A}_1>-1$, and define
 $\widehat{s}^*=s^*(\widehat{A}_1)$.
 
 Then
-$$\widehat{s}^*-s^*=\frac{\epsilon}{(1+A_1)(1+A_1+\epsilon)}.$$
-In particular, if $|\epsilon|\le (1+A_1)/2$, then
-$$|\widehat{s}^*-s^*|\le \frac{2|\epsilon|}{(1+A_1)^2}.$$
+$$\widehat{s}^*-s^*=\frac{\varepsilon}{(1+A_1)(1+A_1+\varepsilon)}.$$
+In particular, if $|\varepsilon|\le (1+A_1)/2$, then
+$$|\widehat{s}^*-s^*|\le \frac{2|\varepsilon|}{(1+A_1)^2}.$$
 So a sufficient condition for $|\widehat{s}^*-s^*|\le \delta_s$ is
-$$|\epsilon|\le \min\!\left\{\frac{1+A_1}{2},\;\frac{(1+A_1)^2}{2}\,\delta_s\right\}.$$
+$$|\varepsilon|\le \min\!\left\{\frac{1+A_1}{2},\;\frac{(1+A_1)^2}{2}\,\delta_s\right\}.$$
 
 Using the paper's crossing-window scale
 $$\delta_s=\frac{2}{(1+A_1)^2}\sqrt{\frac{d_0A_2}{N}},$$
 it suffices to estimate $A_1$ to additive precision
-$$|\epsilon|\le \min\!\left\{\frac{1+A_1}{2},\;\sqrt{\frac{d_0A_2}{N}}\right\}.$$
+$$|\varepsilon|\le \min\!\left\{\frac{1+A_1}{2},\;\sqrt{\frac{d_0A_2}{N}}\right\}.$$
 Whenever $\sqrt{d_0A_2/N}\le (1+A_1)/2$, this simplifies to
-$$|\epsilon|\le \sqrt{\frac{d_0A_2}{N}}.$$
+$$|\varepsilon|\le \sqrt{\frac{d_0A_2}{N}}.$$
 In the worst case $d_0=\Theta(1)$ and $A_2=\Theta(1)$, this is
 $\Theta(2^{-n/2})$.
 
 **Proof.** The identity is direct algebra:
 \begin{align}
-\frac{A_1+\epsilon}{1+A_1+\epsilon}-\frac{A_1}{1+A_1}
-=\frac{\epsilon}{(1+A_1)(1+A_1+\epsilon)}.
+\frac{A_1+\varepsilon}{1+A_1+\varepsilon}-\frac{A_1}{1+A_1}
+=\frac{\varepsilon}{(1+A_1)(1+A_1+\varepsilon)}.
 \end{align}
-If $|\epsilon|\le (1+A_1)/2$, then
-$1+A_1+\epsilon\ge (1+A_1)/2$, hence
+If $|\varepsilon|\le (1+A_1)/2$, then
+$1+A_1+\varepsilon\ge (1+A_1)/2$, hence
 \begin{align}
 |\widehat{s}^*-s^*|
-&\le \frac{|\epsilon|}{(1+A_1)\cdot (1+A_1)/2}
-=\frac{2|\epsilon|}{(1+A_1)^2}.
+&\le \frac{|\varepsilon|}{(1+A_1)\cdot (1+A_1)/2}
+=\frac{2|\varepsilon|}{(1+A_1)^2}.
 \end{align}
 The sufficient condition follows by requiring the right-hand side be at most
 $\delta_s$, and substituting the paper's formula for $\delta_s$ yields the final
@@ -903,7 +903,7 @@ All quantitative claims verified numerically (`lib/verify_a1.py`,
 
 **Proposition 14 (schedule sensitivity).**
 - Direct numerical checks confirm
-  $|\widehat{s}^*-s^*|\le 2|\epsilon|/(1+A_1)^2$ in the stated regime and validate
+  $|\widehat{s}^*-s^*|\le 2|\varepsilon|/(1+A_1)^2$ in the stated regime and validate
   the explicit min-condition sufficient criterion. $\checkmark$
   (`lib/verify_ising_bridge.py`)
 

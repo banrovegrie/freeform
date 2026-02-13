@@ -73,14 +73,14 @@ $$
 For `p in (1,2)`, the runtime certificate
 
 $$
-\mathcal{A}(1)\le \epsilon_{\mathrm{ad}}
+\mathcal{A}(1)\le \varepsilon_{\mathrm{ad}}
 $$
 
 is satisfied by
 
 $$
 T\ge
-\frac{B_{\mathrm{JRS}}(p)}{\epsilon_{\mathrm{ad}}\,\Delta_*},
+\frac{B_{\mathrm{JRS}}(p)}{\varepsilon_{\mathrm{ad}}\,\Delta_*},
 $$
 
 with
@@ -171,13 +171,13 @@ This is fully explicit.
 Use RC certificate in the Experiment 11 notation:
 
 $$
-T_{\mathrm{RC}}^{\mathrm{cert}}=\frac{A_H I}{\epsilon_{\mathrm{ad}}\,\hat g},
+T_{\mathrm{RC}}^{\mathrm{cert}}=\frac{A_H I}{\varepsilon_{\mathrm{ad}}\,\hat g},
 $$
 
 and JRS certificate from Corollary K.1:
 
 $$
-T_{\mathrm{JRS}}^{\mathrm{cert}}=\frac{8A_HC_\mu+63A_H^2C_\mu^2}{\epsilon_{\mathrm{ad}}\,g_{\min}}.
+T_{\mathrm{JRS}}^{\mathrm{cert}}=\frac{8A_HC_\mu+63A_H^2C_\mu^2}{\varepsilon_{\mathrm{ad}}\,g_{\min}}.
 $$
 
 Hence
@@ -226,13 +226,13 @@ To test non-power-law behavior with direct comparability to RC safety, define an
 RC-safe exponential slowdown schedule:
 
 $$
-\frac{ds}{dt}=\frac{\epsilon_{\mathrm{ad}}}{A_H}\,\frac{g(s)^2}{e^{\beta/g(s)}},\quad \beta>0.
+\frac{ds}{dt}=\frac{\varepsilon_{\mathrm{ad}}}{A_H}\,\frac{g(s)^2}{e^{\beta/g(s)}},\quad \beta>0.
 $$
 
 Runtime is
 
 $$
-T_{\exp}=\frac{A_H}{\epsilon_{\mathrm{ad}}}
+T_{\exp}=\frac{A_H}{\varepsilon_{\mathrm{ad}}}
 \int_0^1\frac{e^{\beta/g(s)}}{g(s)^2}ds.
 $$
 
@@ -260,8 +260,8 @@ $$
 So
 
 $$
-T_{\exp}=\frac{A_H}{\epsilon_{\mathrm{ad}}}I_{\exp},\qquad
-T_{\mathrm{RC}}=\frac{A_H}{\epsilon_{\mathrm{ad}}}I_{\mathrm{RC}}.
+T_{\exp}=\frac{A_H}{\varepsilon_{\mathrm{ad}}}I_{\exp},\qquad
+T_{\mathrm{RC}}=\frac{A_H}{\varepsilon_{\mathrm{ad}}}I_{\mathrm{RC}}.
 $$
 
 ### 3.3. Exponential overhead theorem

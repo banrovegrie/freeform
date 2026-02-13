@@ -22,7 +22,7 @@ integers, potentially with $E_{M-1} = \mathrm{poly}(n)$.
 **Known hardness results (paper Section 3).**
 
 1. *NP-hardness at inverse-polynomial precision.* Theorem 2 of the paper
-   shows that estimating $A_1$ to additive error $\epsilon < 1/\mathrm{poly}(n)$
+   shows that estimating $A_1$ to additive error $\varepsilon < 1/\mathrm{poly}(n)$
    is NP-hard, via a reduction from 3-SAT using a 3-local Hamiltonian on
    $O(n_{\mathrm{var}} + m)$ qubits (where $n_{\mathrm{var}}$ is the number
    of Boolean variables and $m$ the number of clauses; the paper writes $n$
@@ -34,11 +34,11 @@ integers, potentially with $E_{M-1} = \mathrm{poly}(n)$.
 2. *#P-hardness at exponentially small precision.* Theorem 3 uses polynomial
    interpolation (via Paturi's lemma) to extract exact degeneracies from
    $O(\mathrm{poly}(n))$ approximate evaluations of $A_1$. This requires
-   precision $\epsilon = O(2^{-\mathrm{poly}(n)})$ so that rounding
+   precision $\varepsilon = O(2^{-\mathrm{poly}(n)})$ so that rounding
    recovers exact integer degeneracies.
 
 The adiabatic algorithm's optimal schedule requires $A_1$ to precision
-$\epsilon = O(2^{-n/2})$. This precision sits strictly between the two
+$\varepsilon = O(2^{-n/2})$. This precision sits strictly between the two
 known hardness regimes. We prove seven results about this intermediate
 regime: a barrier for the paper's proof technique (Theorem 1), a quantum
 algorithm (Theorem 2), a classical lower bound (Theorem 3), a tight
@@ -50,9 +50,9 @@ structure irrelevance result (Theorem 7).
 ## Theorem 1: Polynomial Interpolation Barrier at $2^{-n/2}$
 
 **Theorem 1.** *The polynomial interpolation technique of paper Section 3.2
-requires precision $\epsilon = 2^{-n - O(M \log n)}$ to extract exact
+requires precision $\varepsilon = 2^{-n - O(M \log n)}$ to extract exact
 degeneracies, where $M = \mathrm{poly}(n)$ is the number of distinct energy
-levels. At precision $\epsilon = 2^{-n/2}$, the amplified error exceeds
+levels. At precision $\varepsilon = 2^{-n/2}$, the amplified error exceeds
 $1/2$ and rounding fails. Consequently, the #P-hardness argument does not
 extend to precision $2^{-n/2}$.*
 
@@ -106,13 +106,13 @@ $$
 $$
 
 **Step 3: Error propagation at sample points.** Suppose we have an oracle
-$\tilde{A}_1$ with $|\tilde{A}_1(H) - A_1(H)| \le \epsilon$. Then
+$\tilde{A}_1$ with $|\tilde{A}_1(H) - A_1(H)| \le \varepsilon$. Then
 
 $$
 \tilde{f}(x_i) \;=\; 2\,\tilde{A}_1(H'(x_i)) - \tilde{A}_1(H)
 $$
 
-satisfies $|\tilde{f}(x_i) - f(x_i)| \le 3\epsilon$ (triangle inequality
+satisfies $|\tilde{f}(x_i) - f(x_i)| \le 3\varepsilon$ (triangle inequality
 on the three oracle calls). The approximate polynomial values are
 
 $$
@@ -123,7 +123,7 @@ so the pointwise error is
 
 $$
 |\tilde{P}(x_i) - P(x_i)|
-\;\le\; 3\epsilon \prod_{k=0}^{M-1}\!\Bigl(\Delta_k + \frac{x_i}{2}\Bigr).
+\;\le\; 3\varepsilon \prod_{k=0}^{M-1}\!\Bigl(\Delta_k + \frac{x_i}{2}\Bigr).
 $$
 
 For the Ising Hamiltonians in the paper's reduction, the gaps $\Delta_k$
@@ -133,7 +133,7 @@ $\mathrm{poly}(n)$. Write $B = \Delta_{\max} + M$. With $M$ factors:
 
 $$
 |\tilde{P}(x_i) - P(x_i)|
-\;\le\; 3\epsilon\, B^M.
+\;\le\; 3\varepsilon\, B^M.
 $$
 
 **Step 4: End-to-end error from samples to degeneracies.** We bound the
@@ -166,7 +166,7 @@ By the triangle inequality and Step 3:
 
 $$
 |d_k - \tilde{d}_k|
-\;\le\; \frac{3\epsilon\,N}{|\prod_{\ell \ne k}(\Delta_\ell - \Delta_k)|}
+\;\le\; \frac{3\varepsilon\,N}{|\prod_{\ell \ne k}(\Delta_\ell - \Delta_k)|}
 \sum_{j=0}^{M-1} \prod_{k'=0}^{M-1}(\Delta_{k'} + x_j/2)
 \prod_{i \ne j}\frac{|2\Delta_k + x_i|}{|x_j - x_i|}.
 $$
@@ -209,7 +209,7 @@ The full error bound is:
 
 $$
 |d_k - \tilde{d}_k|
-\;\le\; \frac{3\epsilon \cdot N \cdot B^M \cdot (2B+1)^{M-1}}
+\;\le\; \frac{3\varepsilon \cdot N \cdot B^M \cdot (2B+1)^{M-1}}
 {(M-1)! \cdot ((M-1)/(2e))^{M-1}}.
 $$
 
@@ -228,15 +228,15 @@ $C \approx 20$-$24$ for $M = 4, \ldots, 15$. The precise constant does
 not matter; what matters is exponential growth in $M$.
 
 **Step 5: Rounding condition.** Write the amplification factor as $F(M,n)$,
-so $|d_k - \tilde{d}_k| \le 3\epsilon \cdot N \cdot F(M,n)$, where
+so $|d_k - \tilde{d}_k| \le 3\varepsilon \cdot N \cdot F(M,n)$, where
 $F(M,n) = 2^{O(M \log n)}$. To extract exact degeneracies by rounding,
-we need $3\epsilon \cdot N \cdot F(M,n) < 1/2$, i.e.,
+we need $3\varepsilon \cdot N \cdot F(M,n) < 1/2$, i.e.,
 
 $$
-\epsilon \;<\; \frac{1}{6N \cdot F(M,n)} \;=\; 2^{-n - O(M \log n)}.
+\varepsilon \;<\; \frac{1}{6N \cdot F(M,n)} \;=\; 2^{-n - O(M \log n)}.
 $$
 
-**Step 6: Evaluation at $\epsilon = 2^{-n/2}$.** Set $\epsilon = 2^{-n/2}$
+**Step 6: Evaluation at $\varepsilon = 2^{-n/2}$.** Set $\varepsilon = 2^{-n/2}$
 and $M = \mathrm{poly}(n)$, say $M = n^c$ for constant $c \ge 1$. Then
 
 $$
@@ -259,7 +259,7 @@ Rounding fails. The polynomial interpolation technique cannot establish
 **Remark.** The barrier is robust against constant-factor improvements in
 the bounds. The error amplification from sample noise to degeneracy error
 grows as $2^{O(M \log n)}$. The rounding condition demands
-$\epsilon < 2^{-n - O(M \log n)}$, while $2^{-n/2}$ provides only $n/2$
+$\varepsilon < 2^{-n - O(M \log n)}$, while $2^{-n/2}$ provides only $n/2$
 bits of precision. The deficit of $O(M \log n) + n/2$ bits cannot be
 overcome by $O(M)$ oracle calls.
 
@@ -267,17 +267,17 @@ overcome by $O(M)$ oracle calls.
 ## Theorem 2: Quantum Algorithm for $A_1$
 
 **Theorem 2.** *There exists a quantum algorithm that estimates $A_1(H_z)$
-to additive precision $\epsilon$ using*
+to additive precision $\varepsilon$ using*
 
 $$
-O\!\left(\sqrt{N} + \frac{1}{\epsilon \cdot \Delta_1}\right)
+O\!\left(\sqrt{N} + \frac{1}{\varepsilon \cdot \Delta_1}\right)
 $$
 
 *quantum queries to the diagonal oracle
 $O_H\!: |x\rangle|0\rangle \mapsto |x\rangle|E_x\rangle$, where
 $\Delta_1 = E_1 - E_0$ is the spectral gap.*
 
-*For $\epsilon = 2^{-n/2}$ and $\Delta_1 = 1/\mathrm{poly}(n)$, the
+*For $\varepsilon = 2^{-n/2}$ and $\Delta_1 = 1/\mathrm{poly}(n)$, the
 complexity is $O(2^{n/2} \cdot \mathrm{poly}(n))$.*
 
 **Proof.** The algorithm has two stages.
@@ -345,20 +345,20 @@ Amplitude estimation (Brassard, Hoyer, Mosca, and Tapp 2002) estimates $p$
 to additive error $\delta$ using $O(1/\delta)$ applications of $U_h$ and
 its inverse, with success probability at least $8/\pi^2 > 0.81$.
 
-We need $|A_1 - \tilde{A}_1| \le \epsilon$, i.e.,
-$|\mu_h - \tilde{\mu}_h| \le \epsilon \cdot \Delta_1$. Set
-$\delta = \epsilon \cdot \Delta_1$. The number of applications of $U_h$
-is $O(1/\delta) = O(1/(\epsilon \cdot \Delta_1))$.
+We need $|A_1 - \tilde{A}_1| \le \varepsilon$, i.e.,
+$|\mu_h - \tilde{\mu}_h| \le \varepsilon \cdot \Delta_1$. Set
+$\delta = \varepsilon \cdot \Delta_1$. The number of applications of $U_h$
+is $O(1/\delta) = O(1/(\varepsilon \cdot \Delta_1))$.
 
 **Total query complexity.** Stage 1 contributes $O(\sqrt{N})$ queries.
-Stage 2 contributes $O(1/(\epsilon \cdot \Delta_1))$ queries (each
+Stage 2 contributes $O(1/(\varepsilon \cdot \Delta_1))$ queries (each
 application of $U_h$ uses $O(1)$ queries). In total:
 
 $$
-O\!\left(\sqrt{N} + \frac{1}{\epsilon \cdot \Delta_1}\right).
+O\!\left(\sqrt{N} + \frac{1}{\varepsilon \cdot \Delta_1}\right).
 $$
 
-For $\epsilon = 2^{-n/2}$ and $\Delta_1 = 1/\mathrm{poly}(n)$:
+For $\varepsilon = 2^{-n/2}$ and $\Delta_1 = 1/\mathrm{poly}(n)$:
 
 $$
 O\!\left(2^{n/2} + 2^{n/2} \cdot \mathrm{poly}(n)\right)
@@ -372,7 +372,7 @@ with $d_0 = 1$, $E_1 = 1$ with $d_1 = 3$. Then $A_1 = (1/4)(3/1) = 3/4$,
 $\Delta_1 = 1$.
 
 - Stage 1: $O(\sqrt{4}) = O(2)$ queries.
-- Stage 2: For $\epsilon = 1/2$, need $O(1/(1/2 \cdot 1)) = O(2)$
+- Stage 2: For $\varepsilon = 1/2$, need $O(1/(1/2 \cdot 1)) = O(2)$
   applications.
 - Total: $O(4)$ queries. The formula gives $\sqrt{4} + 2 = 4$. Consistent
   with $2^{n/2} = 2$.
@@ -382,12 +382,12 @@ $E_1 = 1/4$ ($d_1 = 3$), $E_2 = 1$ ($d_2 = 4$). Then
 $A_1 = (1/8)(3/(1/4) + 4/1) = (1/8)(12 + 4) = 2$, $\Delta_1 = 1/4$.
 
 - Stage 1: $O(\sqrt{8}) = O(2\sqrt{2}) \approx 3$ queries.
-- Stage 2: For $\epsilon = 2^{-3/2} \approx 0.354$, need
+- Stage 2: For $\varepsilon = 2^{-3/2} \approx 0.354$, need
   $O(1/(2^{-3/2} \cdot 1/4)) = O(2^{7/2}) = O(8\sqrt{2}) \approx 11$
   applications.
 - Total: formula gives $\sqrt{8} + 2^{7/2} = 2\sqrt{2} + 8\sqrt{2} =
   10\sqrt{2} \approx 14.1$ queries.
-- Classical lower bound: $\Omega(1/\epsilon^2) = \Omega(2^3) = \Omega(8)$.
+- Classical lower bound: $\Omega(1/\varepsilon^2) = \Omega(2^3) = \Omega(8)$.
 
 Note: for this small instance the quantum cost ($\approx 14$) exceeds the
 classical lower bound ($8$) due to the $1/\Delta_1$ factor from the small
@@ -398,11 +398,11 @@ it manifests for large $n$ where $2^{n/2} \gg \mathrm{poly}(n)$.
 ## Theorem 3: Classical Query Lower Bound
 
 **Theorem 3.** *Any classical (randomized) algorithm estimating $A_1(H_z)$
-to additive precision $\epsilon$ in the query model (where each query
-reveals $E_x$ for a chosen $x$) requires $\Omega(1/\epsilon^2)$ queries
+to additive precision $\varepsilon$ in the query model (where each query
+reveals $E_x$ for a chosen $x$) requires $\Omega(1/\varepsilon^2)$ queries
 in the worst case.*
 
-*At $\epsilon = 2^{-n/2}$, the lower bound is $\Omega(2^n)$.*
+*At $\varepsilon = 2^{-n/2}$, the lower bound is $\Omega(2^n)$.*
 
 **Proof.**
 
@@ -424,9 +424,9 @@ Now consider a modified instance with $|S'| = N/2 + t$ for integer
 $t > 0$, and $E_x = 0$ for $x \in S'$, $E_x = 1$ otherwise. Then
 $d_0' = N/2 + t$, $d_1' = N/2 - t$, and $A_1' = (N/2 - t)/N = 1/2 - t/N$.
 
-The difference $|A_1 - A_1'| = t/N$. Setting $t = \lceil \epsilon N \rceil$
-makes the two instances differ by approximately $\epsilon$ in $A_1$. An
-algorithm estimating $A_1$ to precision $\epsilon/2$ must distinguish
+The difference $|A_1 - A_1'| = t/N$. Setting $t = \lceil \varepsilon N \rceil$
+makes the two instances differ by approximately $\varepsilon$ in $A_1$. An
+algorithm estimating $A_1$ to precision $\varepsilon/2$ must distinguish
 these two cases.
 
 **Step 2: Reduction to hypothesis testing.** The algorithm queries strings
@@ -466,16 +466,16 @@ the conditional per-query divergence is at most $O(t^2/(N-j)^2)$
 term is at most $O(t^2/N^2) \cdot (1 + O(q/N)) = O(t^2/N^2)$. In
 particular, the first $N/2$ queries contribute total KL at most
 $(N/2) \cdot O(t^2/N^2) = O(t^2/(2N))$. For $t = O(\sqrt{N})$ (the
-case $\epsilon = 2^{-n/2}$), this is $O(1/2)$, insufficient for
+case $\varepsilon = 2^{-n/2}$), this is $O(1/2)$, insufficient for
 reliable testing. Hence $q > N/2 = \Omega(N)$.
 
-With $t = \lceil \epsilon N \rceil$:
+With $t = \lceil \varepsilon N \rceil$:
 
 $$
-q \;\ge\; \Omega\!\left(\frac{N^2}{\epsilon^2 N^2}\right) \;=\; \Omega\!\left(\frac{1}{\epsilon^2}\right).
+q \;\ge\; \Omega\!\left(\frac{N^2}{\varepsilon^2 N^2}\right) \;=\; \Omega\!\left(\frac{1}{\varepsilon^2}\right).
 $$
 
-**Step 4: Concrete bound at $\epsilon = 2^{-n/2}$.** Substituting:
+**Step 4: Concrete bound at $\varepsilon = 2^{-n/2}$.** Substituting:
 
 $$
 \Omega\!\left(\frac{1}{(2^{-n/2})^2}\right) \;=\; \Omega(2^n).
@@ -489,10 +489,10 @@ $\square$
 
 **Remark.** The adversarial instance has $\Delta_1 = 1$ (constant gap),
 which is the easiest case for the quantum algorithm (Stage 2 costs only
-$O(1/\epsilon)$, with no $1/\Delta_1$ penalty). The classical lower bound
+$O(1/\varepsilon)$, with no $1/\Delta_1$ penalty). The classical lower bound
 already saturates at $\Omega(2^n)$ even here. For instances with
 $\Delta_1 = 1/\mathrm{poly}(n)$, the quantum algorithm's cost grows by
-$\mathrm{poly}(n)$ while classical sampling remains $\Omega(1/\epsilon^2)$
+$\mathrm{poly}(n)$ while classical sampling remains $\Omega(1/\varepsilon^2)$
 regardless of $\Delta_1$ (the adversarial construction always uses unit
 gap). The quadratic separation persists across all gap regimes.
 
@@ -500,7 +500,7 @@ gap). The quadratic separation persists across all gap regimes.
 ## Corollary: Quadratic Quantum-Classical Separation
 
 **Corollary.** *In the query model, estimating $A_1(H_z)$ to precision
-$\epsilon = 2^{-n/2}$ exhibits a quadratic quantum-classical separation:*
+$\varepsilon = 2^{-n/2}$ exhibits a quadratic quantum-classical separation:*
 
 | Model | Query Complexity |
 |-------|-----------------|
@@ -550,13 +550,13 @@ not directly comparable.
 
 **Computational complexity** (explicit Hamiltonian):
 
-| Precision $\epsilon$ | Hardness | Technique |
+| Precision $\varepsilon$ | Hardness | Technique |
 |---------------------|----------|-----------|
 | $1/\mathrm{poly}(n)$ | NP-hard | Local Hamiltonian (Thm 2 of paper) |
 | $2^{-n/2}$ | NP-hard (from above) | Monotonicity of hardness |
 | $2^{-\mathrm{poly}(n)}$ | #P-hard | Poly interpolation + Paturi (Thm 3 of paper) |
 
-**Query complexity** (diagonal oracle, precision $\epsilon = 2^{-n/2}$):
+**Query complexity** (diagonal oracle, precision $\varepsilon = 2^{-n/2}$):
 
 | Model | Query Complexity | Source |
 |-------|-----------------|--------|
@@ -576,16 +576,16 @@ bound, with a quadratic gap matching Grover's search.
 ## Theorem 4: Tight Quantum Query Complexity
 
 **Theorem 4.** *The quantum query complexity of estimating $A_1(H_z)$
-to additive precision $\epsilon$ is $\Omega(1/\epsilon)$ for $M = 2$
+to additive precision $\varepsilon$ is $\Omega(1/\varepsilon)$ for $M = 2$
 instances with $\Delta_1 = \Theta(1)$. Combined with Theorem 2, the
-quantum query complexity at $\epsilon = 2^{-n/2}$ is $\Theta(2^{n/2})$.*
+quantum query complexity at $\varepsilon = 2^{-n/2}$ is $\Theta(2^{n/2})$.*
 
 **Proof.**
 
-The upper bound $O(1/\epsilon)$ for $\Delta_1 = 1$ instances follows from
-Theorem 2: $O(\sqrt{N} + 1/(\epsilon \cdot \Delta_1)) = O(\sqrt{N} + 1/\epsilon)
-= O(1/\epsilon)$ when $\epsilon \le 1/\sqrt{N}$ (since then
-$1/\epsilon \ge \sqrt{N}$).
+The upper bound $O(1/\varepsilon)$ for $\Delta_1 = 1$ instances follows from
+Theorem 2: $O(\sqrt{N} + 1/(\varepsilon \cdot \Delta_1)) = O(\sqrt{N} + 1/\varepsilon)
+= O(1/\varepsilon)$ when $\varepsilon \le 1/\sqrt{N}$ (since then
+$1/\varepsilon \ge \sqrt{N}$).
 
 For the lower bound, we reduce from approximate counting and apply the
 Heisenberg limit for quantum phase estimation.
@@ -596,7 +596,7 @@ $M = 2$.**
 Consider an approximate counting instance: a function
 $f\!: \{0,1\}^n \to \{0,1\}$ given by quantum oracle access
 $O_f\!: |x\rangle|b\rangle \mapsto |x\rangle|b \oplus f(x)\rangle$, with
-the task of estimating $p = |f^{-1}(1)|/N$ to precision $\epsilon$.
+the task of estimating $p = |f^{-1}(1)|/N$ to precision $\varepsilon$.
 
 Construct the diagonal Hamiltonian $H_z$ with $E_x = 1 - f(x)$. Then
 $E_0 = 0$ with degeneracy $d_0 = |f^{-1}(1)|$, $E_1 = 1$ with
@@ -608,7 +608,7 @@ $$
 
 One query to $O_H$ (which returns $E_x$) is equivalent to one query to
 $O_f$ (which returns $f(x) = 1 - E_x$). So estimating $A_1$ to precision
-$\epsilon$ is equivalent to estimating $p$ to precision $\epsilon$, with
+$\varepsilon$ is equivalent to estimating $p$ to precision $\varepsilon$, with
 equal query cost in both directions.
 
 **Step 2: Quantum lower bound for approximate counting.**
@@ -631,25 +631,25 @@ Cramer-Rao inequality with Fisher information $F_Q \le 4T^2$).
 
 For instances with $p$ near $1/2$ (i.e., $d_0 \approx N/2$), the
 eigenphase is $\theta \approx \pi/4$, and $p = \sin^2(\theta)$ has
-derivative $dp/d\theta = \sin(2\theta) = 1$. So precision $\epsilon$ in
-$p$ requires precision $\delta = \epsilon / |\sin(2\theta)| = \epsilon$
+derivative $dp/d\theta = \sin(2\theta) = 1$. So precision $\varepsilon$ in
+$p$ requires precision $\delta = \varepsilon / |\sin(2\theta)| = \varepsilon$
 in $\theta$. By the Heisenberg limit:
 
 $$
-T \;\ge\; \frac{1}{2\epsilon}.
+T \;\ge\; \frac{1}{2\varepsilon}.
 $$
 
 Each application of $G$ uses $O(1)$ queries to $O_f$. Total query
-complexity: $\Omega(1/\epsilon)$.
+complexity: $\Omega(1/\varepsilon)$.
 
 **Step 3: Combine.** For $M = 2$ diagonal Hamiltonians with $\Delta_1 = 1$
 and $d_0 = N/2$:
 
-- Lower bound (Step 2): $\Omega(1/\epsilon)$ quantum queries.
-- Upper bound (Theorem 2): $O(\sqrt{N} + 1/\epsilon) = O(1/\epsilon)$
-  when $\epsilon \le 1/\sqrt{N}$.
+- Lower bound (Step 2): $\Omega(1/\varepsilon)$ quantum queries.
+- Upper bound (Theorem 2): $O(\sqrt{N} + 1/\varepsilon) = O(1/\varepsilon)$
+  when $\varepsilon \le 1/\sqrt{N}$.
 
-At $\epsilon = 2^{-n/2} = 1/\sqrt{N}$:
+At $\varepsilon = 2^{-n/2} = 1/\sqrt{N}$:
 
 $$
 \text{Quantum query complexity} \;=\; \Theta(2^{n/2}).
@@ -657,22 +657,22 @@ $$
 
 $\square$
 
-**Sanity check (Grover, $N = 4$).** $\epsilon = 2^{-1} = 1/2$. Lower
+**Sanity check (Grover, $N = 4$).** $\varepsilon = 2^{-1} = 1/2$. Lower
 bound: $\Omega(1/(1/2)) = \Omega(2)$. Upper bound: $O(\sqrt{4} + 2) =
 O(4)$. Consistent.
 
-**Remark.** The lower bound $\Omega(1/\epsilon)$ holds for any quantum
+**Remark.** The lower bound $\Omega(1/\varepsilon)$ holds for any quantum
 algorithm, not only Grover-based approaches. The Heisenberg limit is
 fundamental: no quantum strategy (adaptive, entangled, or otherwise)
-can circumvent it. Combined with the classical $\Omega(1/\epsilon^2)$
+can circumvent it. Combined with the classical $\Omega(1/\varepsilon^2)$
 lower bound (Theorem 3), this gives a complete query complexity picture:
 
 | Model | Complexity | Source |
 |-------|-----------|--------|
-| Quantum | $\Theta(1/\epsilon)$ | Theorems 2 and 4 |
-| Classical | $\Theta(1/\epsilon^2)$ | Theorem 3 and brute force |
+| Quantum | $\Theta(1/\varepsilon)$ | Theorems 2 and 4 |
+| Classical | $\Theta(1/\varepsilon^2)$ | Theorem 3 and brute force |
 
-At $\epsilon = 2^{-n/2}$: quantum $\Theta(2^{n/2})$, classical
+At $\varepsilon = 2^{-n/2}$: quantum $\Theta(2^{n/2})$, classical
 $\Theta(2^n)$. Both bounds are tight.
 
 
@@ -705,12 +705,12 @@ exhibits a quadratic quantum speedup in the computational model.*
 3-SAT on $n_{\mathrm{var}}$ variables and $m$ clauses to $A_1$
 estimation of a 3-local Hamiltonian on $n = 2(n_{\mathrm{var}} + m)$
 qubits. The reduction uses two calls to an $A_1$-estimation oracle at
-precision $\epsilon < 1/(72(n - 1))$. For 3-SAT instances with
+precision $\varepsilon < 1/(72(n - 1))$. For 3-SAT instances with
 $m = O(n_{\mathrm{var}})$ (which suffices for ETH-hardness, by the
 sparsification lemma of Impagliazzo, Paturi, and Zane 2001):
 $n = O(n_{\mathrm{var}})$, hence $n_{\mathrm{var}} = \Omega(n)$.
 
-An $A_1$ oracle at precision $\epsilon = 2^{-n/2}$ is strictly more
+An $A_1$ oracle at precision $\varepsilon = 2^{-n/2}$ is strictly more
 powerful than one at precision $1/(72(n-1))$ (since $2^{-n/2} < 1/\mathrm{poly}(n)$
 for large $n$). So the oracle at precision $2^{-n/2}$ also solves
 3-SAT. Under ETH, 3-SAT on $n_{\mathrm{var}} = \Omega(n)$ variables
@@ -723,7 +723,7 @@ Theorem 2 replaces oracle queries with circuit evaluations. Each
 ancilla ($O(\mathrm{poly}(n))$ gates), (ii) perform arithmetic
 ($O(\mathrm{poly}(n))$ gates), (iii) uncompute. The total gate count is
 $O(2^{n/2} \cdot \mathrm{poly}(n))$ (since there are
-$O(2^{n/2})$ oracle calls at $\epsilon = 2^{-n/2}$, $\Delta_1 = \Theta(1)$,
+$O(2^{n/2})$ oracle calls at $\varepsilon = 2^{-n/2}$, $\Delta_1 = \Theta(1)$,
 each costing $O(\mathrm{poly}(n))$ gates).
 
 **Separation.** Under ETH:
@@ -757,7 +757,7 @@ bound. The quantum algorithm runs in $O(2^{n/2} \cdot n^2)$ time.
 ## Theorem 6: Generic Polynomial Extrapolation Barrier
 
 Theorem 1 shows that the paper's specific polynomial interpolation
-construction fails at $\epsilon = 2^{-n/2}$. A natural question: could a
+construction fails at $\varepsilon = 2^{-n/2}$. A natural question: could a
 cleverer choice of interpolation nodes, auxiliary Hamiltonians, or
 polynomial basis rescue the approach? We prove that the answer is no.
 The error amplification is inherent in any scheme that extracts integer
@@ -771,8 +771,8 @@ extrapolation scheme* for degeneracy extraction is a procedure that:
     $x_1, \ldots, x_d$ in an interval $I = [a, b]$;
 
 (b) Calls an $A_1$-estimation oracle on each $H_i$ at precision
-    $\epsilon$, obtaining noisy values $\tilde{y}_i$ with
-    $|y_i - \tilde{y}_i| \le c\epsilon$ for some constant $c$ (where
+    $\varepsilon$, obtaining noisy values $\tilde{y}_i$ with
+    $|y_i - \tilde{y}_i| \le c\varepsilon$ for some constant $c$ (where
     $y_i$ depends on $A_1(H_i)$);
 
 (c) Constructs a polynomial $P$ of degree $\le d - 1$ by interpolation
@@ -787,7 +787,7 @@ in $[a, b]$ and evaluation point $x^*$ at distance $\delta > 0$ from
 $[a, b]$:*
 
 $$
-\epsilon \;<\; \frac{1}{2c \cdot \Lambda_d(x^*)}
+\varepsilon \;<\; \frac{1}{2c \cdot \Lambda_d(x^*)}
 $$
 
 *where $\Lambda_d(x^*)$ is the Lebesgue function at $x^*$:*
@@ -800,10 +800,10 @@ $$
 *For any choice of $d$ real nodes in $[a, b]$ and any $x^*$ at distance
 $\ge |b - a|$ from $[a, b]$, the Lebesgue function satisfies
 $\Lambda_d(x^*) \ge 2^{d-1}$. Consequently, any polynomial
-extrapolation scheme requires $\epsilon < 2^{-(d-1)}/c$. At
+extrapolation scheme requires $\varepsilon < 2^{-(d-1)}/c$. At
 $d = \mathrm{poly}(n)$, the required precision is
-$\epsilon = 2^{-\Omega(n)}$, and the paper's conclusion follows:
-$\epsilon = 2^{-n/2}$ is insufficient.*
+$\varepsilon = 2^{-\Omega(n)}$, and the paper's conclusion follows:
+$\varepsilon = 2^{-n/2}$ is insufficient.*
 
 **Proof.**
 
@@ -814,11 +814,11 @@ $$
 |P(x^*) - \tilde{P}(x^*)| \;\le\;
 \sum_{j=1}^{d} |y_j - \tilde{y}_j| \prod_{i \ne j}
 \left|\frac{x^* - x_i}{x_j - x_i}\right|
-\;\le\; c\epsilon \cdot \Lambda_d(x^*).
+\;\le\; c\varepsilon \cdot \Lambda_d(x^*).
 $$
 
-For rounding to succeed: $c\epsilon \cdot \Lambda_d(x^*) < 1/2$, giving
-the stated bound on $\epsilon$.
+For rounding to succeed: $c\varepsilon \cdot \Lambda_d(x^*) < 1/2$, giving
+the stated bound on $\varepsilon$.
 
 **Step 2: Lebesgue function lower bound for extrapolation.** We prove
 $\Lambda_d(x^*) \ge 2^{d-1}$ when $x^*$ is at distance $\ge |b-a|$
@@ -871,10 +871,10 @@ for $M \ge 2$.
 
 The Lebesgue function bound gives
 $\Lambda_d(x^*) \ge 2^{M-1}$. The precision requirement is
-$\epsilon < 1/(2c \cdot 2^{M-1})$. Since the degeneracy extraction
+$\varepsilon < 1/(2c \cdot 2^{M-1})$. Since the degeneracy extraction
 involves an additional factor of $N$ (from the rescaling
 $d_k = N \cdot P(x^*)/\ldots$), the full requirement is
-$\epsilon < 2^{-(n + M - 1)} / (2c)$, matching Theorem 1's bound
+$\varepsilon < 2^{-(n + M - 1)} / (2c)$, matching Theorem 1's bound
 (and slightly sharper: the $O(M \log n)$ in Theorem 1 comes from
 additional product factors specific to the construction, beyond the
 pure Lebesgue amplification).
@@ -912,9 +912,9 @@ $0 < \Delta_1 < \cdots < \Delta_{M-1}$, there exist $n$-qubit diagonal
 Hamiltonians with $M$ distinct energy levels and the given gaps for
 which:*
 
-- *Quantum query complexity of estimating $A_1$ to precision $\epsilon$
-  is $\Omega(1/\epsilon)$.*
-- *Classical query complexity is $\Omega(1/\epsilon^2)$.*
+- *Quantum query complexity of estimating $A_1$ to precision $\varepsilon$
+  is $\Omega(1/\varepsilon)$.*
+- *Classical query complexity is $\Omega(1/\varepsilon^2)$.*
 
 *In particular, the sum-of-reciprocals structure of $A_1$ provides no
 worst-case advantage over generic mean estimation.*
@@ -939,29 +939,29 @@ A_1 \;=\; \frac{1}{N}\left(\frac{N - d_0 - (M-2)}{\Delta_1}
 $$
 
 where $C = \sum_{k=2}^{M-1} 1/\Delta_k$ is a known constant (since the
-gaps are known). Estimating $A_1$ to precision $\epsilon$ is equivalent
-to estimating $(N - d_0)/(N\Delta_1)$ to precision $\epsilon$, which is
-equivalent to estimating $d_0/N$ to precision $\epsilon \Delta_1$.
+gaps are known). Estimating $A_1$ to precision $\varepsilon$ is equivalent
+to estimating $(N - d_0)/(N\Delta_1)$ to precision $\varepsilon$, which is
+equivalent to estimating $d_0/N$ to precision $\varepsilon \Delta_1$.
 
 **Step 2: Reduction from approximate counting.** Define $f(x) = 1$ if
 $E_x = 0$ (i.e., $x$ is a ground state) and $f(x) = 0$ otherwise.
-Estimating $d_0/N = |f^{-1}(1)|/N$ to precision $\delta = \epsilon
+Estimating $d_0/N = |f^{-1}(1)|/N$ to precision $\delta = \varepsilon
 \Delta_1$ is an approximate counting problem.
 
 The quantum lower bound (Theorem 4): $\Omega(1/\delta) = \Omega(1/
-(\epsilon \Delta_1))$ queries. This matches the upper bound from
+(\varepsilon \Delta_1))$ queries. This matches the upper bound from
 Theorem 2.
 
 The classical lower bound (Theorem 3 argument): $\Omega(1/\delta^2)
-= \Omega(1/(\epsilon^2 \Delta_1^2))$ queries. For the adversarial
-instance with $d_0 \approx N/2$, this is $\Omega(1/\epsilon^2)$ (since
+= \Omega(1/(\varepsilon^2 \Delta_1^2))$ queries. For the adversarial
+instance with $d_0 \approx N/2$, this is $\Omega(1/\varepsilon^2)$ (since
 $\Delta_1$ is a fixed constant of the instance family).
 
 **Step 3: The higher levels do not help.** The key observation: the
 contribution of levels $2, \ldots, M-1$ to $A_1$ is $C/N$, which
-is $O(M/N) = O(\mathrm{poly}(n)/2^n) = o(\epsilon)$ for any
-$\epsilon \ge 2^{-n/2}$. These levels are informationally invisible at
-precision $\epsilon$: no measurement at this precision can detect their
+is $O(M/N) = O(\mathrm{poly}(n)/2^n) = o(\varepsilon)$ for any
+$\varepsilon \ge 2^{-n/2}$. These levels are informationally invisible at
+precision $\varepsilon$: no measurement at this precision can detect their
 contribution. The entire estimation problem reduces to the first two
 levels.
 
@@ -991,7 +991,7 @@ but this would be a different problem from worst-case $A_1$ estimation.
 ## Updated Complexity Landscape
 
 Incorporating Theorems 4-7, the complete picture for $A_1$ estimation at
-precision $\epsilon = 2^{-n/2}$ is:
+precision $\varepsilon = 2^{-n/2}$ is:
 
 **Query complexity** (tight characterization):
 
@@ -1013,7 +1013,7 @@ Grover's quadratic advantage. Both bounds are tight for $\Delta_1 =
 
 **Proof technique barrier**: Polynomial extrapolation requires precision
 $2^{-\Omega(d)}$ for degree-$d$ interpolation (Theorem 6). At
-$d = \mathrm{poly}(n)$, the required $\epsilon = 2^{-\Omega(n)}$ is
+$d = \mathrm{poly}(n)$, the required $\varepsilon = 2^{-\Omega(n)}$ is
 exponentially below $2^{-n/2}$. No rearrangement of interpolation nodes
 can circumvent this.
 
@@ -1021,58 +1021,58 @@ can circumvent this.
 ## Proposition 8: Precision Phase Diagram
 
 Theorems 1-4 resolve the algorithmically relevant point
-$\epsilon = 2^{-n/2}$. We now place this point in the full
+$\varepsilon = 2^{-n/2}$. We now place this point in the full
 precision-complexity landscape.
 
 Define the precision-dependent core query complexity by fixing
 $M = 2$, $\Delta_1 = 1$, and known ground energy $E_0 = 0$ (the same
 approximate-counting family used in Theorem 4). In this core family,
 $A_1 = 1 - d_0/N$, so the only task is estimating one mean to
-additive error $\epsilon$.
+additive error $\varepsilon$.
 
 **Proposition 8.** *For $A_1$ estimation, the precision landscape is:*
 
 | Precision regime | Quantum query complexity (core) | Classical query complexity (core) | Computational status |
 |------------------|----------------------------------|-----------------------------------|----------------------|
-| $\epsilon = \Theta(1)$ | $\Theta(1)$ | $\Theta(1)$ | Trivial additive approximation |
-| $\epsilon = 1/\mathrm{poly}(n)$ | $\Theta(1/\epsilon)$ | $\Theta(1/\epsilon^2)$ | NP-hard (paper Theorem 2) |
-| $\epsilon = 2^{-cn}$, $0 < c < 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | Between NP-hard and #P-hard known points |
-| $\epsilon = 2^{-n/2}$ | $\Theta(2^{n/2})$ | $\Theta(2^n)$ | This work (Theorems 2-4) |
-| $\epsilon = 2^{-cn}$, $c > 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | #P-hard once $cn$ exceeds the paper's interpolation threshold; otherwise unresolved |
-| $\epsilon = 2^{-\mathrm{poly}(n)}$ | $\Theta(1/\epsilon)$ | $\Theta(1/\epsilon^2)$ | #P-hard (paper Theorem 3) |
+| $\varepsilon = \Theta(1)$ | $\Theta(1)$ | $\Theta(1)$ | Trivial additive approximation |
+| $\varepsilon = 1/\mathrm{poly}(n)$ | $\Theta(1/\varepsilon)$ | $\Theta(1/\varepsilon^2)$ | NP-hard (paper Theorem 2) |
+| $\varepsilon = 2^{-cn}$, $0 < c < 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | Between NP-hard and #P-hard known points |
+| $\varepsilon = 2^{-n/2}$ | $\Theta(2^{n/2})$ | $\Theta(2^n)$ | This work (Theorems 2-4) |
+| $\varepsilon = 2^{-cn}$, $c > 1/2$ | $\Theta(2^{cn})$ | $\Theta(2^{2cn})$ | #P-hard once $cn$ exceeds the paper's interpolation threshold; otherwise unresolved |
+| $\varepsilon = 2^{-\mathrm{poly}(n)}$ | $\Theta(1/\varepsilon)$ | $\Theta(1/\varepsilon^2)$ | #P-hard (paper Theorem 3) |
 
 *Hence the query complexity changes continuously with precision
-($\Theta(1/\epsilon)$ quantum, $\Theta(1/\epsilon^2)$ classical), while
-$\epsilon = 2^{-n/2}$ is the structural boundary where interpolation-based
+($\Theta(1/\varepsilon)$ quantum, $\Theta(1/\varepsilon^2)$ classical), while
+$\varepsilon = 2^{-n/2}$ is the structural boundary where interpolation-based
 #P-hardness proofs break (Theorems 1 and 6).*
 
 **Proof.**
 
 For the core family ($M = 2$, $\Delta_1 = 1$, known $E_0$):
 
-1. Quantum upper bound $O(1/\epsilon)$ follows from Theorem 2
+1. Quantum upper bound $O(1/\varepsilon)$ follows from Theorem 2
    (amplitude-estimation stage).
-2. Quantum lower bound $\Omega(1/\epsilon)$ follows from Theorem 4.
-3. Classical lower bound $\Omega(1/\epsilon^2)$ follows from Theorem 3.
-4. Classical upper bound $O(1/\epsilon^2)$ follows from the sample-mean
-   estimator on Bernoulli outcomes (or brute force when $1/\epsilon^2 > N$).
+2. Quantum lower bound $\Omega(1/\varepsilon)$ follows from Theorem 4.
+3. Classical lower bound $\Omega(1/\varepsilon^2)$ follows from Theorem 3.
+4. Classical upper bound $O(1/\varepsilon^2)$ follows from the sample-mean
+   estimator on Bernoulli outcomes (or brute force when $1/\varepsilon^2 > N$).
 
 So the core query complexities are exactly
-$\Theta(1/\epsilon)$ (quantum) and $\Theta(1/\epsilon^2)$ (classical).
-Substituting $\epsilon = 2^{-cn}$ gives
+$\Theta(1/\varepsilon)$ (quantum) and $\Theta(1/\varepsilon^2)$ (classical).
+Substituting $\varepsilon = 2^{-cn}$ gives
 $\Theta(2^{cn})$ and $\Theta(2^{2cn})$, with separation factor $2^{cn}$.
 At $c = 1/2$, this yields $\Theta(2^{n/2})$ vs $\Theta(2^n)$.
 
 Computational hardness labels come from the paper:
 NP-hard at inverse-polynomial precision (paper Theorem 2) and #P-hard
 at exponentially small precision $2^{-\mathrm{poly}(n)}$ (paper Theorem 3).
-For $\epsilon = 2^{-cn}$ with $c > 1/2$, we are in an exponential regime.
+For $\varepsilon = 2^{-cn}$ with $c > 1/2$, we are in an exponential regime.
 Paper Theorem 3 applies once the linear exponent $cn$ is at least the
 explicit threshold polynomial appearing in that reduction. For linear
 exponents below that threshold, the computational classification remains
 open.
 
-Finally, Theorems 1 and 6 show that $\epsilon = 2^{-n/2}$ is exactly
+Finally, Theorems 1 and 6 show that $\varepsilon = 2^{-n/2}$ is exactly
 where polynomial extrapolation fails to carry #P-hardness downward.
 Thus the transition at $2^{-n/2}$ is a transition in available proof
 techniques, not a discontinuity in query scaling. $\square$
@@ -1143,17 +1143,17 @@ $\square$
 Open Question 1 asks for a natural promise-class completeness statement.
 The clean statement currently available is time-parameterized.
 
-**Proposition 10.** *Let $\mathrm{A1\mbox{-}EST}_\epsilon$ be the promise
+**Proposition 10.** *Let $\mathrm{A1\mbox{-}EST}_\varepsilon$ be the promise
 function problem: given a succinctly described diagonal Hamiltonian $H_z$
 with $\Delta_1 \ge 1/\mathrm{poly}(n)$, output $\widetilde{A}$ such that
-$|\widetilde{A} - A_1(H_z)| \le \epsilon$. Then:*
+$|\widetilde{A} - A_1(H_z)| \le \varepsilon$. Then:*
 
-1. *$\mathrm{A1\mbox{-}EST}_\epsilon \in \mathrm{FBQTIME}(\sqrt{N} +
-   1/(\epsilon\Delta_1)\cdot \mathrm{poly}(n))$ (Theorem 2).*
+1. *$\mathrm{A1\mbox{-}EST}_\varepsilon \in \mathrm{FBQTIME}(\sqrt{N} +
+   1/(\varepsilon\Delta_1)\cdot \mathrm{poly}(n))$ (Theorem 2).*
 2. *On the $M = 2$ core family with $\Delta_1 = 1$ and known $E_0$,
-   quantum query complexity is $\Theta(1/\epsilon)$ (Theorem 4 and
+   quantum query complexity is $\Theta(1/\varepsilon)$ (Theorem 4 and
    Theorem 2).*
-3. *At $\epsilon = 2^{-n/2}$, this gives
+3. *At $\varepsilon = 2^{-n/2}$, this gives
    $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$ and quantum lower bound
    $\Omega(2^{n/2})$ in the query model. So the natural characterization is
    parameterized-time, not PromiseBQP-type polynomial-time behavior.*
@@ -1162,7 +1162,7 @@ $|\widetilde{A} - A_1(H_z)| \le \epsilon$. Then:*
 
 Part 1 is exactly Theorem 2. Part 2 is Theorem 4 (lower bound) plus the
 matching amplitude-estimation upper bound in the same family. Substituting
-$\epsilon = 2^{-n/2}$ gives Part 3.
+$\varepsilon = 2^{-n/2}$ gives Part 3.
 
 The class-mismatch statement is in the black-box query sense:
 the established scaling is exponential in $n$ at the target precision on
@@ -1172,12 +1172,12 @@ a standard fixed class completeness theorem. $\square$
 **Remark.** We tested two natural formulations:
 
 1. Decision/promise version:
-   decide whether $A_1 \ge \tau + \epsilon$ or $A_1 \le \tau - \epsilon$.
+   decide whether $A_1 \ge \tau + \varepsilon$ or $A_1 \le \tau - \varepsilon$.
 2. Function version:
-   output an $\epsilon$-additive approximation.
+   output an $\varepsilon$-additive approximation.
 
-Both are naturally parameterized by $\epsilon$ and yield
-$\mathrm{BQTIME}(1/\epsilon\cdot\mathrm{poly}(n))$ behavior in this
+Both are naturally parameterized by $\varepsilon$ and yield
+$\mathrm{BQTIME}(1/\varepsilon\cdot\mathrm{poly}(n))$ behavior in this
 experiment. This explains why standard classes with fixed polynomial
 runtime do not cleanly fit the $2^{-n/2}$ regime.
 
@@ -1185,7 +1185,7 @@ runtime do not cleanly fit the $2^{-n/2}$ regime.
 Propositions 8-10 is provided in
 `src/experiments/13_intermediate_hardness/lean/`, including:
 
-1. Exact core scaling on the grid $\epsilon_k = 2^{-k}$.
+1. Exact core scaling on the grid $\varepsilon_k = 2^{-k}$.
 2. Threshold specialization at $k = n/2$.
 3. One-bit refinement identities ($Q_{k+1}=2Q_k$, separation doubles).
 4. Symbolic schedule-barrier inequality on the precision grid (all exponents).

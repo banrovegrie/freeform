@@ -25,7 +25,7 @@ Using JRS Theorem 3 (`references/mds/jansen2007bounds.md`) plus the measure-cond
 integral bounds used by Guo-An, the p-schedule certificate is
 
 $$
-T\ge \frac{B_{\mathrm{JRS}}(p)}{\epsilon_{\mathrm{ad}}\,\Delta_*},
+T\ge \frac{B_{\mathrm{JRS}}(p)}{\varepsilon_{\mathrm{ad}}\,\Delta_*},
 $$
 
 with
@@ -68,7 +68,7 @@ Structural `C_mu^2/I` alone is not sufficient.
 Tested schedule family (RC-safe exponential slowdown):
 
 $$
-\frac{ds}{dt}=\frac{\epsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{e^{\beta/g(s)}},\quad \beta>0.
+\frac{ds}{dt}=\frac{\varepsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{e^{\beta/g(s)}},\quad \beta>0.
 $$
 
 For the canonical `alpha=1` linear-cusp model,

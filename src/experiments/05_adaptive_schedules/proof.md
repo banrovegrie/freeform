@@ -51,7 +51,7 @@ $$T_{\text{unf}} = \Omega\left(\frac{s_R - s_L}{\Delta_*} \cdot T_{\text{inf}}\r
 
 The original paper proves:
 - $A_1$ is NP-hard to approximate to precision $1/\text{poly}(n)$
-- $A_1$ is \#P-hard to compute exactly
+- $A_1$ is $\#\text{P}$-hard to compute exactly
 - Knowing $s^*$ to precision $O(\delta_s) = O(2^{-n/2})$ requires knowing $A_1$
 
 **Open question from original paper**: "Can this limitation be overcome when one only
@@ -87,7 +87,7 @@ energy measurements during evolution, because:
 
 ### Protocol: Binary Search with Energy Measurement
 
-**Algorithm: AdaptiveAQO($\epsilon$)**
+**Algorithm: AdaptiveAQO($\varepsilon$)**
 
 ```
 Input: Error tolerance epsilon
@@ -145,8 +145,8 @@ Phase estimation cost at iteration $i$: $O(1/\Delta(s_{\text{mid},i})) \leq O(1/
 **Key observation**: The midpoints $s_{\text{mid},i}$ lie on a dyadic grid
 $\{k/2^j : k \in \mathbb{Z}, j \in \mathbb{N}\}$.
 
-For any fixed $s^*$, the number of dyadic points within distance $\epsilon$ of $s^*$
-is $O(\log(1/\epsilon))$.
+For any fixed $s^*$, the number of dyadic points within distance $\varepsilon$ of $s^*$
+is $O(\log(1/\varepsilon))$.
 
 Therefore, grouping iterations by the magnitude of $d_i$:
 - Iterations with $d_i \in [2^{-j-1}, 2^{-j}]$: at most $O(1)$ such iterations
@@ -183,7 +183,7 @@ schedule achieves runtime $T = O(T_{\text{inf}})$.
 - Total: $O(T_{\text{inf}}) + O(T_{\text{inf}}) = O(T_{\text{inf}})$
 
 Correctness: Phase 1 locates $s^*$ to precision $O(\Delta_*)$. This is sufficient for
-Phase 2 to achieve fidelity $1 - \epsilon$ by the original paper's adiabatic theorem. $\square$
+Phase 2 to achieve fidelity $1 - \varepsilon$ by the original paper's adiabatic theorem. $\square$
 
 
 ## Part IV: Lower Bound

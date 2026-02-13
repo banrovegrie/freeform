@@ -4,12 +4,12 @@
 
 ### Gap 1: Precision Landscape
 - [x] Add a precision phase diagram proposition covering:
-  - $\epsilon = \Theta(1)$
-  - $\epsilon = 1/\mathrm{poly}(n)$
-  - $\epsilon = 2^{-cn}$ for $c < 1/2$
-  - $\epsilon = 2^{-n/2}$
-  - $\epsilon = 2^{-cn}$ for $c > 1/2$
-  - $\epsilon = 2^{-\mathrm{poly}(n)}$
+  - $\varepsilon = \Theta(1)$
+  - $\varepsilon = 1/\mathrm{poly}(n)$
+  - $\varepsilon = 2^{-cn}$ for $c < 1/2$
+  - $\varepsilon = 2^{-n/2}$
+  - $\varepsilon = 2^{-cn}$ for $c > 1/2$
+  - $\varepsilon = 2^{-\mathrm{poly}(n)}$
 - [x] Add figure-like summary table in `proof.md`.
 - [x] Chain existing theorems (paper Thms 2-3, Exp13 Thms 1-7) without re-deriving.
 
@@ -20,8 +20,8 @@
 - [x] State precise condition for when Exp 08 tractability extends to schedule-level precision.
 
 ### Gap 3: Promise-Class Characterization
-- [x] Add parameterized promise-time proposition for $\mathrm{A1\mbox{-}EST}_\epsilon$.
-- [x] Explain why PromiseBQP-type polynomial-time behavior does not capture $\epsilon = 2^{-n/2}$ in the query model.
+- [x] Add parameterized promise-time proposition for $\mathrm{A1\mbox{-}EST}_\varepsilon$.
+- [x] Explain why PromiseBQP-type polynomial-time behavior does not capture $\varepsilon = 2^{-n/2}$ in the query model.
 - [x] Document class mismatch honestly as an unresolved completeness question.
 
 ### Gap 4: Chapter 9 Integration
@@ -76,7 +76,7 @@
     ($\mu$, $K$) instead of an unstated runtime lower-bound assumption.
 - Updated `lib/verify.py`:
   - Added `verify_precision_phase_diagram()`.
-  - Added exponent and smooth-scaling checks across $\epsilon$ regimes.
+  - Added exponent and smooth-scaling checks across $\varepsilon$ regimes.
 - Verification runs completed:
   - `python3 src/experiments/13_intermediate_hardness/lib/verify.py` (all checks passed)
   - `python3 src/experiments/13_intermediate_hardness/lib/deep_verify.py` (all checks passed)
@@ -97,13 +97,13 @@
 
 ### 1. Precision landscape is now explicit
 - Query-complexity core law is continuous in precision:
-  - Quantum: $\Theta(1/\epsilon)$
-  - Classical: $\Theta(1/\epsilon^2)$
-- At $\epsilon = 2^{-n/2}$ this specializes to:
+  - Quantum: $\Theta(1/\varepsilon)$
+  - Classical: $\Theta(1/\varepsilon^2)$
+- At $\varepsilon = 2^{-n/2}$ this specializes to:
   - Quantum: $\Theta(2^{n/2})$
   - Classical: $\Theta(2^n)$
 - The structural boundary at $2^{-n/2}$ is a proof-technique boundary (interpolation fails), not a discontinuity in the core query law.
-- For $\epsilon = 2^{-cn}$ with $c>1/2$, the query law is explicit, while #P-hardness is tied to whether $cn$ reaches the paper's interpolation threshold polynomial.
+- For $\varepsilon = 2^{-cn}$ with $c>1/2$, the query law is explicit, while #P-hardness is tied to whether $cn$ reaches the paper's interpolation threshold polynomial.
 
 ### 2. Theorem 7 is worst-case, not family-preserving
 - Theorem 7 does not automatically impose hardness inside restricted structured families from Experiment 08.
@@ -112,8 +112,8 @@
 
 ### 3. Promise-class status is clarified but incomplete
 - Best current statement is parameterized:
-  - $\mathrm{A1\mbox{-}EST}_\epsilon \in \mathrm{FBQTIME}(\sqrt{N} + 1/(\epsilon\Delta_1)\cdot\mathrm{poly}(n))$.
-- At $\epsilon=2^{-n/2}$ this gives $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$, which is beyond PromiseBQP-type polynomial-time behavior in the query model.
+  - $\mathrm{A1\mbox{-}EST}_\varepsilon \in \mathrm{FBQTIME}(\sqrt{N} + 1/(\varepsilon\Delta_1)\cdot\mathrm{poly}(n))$.
+- At $\varepsilon=2^{-n/2}$ this gives $\mathrm{FBQTIME}(2^{n/2}\mathrm{poly}(n))$, which is beyond PromiseBQP-type polynomial-time behavior in the query model.
 - No natural completeness theorem is established yet for this precision regime.
 
 ### 4. Chapter 9 placement is now concrete

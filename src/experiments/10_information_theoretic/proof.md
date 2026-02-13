@@ -269,19 +269,19 @@ The communication cost is a property of the computational model, not of the comp
 
 **Proposition 9 (Quantum Pre-Computation Tradeoff, Importing Experiment 13).**
 Fix the AQO-relevant precision scale
-$$\epsilon_* = \Theta(\delta_{A_1}) = \Theta(2^{-n/2})$$
+$$\varepsilon_* = \Theta(\delta_{A_1}) = \Theta(2^{-n/2})$$
 in the unstructured regime $d_0 = \Theta(1)$, $A_2 = \Theta(1)$.
 Let $p(n)$ denote the polynomial overhead from arithmetic/oracle implementation in Experiment 13.
 Then:
 
 (a) **Quantum pre-computation + informed adiabatic evolution.**
-Estimate $A_1$ to precision $\epsilon_*$ using Experiment 13, Theorem 2 in
+Estimate $A_1$ to precision $\varepsilon_*$ using Experiment 13, Theorem 2 in
 $O(2^{n/2} p(n))$ time (for $\Delta_1 = \Theta(1)$), then run the informed
 adiabatic schedule in $T_{\mathrm{inf}} = \Theta(2^{n/2})$ time. Total:
 $$T_{\mathrm{quant\text{-}pre}} = O(2^{n/2} p(n)) = O(\sqrt{N/d_0}\,p(n)).$$
 
 (b) **Classical pre-computation + informed adiabatic evolution.**
-Any classical estimator of $A_1$ at precision $\epsilon_*$ needs
+Any classical estimator of $A_1$ at precision $\varepsilon_*$ needs
 $\Omega(2^n)$ queries (Experiment 13, Theorem 3). Therefore:
 $$T_{\mathrm{class\text{-}pre}} = \Omega(2^n) + \Theta(\sqrt{N/d_0}) = \Omega(2^n).$$
 
@@ -291,7 +291,7 @@ $\Omega(2^{n/2})$ for this estimation task, so the quantum pre-computation cost 
 tight up to the factor $p(n)$. Experiment 13, Theorem 5 lifts the same quadratic gap
 to the computational model under ETH.
 
-*Proof.* Theorem 6 implies that precision $\epsilon_* = \Theta(\delta_{A_1})$ is the
+*Proof.* Theorem 6 implies that precision $\varepsilon_* = \Theta(\delta_{A_1})$ is the
 threshold for reaching $T = \Theta(T_{\mathrm{inf}})$. For unstructured search,
 $\delta_{A_1} = \Theta(2^{-n/2})$. Experiment 13, Theorem 2 gives quantum estimation
 time $O(2^{n/2} p(n))$ at this precision (assuming $\Delta_1 = \Theta(1)$). Adding
@@ -430,8 +430,8 @@ landscape is:
 | Adiabatic, adaptive | 0 communicated bits (plus $O(n)$ measured bits during run) | $\Theta(\sqrt{N/d_0})$ | Online quantum measurements | Barrier bypassed by adaptive sensing | Exp 05, Thm 3(d), Thm 4(c) |
 | Continuous-time rank-one, constant controls on two-level family $H_z=\mathbb{I}-P_0$ | 0 bits | $\Theta(\sqrt{N/d_0})$ | None | Fast family-level protocol; no worst-case guarantee over all diagonal spectra | Prop 10, Thm 9 |
 | Adiabatic with modified Hamiltonian, rank-one instance-independent design | 0 bits (if no spectral pre-step) | No guaranteed route to spectrum-independent $\Theta(\sqrt{N/d_0})$ scaling | None | Rank-one no-go: crossing remains spectrum-dependent | Exp 12 Thm 5 + Part VIII tradeoff framework |
-| Quantum $A_1$ estimation subroutine ($\epsilon=2^{-n/2}$, $\Delta_1=\Theta(1)$) | Not a ground-state solver by itself | $\Theta(2^{n/2})$ queries (up to $p(n)$ gate overhead) | Phase/amplitude estimation | Tight | Exp 13 Thms 2 and 4 |
-| Classical $A_1$ estimation subroutine ($\epsilon=2^{-n/2}$) | Not a ground-state solver by itself | $\Theta(2^n)$ queries | Sampling / brute force | Tight in queries; ETH lower bound in time | Exp 13 Thm 3 + Thm 5 + brute-force upper bound |
+| Quantum $A_1$ estimation subroutine ($\varepsilon=2^{-n/2}$, $\Delta_1=\Theta(1)$) | Not a ground-state solver by itself | $\Theta(2^{n/2})$ queries (up to $p(n)$ gate overhead) | Phase/amplitude estimation | Tight | Exp 13 Thms 2 and 4 |
+| Classical $A_1$ estimation subroutine ($\varepsilon=2^{-n/2}$) | Not a ground-state solver by itself | $\Theta(2^n)$ queries | Sampling / brute force | Tight in queries; ETH lower bound in time | Exp 13 Thm 3 + Thm 5 + brute-force upper bound |
 
 *Proof.* Each row is a direct citation-chain import:
 

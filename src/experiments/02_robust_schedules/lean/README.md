@@ -35,8 +35,8 @@ lake build HedgingTheorem
    Axioms: propext, Classical.choice, Quot.sound (standard Lean axioms)
 
 2. **Sqrt Term Bound** (`sqrt_term_bound`):
-   For any $\epsilon > 0$, there exists $R_0$ such that for $R > R_0$,
-   $\sqrt{(1-w) w / R} < \epsilon$.
+   For any $\varepsilon > 0$, there exists $R_0$ such that for $R > R_0$,
+   $\sqrt{(1-w) w / R} < \varepsilon$.
 
 3. **Optimal Velocity Convergence** (`v_slow_opt_approaches_w`):
    The optimal slow velocity $v_{slow}^{opt} = w + \sqrt{(1-w) w / R}$ approaches $w$

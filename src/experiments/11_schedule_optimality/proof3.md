@@ -30,7 +30,7 @@ Define a penalty-modified RC-safe schedule class:
 $$
 \frac{ds}{dt}
 =
-\frac{\epsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},
+\frac{\varepsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},
 $$
 
 with measurable penalty `Phi:[g_min,g_max] -> [1,\infty)`.
@@ -40,7 +40,7 @@ The runtime is
 $$
 T_{\Phi}
 =
-\frac{A_H}{\epsilon_{\mathrm{ad}}}
+\frac{A_H}{\varepsilon_{\mathrm{ad}}}
 I_{\Phi},
 \qquad
 I_{\Phi}:=\int_0^1\frac{\Phi(g_{\mathrm{mod}}(s))}{g_{\mathrm{mod}}(s)^2}\,ds.
@@ -51,7 +51,7 @@ The RC baseline corresponds to `Phi=1`:
 $$
 T_{\mathrm{RC}}
 =
-\frac{A_H}{\epsilon_{\mathrm{ad}}}
+\frac{A_H}{\varepsilon_{\mathrm{ad}}}
 I_{\mathrm{RC}},
 \qquad
 I_{\mathrm{RC}}=\int_0^1 g_{\mathrm{mod}}(s)^{-2}\,ds

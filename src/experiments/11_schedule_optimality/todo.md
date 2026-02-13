@@ -92,9 +92,9 @@ publication-grade threads.
 ### F1. Partial-information schedule comparison (Gap 1)
 
 - Imported exactly from Exp 07 Theorem 3:
-  $$T_{\mathrm{RC}}(\epsilon_{A_1})
+  $$T_{\mathrm{RC}}(\varepsilon_{A_1})
   = T_{\mathrm{RC},\infty}\cdot
-  \Theta\!\left(\max\!\left(1,\frac{\epsilon_{A_1}}{\delta_{A_1}}\right)\right),
+  \Theta\!\left(\max\!\left(1,\frac{\varepsilon_{A_1}}{\delta_{A_1}}\right)\right),
   \quad \delta_{A_1}=2\sqrt{d_0A_2/N}.$$ 
 - Derived explicit JRS sensitivity:
   $$\frac{T_{\mathrm{JRS}}(\delta_C,\delta_g)}{T_{\mathrm{JRS},\infty}}
@@ -104,13 +104,13 @@ publication-grade threads.
   $$\frac{g_{\mathrm{mod}}(A+e)}{g_{\mathrm{mod}}(A)}-1=\frac{e}{A(A+e+1)},$$
   $$\frac{C_{\mathrm{mod}}(A+e)-\rho}{C_{\mathrm{mod}}(A)-\rho}-1
   =-\frac{(2A+1)e+e^2}{(A+e)(A+e+1)},$$
-  giving explicit certified bounds for JRS overhead under $|e|\le\epsilon<A$.
+  giving explicit certified bounds for JRS overhead under $|e|\le\varepsilon<A$.
 - Lean formalization now includes these algebraic identities in
   `lean/ScheduleOptimality/PartialInfo.lean`.
 - Practical recommendation from Proposition I:
-  - Coarse $A_1$ knowledge ($\epsilon_{A_1} \gg \delta_{A_1}$): prefer JRS-style
+  - Coarse $A_1$ knowledge ($\varepsilon_{A_1} \gg \delta_{A_1}$): prefer JRS-style
     scheduling with conservative $(C_+, g_-)$.
-  - High-precision regime ($\epsilon_{A_1} \lesssim \delta_{A_1}$): both frameworks
+  - High-precision regime ($\varepsilon_{A_1} \lesssim \delta_{A_1}$): both frameworks
     are constant-factor optimal; compare constants via $I$ versus $C^2$.
 
 ### F2. Structured-family constant comparison (Gap 2)
@@ -142,7 +142,7 @@ Proposed subsection order:
    - State explicit $C$ bound and Grover exact constant $C=1$.
 2. **Runtime Recovery Across Frameworks (Exp 11 Theorem C + D)**
    - Show both $p=2$ and $p=3/2$ recover
-     $T = O(\sqrt{NA_2/d_0}/\epsilon)$.
+     $T = O(\sqrt{NA_2/d_0}/\varepsilon)$.
 3. **Constant-Level Comparison (Exp 11 Theorem E + Remark J)**
    - Present $C^2/I$ logic, Grover benchmark, and structured Ising contrast.
 4. **Schedule Choice Under Partial Information (Exp 11 Proposition I + Exp 07 Thm 3)**
@@ -178,7 +178,7 @@ Main-text versus appendix split:
 - `proof3.md` Theorem P proves, for schedules
   $$\frac{ds}{dt}
   =
-  \frac{\epsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},\quad \Phi\ge 1,$$
+  \frac{\varepsilon_{\mathrm{ad}}}{A_H}\frac{g(s)^2}{\Phi(g(s))},\quad \Phi\ge 1,$$
   on the canonical alpha=1 model:
   $$\frac{T_{\Phi}}{T_{\mathrm{RC}}}
   \ge
