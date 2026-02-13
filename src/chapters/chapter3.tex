@@ -306,7 +306,8 @@ family of polynomial-size quantum circuits that accepts every
 $x\in L_{\mathrm{yes}}$ with probability at least $2/3$ and rejects every
 $x\in L_{\mathrm{no}}$ with probability at least $2/3$. Uniformity means a
 classical polynomial-time algorithm can output the circuit description for input
-length $n$. The constant $2/3$ is conventional: standard repetition with
+length $n$. The choice of $2/3$ is arbitrary in the sense that any constant
+bounded away from $1/2$ defines the same class. Standard repetition with
 majority vote amplifies success probability to $1-2^{-p(n)}$ for any polynomial
 $p$~\cite{BernsteinVazirani1997, Watrous2009}.
 
@@ -416,9 +417,9 @@ all basis states decomposes in $\mathcal{V}$ as
 \qquad
 \sin\theta = \sqrt{\frac{d_0}{N}}.
 \end{equation}
-When $d_0 \ll N$, the angle $\theta$ is small: the initial state $\ket{s}$ is
-nearly orthogonal to the target $\ket{w}$, tilted toward it by an angle of
-order $\sqrt{d_0/N}$.
+When $d_0 \ll N$, the initial state $\ket{s}$ is nearly orthogonal to the
+target $\ket{w}$, tilted toward it by an angle $\theta$ of order
+$\sqrt{d_0/N}$.
 
 The oracle provides a phase-flip on marked states, which in
 $\mathcal{H}_n$ is a reflection through the hyperplane orthogonal to $\ket{w}$:
@@ -543,9 +544,8 @@ space, controls the computational outcome.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Grover's algorithm demonstrates that $\sqrt{N/d_0}$ queries suffice for
-unstructured search. The natural question is whether a cleverer algorithm could
-use fewer. Bennett, Bernstein, Brassard, and Vazirani showed that it
-cannot~\cite{bennett1997strengths}.
+unstructured search. Bennett, Bernstein, Brassard, and Vazirani showed that
+no quantum algorithm can do better~\cite{bennett1997strengths}.
 
 The argument rests on a hybrid distinguishability bound. Consider a quantum
 algorithm that makes $T$ queries to a single-marked-item oracle. Let
@@ -580,10 +580,9 @@ frontier for unstructured quantum search:
 Q_{\mathrm{search}}
 = \Theta\!\left(\sqrt{\frac{N}{d_0}}\right).
 \end{equation}
-This is not merely a known algorithm paired with a known lower bound. It is a
-tight asymptotic characterization: the quantum query complexity of unstructured
-search is determined up to constant factors, and no future algorithm can improve
-the exponent.
+This is not merely a known algorithm paired with a known lower bound. The
+quantum query complexity of unstructured search is now determined up to
+constant factors. No future algorithm can improve the exponent.
 
 The same $\Omega(\sqrt{N})$ barrier survives the transition from discrete
 queries to continuous-time Hamiltonian evolution. Farhi, Goldstone, and Gutmann
@@ -595,9 +594,9 @@ implementation from gates to Hamiltonians does not remove the
 information-theoretic barrier.
 
 The word ``unstructured'' carries precise but different meanings in the two
-settings. In the circuit model, it means black-box oracle access: the only way to learn about
-$f$ is to query it, and no exploitable regularity in the labels is promised or
-assumed. In the adiabatic model, it means that the problem Hamiltonian is a
+settings. In the circuit model, it means black-box oracle access. The only way to learn
+about $f$ is to query it, and no exploitable regularity in the labels is
+promised or assumed. In the adiabatic model, it means that the problem Hamiltonian is a
 diagonal cost map $z \mapsto E_z$ with no additional promised structure and no
 locality, sparsity, or algebraic pattern that an algorithm could exploit. The two
 models enforce the same absence of exploitable information through different
@@ -607,7 +606,7 @@ The frontier is now closed. Unstructured quantum search has query complexity
 $\Theta(\sqrt{N/d_0})$, and this holds regardless of whether the algorithm uses
 discrete oracle queries or continuous Hamiltonian evolution. The question that
 remains is subtler. In the circuit model, achieving the optimal scaling requires
-only knowledge of $N$ and $d_0$: the algorithm is $k^*$ iterations of a fixed
+only knowledge of $N$ and $d_0$. The algorithm runs $k^*$ iterations of a fixed
 two-reflection circuit, and $k^*$ depends on nothing else. In the adiabatic
 model, matching the same scaling requires a schedule that is adapted to the
 spectral gap profile along the interpolation path. Whether the information

@@ -1,222 +1,117 @@
 # Taste
 
-Papers for taste, reference and style guidance, organized by author.
+Aaronson opens with a problem or story, never a definition. His PhD thesis builds seven distinct interpretations of the collision lower bound before touching formalism, and by the time the math arrives the reader is asking for it. Each section opening creates a gap the section fills. Definitions arrive only when existing language is insufficient and are used immediately. First person marks opinions and conjectures, keeping them distinct from proved results. Background chapters are compressed tool chests; contribution chapters are arguments. Proofs end abruptly and sections end forward-looking, naming what remains open.
 
-Deep analysis of writing patterns, structural techniques, and actionable guidance for thesis writing.
+Penrose opens with the physical situation, never the apparatus. The core habit is geometric patience: one to three paragraphs of physical picture-building that make the equation inevitable when it arrives. Arguments end by returning to the physical prediction and stating what remains testable. Equations appear as conclusions of arguments, not starting points of explanations. For this thesis, his approach governs every motivation paragraph.
 
-## Scott Aaronson
+Harrow writes at maximum density without sacrificing clarity. The HHL abstract contains the problem, the classical baseline, the quantum improvement, and the conditions under which it applies. Proofs are modular: algorithm, runtime, optimality as distinct self-contained units. Runtime is always stated with all parameter dependencies explicit: O(log(N) s^2 kappa^2 / epsilon), not "efficient." Equations are grammatical parts of sentences, not displayed objects floating between paragraphs.
 
-**Style essence**: Makes you *feel* why a result matters before showing you the proof. Master of the philosophical hook.
+De Wolf teaches. The signature habit is two-pass exposition: first an informal explanation in the reader's vocabulary ("roughly, by a 'classical' state we mean a state in which the system can be found if we observe it"), then the formal statement with quantifiers. Running examples (OR, PARITY, MAJORITY) thread through every chapter and accumulate meaning. Every chapter ends with a summary tying back to the arc. Background goes to appendices, keeping the main text focused on ideas.
 
-### What Makes His Writing Work
-
-Aaronson writes for intelligent outsiders. His signature move is to take a technical result and show why it matters for questions people already care about. In "Why Philosophers Should Care About Computational Complexity," he opens not with definitions but with a Turing quote about the fallacy of logical omniscience, immediately signaling that this will connect to deep questions.
-
-**Structural patterns observed**:
-1. **The philosophical hook**: Opens with a question or paradox that the reader already finds interesting
-2. **The ground rules**: Explicitly states what the essay will and won't cover (see Section 1.1)
-3. **The complexity 101 section**: Brief, accessible primer before diving deep
-4. **The "one might think... but" construction**: Anticipates and addresses objections
-5. **The concrete example**: Tornado assembling a 747, lookup tables, Borges' Library of Babel
-6. **The honest admission**: "I personally see no reason to believe..." shows intellectual honesty
-
-**Paragraph-level techniques**:
-- Paragraphs often begin with a provocative claim, then unpack it
-- Uses rhetorical questions to guide the reader's thinking
-- Employs first person liberally ("I find it surprising that...")
-- Footnotes handle technical qualifications without disrupting flow
-- Italics for emphasis on key conceptual points
-
-**Sentence-level patterns**:
-- Short punchy sentences after long complex ones for rhythm
-- Parenthetical asides that add personality ("the other complexity theory, which studies complex systems")
-- Explicitly numbered lists when making multiple distinct points
-
-### Actionable Pointers for Thesis
-
-1. **Opening chapters**: Ask "What question does this answer that a physicist would already care about?"
-2. **Before every definition**: Write one paragraph explaining why we need this concept
-3. **The ground rules trick**: Early in introduction, explicitly list what thesis will/won't cover
-4. **Vivid analogies**: For every abstract concept, find one concrete physical analogy
-5. **Anticipate objections**: Include "One might worry that..." paragraphs
-6. **Honest limitations**: Include explicit "Criticisms of [approach]" subsection
-7. **The relevance test**: For each section, write one sentence explaining its philosophical import
-
-### Papers
-
-1. 1011.3245 - Aaronson, Arkhipov - The Computational Complexity of Linear Optics (2010)
-2. 1108.1791 - Aaronson - Why Philosophers Should Care About Computational Complexity (2011)
-3. 1612.05903 - Aaronson, Chen - Complexity-Theoretic Foundations of Quantum Supremacy Experiments (2016)
+The AQO paper (Chakraborty et al.) is the thesis's source material and notation baseline: H(s) = (1-s)H_0 + sH_P with s as schedule, gap g(s), avoided crossing at s*, runtime T = O(2^{n/2} poly(n)) with explicit polynomial factors. Results are stated with bounds, hardness is proved by reduction, limitations are named honestly. The thesis must exceed this paper in exposition depth on every point it covers.
 
 
-## Aram Harrow
+## Signaling Transforms
 
-**Style essence**: Maximum information density with perfect clarity. Every sentence earns its place.
+Delete sentences that describe what you are doing rather than doing it. Five types:
 
-### What Makes His Writing Work
+Technique-signaling: "To provide intuition, consider X" becomes "Consider X."
+Source-signaling: "The paper proves g_min = ..." becomes "The minimum gap is g_min = ... [cite]."
+Process-signaling: "We now need to define X before stating Y" becomes: define X, state Y.
+Structure-signaling: "In this chapter we discuss X, Y, Z" becomes: open with the question X answers. If a roadmap is needed, make it carry content: "This chapter establishes the baseline in three steps: the quantum formalism (Section 3.1), the query model (Section 3.2), and the Grover frontier (Section 3.3) that later chapters must match."
+Register-signaling: "It is important to note that..." becomes: state the important thing.
 
-Harrow's HHL paper is a masterclass in technical writing. The abstract alone contains: the problem, the classical baseline, the quantum improvement, and the conditions under which it applies. No wasted words. The paper follows a rigid logical structure that makes it easy to find specific information.
+The deletion test: remove the frame, keep the content. If nothing is lost, it was signal. Exception: section closings that name specific results ("The deliverables of this section are the adiabatic condition and the Landau-Zener formula") are consolidation, not signal.
 
-**Structural patterns observed**:
-1. **The problem-solution abstract**: Problem statement, classical bound, quantum algorithm, improvement factor
-2. **The "sketch then details" pattern**: Section II gives algorithm intuition, Appendix A gives full proofs
-3. **The modular proof structure**: Each piece (algorithm, runtime, optimality) is self-contained
-4. **The reduction for hardness**: Shows optimality by reducing from BQP-complete problems
-5. **The "discussion" section**: Extensions, generalizations, and connections to other work
-6. **The explicit error analysis**: Separate subsection devoted entirely to error bounds
 
-**Paragraph-level techniques**:
-- Topic sentences that precisely state what the paragraph will establish
-- Mathematical statements interspersed naturally with prose
-- Equations are part of sentences, not separate entities
-- Each paragraph typically makes exactly one point
+## Warmth and Bloat
 
-**Notation discipline**:
-- Consistent use of O-tilde notation for suppressing log factors
-- Explicit statement of what norms mean (spectral norm for operators)
-- Runtime stated with all dependencies explicit: O(log(N) s^2 kappa^2 / epsilon)
+Warmth contributes to reading experience without new technical information: anticipation, reframing, rhythm, emphasis. Bloat contributes nothing to either. Two questions distinguish them: (1) Is meaning unchanged if deleted? (2) Is reading experience unchanged if deleted? Both yes means bloat. If deleting makes prose feel rushed or disorienting, the sentence was doing rhetorical work.
 
-### Actionable Pointers for Thesis
+Warm: "A concrete example makes this vivid." "This asymmetry is not an accident of 3-SAT." "A first-year student can verify a solution."
+Bloat: "It is important to understand the distinction between P and NP." "Having discussed the complexity classes, we now turn to their application."
 
-1. **State results precisely**: Every theorem should have explicit error bounds and complexity
-2. **Separate intuition from proof**: Use "We sketch here the basic idea... we discuss it in more detail in the next section"
-3. **Modular structure**: Algorithm description, runtime analysis, optimality proof as distinct sections
-4. **Runtime with dependencies**: Always state T = O(f(n, epsilon, kappa, ...)) with all parameters
-5. **The "Related work" paragraph**: Brief, precise comparison to prior results
-6. **The "Discussion" section**: Extensions, limitations, open questions
-7. **Hardness via reduction**: If claiming something is hard, prove it by reduction
+Dryness across an entire section is as much a failure as filler across an entire section.
 
-### Papers
+
+## Register
+
+Formal register for theorem statements, proof steps, definitions, explicit bounds. Short sentences, mathematical precision. Warm register for section openings, motivation, interpretation after proofs, transitions, physical intuition. Longer sentences, varied rhythm, concrete images, authorial voice.
+
+Shifts happen at structural boundaries, never announced. Monotone formality and monotone informality are both failures.
+
+
+## Depth
+
+Floor test: the thesis treatment of every central concept must match or exceed the published paper. A thesis thinner than its source paper is broken.
+Teaching test: could a graduate student new to AQO reconstruct the argument and extend it after reading the section?
+Guard rail: depth is explanatory power per sentence, not sentence count.
+
+
+## Craft
+
+Before writing any prose, identify the chapter's spine: the questions that determine the order of sections. Write them down. Be willing to throw them away and start over if the order feels forced.
+
+### Openings
+
+First sentence names the question or tension, not the topic. A narrative vignette that builds to the tension by end of the opening paragraph is equally valid. Second or third sentence gives a concrete instance: a specific Hamiltonian, function, or parameter regime. No formalism in the opening paragraph. Identify one driving example per chapter and thread it through every section.
+
+### Definitions
+
+Before every definition, write the paragraph that makes the reader want it. Two-pass exposition: informal in the reader's vocabulary, then formal with quantifiers. After every definition, use it immediately. No definition sits unused for more than a paragraph. Definition sequences are death: if three definitions must appear near each other, separate them with motivation or use.
+
+### Proofs
+
+State proof strategy in one content sentence. Not "the proof proceeds by induction" but "the bound follows from comparing two-level dynamics to the full system." End by returning to the claim. After every major proof, write an interpretation paragraph: what changed, what assumption carried the weight, what would go wrong without it. But do not force interpretation on bookkeeping lemmas. Where a result is routine, say so and move on.
+
+### Transitions
+
+Every transition sentence carries content. Replace "We now turn to..." with a sentence that closes one topic and opens the next. Between sections: the new question arises from the previous answer. Between chapters: the opening recalls a specific limitation from the previous chapter.
+
+### Closings
+
+Close with what was established and what question it opens. A closing sentence naming specific results is consolidation, not signal. One saying "We have established the necessary background" is signal. End every chapter with a summary or bridge.
+
+### Throughout
+
+Write about the subject, not about the paper or thesis. Attribute results to specific people, not passive citations, and when citing a source, say what it contributes at that point in the argument. Thread running examples across chapters and let them accumulate meaning. Import math from the published paper and do not invent formulas. Use figures for geometric and spectral concepts. Write out of order, introduction last.
+
+
+## Baselines
+
+The thesis aims to match de Wolf's structural discipline and exceed Zeeshan's MS thesis on every axis. De Wolf opens chapters with motivation and closes them with summaries that tie back to the arc; Zeeshan's chapters lack both. De Wolf uses two-pass exposition consistently; Zeeshan gives single-pass definitions with less buildup. De Wolf threads running examples across chapters; Zeeshan's appear locally. De Wolf writes with personal voice and weaves historical context naturally; Zeeshan writes technically and cites by number. De Wolf puts background in appendices; Zeeshan's Chapter 2 competes with main results for attention. The gap is not scope (PhD vs MS) but craft.
+
+
+## Papers
+
+### Scott Aaronson
+
+1. aaronson_phd_thesis - Limits on Efficient Computation in the Physical World (2004)
+2. aaronson_npcomplete - NP-Complete Problems and Physical Reality (2005)
+3. 1011.3245 - Aaronson, Arkhipov - The Computational Complexity of Linear Optics (2010)
+4. 1108.1791 - Aaronson - Why Philosophers Should Care About Computational Complexity (2011)
+5. 1612.05903 - Aaronson, Chen - Complexity-Theoretic Foundations of Quantum Supremacy Experiments (2016)
+
+### Roger Penrose
+
+1. penrose_gravity_qsr - On Gravity's Role in Quantum State Reduction (1996)
+
+### Aram Harrow
 
 1. 0802.1919 - Harrow, Low - Random Quantum Circuits are Approximate 2-designs (2008)
 2. 0811.3171 - Harrow, Hassidim, Lloyd - Quantum Algorithm for Linear Systems of Equations (2008)
 3. 1208.0692 - Brandao, Harrow, Horodecki - Local Random Quantum Circuits are Approximate Polynomial-Designs (2012)
 
+### Ronald de Wolf
 
-## Ronald de Wolf
+1. dewolf_phd_thesis - Quantum Computing and Communication Complexity (2001)
+2. 1907.09415 - Quantum Computing: Lecture Notes (2019)
 
-**Style essence**: The patient teacher who never loses you. Sustains narrative across hundreds of pages.
-
-### What Makes His Writing Work
-
-De Wolf's PhD thesis is perhaps the best model for thesis writing. It opens with a philosophical epigraph ("Se non e vero, e ben trovato" - even if it's not true, it's a nice idea), immediately establishing a personal, reflective voice. The acknowledgments read like a story of intellectual development, not a list of names.
-
-**Structural patterns observed**:
-1. **The philosophical epigraph**: Sets tone before content begins
-2. **The acknowledgments as narrative**: Thanks people for specific intellectual contributions
-3. **The roadmap introduction**: Chapter 1 is itself a mini-survey of the field
-4. **The motivation-definition-theorem-discussion cycle**: Each concept introduced this way
-5. **The running examples**: OR, PARITY, MAJORITY appear throughout
-6. **The chapter summary**: Each chapter ends with "Summary" consolidating key insights
-7. **The linear algebra appendix**: Technical preliminaries in appendix, not main text
-
-**Chapter-level architecture** (from Chapter 2):
-- 2.1 Introduction: Why this chapter matters, what we'll prove
-- 2.2 Boolean Functions and Polynomials: Building blocks, carefully motivated
-- 2.3 Query Complexity: The models we need
-- 2.4-2.7: Main results, organized by function class
-- 2.8 Summary: What we learned, what's next
-
-**The "two-pass" exposition**:
-- First pass: Informal explanation in plain language
-- Second pass: Formal definition/theorem/proof
-- Example: "Roughly, by a 'classical' state we mean a state in which the system can be found if we observe it." Then formal definition follows.
-
-**Transition techniques**:
-- "Before continuing with the harder case, notice the resemblance..."
-- "The point of these examples was to illustrate that..."
-- "An important property that deserves to be mentioned is..."
-
-### Actionable Pointers for Thesis
-
-1. **Philosophical opening**: Begin with an epigraph or philosophical framing
-2. **Acknowledgments as narrative**: Write about intellectual journey, not just names
-3. **Chapter 1 as mini-survey**: Introduction should be readable as standalone overview
-4. **The two-pass pattern**: Informal intuition, then formal statement
-5. **Running examples**: Choose 2-3 examples (functions, Hamiltonians) and use throughout
-6. **Chapter summaries**: End every chapter with "Summary" section
-7. **Appendix for background**: Put linear algebra, complexity definitions in appendix
-8. **Historical context**: Weave in who proved what when ("Bernstein and Vazirani also defined...")
-9. **The "helpful comparison" paragraph**: "At this point, a comparison with [X] may be helpful."
-
-### De Wolf vs Zeeshan Thesis: Detailed Comparison
-
-| Aspect | De Wolf | Zeeshan (baseline) |
-|--------|---------|---------------------|
-| **Opening** | Philosophical epigraph: "Se non e vero, e ben trovato" (Even if it's not true, it's a nice idea) sets reflective, honest tone | Standard certificate page followed by Turing quote about intelligent computers |
-| **Abstract** | Structured, separated from main text, brief summary in "Samenvatting" and English "Abstract" at end | Single dense paragraph (500+ words) frontloading all results without breathing room |
-| **Acknowledgments** | Narrative of intellectual development: thanks Harry Buhrman for "creative and interminable source of interesting problems", names specific contributions from each collaborator | Lists names with generic gratitude: "I would like to thank", "His support...will not go unnoticed" |
-| **Chapter structure** | Each chapter has Introduction explaining why it matters, then content, then Summary consolidating insights | Chapters lack internal summaries; transitions are implicit rather than explicit |
-| **Motivation before definition** | "Roughly, by a 'classical' state we mean a state in which the system can be found if we observe it" precedes formal definition | Definitions appear with less intuitive buildup: "The state of an isolated quantum system is described by a unit vector" |
-| **Two-pass exposition** | Consistent pattern: informal explanation, then formal theorem. E.g., explains quantum states intuitively before Hilbert space formalism | Single-pass: formal definitions with explanatory text interwoven but not separated |
-| **Running examples** | OR, PARITY, MAJORITY appear throughout all chapters, building familiarity | Ising model and methane serve as examples but less systematically threaded |
-| **Transitions** | Explicit: "At this point, a comparison with classical probability distributions may be helpful", "An important property that deserves to be mentioned is entanglement" | Implicit: relies on section structure rather than prose bridges |
-| **Historical context** | Weaves attribution naturally: "This was proven independently at around the same time by Farhi, Goldstone, Gutmann, and Sipser" | Citations present but less narrative integration: "[20], [21], [22]" style |
-| **Chapter summaries** | Every chapter ends with "Summary" section restating key results informally and connecting to thesis arc | No chapter summaries; chapters end where content ends |
-| **Voice** | Personal and honest: "Even if the theory of quantum computing never materializes...it is still an extremely interesting idea" | Technical and neutral: avoids personal voice, focuses on results |
-| **Theoretical depth** | Deep original contributions: polynomial method, query complexity bounds, communication complexity lower bounds | Primarily benchmarking and numerical results; theoretical content is survey-like |
-| **Appendix usage** | Linear algebra background in Appendix A, keeping main text focused on ideas | Background material in Chapter 2, competing with main results for attention |
-| **Scope** | PhD thesis: 200+ pages, multiple original research papers, broad theoretical contribution | MS thesis: 69 pages, focused application of existing methods to specific problems |
-
-### Works
-
-1. dewolf_phd_thesis - de Wolf - Quantum Computing and Communication Complexity (2001)
-2. 1907.09415 - de Wolf - Quantum Computing: Lecture Notes (2019)
-
-
-## Shantanav Chakraborty
-
-**Style essence**: Modern quantum algorithms paper with rigorous complexity-theoretic framing.
-
-### What Makes His Writing Work
-
-The AQO paper (2411.05736) is directly relevant to the thesis topic. It demonstrates how to write about adiabatic quantum computation with proper complexity-theoretic care. The structure is: problem statement, main results, technical development, hardness results, discussion.
-
-**Structural patterns observed**:
-1. **The "Contents" as roadmap**: Detailed table of contents showing logical flow
-2. **The "Preliminaries" section**: Defines complexity classes, notation, key concepts
-3. **The "Summary of results" subsection**: States main theorems upfront in Section 1.2
-4. **The "Related Work" subsection**: Explicit comparison to prior art
-5. **The main result theorem boxes**: Key results in named, numbered theorems
-6. **The "Discussion" section**: Limitations, open questions, philosophical implications
-7. **The appendix structure**: Technical proofs separated from main narrative
-
-**Mathematical writing patterns**:
-- Complexity-theoretic notation explained: "g(n) = O(f(n)) implies g is upper bounded by f"
-- Norm conventions stated explicitly: "||A|| will denote the spectral norm"
-- Named definitions: "Definition 4 (The problem Hamiltonian)"
-- Lemmas support theorems: Lemma 3 (Adiabatic Theorem) enables Theorem 5
-
-**Figure usage**:
-- Figure 1: Spectrum visualization with inset for detail
-- Figure 2: Schematic of proof technique
-- Figure 3: Comparison of actual gap vs. lower bounds
-
-### Domain-Specific Conventions for AQO
-
-1. **Hamiltonian notation**: H(s) = (1-s)H_0 + sH_P with s as schedule
-2. **Spectral parameters**: Gap g(s), avoided crossing position s*, window delta_s
-3. **Complexity classes**: NP, #P with formal definitions
-4. **Runtime statements**: T = O(2^{n/2} poly(n)) with explicit polynomial factors
-5. **Error analysis**: Trace distance, fidelity, epsilon-closeness
-6. **Adiabatic theorem**: Cite the standard formulation (Jansen et al., Ambainis-Regev)
-
-### Actionable Pointers for Thesis
-
-1. **Preliminaries section**: Define notation, complexity classes, key concepts
-2. **Summary of results early**: State main theorems in introduction before proofs
-3. **Named definitions**: Use "Definition X (Descriptive Name)" format
-4. **Related work**: Explicit subsection comparing to prior art
-5. **Figures for spectra**: Visualize eigenvalue structure with avoided crossings
-6. **Hardness results**: If claiming optimality, prove hardness via reduction
-7. **Discussion section**: Address limitations, open problems, implications
-8. **Appendix for proofs**: Keep main text focused on results and intuition
-
-### Papers
+### Shantanav Chakraborty
 
 1. 2402.10362 - Hejazi, Shokrian Zini, Arrazola - Better Bounds for Low-Energy Product Formulas (2024)
 2. 2403.08922 - Aftab, An, Trivisa - Multi-product Hamiltonian Simulation with Explicit Commutator Scaling (2024)
-3. 2410.14243 - Mizuta, Ikeda, Fujii - Explicit Error Bounds with Commutator Scaling for Time-Dependent Product and Multi-Product Formulas (2024)
+3. 2410.14243 - Mizuta, Ikeda, Fujii - Explicit Error Bounds with Commutator Scaling (2024)
 4. 2411.05736 - Braida, Chakraborty, Chaudhuri, Cunningham, Menavlikar, Novo, Roland - Unstructured Adiabatic Quantum Optimization: Optimality with Limitations (2024)
 5. 2412.02673 - Chakraborty, Das, Ghorui, Hazra, Singh - Sample Complexity of Black Box Work Extraction (2024)
 6. 2504.02385 - Chakraborty, Hazra, Li, Shao, Wang, Zhang - Quantum Singular Value Transformation without Block Encodings (2025)
@@ -225,40 +120,6 @@ The AQO paper (2411.05736) is directly relevant to the thesis topic. It demonstr
 9. 2507.13670 - Chakraborty, Choi, Ghosh, Giurgica-Tiron - Fast Computational Deep Thermalization (2025)
 10. 2510.06851 - Wang, Zhang, Hazra, Li, Shao, Chakraborty - Randomized Quantum Singular Value Transformation (2025)
 
+### Zeeshan Ahmed
 
-### Footnotes
-
-**On Motivation**:
-- Never introduce a concept without first explaining why we need it
-- Every chapter should answer a question the reader already cares about
-- The abstract/introduction should make a physicist want to read more
-
-**On Structure**:
-- State main results early; proofs can come later
-- Use the two-pass pattern: intuition first, formalism second
-- End every chapter with a summary that ties to larger themes
-
-**On Precision**:
-- Every theorem should have explicit error bounds and complexity
-- Define notation when introduced, not in a front-loaded section
-- State clearly what results do and don't achieve
-
-**On Examples**:
-- Choose 2-3 running examples and use them throughout
-- For every abstract concept, provide at least one concrete instance
-- Use figures to visualize spectra, algorithms, proof structures
-
-**On Connection**:
-- Explicitly compare your work to prior results
-- Acknowledge intellectual debts generously and specifically
-- Include a discussion of open questions and limitations
-
-**Common Mistakes to Avoid**:
-- The definition dump: Opening with pages of notation before any motivation
-- The orphan concept: Introducing something that's never used again
-- The vague claim: "This is efficient" without stating O(f(n))
-- The missing context: Proving something without explaining why we care
-- The abrupt ending: Finishing a section without summary or transition
-- The assumed background: Using terms without definition or reference
-- The citation-free claim: Making strong statements without supporting references
-- The emotional hedge: "We believe that..." instead of stating precisely what's proven
+1. zeeshan_ms_thesis - MS Thesis (baseline comparison)

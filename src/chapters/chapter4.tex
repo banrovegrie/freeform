@@ -11,9 +11,10 @@
 Chapter~3 closed the circuit-query model cleanly. Unstructured search among
 $N$ alternatives has quantum query complexity $\Theta(\sqrt{N/d_0})$, with
 Grover achieving the upper bound and BBBV proving the lower. That
-characterization is tight and model-independent in a strong sense: Farhi,
-Goldstone, Gutmann, and Nagaj showed the same $\Omega(\sqrt{N/d_0})$ barrier
-survives continuous-time Hamiltonian evolution~\cite{farhi2008fail}. The
+characterization is tight and model-independent. Farhi,
+Goldstone, Gutmann, and Nagaj showed that the same $\Omega(\sqrt{N/d_0})$
+barrier persists under continuous-time Hamiltonian
+evolution~\cite{farhi2008fail}. The
 exponent is settled.
 
 But the exponent is not the whole story. Grover's algorithm requires knowledge
@@ -64,14 +65,14 @@ gives
 \label{eq:ch4-schrodinger-s}
 \frac{i}{T}\frac{d}{ds}\ket{\psi(s)} = H(s)\ket{\psi(s)}.
 \end{equation}
-The factor $1/T$ in front makes the dependence on total runtime explicit: large
-$T$ slows the effective rate of change and improves adiabatic tracking. The
+The factor $1/T$ in front makes the dependence on total runtime explicit.
+Larger $T$ slows the effective rate of change and improves adiabatic tracking. The
 algorithm prepares the ground state of $H_0$ at $s=0$ and evolves under
 $H(s)$ until $s=1$, then measures. Success means the final state has large
 overlap with the ground space of $H_P$.
 
 This much defines adiabatic quantum computation (AQC) in its broadest form.
-The framework is universal: Aharonov, van~Dam, Kempe, Landau, Lloyd, and
+Aharonov, van~Dam, Kempe, Landau, Lloyd, and
 Regev showed that AQC with two-body Hamiltonians is polynomially equivalent
 to the circuit model~\cite{aharonov2007adiabatic}. Any problem solvable by
 one model is solvable by the other with at most polynomial overhead. That
@@ -372,10 +373,9 @@ Two facts about this result are as important as the result itself.
 First, the matching is optimal. Farhi et~al.\ proved that for any rank-one
 projector driver, any diagonal problem Hamiltonian with $d_0$ ground states,
 and any schedule, the adiabatic runtime satisfies
-$T = \Omega(\sqrt{N/d_0})$~\cite{farhi2008fail}. Their proof is a
-continuous-time analogue of the BBBV argument from Chapter~3: it introduces
-$N$ auxiliary Hamiltonians related by diagonal phase shifts and bounds the
-average distinguishability of the resulting final states. The Roland-Cerf
+$T = \Omega(\sqrt{N/d_0})$~\cite{farhi2008fail}. Their proof adapts the BBBV argument from Chapter~3 to continuous time,
+introducing $N$ auxiliary Hamiltonians related by diagonal phase shifts and
+bounding the average distinguishability of the resulting final states. The Roland-Cerf
 construction saturates this lower bound for $d_0 = 1$, so the adiabatic
 frontier for one-marked-item search is closed.
 
@@ -504,8 +504,8 @@ the full spectrum of $H_z$.
 
 This is the thesis's central tension, and it splits into two hardness results
 that Chapters~5 through~8 develop in full. Approximating $A_1$ to additive
-precision $\varepsilon < 1/(72(n-1))$ is NP-hard: the problem reduces from
-satisfiability through a construction that encodes 3-SAT instances into the
+precision $\varepsilon < 1/(72(n-1))$ is NP-hard, by reduction from
+satisfiability. The construction encodes 3-SAT instances into the
 spectral moments of a diagonal Hamiltonian. Approximating $A_1$ to
 exponential precision $\varepsilon = 2^{-\mathrm{poly}(n)}$ is
 \#P-hard~\cite{braida2024unstructured}. The first result says that even

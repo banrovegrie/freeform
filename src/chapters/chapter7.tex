@@ -524,9 +524,9 @@ $x$, the set $\{s : g(s)\le x\}$ is an interval around $s^*$ of width
 $\Theta(x)$. Their theorem provides the
 existence-and-scaling layer; Chapters 5 and 6 add explicit constants, which is
 what turns \eqref{eq:main-runtime} into a concrete runtime bound.
-This condition is also the geometric dividing line between narrow, sharp minima
-and broad, flat ones: sharp minima satisfy it with a bounded constant, while
-broad flat minima force larger overhead.
+This condition also separates narrow, sharp minima from broad, flat ones.
+Sharp minima satisfy it with a bounded constant, while broad flat minima
+force larger overhead.
 
 Running the adaptive schedule still requires knowledge of $g_0(s)$, hence of
 $s^*$, $\delta_s$, and $g_{\min}$. These all depend on $A_1$. Inside the window
@@ -537,4 +537,4 @@ $O(\delta_s)=O(2^{-n/2})$ to center the slow segment correctly. Outside the
 window, placement errors change only constants. Inside this exponentially narrow
 window, the same error causes a real loss of fidelity.
 
-Imprecision in $A_2$ and $d_0$ causes only polynomial slowdown. Replacing $A_2$ by the lower bound $1-d_0/N$ (Eq.~\eqref{eq:A2-lower-bound}) and taking $d_0=1$ changes runtime only by $\mathrm{poly}(n)$ factors, because these parameters appear through $\sqrt{A_2/d_0}$ and $B_1$. The critical quantity is $A_1$. It must be estimated to additive accuracy $O(\delta_s)=O(2^{-n/2})$ before evolution begins. That requirement is severe: the needed precision is exponential in $n$ even though $H_z$ itself has a $\mathrm{poly}(n)$-bit description. Chapter 8 shows that even approximating $A_1$ to much coarser precision $1/\mathrm{poly}(n)$ is NP-hard, while exact computation is $\#$P-hard.
+Imprecision in $A_2$ and $d_0$ causes only polynomial slowdown. Replacing $A_2$ by the lower bound $1-d_0/N$ (Eq.~\eqref{eq:A2-lower-bound}) and taking $d_0=1$ changes runtime only by $\mathrm{poly}(n)$ factors, because these parameters appear through $\sqrt{A_2/d_0}$ and $B_1$. The critical quantity is $A_1$. It must be estimated to additive accuracy $O(\delta_s)=O(2^{-n/2})$ before evolution begins. That requirement is severe. Even though $H_z$ has a $\mathrm{poly}(n)$-bit description, the needed precision in $A_1$ is exponential in $n$. Chapter 8 shows that even approximating $A_1$ to much coarser precision $1/\mathrm{poly}(n)$ is NP-hard, while exact computation is $\#$P-hard.
