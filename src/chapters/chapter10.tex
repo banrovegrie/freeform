@@ -1,12 +1,10 @@
-% Chapter 10: Formalization
+% Appendix
 
-I have always been better at programming than at mathematics. I enjoy it more. While programming, the computer forces me to be rigorous. I don't have to force myself. Rigor becomes something I use rather than something I practice, and I can focus on exploration.
+I have always been better at programming than at mathematics. I enjoy it more. While programming, the computer forces me to be rigorous. I don't have to force myself. Rigor becomes something I use rather than something I practice, and I can focus on exploration. I wanted to try to build the same arrangement for the mathematics in this thesis. I wanted to piece it into something that could be assembled, disassembled and programmed on top of. And I severely underestimated how much time this would take.
 
-I wanted to try to build the same arrangement for the mathematics in this thesis. I wanted to piece it into something that could be assembled, disassembled and programmed on top of. And I severely underestimated how much time this would take.
+The UAQO (Unstructured Adiabatic Quantum Optimization \cite{braida2024unstructured}) argument is a relay across domains: spectral parameters feed gap geometry, gap geometry feeds runtime, runtime pairs with hardness reductions. Each handoff carries hypotheses that must match, and the relay crosses spectral analysis, adiabatic evolution, and computational complexity: fields with different conventions and different proof techniques. Lean 4 \cite{moura2021lean4} with Mathlib \cite{mathlib2020} gave me a setting where I could take the relay apart and reassemble it, try alternate decompositions, and learn from failures that surface immediately rather than hiding in prose. I hope others try it and find what I found: that a proof assistant does not slow mathematics down but shows you what the mathematics actually is.
 
-The UAQO (Unstructured Adiabatic Quantum Optimization \cite{braida2024unstructured}) argument is a relay across domains: spectral parameters feed gap geometry, gap geometry feeds runtime, runtime pairs with hardness reductions. Each handoff carries hypotheses that must match, and the relay crosses spectral analysis, adiabatic evolution, and computational complexity: fields with different conventions and different proof techniques. Lean 4 \cite{moura2021lean4} with Mathlib \cite{mathlib2020} gave me a setting where I could take the relay apart and reassemble it, try alternate decompositions, and learn from failures that surface immediately rather than hiding in prose. I hope my endeavor will help others [TODO: get into this and promote more interest in formalization, some profound line(s)].
-
-The formal artifact lives in \cite{[TODO: github2026, https://github.com/banrovegrie/uaqo]}. It is designed as infrastructure: typed interfaces for spectral structure, gap bounds, and hardness reductions that future work on adiabatic optimization can extend rather than rebuild. Restricting to the work done around setting up the formalization for adiabatic optimization and results in \cite{braida2024unstructured}, it contains 32 Lean files, 11,596 lines, zero active \texttt{sorry} terms, 15 explicit axioms, and 330 theorem and lemma declarations. The rest of this chapter describes the development: how it is organized, what it proves, what it assumes, and what building it taught me.
+The formal artifact lives in \cite{chaudhuri2026uaqo}. It is designed as infrastructure: typed interfaces for spectral structure, gap bounds, and hardness reductions that future work on adiabatic optimization can extend rather than rebuild. Restricting to the work done around setting up the formalization for adiabatic optimization and results in \cite{braida2024unstructured}, it contains 32 Lean files, 11,596 lines, zero active \texttt{sorry} terms, 15 explicit axioms, and 330 theorem and lemma declarations. The rest of this appendix describes the development: how it is organized, what it proves, what it assumes, and what building it taught me.
 
 
 \section{What Formalization Taught Me}
@@ -14,11 +12,11 @@ The formal artifact lives in \cite{[TODO: github2026, https://github.com/banrove
 
 The first thing Lean showed me was where I had been bundling independent claims. In prose, hypotheses drift. A condition established in one section gets applied three sections later with a slightly different scope, and the prose never forces the connection to be explicit. In Lean, every hypothesis a theorem uses appears in its type. If a gap bound requires strictly ordered eigenvalues, that is a function argument. If a runtime statement needs a spectral condition, every theorem that calls it must supply evidence. Results that I read as a single argument on paper turned out to have components with genuinely different hypotheses. Lean would not let me state the combined version, so I had to find the correct factoring. That factoring improved the mathematics.
 
-The spectral analysis in the paper treats the eigenvalue characterization and the gap bounds as parts of one argument. In Lean, they separate cleanly. The theorem \texttt{eigenvalue\_condition} (in \texttt{Spectral/GapBounds.lean}) is fully proved from the spectral structure. It characterizes when $\lambda$ is an eigenvalue of $H(s)$ via the secular equation, and needs only that $M > 0$ and $s \in (0,1)$. The regional gap bounds \texttt{gap\_bound\_left}, \texttt{gap\_at\_avoided\_crossing}, and \texttt{gap\_bound\_right}, all in the same file, additionally require \texttt{FullSpectralHypothesis}, which packages a spectral regularity condition ($A_1 > 1$ and $\sqrt{d_0 A_2 / N} < (A_1 + 1)/2$) that the eigenvalue condition does not need. The paper uses both the eigenvalue condition and the gap bounds together without separating their hypotheses. In Lean, a result that uses only the secular equation cannot accidentally import the spectral hypothesis, and a change to the gap analysis cannot break the eigenvalue characterization.
+The spectral analysis in the paper treats the eigenvalue characterization and the gap bounds as parts of one argument. In Lean, they separate cleanly. In \texttt{Spectral/}\allowbreak\texttt{GapBounds.lean}, the theorem \texttt{eigenvalue\_condition} is fully proved from the spectral structure. It characterizes when $\lambda$ is an eigenvalue of $H(s)$ via the secular equation, and needs only that $M > 0$ and $s \in (0,1)$. The regional gap bounds \texttt{gap\_bound\_left}, \texttt{gap\_at\_avoided\_\allowbreak{}crossing}, and \texttt{gap\_bound\_right}, all in the same file, additionally require \texttt{Full\-Spectral\-Hypothesis}, which packages a spectral regularity condition ($A_1 > 1$ and $\sqrt{d_0 A_2 / N} < (A_1 + 1)/2$) that the eigenvalue condition does not need. The paper uses both the eigenvalue condition and the gap bounds together without separating their hypotheses. In Lean, a result that uses only the secular equation cannot accidentally import the spectral hypothesis, and a change to the gap analysis cannot break the eigenvalue characterization.
 
 The bigger payoff was that Lean let me experiment. I could try a candidate theorem shape, see whether it type-checked, and learn from the failure when it did not. On paper, discovering the right decomposition of a proof takes many failed attempts that leave no trace. In Lean, the failures are immediate and specific. A statement that looked elegant failed because a side condition could not be transported across a module boundary. A formulation that looked unnecessarily verbose turned out to be the right one because it matched a Mathlib interface I could reuse. I tested alternate decompositions of the secular equation analysis, tried different ways to package the spectral data, and ended up with interfaces that I would not have found without the type checker pushing back.
 
-Some of that experimentation lives in dedicated experiment modules outside the main scope. The experiment files explore directions beyond the paper: coupled schedules, structured tractability, circumventing the interpolation barrier. This chapter stays focused on the main-paper formalization, but the experiments were part of the same process.
+Some of that experimentation lives in dedicated experiment modules outside the main scope. The experiment files explore directions beyond the paper: coupled schedules, structured tractability, circumventing the interpolation barrier. This appendix stays focused on the main formalization of \cite{braida2024unstructured}, but the experiments were part of the same process.
 
 The structural payoff was largest at the interface between spectral analysis and complexity reductions, where the dependency chain is longest and assumptions hardest to track by hand. In a typed system, mismatches at those interfaces surface as type errors rather than as silent gaps in a published proof.
 
@@ -26,13 +24,19 @@ The structural payoff was largest at the interface between spectral analysis and
 \section{Lean in Brief}
 \label{sec:lean-brief}
 
-In Lean, a proposition is a type and a proof is a term inhabiting that type. The trusted kernel checks that terms are well-typed. Tactics, automation, and elaboration must all produce a kernel-accepted term before they count as proved. Four pieces are enough to read the formal artifacts in this chapter. The \emph{kernel} is the final checker. The \emph{elaborator} fills in implicit arguments and typeclass instances. \emph{Tactic mode} builds proof terms incrementally, with each tactic transforming a goal into simpler subgoals. And \emph{definitional equality} lets some identities reduce by computation, so that proofs of equalities between unfolded definitions can collapse to \texttt{rfl}.
+The idea that a mathematical proof should be mechanically checkable is old. Hilbert wanted a foundation where every mathematical statement could be formally derived and verified \cite{hilbert1902problems}. G\"odel and Turing shattered some of those dreams. G\"odel showed that no consistent system powerful enough for arithmetic can prove all true statements within it \cite{godel1931}. Turing showed that no algorithm can decide in general whether a given statement is provable \cite{turing1936}. The full dream was impossible. But what survived was enough: you cannot mechanically decide all of mathematics, but you can mechanically check a given proof. We cannot have an absolutely rigorous system that automatically searches for proofs.\footnote{The story does not end here. Modern AI systems for mathematics (neural theorem provers, language models that suggest tactic steps, hybrid tools that combine search with type checking) are reopening the question G\"odel and Turing appeared to close. These systems run on the machines Turing formalized and search the proof spaces G\"odel showed are inexhaustible. They cannot find all proofs. No system can. But they are finding more of them than anyone expected, and the boundary between human discovery and mechanical search is shifting faster than the theorems that bound it would suggest. Hilbert might recognize the ambition, if not the method.} But we can make systems that verify the ones you write. And building that verifier required ideas that took the rest of the century to arrive.
+
+The first was the Curry-Howard correspondence, discovered independently by Haskell Curry and William Howard: propositions are types, and proofs are programs \cite{howard1980,curry1958}. A proof of $A \implies B$ is a function that takes evidence for $A$ and returns evidence for $B$. This is not a metaphor. It is a formal isomorphism between logical deduction and typed computation. Per Martin-L\"of made the correspondence precise enough for real mathematics by introducing dependent types \cite{martinlof1984}. In a dependently typed system, a type can depend on a value. A prime number is not a natural number with a side condition but a pair of a natural number and a proof of primality, packaged as a single type. Hypotheses become part of the interface, not comments above the function.
+
+Vladimir Voevodsky pushed this further than anyone expected. A Fields medalist in algebraic geometry, he discovered in the mid-2000s that a key result he and others had relied on contained an error that had survived years of peer review \cite{voevodsky2014origins}. He found further errors in his own earlier work. The experience convinced him that the informal verification system (peer review, reputation, careful reading) was not reliable enough for the mathematics he cared about. He turned to formalization, and he found something remarkable. The identity types in Martin-L\"of's system, the types that express ``$a$ equals $b$'', turned out to have geometric structure. Two proofs that $a = b$ are not necessarily the same, just as two paths between two points in a space are not necessarily homotopic. Types behave like spaces. Terms are points. Identity proofs are paths. Higher identity proofs are homotopies. This is homotopy type theory \cite{hottbook2013}. Voevodsky's univalence axiom says that equivalent mathematical structures are identical: if two types are equivalent, the identity type between them is inhabited. Theorems proved about one representation transport automatically to any equivalent representation.
+
+Lean 4 does not use homotopy type theory. Its foundation is the Calculus of Inductive Constructions with quotient types and proof irrelevance, a different branch of the same family tree \cite{moura2021lean4}. But the practical lessons carry over. Propositions are types. Proofs are terms. Dependent types package invariants into interfaces. And the bridge theorems in this development, like \texttt{A1\_partial\_eq\_A1} where two representations of a spectral parameter are proved equal and downstream code uses whichever is convenient, are the working version of Voevodsky's insight: equivalent representations should be interchangeable, and the system should enforce it. Lean's trusted kernel is small enough to audit independently. Mathlib \cite{mathlib2020}, the community-maintained library, provides the mathematical infrastructure that makes large developments practical.
+
+In Lean, a proposition is a type and a proof is a term inhabiting that type. The trusted kernel checks that terms are well-typed. Tactics, automation, and elaboration must all produce a kernel-accepted term before they count as proved. Four pieces are enough to read the formal artifacts in this appendix. The \emph{kernel} is the final checker. The \emph{elaborator} fills in implicit arguments and typeclass instances. \emph{Tactic mode} builds proof terms incrementally, with each tactic transforming a goal into simpler subgoals. And \emph{definitional equality} lets some identities reduce by computation, so that proofs of equalities between unfolded definitions can collapse to \texttt{rfl}.
 
 What makes this useful for mathematics is that every theorem carries its dependencies in its type. If a result needs an eigenvalue ordering, that ordering is a function argument. If a downstream theorem consumes a gap bound, it must supply the hypotheses that the gap bound requires. A change to the spectral data model breaks every theorem that depends on it, and the break shows up immediately. In UAQO, the same spectral interfaces get reused in gap bounds, runtime wrappers, and hardness reductions, so a single well-chosen interface saves a lot of repeated work.
 
-What makes Lean painful is the overhead. Typeclass search can fail far from the source of the problem. Elaboration errors are often nonlocal. Coercing between \texttt{Nat}, \texttt{Int}, and \texttt{Real} is tedious in analysis-heavy files. I kept an abstraction only when it reduced total proof effort across the development. When it did not, I removed it.
-
-Every claim in this chapter can be checked independently.
+What makes Lean painful is the overhead. Typeclass search can fail far from the source of the problem. Elaboration errors are often nonlocal. Coercing between \texttt{Nat}, \texttt{Int}, and \texttt{Real} is tedious in analysis-heavy files. I kept an abstraction only when it reduced total proof effort across the development. When it did not, I removed it. Every claim in this appendix can be checked independently.
 
 \begin{lstlisting}[style=leanstyle,caption={Rebuilding the development and inspecting axiom dependencies.},label={lst:minimal-loop}]
 -- From the repository root:
@@ -48,7 +52,7 @@ lake build
 The \texttt{\#print axioms} command lists every axiom a theorem depends on, transitively. A theorem with no domain axioms is fully kernel-checked. A theorem that lists domain axioms depends on exactly those assumptions and no others.
 
 
-\section{How the Encoding Is Organized}
+\section{Encoding Organization}
 \label{sec:encoding}
 
 The first design I tried was wrong. I modeled Hamiltonians at the matrix level, carrying full operator data through every theorem. This was faithful to the linear-algebraic picture but useless for the proofs I actually needed. Gap bounds, crossing positions, and runtime integrals depend on eigenvalues and degeneracies, not on matrix entries. Carrying matrix-level detail through spectral arguments added clutter without content and made it hard to reuse lemmas across modules.
@@ -91,10 +95,11 @@ theorem A1_partial_eq_A1 {n M : Nat} (es : EigenStructure n M) (hM : M > 0) :
 
 The bridge theorem \texttt{A1\_partial\_eq\_A1} is typical. Two representations of $A_1$ are defined independently and proved equal. One uses the full spectral definition and the other a partial-information variant. The proof is a single-line simplification, meaning the equality holds by unfolding definitions. Downstream code uses whichever representation is more convenient, and the bridge guarantees that results transfer.
 
-\autoref{tab:formalization-scope-deep} gives the size of the main-paper development.
+\autoref{tab:formalization-scope-deep} gives the size of the main-paper development. Within this scope, the development contains 330 theorem and lemma declarations. The five components mirror the dependency structure of the UAQO argument itself: foundations feeds spectral, spectral feeds adiabatic and complexity, and proofs supports all four.
 
-\begin{table}[H]
+\begin{table}[ht!]
 \centering
+\renewcommand{\arraystretch}{1.3}
 \caption{Main-paper scope in \texttt{src/lean/UAQO} (excluding \texttt{Experiments} and \texttt{Test}).}
 \label{tab:formalization-scope-deep}
 \begin{tabular}{|l|c|c|>{\raggedright\arraybackslash}p{6.8cm}|}
@@ -112,17 +117,16 @@ Total & 32 & 11,596 & Zero active \texttt{sorry} terms and 15 explicit \texttt{a
 \end{tabular}
 \end{table}
 
-Within this scope, the development contains 330 theorem and lemma declarations. The five components mirror the dependency structure of the UAQO argument itself: foundations feeds spectral, spectral feeds adiabatic and complexity, and proofs supports all four.
+\autoref{tab:formalization-claim-map} pairs each headline claim of the appendix with the Lean artifacts that back it and their epistemic status. Rows mentioning \texttt{Test/Verify} refer to audit wrappers, not to the proofs themselves. The definitions and proofs live in the main-scope modules listed in the same row.
 
-\autoref{tab:formalization-claim-map} pairs each headline claim of the chapter with the Lean artifacts that back it and their epistemic status.
-
-\begin{table}[H]
+\begin{table}[ht!]
 \centering
-\caption{Claim-to-artifact map for the Chapter 10 argument.}
+\renewcommand{\arraystretch}{1.3}
+\caption{Claim-to-artifact map for the Appendix argument.}
 \label{tab:formalization-claim-map}
 \begin{tabular}{|>{\raggedright\arraybackslash}p{4.1cm}|>{\raggedright\arraybackslash}p{5.2cm}|>{\raggedright\arraybackslash}p{3.8cm}|}
 \hline
-Chapter claim & Primary Lean artifact & Epistemic status \\
+Appendix claim & Primary Lean artifact & Epistemic status \\
 \hline
 Paper formulas for $A_p$, $s^*$, $\delta_s$, $g_{\min}$ are represented faithfully & \texttt{Spectral/\allowbreak{}Spectral\-Parameters}, \texttt{Test/\allowbreak{}Verify} & Definitional equality checks (\texttt{rfl}) \\
 \hline
@@ -137,15 +141,11 @@ Adiabatic transfer theorems are wrappers over explicit physics interfaces & \tex
 \end{tabular}
 \end{table}
 
-Rows mentioning \texttt{Test/Verify} refer to audit wrappers, not to the proofs themselves. The definitions and proofs live in the main-scope modules listed in the same row.
-
 
 \section{Two Proof Paths}
 \label{sec:proof-paths}
 
-Two proofs show what the formal system looks like in practice: the NP reduction from Chapter 8, and the counting bridge behind $\#$P extraction.
-
-The theorem \texttt{mainResult2} formalizes the two-query reduction. Given a 3-CNF formula $f$, it constructs a Garey-Johnson encoding, computes the two-query difference $D$, and proves $D = 0$ if and only if $f$ is satisfiable.
+Two proofs show what the formal system looks like in practice: the NP reduction from Chapter 8, and the counting bridge behind $\#$P extraction. The theorem \texttt{mainResult2} formalizes the two-query reduction. Given a 3-CNF formula $f$, it constructs a Garey-Johnson encoding, computes the two-query difference $D$, and proves $D = 0$ if and only if $f$ is satisfiable.
 
 \begin{lstlisting}[style=leanstyle,caption={Proof skeleton of \texttt{mainResult2}.},label={lst:mainresult2-full}]
 theorem mainResult2 (f : CNFFormula) (hf : is_kCNF 3 f) :
@@ -182,9 +182,7 @@ private theorem countZeroUnsatisfied_eq_numSatisfying (f : CNFFormula) :
 
 The statement looks trivial: assignments with zero unsatisfied clauses are satisfying assignments. But formally, the two filtering predicates must be shown extensionally equal, which requires unfolding both definitions and using a separately proved equivalence. Once this bridge exists, every downstream theorem imports it mechanically instead of re-arguing the point. The extraction chain from satisfiability to counting polynomial to $\#$P is stabilized because each link is a named, proved artifact.
 
-Both paths have the same shape. High-level scripts are five to fifteen lines. The real work is in interface lemmas with explicit hypotheses. The type checker enforces that hypotheses match at every call site. If they do not match, the proof fails to compile. This is the main reason formalization was worth the effort. The value is not that it makes proofs more clever, but that it catches mismatches I would have missed.
-
-The type checker enforces what is proved. The next question is what is not proved, and how the development marks that boundary.
+Both paths have the same shape. High-level scripts are five to fifteen lines. The real work is in interface lemmas with explicit hypotheses. The type checker enforces that hypotheses match at every call site. If they do not match, the proof fails to compile. This is the main reason formalization was worth the effort. The value is not that it makes proofs more clever, but that it catches mismatches I would have missed. The type checker enforces what is proved. The next question is what is not proved, and how the development marks that boundary.
 
 
 \section{Assumptions and Boundaries}
@@ -201,12 +199,11 @@ structure FullSpectralHypothesis {n M : Nat} (es : EigenStructure n M) (hM : M >
     E0 < E1 -> E1 - E0 >= minimumGap es hM
 \end{lstlisting}
 
-It packages a spectral regularity condition and a uniform gap lower bound. Any theorem that needs the full gap profile must supply this hypothesis. Any reader can check whether a given theorem actually supplies it or only assumes it.
+It packages a spectral regularity condition and a uniform gap lower bound. Any theorem that needs the full gap profile must supply this hypothesis. Any reader can check whether a given theorem actually supplies it or only assumes it. The development declares 15 explicit axioms, grouped in \autoref{tab:axiom-ledger-deep}.
 
-The development declares 15 explicit axioms, grouped in \autoref{tab:axiom-ledger-deep}.
-
-\begin{table}[H]
+\begin{table}[ht!]
 \centering
+\renewcommand{\arraystretch}{1.3}
 \caption{Axiom groups in the UAQO main-paper formalization.}
 \label{tab:axiom-ledger-deep}
 \begin{tabular}{|l|c|>{\raggedright\arraybackslash}p{7.8cm}|}
@@ -225,6 +222,6 @@ Total & 15 & Every assumption is declared by \texttt{axiom} and inspectable via 
 
 The primitive interfaces axiomatize concepts that current Lean libraries cannot define natively: polynomial-time computation, Schrodinger evolution, degeneracy counting. The complexity interfaces encode standard results such as Cook-Levin for 3-SAT~\cite{cook1971complexity} and Valiant for $\#$3-SAT~\cite{valiant1979complexity}. The quantum dynamics interfaces package results like the Jansen-Ruskai-Seiler adiabatic bound \cite{jansen2007bounds}. As Lean libraries grow, individual axioms can be discharged and replaced by proofs. The development is structured so that discharging an axiom narrows the trust boundary without requiring any downstream theorem to be rewritten.
 
-Existing formal tools for quantum computing---QWIRE \cite{rand2018qwire}, SQIR \cite{hietala2021sqir}, CoqQ \cite{zhou2023coqq}, Isabelle-based protocol work \cite{boender2015coqquantum}---operate at the circuit level: gates and registers. None handle eigenvalues, spectral gaps, or complexity reductions. This development does. It carries spectral structure through to hardness results in a single typed system. The cost is that quantum dynamics enters through axioms---formalizing the resolvent calculus behind adiabatic bounds is a separate project. The design follows Gonthier \cite{gonthier2013oddorder} and Hales \cite{hales2017kepler}: quantitative scope, reproducible build, explicit trust boundary.
+Existing formal tools for quantum computing (QWIRE \cite{rand2018qwire}, SQIR \cite{hietala2021sqir}, CoqQ \cite{zhou2023coqq}, Isabelle-based protocol work \cite{boender2015coqquantum}) operate at the circuit level: gates and registers. None handle eigenvalues, spectral gaps, or complexity reductions. This development does. It carries spectral structure through to hardness results in a single typed system. The cost is that quantum dynamics enters through axioms; formalizing the resolvent calculus behind adiabatic bounds is a separate project. The design follows Gonthier \cite{gonthier2013oddorder} and Hales \cite{hales2017kepler}: quantitative scope, reproducible build, explicit trust boundary.
 
 The formal interfaces now exist. A reader can rebuild the artifact, inspect any theorem's axiom dependencies with \texttt{\#print axioms}, and start extending. The nearest targets are the Garey-Johnson encoding, which would close the last axiom in the NP chain, and Mathlib-compatible resolvent calculus, which would turn \texttt{FullSpectralHypothesis} from an assumption into a theorem. The spectral-to-complexity pipeline, once fully proved, becomes infrastructure for any problem in adiabatic optimization.
