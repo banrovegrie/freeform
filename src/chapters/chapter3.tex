@@ -394,11 +394,9 @@ one; with $|W|=d_0$ solutions among $N=2^n$ candidates, the expected number of
 queries is $\Theta(N/d_0)$. Grover showed that a quantum algorithm needs only
 $\Theta(\sqrt{N/d_0})$, a quadratic improvement driven by a genuinely quantum
 mechanism~\cite{Grover1996}.
-
 The mechanism is geometric, and it unfolds in a two-dimensional subspace of the
 full $N$-dimensional Hilbert space. This is the essential surprise: a problem
 defined on $2^n$ items reduces to a rotation in the plane.
-
 Define the normalized marked and unmarked superpositions
 \begin{equation}
 \label{eq:ch3-marked-unmarked}
@@ -546,7 +544,6 @@ space, controls the computational outcome.
 Grover's algorithm demonstrates that $\sqrt{N/d_0}$ queries suffice for
 unstructured search. Bennett, Bernstein, Brassard, and Vazirani showed that
 no quantum algorithm can do better~\cite{bennett1997strengths}.
-
 The argument rests on a hybrid distinguishability bound. Consider a quantum
 algorithm that makes $T$ queries to a single-marked-item oracle. Let
 $\ket{\psi_T^{(w)}}$ denote the algorithm's final state when item $w$ is
@@ -572,7 +569,6 @@ the final states must be well separated, forcing $T = \Omega(\sqrt{N})$.
 The extension to $d_0 > 1$ marked items follows by a standard averaging
 argument, yielding $\Omega(\sqrt{N/d_0})$. Nayak and Wu give a complementary
 polynomial-method perspective on related bounds~\cite{NayakWu1999}.
-
 Combining the upper bound from Grover with the BBBV lower bound closes the
 frontier for unstructured quantum search:
 \begin{equation}

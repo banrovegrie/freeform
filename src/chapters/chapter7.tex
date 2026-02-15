@@ -349,7 +349,6 @@ If $\int_0^1 g(s)^{-p}\,ds = O(g_{\min}^{1-p})$ for all $p > 1$, and $\lVert H'\
 \end{corollary}
 
 The runtime scales inversely with the minimum gap, which is optimal for quantum search \cite{farhi2008fail}. The running example satisfies these conditions.
-
 The integral $\int_0^1 g(s)^{-p}\,ds$ is dominated by the $O(1/\sqrt{N})$-wide window where $g \approx 1/\sqrt{N}$: the window's contribution is $(1/\sqrt{N})\cdot N^{p/2} = N^{(p-1)/2}$, while outside the window $g = \Omega(|s - 1/2|)$ and the integral converges. For any $p > 1$, this gives $O(g_{\min}^{1-p})$.
 
 \begin{lemma}[Grover gap integral]

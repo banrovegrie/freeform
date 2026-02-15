@@ -406,7 +406,6 @@ where the factor $(1 + 2\eta)$ comes from the upper approximation in Eq.~\eqref{
 Inside $\mathcal{I}_{s^*}$, the gap is $\Theta(g_{\min})$. Outside, it is
 strictly larger, as the next section establishes. The avoided crossing is
 localized.
-
 Specializing to unstructured search, with $A_1 = A_2 = (N-1)/N$:
 \begin{align}
 s^* &= \frac{(N-1)/N}{(N-1)/N + 1} = \frac{N - 1}{2N - 1} \approx \frac{1}{2}, \label{eq:grover-s-star} \\
@@ -493,9 +492,7 @@ yielding the optimal runtime \cite{braida2024unstructured}. For the Ising Hamilt
 \section{What Remains}
 \label{sec:central-questions}
 
-At this point, the structure is in place and the remaining steps are focused. Chapter 6 proves the outer-region gap bounds. Chapter 7 converts those bounds into the optimal runtime. Chapter 8 accounts for the pre-computation cost required to realize that schedule.
-
-Given the complete gap profile, the optimal runtime is
+Chapter 6 proves the outer-region gap bounds. Chapter 7 converts those bounds into the optimal runtime. Chapter 8 accounts for the pre-computation cost required to realize that schedule. Given the complete gap profile, the optimal runtime is
 \begin{equation}
 \label{eq:runtime-preview}
 T = O\left(\frac{1}{\varepsilon} \cdot \frac{\sqrt{A_2}}{A_1(A_1+1) \Delta^2} \cdot \sqrt{\frac{N}{d_0}}\right),

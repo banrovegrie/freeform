@@ -32,9 +32,7 @@ crossing estimate is wrong by more than $\delta_s$, evolution passes too quickly
 through the minimum and loses ground-state fidelity. Throughout this chapter, we
 write $A_1(H)$ when dependence on the Hamiltonian matters.
 
-The hardness of computing $A_1$ is not the only obstacle to adiabatic optimization for hard problems. Even if $A_1$ were known exactly, the single-crossing framework of Chapters 5--7 applies only to the rank-one projector $H_0 = -\ket{\psi_0}\bra{\psi_0}$. For the transverse-field driver (Chapter~5), the multi-crossing regime makes this framework inapplicable. Knowing $A_1$ no longer helps there, because the schedule would need to navigate exponentially many crossings rather than one.
-
-The two barriers are complementary. Computing $A_1$ is hard even in the rank-one setting, and the single-crossing method fails for other drivers even when spectral information is available.
+The hardness of computing $A_1$ is not the only obstacle to adiabatic optimization for hard problems. Even if $A_1$ were known exactly, the single-crossing framework of Chapters 5--7 applies only to the rank-one projector $H_0 = -\ket{\psi_0}\bra{\psi_0}$. For the transverse-field driver (Chapter~5), the multi-crossing regime makes this framework inapplicable. Knowing $A_1$ no longer helps there, because the schedule would need to navigate exponentially many crossings rather than one. Computing $A_1$ is hard even in the rank-one setting, and the single-crossing method fails for other drivers even when spectral information is available.
 
 NP-hardness already appears at precision $1/\text{poly}(n)$. Two queries to an
 $A_1$-oracle then suffice to solve 3-SAT (\autoref{sec:np-hard-A1}). At
@@ -156,7 +154,6 @@ The Hamiltonian $H'$ from Eq.~\eqref{eq:modified-ham} acts on $n = 2n_\text{var}
 \end{proof}
 
 When $M = 2$ (Grover search), the spectral parameter $A_1 = (N-1)/N$ is trivial to obtain from the instance description. There are only two levels, and their degeneracies are fixed by the number of marked items. NP-hardness appears only for Hamiltonians that encode combinatorial structure with polynomially many levels and exponentially small ground-energy gaps. In that regime, $A_1$ depends nontrivially on the full degeneracy profile.
-
 \textbf{Remark.} The disambiguation technique extends beyond 3-SAT. The MaxCut decision problem (given a graph $G = (V,E)$ and integer $k$, does $G$ have a cut of size at least $k$?) also reduces to $A_1$ estimation. The construction adds a weighted edge to $G$, creating an auxiliary Hamiltonian $H'$ whose $A_1$ value differs from a reference by at least $1/(|E|(|E|-1))$ between the two cases. This yields NP-hardness at precision $2/(5n^4)$ with a $2$-local Hamiltonian, sharpening the locality requirement from $3$-local to $2$-local at the cost of a slightly tighter precision bound.
 
 
@@ -212,7 +209,6 @@ Let $P(x)$ be a polynomial of degree at most $M$ satisfying $|P(i)| \leq c$ for 
 \end{lemma}
 
 Paturi's lemma bounds polynomial growth between sample points. If a polynomial is bounded by $c$ at $M+1$ integer points, it can grow by at most a factor $2^M$ on the interval. Applied to the difference between exact and approximate reconstruction polynomials, this gives explicit control of interpolation error.
-
 Error propagation has three stages: sample-point error, extrapolation amplification, and rounding threshold.
 Stage~1 itself has three algebraic sub-steps: oracle noise enters $f$ as
 $|\tilde{f}(x_i) - f(x_i)| \leq 3\varepsilon$ (three oracle calls contribute),
@@ -260,9 +256,7 @@ at $2^{-\text{poly}(n)}$ (\autoref{thm:sharp-P-hard-A1}). The algorithmically
 relevant precision $2^{-n/2}$ lies strictly between these regimes. The
 interpolation method does not reach this precision. Braida et
 al.~\cite{braida2024unstructured} therefore left this intermediate regime open.
-
 The interpolation technique extracts exact integers from approximate real evaluations. At precision $2^{-n/2}$, the error amplification inherent in polynomial extrapolation makes this extraction impossible.
-
 NP-hardness extends to $2^{-n/2}$ by monotonicity. An oracle at precision
 $2^{-n/2}$ is strictly more powerful than one at $1/\text{poly}(n)$, so it
 still solves 3-SAT. The $\#$P-hardness argument does not extend in the opposite
@@ -325,7 +319,6 @@ Even for $c = 1$ (the most favorable case $M = n$), the exponent $n/2 + \Omega(n
 \end{proof}
 
 The precision $\varepsilon = 2^{-n/2}$ is too coarse for interpolation but too fine for brute force. It sits in a window that existing techniques cannot reach from either side.
-
 This amplification is not specific to the construction above. Exponential growth is intrinsic to polynomial extrapolation for any $d$ nodes, any interval, and any evaluation point sufficiently far outside that interval.
 
 \begin{theorem}[Generic extrapolation barrier]
@@ -352,9 +345,7 @@ so the worst-case error can be at least $\delta \cdot 2^{d-1}$.
 \autoref{thm:generic-barrier} rules out rescuing the $\#$P-hardness argument by tweaking interpolation details. Reordering nodes (equispaced, Chebyshev, or otherwise), changing polynomial bases, or reparameterizing variables cannot push amplification below $2^{d-1}$. At $d = M = \text{poly}(n)$, the needed precision stays at $\varepsilon = 2^{-\Omega(n)}$, far below $2^{-n/2}$. The same obstacle appears in quantum-advantage hardness arguments. In each case, the proof reduces approximate sampling to an exact counting problem through polynomial interpolation, and the Lebesgue constant of that interpolation controls how much noise is amplified. For boson sampling \cite{aaronson2011bosonsampling}, the interpolation runs over matrix permanents; for IQP circuits \cite{bremner2017achievingquantum}, over gap-amplified partition functions; for random circuit sampling \cite{bouland2019complexity}, over output probabilities of random quantum circuits. All three face the same barrier. Pushing the error tolerance from exponentially small to the moderate regime $1/\mathrm{poly}(n)$ requires taming a Lebesgue constant that grows as $2^{\Omega(n)}$, and no known rearrangement of the interpolation nodes avoids this.
 
 The interpolation barrier does not rule out $\#$P-hardness at $2^{-n/2}$ by other methods. A proof that avoids polynomial extrapolation, for example through direct algebraic reductions or information-theoretic arguments, might still work. The barrier identifies the pressure point. A proof of counting hardness at this precision must avoid recovering exact integers from approximate real values.
-
 The hardness results above are computational. Given an explicit description of $H_z$, how hard is it to compute $A_1$? A different question asks about information. Given only black-box access to the diagonal entries of $H_z$, how many queries are needed to estimate $A_1$ to precision $\varepsilon$? The query model isolates the information cost from the computational cost, and at precision $2^{-n/2}$ it reveals a clean quantum--classical separation that the computational model has not yet established.
-
 We work in the query model where each call to a diagonal oracle $O_H\colon \ket{x}\ket{0} \mapsto \ket{x}\ket{E_x}$ reveals one diagonal entry of $H_z$ at unit cost. A quantum algorithm can bypass polynomial interpolation entirely, using amplitude estimation to extract $A_1$ from interference rather than from reconstructed integers.
 
 \begin{theorem}[Quantum algorithm for $A_1$]
@@ -426,7 +417,6 @@ The upper bound is \autoref{thm:quantum-A1} with $\Delta_1 = 1$ for the adversar
 \end{proof}
 
 At the precision the adiabatic algorithm needs, quantum computation offers exactly the speedup the algorithm achieves.
-
 The quantum bound in \autoref{thm:quantum-A1} is not only an upper bound; it is tight. The tightness already appears on the simplest family, namely $M = 2$ with $\Delta_1 = 1$. There, estimating $A_1 = (N - d_0)/N$ to precision $\varepsilon$ is exactly approximate counting at precision $\varepsilon$.
 
 Write the Grover iterate as $G = (2\ket{+}\!\bra{+} - I)(I - 2\Pi_S)$, where $\Pi_S$ projects onto the $d_0$ ground states. Its eigenphases are $\pm 2\theta$ with $\sin^2\theta = d_0/N$. For $d_0 \approx N/2$, we have $dp/d\theta = \sin 2\theta = 1$, so precision $\varepsilon$ in $A_1$ requires precision $\varepsilon$ in $\theta$. The Heisenberg limit for quantum phase estimation \cite{giovannetti2006quantum}, together with the quantum Cram\'{e}r-Rao inequality \cite{braunstein1994statistical} and Fisher bound $F_Q \leq 4T^2$, gives $T \geq 1/(2\varepsilon)$ applications of $G$, each with $O(1)$ oracle cost. Combining this with the upper bound yields quantum query complexity $\Theta(2^{n/2})$ at precision $\varepsilon = 2^{-n/2}$. The next chapter formalizes this theorem and ties it to the information cost of the adiabatic approach.
@@ -475,5 +465,4 @@ The information barrier is not specific to adiabatic evolution. Consider the tim
 The oscillation frequency is set by the spectral gap of $H$, and this gap is maximized when $r$ is tuned to the avoided crossing, namely $r = A_1$ (up to normalization). To keep success probability non-negligible, $r$ must lie within $O(2^{-n/2})$ of $A_1$ \cite{braida2024unstructured}. So the same barrier appears in this model as well. One still needs $A_1$ to exponential precision, and computing it remains NP-hard. The obstacle comes from spectral structure, not from adiabatic formalism itself.
 
 The results of this chapter create a tension. The adiabatic algorithm of \autoref{thm:aqo-runtime} achieves Grover scaling $\widetilde{O}(\sqrt{N/d_0})$, matching the unstructured-search lower bound. Yet the schedule depends on a spectral parameter whose computation is NP-hard, even at much coarser precision than the algorithm ultimately needs. In the circuit model, Grover achieves the same speedup without any spectral pre-computation because oracle queries gather information adaptively during execution. In the adiabatic framework, by contrast, the schedule must be fixed before evolution begins.
-
 What the adiabatic model pays in pre-computation, the circuit model avoids entirely. The gap between them is not computational power but computational knowledge. The next chapter formalizes this as an information-runtime tradeoff, proving a separation theorem for uninformed schedules and exploring whether adaptive measurements can bypass the classical pre-computation barrier.

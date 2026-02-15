@@ -166,7 +166,6 @@ theorem mainResult2 (f : CNFFormula) (hf : is_kCNF 3 f) :
 \end{lstlisting}
 
 The script is short because the work lives in helper lemmas. The satisfiable branch: \texttt{sat\_ground\_zero} shows a satisfying assignment forces $E_0 = 0$, then \texttt{twoQuery\_sat} shows $D = 0$. The unsatisfiable branch: \texttt{unsat\_ground\_pos} gives $E_0 > 0$, \texttt{unsat\_excited\_pop} gives populated excited levels, \texttt{twoQuery\_unsat} gives $D > 0$, and \texttt{linarith} closes the contradiction. The only axiom in the chain is the Garey-Johnson encoding interface, which packages a classical graph-coloring reduction that Mathlib does not yet cover. Once that interface is fixed, everything else is checked.
-
 The second path is the counting bridge behind $\#$P extraction. Informal proofs compress the step from satisfying assignments to a counting identity into a sentence. I made it a separate theorem.
 
 \begin{lstlisting}[style=leanstyle,caption={Bridge theorem from semantic satisfiability to counting identity.},label={lst:countzero-bridge}]

@@ -32,7 +32,6 @@ on problem size $n$ and target error $\varepsilon$, but not on instance-specific
 spectral data. An \emph{instance-independent} algorithm uses the same
 Hamiltonian design for all energy assignments with the same degeneracy
 structure.
-
 NP-hardness is a statement about worst-case classical computation. It does not directly tell us how much runtime an adiabatic algorithm loses by not knowing $A_1$. If a fixed schedule that ignores $A_1$ still achieved $O(\sqrt{N/d_0})$, the hardness of computing $A_1$ would be academic. It is not. The right way to quantify the loss is through a game. The schedule designer commits to a velocity profile $v(s)$ before seeing the instance. An adversary, knowing the schedule, then places the gap minimum at the worst possible position within an uncertainty interval. The separation between what the informed designer achieves and what the uninformed designer can guarantee is a minimax ratio, and it grows exponentially. To make this game precise, we need a class of gap functions that the adversary is allowed to play. The adversary's freedom is parametrized by three quantities: the endpoints $s_L, s_R$ of the uncertainty interval (encoding what the schedule designer does not know) and the minimum gap value $\Delta_*$ (encoding what is fixed across instances). Requiring a unique minimum avoids degenerate cases where multiple crossings interact, which is the generic situation for the rank-one family studied here.
 
 \begin{definition}[Gap class]
@@ -551,7 +550,6 @@ Fixed, informed & $O(T_{\mathrm{inf}})$ & 0 \\
 \end{center}
 
 \noindent For the running example ($N = 4$, $d_0 = 1$, $n = 2$), Phase~1 performs $\lceil 1 \rceil = 1$ probe at $s_{\mathrm{mid}} = 0.5$, so the location stage already achieves width $1/2 = O(2^{-n/2})$. The gap at that point is $g(0.5)=1/\sqrt{N}=1/2$, which gives probe cost $O(1/g)=O(2)=O(T_{\mathrm{inf}})$.
-
 \noindent \emph{Implementation note.} A physical instantiation of $D_H$ uses phase-estimation-based branch tests on $H(s_{\mathrm{mid}})$, which distinguish the ground and excited branches at cost $O(1/g(s_{\mathrm{mid}}))$ per probe. The theorem above is stated in the ideal decision-probe model; the open question is whether constant-probability probes with standard amplification introduce only polylogarithmic overhead, preserving the $O(T_{\mathrm{inf}})$ scaling. The key observation is that each probe requires only constant-probability correctness, so standard amplification keeps the overhead logarithmic.
 
 The adaptive protocol acquires $A_1$ through measurement, while the circuit model bypasses $A_1$ entirely. The D\"urr-H\o yer minimum-finding algorithm~\cite{durr1996quantum} achieves $\Theta(\sqrt{N/d_0})$ by maintaining a threshold and iteratively lowering it with Grover search. It never traverses an adiabatic path and never encounters an avoided crossing. Its mechanism is amplitude amplification with iterative thresholding and no spectral inputs. It needs no $A_1$, no $s^*$, no $\Delta$, and no gap profile.
@@ -595,7 +593,6 @@ The adaptive protocol's efficiency rests on a structural feature of the rank-one
 \label{sec:gap-geometry}
 
 If the gap approaches its minimum more gently than the rank-one linear growth, the danger zone where the schedule must be slow widens, and the runtime degrades. How much depends on the geometry of the approach.
-
 To make the scaling statements precise, this section analyzes the model profile
 \[
 g_{\alpha,c,\Delta_*}(s) = \Delta_* + c|s-s^*|^\alpha,\qquad c>0,
@@ -938,7 +935,6 @@ Consider the two-level family parametrized by $\Delta > 0$, with $E_0 = 0$, $E_1
 \]
 for $\Delta \gg \lVert V \rVert$. Because $\lVert V \rVert$ is fixed independently of $\Delta$, this contribution varies with $\Delta$, so $A_1^{\mathrm{eff}}(\Delta)$ cannot be constant.
 \end{proof}
-
 Coupling shifts energy levels but cannot make the excited contribution constant across all spectra. For large excitation energy $\Delta$, the coupling $V$ is a fixed perturbation against a growing gap, and Weyl's inequality bounds its effect to $O(\|V\|/\Delta)$. The last escape route within the rank-one design is to break the path into multiple segments and hope that an intermediate stage can absorb the spectrum dependence before the final segment encounters it.
 
 \begin{theorem}[Multi-segment rigidity]
@@ -1000,7 +996,6 @@ $A_1 = \sum_{k \geq 1} (d_k/N)/(E_k - E_0)$. Within this design class, no
 instance-independent transformation can break this dependence, because the
 secular equation encodes spectral data into the crossing position, and no
 design that treats all energy assignments equally can undo the encoding.
-
 We have now exhausted this rank-one design class under instance independence.
 The natural objection is that rank one may simply be too narrow. We next move
 to rank-$k$ projectors and show that the same dependence persists.
@@ -1031,7 +1026,6 @@ On the two-level family ($E_0 = 0$, $E_1 = \Delta$), each positive eigenvalue $\
 The two-level obstruction already blocks constant crossings in the simplest
 nontrivial family. For general multilevel spectra, a trace argument gives an
 even sharper obstruction.
-
 \begin{proposition}[Trace no-go]
 \label{prop:trace-nogo}
 For a rank-$k$ projector $P = UU^\dagger$ and the multilevel family with gaps $\Delta_1, \ldots, \Delta_{M-1}$, if $B_j = U_j^\dagger U_j \neq 0$ and $\Delta_j$ varies, then at least one crossing position must change with $\Delta_j$.
@@ -1304,7 +1298,6 @@ The total state count satisfies $\sum_{k=0}^{M-1} d_k = N = 2^n$. If $d_k \leq \
 \end{proof}
 
 Hard optimization problems have complex energy landscapes, so one might expect $A_1$ to be hard precisely when optimization is hard.
-
 \begin{proposition}[Hard optimization does not imply hard $A_1$]
 \label{prop:conjecture-hard-opt}
 The tractability of $A_1$ is independent of optimization hardness. 2-SAT is in P but $\#$2-SAT is $\#$P-complete~\cite{valiant1979complexity}, giving easy optimization with hard $A_1$. In the reverse direction, Grover search with a promised ground degeneracy $d_0$ gives hard optimization but trivial $A_1 = (N - d_0)/(N\Delta)$, computable in $O(1)$ from the promise.
