@@ -1,1 +1,174 @@
 % Chapter 1: Introduction
+
+Finding the minimum of a function on $n$ bits requires, in the worst case,
+checking all $2^n$ inputs. Quantum mechanics halves the exponent. Grover's
+algorithm~\cite{Grover1996} and its generalizations find the minimum in
+$O(\sqrt{2^n/d_0})$ evaluations of the cost function, where $d_0$ counts the
+number of optima, and no quantum algorithm can do
+better~\cite{bennett1997strengths, BBHT1998}. The speedup is quadratic,
+unconditional, and generic: it applies to any cost function regardless of
+structure. As a complexity-theoretic statement, it is also
+tight~\cite{farhi2008fail}. It is the baseline quantum advantage for
+combinatorial optimization, and the standard against which any alternative
+quantum approach must be measured.
+
+Adiabatic quantum computation is one such alternative, and it is motivated by
+physics rather than circuit design. Instead of composing discrete gate
+operations, it evolves a quantum system continuously under a time-dependent
+Hamiltonian that interpolates between an initial Hamiltonian with a known ground
+state and a problem Hamiltonian whose ground state encodes the solution. The
+adiabatic theorem of quantum mechanics guarantees that if the evolution is slow
+enough relative to the spectral gap of the interpolating Hamiltonian, the
+system remains near its instantaneous ground state
+throughout~\cite{BornFock1928, Kato1950, jansen2007bounds}. This idea has deep
+connections to condensed matter physics~\cite{hastings2013obstructions,
+albash2018adiabatic}, to the complexity of local Hamiltonians~\cite{kempe2006complexity}, and to
+quantum annealing~\cite{johnson2011quantum}, a technology that has been
+implemented in hardware and deployed on optimization tasks. As a computational
+model, adiabatic quantum computation is polynomially equivalent to the circuit
+model, and any computation in one can be simulated in the other with at most
+polynomial overhead~\cite{aharonov2007adiabatic}. The two models are equally
+powerful in principle. The question is whether they are equally convenient in
+practice.
+
+For combinatorial optimization, the difference is stark. In the circuit model,
+amplitude amplification achieves the Grover speedup with no prior knowledge of
+the cost function beyond the ability to evaluate it. No spectral parameter is
+computed in advance, no schedule is tuned, and no preprocessing competes with
+the search itself. In the adiabatic model, the runtime depends on the minimum
+spectral gap along the entire interpolation path, and the minimum gap is
+controlled by the full degeneracy structure of the problem Hamiltonian. Roland
+and Cerf~\cite{roland2002quantum} showed how to match the Grover speedup
+adiabatically for the single-marked-item case, where the problem Hamiltonian
+has only two distinct energy levels and the avoided crossing sits at
+$s = 1/2$, independent of the specific marked item. The two-level case is
+special. For a general Ising Hamiltonian with $M$ distinct energy levels and
+arbitrary degeneracies, the spectrum of the interpolating Hamiltonian is much
+richer, and the crossing position depends on the spectral data in a way that
+resists easy characterization. Whether any adiabatic algorithm matches the
+Grover lower bound for this general setting has been open since the framework
+was introduced~\cite{farhi2000adiabatic, farhi2001adiabatic}. Partial results
+existed~\cite{horvat2006exponential, hen2014continuous}, but none covered the
+full class of diagonal Hamiltonians with rigorous gap bounds and an explicit
+runtime.
+
+The answer, established in~\cite{braida2024unstructured} and developed in
+detail in this thesis, is yes: for any Hamiltonian diagonal in the computational
+basis with a sufficiently large spectral gap, adiabatic quantum optimization
+achieves the runtime $\widetilde{O}(\sqrt{N/d_0})$, where $N = 2^n$ and the
+tilde hides polylogarithmic factors. This matches the lower bound
+of~\cite{farhi2008fail} up to polynomial corrections. The result requires two
+things: tight bounds on the spectral gap of the interpolating Hamiltonian
+throughout the adiabatic evolution, and a closed-form expression for the
+position of the single avoided crossing with sufficient accuracy to construct
+the adaptive schedule.
+
+The cost of achieving this runtime is not free. The adaptive schedule must slow
+near the avoided crossing, which occurs at a position
+$s^* = A_1/(A_1 + 1)$. Here $A_1$ is a spectral parameter determined by
+the degeneracies and inverse gaps of the problem Hamiltonian, effectively a
+weighted average of inverse excitation energies. This parameter must be known
+to additive accuracy $O(2^{-n/2})$ for the schedule to place the slowdown
+correctly. Computing $A_1$ from a classical description of the Hamiltonian is
+NP-hard even at the much coarser precision $1/\mathrm{poly}(n)$, by a
+reduction from 3-SAT to $A_1$ estimation. Computing it exactly, or to
+$2^{-\mathrm{poly}(n)}$ precision, is $\#$P-hard, because polynomial
+interpolation recovers the full degeneracy sequence. The optimality of adiabatic
+quantum optimization is therefore conditional on solving a problem that is
+itself computationally hard.
+
+The circuit model faces no such obstacle. The D\"urr-H\o yer
+algorithm~\cite{durr1996quantum} achieves the same scaling without computing
+$A_1$, without knowing the gap profile, without traversing an interpolation
+path, and without encountering an avoided crossing. The discrepancy is not a
+shortcoming of a particular adiabatic algorithm. It is a structural feature of
+the adiabatic framework for unstructured optimization. The mechanism of slow
+interpolation through a gap minimum creates an information requirement that is
+absent from the problem itself. The information gap between what the two models
+need for the same task, and its consequences for adiabatic algorithm design,
+are the central concern of this thesis.
+
+The published work~\cite{braida2024unstructured} establishes the optimality and
+the hardness. This thesis develops those results in full technical detail,
+placing them in a broader context of physics, computation, and spectral theory,
+and extends them in several directions. The information cost has precise
+mathematical structure. An uninformed fixed schedule loses a factor of
+$\Omega(2^{n/2})$ in runtime relative to the informed optimum. Each additional
+bit of knowledge about $A_1$ halves the penalty, with no abrupt phase
+transition. Quantum measurement during adiabatic evolution recovers the full
+speedup using $\Theta(n)$ binary probes of the instantaneous spectrum. No
+instance-independent modification within the rank-one interpolation framework
+can eliminate the spectrum dependence: not adding ancilla qubits, not changing
+the initial state, not coupling auxiliary systems, not using multi-segment
+interpolation paths, and not replacing the rank-one projector with a
+higher-rank driver. The hardness of $A_1$ is counting hardness rather than
+optimization hardness. It connects to partition-function computation, and the
+tractability boundary is orthogonal to the standard complexity-theoretic
+divisions: easy optimization can coexist with hard $A_1$ (as in 2-SAT), and
+hard optimization can coexist with easy $A_1$ (as in Grover search with a
+promised degeneracy). These extensions organize into a taxonomy of the
+information gap that separates the adiabatic and circuit models for unstructured
+optimization.
+
+The hardness reductions and spectral parameter identities are formalized in
+Lean~4 with Mathlib~\cite{moura2021lean4, mathlib2020}. The formalization
+comprises 330 named theorems, 15 explicit axioms organized by trust level, and
+zero unresolved proof obligations. The axiom budget is inspectable, and each
+axiom is a named interface that can be discharged as Lean's mathematical
+libraries grow.
+
+The argument requires three layers of preparation before reaching the main
+results, and each concept earns its place by answering a question the previous
+one left open. A cost function becomes a diagonal Hamiltonian, optimal
+solutions become ground states, and the classical hierarchy of P, NP, and $\#$P constrains what any
+computational procedure can achieve.
+Hamilton's equations generate the dynamics, the Gibbs distribution governs
+thermal equilibrium, and the Schr\"odinger equation carries the system into a
+quantum regime where the computational model must change. The chapter closes
+with the adiabatic mechanism as a physical heuristic, stopping short of
+quantitative guarantees (Chapter~2).
+
+Quantum computation provides a model with definite operations and countable
+resources. The tight characterization $\Theta(\sqrt{N/d_0})$ for unstructured
+search, with Grover's algorithm for the upper bound and the
+Bennett-Bernstein-Brassard-Vazirani argument for the lower, establishes the
+floor against which every later adiabatic claim is measured (Chapter~3).
+Adiabatic quantum computation then enters as a physically motivated alternative
+that replaces discrete gates with continuous Hamiltonian evolution. The
+Jansen-Ruskai-Seiler adiabatic theorem provides the quantitative control law,
+and the Roland-Cerf construction demonstrates that for a two-level problem
+Hamiltonian, a local schedule adapted to the gap achieves the Grover speedup.
+But the two-level case is special: the crossing occurs at $s = 1/2$ regardless
+of the Hamiltonian's parameters. For a general problem Hamiltonian with $M$
+energy levels and arbitrary degeneracies, the crossing position depends on the
+full spectral data (Chapter~4).
+
+The spectral analysis occupies two chapters. Permutation symmetry reduces the
+dynamics to a polynomial-dimensional subspace, a secular equation identifies
+the eigenvalues of the interpolating Hamiltonian, and the crossing position
+$s^*$ and the minimum gap $g_{\min}$ are expressed in terms of the spectral
+parameters $A_1$ and $A_2$ (Chapter~5). The gap profile is completed outside
+the crossing window through complementary methods: a variational argument based
+on a trial-state ansatz bounds the gap to the left of the crossing, and a
+resolvent argument exploiting the Sherman-Morrison formula for rank-one
+perturbations bounds it to the right. The resulting piecewise lower bound holds
+for all $s \in [0,1]$ (Chapter~6). An adaptive schedule with velocity scaled to
+the square of the local gap then converts this profile into the optimal runtime
+$\widetilde{O}(\sqrt{N/d_0})$ (Chapter~7).
+
+The speedup is conditional on knowing $A_1$ to exponential precision. That
+conditioning is not a technical artifact. Computing $A_1$ from a classical
+description of the Hamiltonian is NP-hard at polynomial precision and
+$\#$P-hard exactly, with an interpolation barrier at the algorithmically
+relevant precision $2^{-n/2}$. A quantum algorithm using amplitude estimation
+computes $A_1$ quadratically faster than any classical algorithm in the query
+model, providing a quadratic quantum-classical separation for the preprocessing
+step itself (Chapter~8). The full structure of the information cost is then
+developed. The exponential penalty for ignorance, the linear improvement per
+bit of $A_1$ knowledge, the quantum bypass via adaptive measurement, the no-go
+theorems for all instance-independent modifications within the rank-one
+framework, and the connections to counting complexity and partition functions.
+The information gap is simultaneously a spectral gap, an epistemic gap, and a
+model gap. It is a property of the computational model, not of the
+computational task (Chapter~9). The hardness reductions are formalized in
+Lean~4 in the appendix.

@@ -1,1 +1,196 @@
-% Chapter 11: Conclusion
+% Chapter 10: Conclusion
+
+Adiabatic quantum optimization can match the Grover speedup. For any
+Hamiltonian diagonal in the computational basis with spectral gap
+$\Delta \geq 1/\mathrm{poly}(n)$, the adaptive schedule of Chapter~7 achieves
+runtime $\widetilde{O}(\sqrt{N/d_0})$, matching the
+$\Omega(\sqrt{N/d_0})$ lower bound of Farhi et
+al.~\cite{farhi2008fail} up to polylogarithmic factors. The spectral gap of
+the interpolating Hamiltonian is bounded piecewise on all of $[0,1]$, with a
+linear reopening rate on both sides of the avoided crossing and a minimum at
+$s^* = A_1/(A_1 + 1)$ of order $\Theta(\sqrt{d_0/(NA_2)})$. These bounds are
+tight enough for the runtime integral to converge at the Grover scale.
+
+The speedup requires knowing $A_1$ to additive accuracy $O(2^{-n/2})$.
+Computing $A_1$ at polynomial precision is NP-hard. Computing it exactly is
+$\#$P-hard. An interpolation barrier at the precision $2^{-n/2}$ separates
+the two regimes, and polynomial extrapolation from coarse evaluations cannot
+breach it. A quantum algorithm using amplitude estimation computes $A_1$
+quadratically faster than any classical algorithm in the query model, but this
+still costs $\Theta(2^{n/2})$ queries -- the same order as Grover search itself.
+The circuit model, which does not traverse an interpolation path and never
+encounters the avoided crossing, achieves the same optimization speedup at zero
+information cost.
+
+The information gap between the two models has precise structure. An uninformed
+fixed schedule loses a factor of $\Omega(2^{n/2})$. Each bit of $A_1$
+knowledge halves the penalty. Adaptive quantum measurement during evolution
+recovers the full speedup with $\Theta(n)$ probes. No instance-independent
+modification within the rank-one framework eliminates the spectrum dependence:
+the no-go theorems of Chapter~9 rule out ancilla qubits, modified initial
+states, coupled auxiliary systems, multi-segment paths, and higher-rank
+projectors. The hardness is counting hardness, connected to partition functions
+rather than satisfiability, and the tractability boundary is orthogonal to
+optimization complexity. These results organize into a five-level taxonomy of
+ignorance and a bit-runtime information law that quantifies the exact
+communication cost for each target runtime.
+
+The formalization in Lean~4 covers the hardness reductions and spectral
+parameter identities with 330 named theorems and 15 explicit axioms. The axiom
+budget is inspectable by any reader who rebuilds the artifact, and each axiom
+is a named interface ready to be discharged as Lean's mathematical libraries
+grow.
+
+
+\section{Open Problems}
+\label{sec:open-problems}
+
+The results leave several questions open. Some are technical sharpening of
+existing bounds. Others would require new ideas that do not yet exist.
+
+The most pressing is the complexity of $A_1$ estimation at the
+schedule-relevant precision $\varepsilon = \Theta(2^{-n/2})$. The NP-hardness
+reduction operates at precision $1/\mathrm{poly}(n)$, and the $\#$P-hardness
+proof operates at precision $2^{-\mathrm{poly}(n)}$. Between these two
+scales lies the algorithmically relevant regime, where the polynomial
+interpolation technique breaks down and the Garey-Johnson reduction does not
+reach. A direct NP-hardness proof at precision $2^{-n/2}$ would close the gap
+and show that the information cost of adiabatic optimization is
+unconditionally intractable at the scale where it matters. Such a proof might
+require techniques from the hardness of approximate counting or from the
+average-case complexity of partition functions, connecting the adiabatic
+information gap to the broader landscape of $\#$P-hardness results used in
+quantum advantage proposals~\cite{aaronson2011bosonsampling,
+bouland2019complexity, movassagh2023hardness}.
+
+The information gap raises an immediate algorithmic question: can the
+quadratic speedup be recovered without computing $A_1$? Han, Park, and
+Choi~\cite{HanParkChoi2025} propose a constant geometric speed schedule that
+achieves near-quadratic scaling for adiabatic state preparation without prior
+spectral knowledge. Whether this approach or any schedule-free modification of
+adiabatic optimization fully matches the $\widetilde{O}(\sqrt{N/d_0})$
+runtime without spectral information would resolve the central tension of this
+thesis. The no-go theorems of Chapter~9 constrain the design space but do not
+rule out all possibilities: they apply to instance-independent modifications
+within the rank-one framework and leave open the question of
+instance-dependent or structurally adaptive schedules that learn spectral
+information from the evolution itself.
+
+The no-go theorems are specific to the rank-one driver
+$H_0 = -\ket{\psi_0}\bra{\psi_0}$. The standard choice in adiabatic quantum
+optimization is the local sum-of-spins driver $H_0 = \sum_j \sigma_x^j$,
+which generates a spectrum of exponentially many avoided crossings when
+interpolated with an Ising Hamiltonian encoding an NP-complete
+problem~\cite{altshuler2010anderson}. Analytical results for this setting are
+essentially absent. Guo and An~\cite{GuoAn2025} establish improved gap
+dependence for adaptive adiabatic schedules, but their results apply to the
+preparation of known ground states rather than to optimization with unknown
+spectra. Numerical studies report both improved and degraded performance
+relative to unstructured search~\cite{arthurthesis, callison2019finding}, and
+the spectral structure resists the symmetric-subspace reduction that makes the
+rank-one case tractable. A rigorous runtime bound for the local driver, even
+for restricted Hamiltonian families, would represent a significant advance.
+The central obstacle is that the gap profile is no longer controlled by a
+single avoided crossing, and the tools of Chapters~5 and~6 do not generalize
+directly.
+
+The gap geometry framework of Chapter~9 introduces the flatness exponent
+$\alpha$ and the scaling spectrum $\gamma = 3 - 2/\alpha$, relating the shape
+of the gap minimum to the runtime scaling. The rank-one family has
+$\alpha = 1$ structurally, giving $\gamma = 1$ and the correct
+$\widetilde{O}(\sqrt{N/d_0})$ scaling. Whether other adiabatic frameworks
+realize different values of $\alpha$ is unknown. A family with $\alpha > 1$
+would have a flatter gap minimum and worse scaling, while $\alpha < 1$ would
+give a sharper minimum and better scaling. For the local driver with structured
+problem Hamiltonians, the gap minimum shape is governed by the density of
+avoided crossings near the critical schedule parameter, and $\alpha$ may be
+determined by the universality class of the underlying quantum phase
+transition. Characterizing $\alpha$ for physically motivated driver-problem
+pairs would connect the runtime analysis to both quantum phase transition
+theory and the emerging geometric theory of adiabatic computation.
+
+The no-go theorems rule out instance-independent modifications. They do not
+rule out instance-dependent ones. If a polynomial-time classical algorithm
+could identify structural features of $H_z$ that constrain $A_1$ to a
+polynomial-width interval, the informed schedule could be constructed without
+solving the full estimation problem. The tractability results for bounded
+treewidth and ferromagnetic Ising models at coarse precision suggest that such
+structural shortcuts exist for restricted families. A classification of
+Hamiltonian families by the tractability of their spectral parameters at
+schedule-relevant precision would connect the adiabatic information gap to the
+structural complexity theory of constraint satisfaction problems.
+
+Counterdiabatic driving offers a different angle on the information gap.
+Instead of slowing the evolution near the gap minimum, one adds corrective
+terms to the Hamiltonian that suppress diabatic transitions at any speed.
+Exact counterdiabatic terms require the full instantaneous eigenbasis and are
+therefore at least as hard to compute as the spectral parameters themselves.
+Approximate counterdiabatic terms constructed from local $k$-body operators
+are efficiently computable but only partially suppress transitions. Whether
+local counterdiabatic corrections can reduce the precision requirement on
+$A_1$, converting the exponential penalty for ignorance into a polynomial
+one, is open. The question connects the information gap to the locality
+structure of the driver and to the theory of shortcuts to adiabaticity.
+
+Non-adiabatic continuous-time algorithms face the same
+bottleneck~\cite{eduardo, callison2019finding}. Evolving under the
+time-independent Hamiltonian
+$H = -\ket{\psi_0}\bra{\psi_0} + r H_z$ with a parameter $r$ near $A_1$
+produces oscillations between the initial state and the ground state of $H_z$
+at the Grover timescale, but the correct choice of $r$ must again lie within
+$O(2^{-n/2})$ of $A_1$. The spectral parameter $A_1$ is a bottleneck for
+continuous-time quantum optimization more broadly, not just for adiabatic
+algorithms. Whether any continuous-time quantum algorithm, adiabatic, variational,
+or hybrid, can achieve the Grover speedup for general optimization without
+computing a hard spectral parameter is open.
+
+The Lean~4 formalization covers the complexity reductions but not the spectral
+analysis. Formalizing the resolvent calculus behind the gap bounds of
+Chapters~5 and~6 would close the largest remaining axiom group
+(\texttt{FullSpectralHypothesis}) and complete the chain from Hamiltonian
+definition to runtime bound within a single typed proof system. The nearest
+target is the Sherman-Morrison identity for rank-one perturbations and the
+monotonicity of the resolvent function $f(s)$, both of which reduce to
+Mathlib-compatible linear algebra. The Garey-Johnson encoding axiom, which
+bridges the classical satisfiability reduction to the Hamiltonian formulation,
+is another natural discharge target.
+
+
+\section{Perspective}
+\label{sec:perspective}
+
+The information gap revealed by this thesis is a specific instance of a general
+phenomenon. Quantum algorithms that navigate parametrized energy landscapes
+create information requirements that are absent from the problem specification.
+Variational quantum algorithms need good initial parameters. Quantum annealing
+needs an appropriate cooling schedule. Adiabatic algorithms need the crossing
+position. In each case, the bottleneck is not the hardness of the underlying
+problem but the cost of learning where, in parameter space, the algorithm
+must concentrate its effort. The rank-one unstructured search studied here is
+the setting where this cost admits exact quantification, because the symmetric
+subspace reduction makes the gap profile analytically tractable and the
+crossing position depends on a single spectral parameter.
+
+The circuit model sidesteps this cost entirely, not because it is more
+powerful, since the two models are polynomially equivalent, but because its mechanism does not
+create the information requirement in the first place. Amplitude amplification
+rotates toward the ground-state subspace without traversing a parametrized
+path. It never encounters an avoided crossing, and it never needs to know where
+one would occur. The separation between the two models is therefore not a
+separation in computational power. It is a separation in the information
+architecture of the algorithm, and it arises from the choice of mechanism
+rather than the choice of problem.
+
+Whether this separation persists beyond the rank-one setting is the question
+that the results of this thesis point toward but do not resolve. The rank-one
+driver is the simplest driver for which the spectral analysis is tractable, and
+the no-go theorems show that within this framework, the information gap is
+inescapable. For the local driver $H_0 = \sum_j \sigma_x^j$, which is the
+standard choice in experimental implementations, the spectral structure is
+exponentially richer and the analytical tools are not yet available. If the
+local driver exhibits the same information gap, it would confirm that the
+phenomenon is a general feature of adiabatic optimization. If it does not, if the local driver somehow circumvents the bottleneck
+through its richer spectral structure, then the information gap is an
+artifact of the
+rank-one simplification, and the path to practical adiabatic quantum speedups
+remains open.
